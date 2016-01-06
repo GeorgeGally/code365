@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.globalAlpha = 0.6;
+var particles = [];
+
+function draw(){
+	//console.log(audioChannelVolume.length) //256
+	var ratio = 1.5 * w/audioChannelVolume.length;
+	ctx.clearRect(0, 0, w, h);
+	for (var i = 0; i < audioChannelVolume.length; i+=2) {
+		if (audioChannelVolume[i] > 10) addParticle(10 + i*ratio, h/2, hsl(1*audioChannelVolume[i], random(20,100), random(20,100)), audioChannelVolume[i]/40, 1 + audioChannelVolume[i]/2	);
+	};
+	moveParticles();
+}
+
+function addParticle(_x, _y, _colour, _sz, _sy){
+	var particle = {
+		x: _x,
+		y: _y,
+		c: _colour,
+		speedx: 0,
+		speedy: posNeg() * _sy,
+		sz: _sz
+	}
+
+	particles.push(particle);
+}
+
+function moveParticles(){
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		p.speedy *= 1.05;
+		p.x += p.speedx;
+		p.y+= p.speedy;
+		p.sz *= 1.04;
+		ctx.fillStyle = p.c;
+		ctx.fillEllipse(p.x, p.y, p.sz, p.sz);
+		if (p.x < 0 || p.y < 0 || p.x > w || p.y > h || p.sz > 280) particles.splice(i,1);
+	};
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

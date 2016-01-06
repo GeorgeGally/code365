@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Sound Maps</title>
+ <script language="javascript" src="js/creative.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+ </head>
+ <body>
+ <canvas id="canvas1" style="background-color: black; position: relative;" width="650" height="190" ></canvas>
+
+<script>
+var canvas = document.getElementById('canvas1');
+var ctx = canvas.getContext('2d');
+var context = new (window.AudioContext || window.webkitAudioContext)();
+var initialFreq = 3000;
+var initialVol = 0.5;
+var oscillator = context.createOscillator();
+oscillator.frequency.value = initialFreq; // value in hertz
+oscillator.type = 'square';
+oscillator.start();
+var gainNode = context.createGain();
+var maxFreq = 500;
+var maxVol = 0.4;
+gainNode.gain.value = initialVol;
+oscillator.connect(gainNode);
+gainNode.connect(context.destination);
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+var width = canvas.width;
+var height = canvas.height;
+
+function draw(){
+
+	if (mousePressed) {
+		
+		ctx.fillStyle = hsl(100*mouseX/width,100*(height-mouseY)/height, 60);
+		ctx.fillRect(0,0,width,height);
+		oscillator.frequency.value = (mouseX/width) * maxFreq;
+    	gainNode.gain.value = ((height-mouseY)/height) * maxVol;
+	
+	} else {
+	
+		gainNode.gain.value = 0;
+
+	}
+
+}
+
+
+</script>
+</body>
+</html>

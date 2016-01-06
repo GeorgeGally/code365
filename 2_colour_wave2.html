@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Sound Maps</title>
+ <script language="javascript" src="js/creative.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+ </head>
+ <body>
+ <canvas id="canvas1" style="z-index: 1; position: absolute; left: 0; top: 0" width="650" height="190" ></canvas>
+ <canvas id="canvas2" style="z-index: 2; position: absolute; left: 0; top: 0" width="650" height="190" ></canvas>
+<script>
+var canvas = document.getElementById('canvas1');
+var ctx = canvas.getContext('2d');
+var canvas2 = document.getElementById('canvas2');
+var ctx2 = canvas2.getContext('2d');
+var contextClass = (window.AudioContext || 
+  window.webkitAudioContext || 
+  window.mozAudioContext || 
+  window.oAudioContext || 
+  window.msAudioContext);
+if (contextClass) {
+  // Web Audio API is available.
+  var context = new contextClass();
+} else {
+  // Web Audio API is not available. Ask the user to use a supported browser.
+}
+
+// Create the source.
+var source = context.createBufferSource();
+// Create the gain node.
+var gain = context.createGain();
+// Connect source to filter, filter to destination.
+source.connect(gain);
+gain.connect(context.destination);
+
+// var context = new (window.AudioContext || window.webkitAudioContext)();
+var initialFreq = 1000;
+var initialVol = 0.5;
+var oscillator = context.createOscillator();
+oscillator.frequency.value = initialFreq; // value in hertz
+oscillator.type = 'triangle'; // sine, triangle, sawtooth, square
+oscillator.start();
+
+
+
+var gainNode = context.createGain();
+var maxFreq = 800;
+var maxVol = 0.5;
+gainNode.gain.value = initialVol;
+oscillator.connect(gainNode);
+gainNode.connect(context.destination);
+
+var analyser = context.createAnalyser();
+oscillator.connect(analyser);
+analyser.connect(gainNode);
+
+canvas.width = canvas2.width = window.innerWidth;
+canvas.height = canvas2.height = window.innerHeight;
+var width = w = canvas.width;
+var height = h = canvas.height;
+var i = 0;
+ctx.globalAlpha=0.4;
+
+function draw(){
+
+	if (mousePressed) {
+	
+		drawWave();
+		ctx.fillStyle = hsl(80*mouseX/width,80, 50);
+		
+		oscillator.frequency.value = (mouseX/width) * maxFreq;
+    	gainNode.gain.value = ((height-mouseY)/height) * maxVol;
+    	sz = random(20, 100);
+		ctx.fillEllipse(mouseX, mouseY, mouseY/1.5, mouseY/1.5);
+		i++;
+
+	} else {
+	
+		gainNode.gain.value = 0;
+
+	}
+
+}
+
+function drawWave(){
+	ctx2.clearRect(0,0,w,h);
+	var freqDomain = new Uint8Array(analyser.frequencyBinCount);
+	analyser.getByteFrequencyData(freqDomain);
+	var vals = [];
+	vals[0] = 0;
+	vals[analyser.frequencyBinCount] = 0;
+	ctx2.fillStyle = rgba(255,255,255,0.9);
+  	ctx2.fillRect(18, h-70, 264, 40);
+  	// ctx2.strokeStyle = "#000";
+  	// ctx2.strokeRect(18, h-70, 264, 40);
+	for (var i = 1; i < analyser.frequencyBinCount; i+=1) {
+  	var value = freqDomain[i];
+  	vals[i] = freqDomain[i]/4;
+  	var percent = value / 256;
+  	var hh = h * percent;
+  	var offset = h - hh - 1;
+  	//ctx2.strokeStyle = "#f7f7f7";
+  	var barWidth = w/analyser.frequencyBinCount;
+  	// var hue = i/analyser.frequencyBinCount * 360;
+  	// ctx2.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+  	// ctx2.fillRect(i * barWidth, h/2-offset/2, barWidth, hh);
+  	
+  	ctx2.line(20+i/4, h-50 + vals[i-1]/4,20+i/4+barWidth, h-50 - vals[i]/4);
+
+
+}
+
+}
+
+
+</script>
+</body>
+</html>
