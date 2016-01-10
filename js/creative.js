@@ -141,14 +141,6 @@ function randomInt(min, max) {
 	return Math.floor(Math.random() * (max+1-min)) +min;
 }
 
-function randomInteger(min, max) {
-	if(max===undefined) {
-		max = min; 
-		min = 0; 
-	}
-	return Math.floor(Math.random() * (max+1-min)) +min;
-}
-
 function random(min, max) { 
 	if(min===undefined) { 
 		min = 0; 
@@ -267,7 +259,7 @@ function cjsloop() {
 }());
 
 
-window.addEventListener('load',init);
+
 
 function init() {
 	
@@ -283,7 +275,7 @@ function init() {
 	
 	if(typeof window.setup == 'function') window.setup();
 	cjsloop(); 
-	
-	
-	
+		
 }
+
+window.addEventListener('load',init);

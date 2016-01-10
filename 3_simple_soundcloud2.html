@@ -3,8 +3,8 @@
  <head>
  <meta charset="utf-8">
  <title>Soundcloud Viz</title>
- <script src='http://connect.soundcloud.com/sdk.js'></script>
- <script language="javascript" src="js/creative.js"></script>
+
+<script language="javascript" src="js/creative.js"></script>
 <script language="javascript" src="js/canvas.js"></script>
 
 	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
@@ -14,7 +14,6 @@
  <body>
    
 <script>
-
 var ctx = createCanvas("canvas1");
 ctx.strokeStyle = rgba(0,0,0,0.8);
 
@@ -23,8 +22,6 @@ function draw(){
 	var ratio = w/audioChannelVolume.length;
 	ctx.clearRect(0, 0, w, h);
 	for (var i = 0; i < audioChannelVolume.length; i+=8) {
-		//console.log(audioChannelVolume[i]);
-		//ctx.fillRect(2*i*ratio, height/2-audioChannelVolume[i]/2, 1*ratio, audioChannelVolume[i]);
 		ctx.lineWidth = random(0.5,4);
 		ctx.HstrokeEllipse(w/2, h/2, audioChannelVolume[i]*3, audioChannelVolume[i]*3);
 	};
@@ -32,6 +29,7 @@ function draw(){
 }
 
 </script>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
  <script language="javascript" src="js/soundcloud.js"></script>
 </body>
 </html>

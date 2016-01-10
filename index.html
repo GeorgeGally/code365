@@ -7,7 +7,7 @@
 body {
 	background: #f7f7f7;
 	font-family: Helvetica, Arial, sans;
-	font-size: 16px; 
+	font-size: 18px; 
 }
 #header {
 	background: #fff;
@@ -17,6 +17,47 @@ body {
 }
 #content {
 	padding: 40px;
+}
+.code {
+	font-family: courier, monospace;
+	padding: 20px;
+	margin: 40px 20px 40px 20px;
+	background: #222;
+	color: #fff;
+	width: 70%;
+}
+
+a {color: orange; }
+
+.code b {
+	color: yellow;
+}
+.box {
+	background: #fff;
+	padding: 0;
+	margin: 10px 4px 20px 4px;
+	width: 320px;
+	height: 400px;
+	display: block;
+	float: left;
+}
+.box img {
+	width: 320px;
+	height: 200px;
+	background: #eee;
+	border: none;
+	margin: 0;
+}
+
+.box_content {
+	padding: 10px;
+	display: block;
+	font-size: 16px; 
+}
+
+#content_holder {
+	margin: 0 auto 0 auto;
+	width: 1000px;
 }
  </style>
 </head>
@@ -28,9 +69,177 @@ body {
 	<p>
 	For my creative coding, I use a helper file called <a href="js/creative.js">creative.js</a>, which is a modified version of @seblee's creative.js file - basically some added functionality and a couple of changes to how I prefer to programme.
 	</p>
-	<p>I also have another helper file <a href="js/canvas.js">canvas.js</a>, which is just a fast and esy way to create a canvas.</p> <br>
-	<h3>January 1</h3>
+	<p>I also have another helper file <a href="js/canvas.js">canvas.js</a>, which is just a fast and esy way to create a canvas.</p> 
+	
+	<div class="code">
+		var ctx = createCanvas("canvas1");
+	</div>
 
+	<div id="content_holder">
+
+	<div class="box">
+		<img src="img/screenshots/12b.jpg">
+		<div class="box_content">
+		<h3>January 12</h3>
+
+		More minimal boxes. 
+		<br><br>
+			<a href="11_soundcloud_particles.html">View Example 1</a><br>
+			<a href="11_soundcloud_particles2.html">View Example 2</a><br>
+			<a href="11_soundcloud_particles4.html">View Example 3</a><br>
+			<a href="">Get Code</a><br>
+		</div>
+	</div>
+
+
+	<div class="box">
+		<img src="img/screenshots/11.jpg">
+		<div class="box_content">
+		<h3>January 11</h3>
+
+		More minimal boxes. 
+		<br><br>
+			<a href="11_soundcloud_particles.html">View Example 1</a><br>
+			<a href="11_soundcloud_particles2.html">View Example 2</a><br>
+			<a href="11_soundcloud_particles4.html">View Example 3</a><br>
+			<a href="">Get Code</a><br>
+		</div>
+	</div>
+
+	<div class="box">
+		<img src="img/screenshots/10c.jpg">
+		<div class="box_content">
+		<h3>January 10</h3>
+
+		Minimal boxes. 
+		<br><br>
+			<a href="10_soundcloud_particles.html">View Example 1</a><br>
+			<a href="10_soundcloud_particles2.html">View Example 2</a><br>
+			<a href="10_soundcloud_particles4.html">View Example 3</a><br>
+			<a href="">Get Code</a><br>
+		</div>
+	</div>
+
+	<div class="box">
+		<img src="img/screenshots/10b.jpg">
+		<div class="box_content">
+		<h3>January 10</h3>
+
+		More and more triangles. Minimal ones. 
+		<br><br>
+			<a href="10_soundcloud_particles.html">View Example 1</a><br>
+			<a href="10_soundcloud_particles2.html">View Example 2</a><br>
+			<a href="10_soundcloud_particles4.html">View Example 3</a><br>
+			<a href="">Get Code</a><br>
+		</div>
+	</div>
+
+	<div class="box">
+		<img src="img/screenshots/9.jpg">
+		<div class="box_content">
+		<h3>January 9</h3>
+
+		More and more triangles. 
+		<br><br>
+			<a href="9_soundcloud_particles.html">View Example 1</a><br>
+			<a href="9_soundcloud_particles2.html">View Example 2</a><br>
+			<a href="9_soundcloud_particles4.html">View Example 3</a><br>
+			<a href="">Get Code</a><br>
+		</div>
+	</div>
+
+	<div class="box">
+		<img src="img/screenshots/8.jpg">
+		<div class="box_content">
+		<h3>January 8</h3>
+
+		Added a triangle function to the mix. 
+		<br><br>
+			<a href="">View Example 1</a><br>
+			<a href="">View Example 2</a><br>
+			<a href="">View Example 3</a><br>
+			<a href="">Get Code</a><br>
+		</div>
+	</div>
+		<div class="box">
+		<img src="img/screenshots/7.jpg">
+		<div class="box_content">
+		<h3>January 7</h3>
+
+		Saw a poster similar to this and wanted to replicate it in code and a sound reactive piece. 
+		<br><br>
+			<a href="">View Example</a><br>
+			<a href="">Get Code</a><br>
+		</div>
+	</div>
+
+	<div class="box">
+		<img src="img/screenshots/6.jpg">
+		<div class="box_content">
+		<h3>January 6</h3>
+		
+			Simple sound reactive particles. And a number of improvments to the Soundloud player - with the ability to play genres.
+			<br><br>
+			<a href="http://test.radarboy.com/code365/6_soundcloud_particles.html#slo-mo disco">View Example</a><br>
+			<a href="">Get Code</a><br>
+		</div>
+	</div>
+
+	<div class="box">
+		<img src="">
+		<div class="box_content">
+		<h3>January 5</h3>
+		<br><br>
+			<a href="">View Example</a><br>
+			<a href="">Get Code</a><br>
+		</div>
+	</div>
+
+	<div class="box">
+		<img src="">
+		<div class="box_content">
+		<h3>January 4</h3>
+		<br><br>
+			<a href="">View Example</a><br>
+			<a href="">Get Code</a><br>
+		</div>
+	</div>
+
+	<div class="box">
+		<img src="">
+		<div class="box_content">
+		<h3>January 3</h3>
+		The beginnings of a Soundcloud player.
+		<br><br>
+			<a href="">View Example</a><br>
+			<a href="">Get Code</a><br> 
+		</div>
+	</div>
+
+	<div class="box">
+		<img src="img/screenshots/2.jpg">
+		<div class="box_content">
+			<h3>January 2</h3>
+			Been wanting to visualize a generated soundwave for a while. So set out to learn how.
+			<br><br>
+			<a href="2_colour_wave2.html">View Example</a><br>
+			<a href="https://github.com/georgegally/code365/2_colour_wave2.html">Get Code</a><br>
+		</div>
+	</div>
+
+	<div class="box">
+		<img src="img/screenshots/1.jpg">
+		<div class="box_content">
+			<h3>January 1</h3>
+			Starting out real simple. It is new year's day after all. 
+			A simple synth. 
+			<br><br>
+			<a href="1_colour_synth.html">View Example</a><br>
+			<a href="https://github.com/georgegally/code365/1_colour_synth.html">Get Code</a><br>
+		</div>
+	</div>
+
+</div>
 </div>
  </body>
 </html>
