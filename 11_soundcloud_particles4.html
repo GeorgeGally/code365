@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+// was getting annoyed with the same track playing, so changed soundcloud function to play random track
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 3;
+var particles = [];
+var radius = 160;
+var c = 0;
+var block_width = 50;
+
+var angle = 360/256;
+for (var yy = 0; yy < h; yy+= block_width) {
+for (var xx = 0; xx < w; xx+= block_width) {
+    	var cc = rgba(random(25),random(255),0, 0.5);
+		addParticle(xx, yy, cc, xx+yy*w);
+};
+}
+
+
+function draw(){
+	//console.log(audioChannelVolume.length) //256
+	var ratio = w/audioChannelVolume.length;
+	ctx.fillStyle = rgba(0,0,0,1);
+	ctx.fillRect(0, 0, w, h);
+	//c = (c + 0.001)%0.2;
+	moveParticles();
+}
+
+
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: _x,
+		y: _y,
+		c: _colour,
+		me: _me,
+		speedx: random(-2,2),
+		speedy: random(2,20),
+		sz: 40
+	}
+
+	particles.push(particle);
+}
+
+function moveParticles(){
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		p.me = (p.me)%256; 
+		//p.x = (audioChannelVolume[Math.floor(p.me)]/40 + p.x +p.speedx)%w;
+		//p.y =  tween(p.y,-1*audioChannelVolume[Math.floor(p.me)]/10 + p.y + p.speedy, 10);
+		if (p.y > h) p.y = 0;
+		p.sz = map(audioChannelVolume[Math.floor(p.me)],0,100, 10, block_width/2);
+		ctx.fillStyle = rgba(255,255,255,p.sz/50);
+		//ctx.fillStyle = p.c;
+
+
+		ctx.fillEllipse(p.x, p.y, 1*p.sz, 1*p.sz);
+
+		};
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

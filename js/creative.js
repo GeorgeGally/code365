@@ -68,15 +68,25 @@ p.line = function (x1, y1, x2, y2){
 // 	this.fillStyle = f; 
 // };
 
- // p.triangle = function(x1, y1, x2, y2, x3, y3) {
- //      this.beginPath(); 
- //      this.moveTo(x1, y1);
- //      this.lineTo(x2, y2);
- //      this.lineTo(x3, y3);
- //      this.lineTo(x1, y1);
- //      this.stroke(); 
- //      this.closePath();
- // };
+ p.triangle = function(x1, y1, x2, y2, x3, y3) {
+      this.beginPath(); 
+      this.moveTo(x1, y1);
+      this.lineTo(x2, y2);
+      this.lineTo(x3, y3);
+      this.lineTo(x1, y1);
+      this.stroke(); 
+      this.closePath();
+ };
+
+ p.fillTriangle = function(x1, y1, x2, y2, x3, y3) {
+      this.beginPath(); 
+      this.moveTo(x1, y1);
+      this.lineTo(x2, y2);
+      this.lineTo(x3, y3);
+      this.lineTo(x1, y1);
+      this.fill(); 
+      this.closePath();
+ };
 
  // p.triangle2 = function(x,y,width, height) {
  // 	this.save();

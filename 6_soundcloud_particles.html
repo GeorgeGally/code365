@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+// was getting annoyed with the same track playing, so changed soundcloud function to play random track
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 0.1;
+var particles = [];
+var radius = 160;
+var step = 1;
+var c = 0;
+var angle = 360/256;
+for (var i = 0; i < 256; i+= step) {
+		
+		//var x = 2*Math.cos(radians(i*angle))*radius;
+    	var x = width/256 *i;
+    	var y = height/2;
+    	
+		addParticle(x, y, rgba(random(20),0,0,0.9), i);
+};
+
+function draw(){
+	//console.log(audioChannelVolume.length) //256
+	var ratio = w/audioChannelVolume.length;
+	ctx.clearRect(0, 0, w, h);
+	c = (c + 0.001)%0.2;
+	// var step = randomInt(4,80);
+	
+	//radius = 50 + (radius + 5)%200;
+
+
+	moveParticles();
+}
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: _x,
+		y: _y,
+		c: _colour,
+		me: _me,
+		speedx: random(-5,5),
+		speedy: random(-5,5),
+		sz: 10
+	}
+
+	particles.push(particle);
+}
+
+function moveParticles(){
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		// p.x += p.speedx;
+		p.x = (p.x +p.speedx)%w;
+		//p.sz *= 0.9;
+		ctx.strokeStyle = p.c;
+		p.me = (p.me+c)%256; 
+		var sz = map(audioChannelVolume[Math.floor(p.me)],0,100, 0, h/2-50)
+		ctx.HstrokeEllipse(p.x, p.y, sz, sz);
+		ctx.fillStyle = p.c;
+		//if (p.sz > 6.2) 
+		//if (audioChannelVolume[Math.floor(p.me)]>100) 	
+		ctx.fillEllipse(p.x, p.y, sz/60, sz/60);
+		//ctx.line(p.x,h/2, w-audioChannelVolume[Math.floor(p.me)], sz)
+		//if (p.x < 0 || p.y < 0 || p.x > w || p.y > h || p.sz < 0.2) particles.splice(i,1);
+	};
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

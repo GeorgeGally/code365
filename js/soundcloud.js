@@ -6,7 +6,7 @@ var playButton;
 var trackImage, trackImageLink;
 var artistInfo;
 var trackInfo;
-var timeline;
+var timeline, playtime;
 var playhead;
 var duration;
 var timelineWidth;
@@ -90,32 +90,40 @@ else {
      * @param track_url
      * @param callback
      */
-    this.loadStream = function(track_url, successCallback, errorCallback) {
+    this.loadStream = function(genres, successCallback, errorCallback) {
         SC.initialize({
             client_id: client_id
         });
-        SC.get('/resolve', { url: track_url }, function(sound) {
-            if (sound.errors) {
+        // SC.get('/resolve', { url: track_url }, function(sound) {
+          SC.get('/tracks', { genres: genres }, function(tracks) {
+            if (tracks.errors) {
                 self.errorMessage = "";
-                for (var i = 0; i < sound.errors.length; i++) {
-                    self.errorMessage += sound.errors[i].error_message + '<br>';
+                for (var i = 0; i < tracks.errors.length; i++) {
+                    self.errorMessage += tracks.errors[i].error_message + '<br>';
                 }
                 self.errorMessage += 'Make sure the URL has the correct format: https://soundcloud.com/user/title-of-the-track';
                 errorCallback();
             } else {
-
-                if(sound.kind=="playlist"){
-                    self.sound = sound;
-                    self.streamPlaylistIndex = 0;
-                    self.streamUrl = function(){
-                        return sound.tracks[self.streamPlaylistIndex].stream_url + '?client_id=' + client_id;
-                    }
-                    successCallback();
-                }else{
-                    self.sound = sound;
-                    self.streamUrl = function(){ return sound.stream_url + '?client_id=' + client_id; };
-                    successCallback();
-                }
+              random = Math.floor(Math.random()*(tracks.length-1));
+              console.log(tracks.length);
+              console.log(random);
+              sound = tracks[random];
+              //console.log(sound);
+              self.sound = sound;
+              self.streamUrl = function(){ return sound.stream_url + '?client_id=' + client_id; };
+               successCallback();
+                // if(sound.kind=="playlist"){
+                //     self.sound = sound;
+                //     self.streamPlaylistIndex = 0;
+                //     self.streamUrl = function(){
+                //         return sound.tracks[self.streamPlaylistIndex].stream_url + '?client_id=' + client_id;
+                //     }
+                //     successCallback();
+                // }else{
+                //     self.sound = sound;
+                //     self.streamUrl = function(){ return sound.stream_url + '?client_id=' + client_id; };
+                //     successCallback();
+                // }
             }
         });
     };
@@ -166,12 +174,14 @@ var loader = new SoundcloudLoader(player);
 
   // On load, check to see if there is a track token in the URL, and if so, load that automatically
   if (window.location.hash) {
-    var trackUrl = 'https://soundcloud.com/' + window.location.hash.substr(1);
-    loadAndUpdate(trackUrl);
+    //var trackUrl = 'https://soundcloud.com/' + window.location.hash.substr(1);
+    var genres = window.location.hash.substr(1);
+    loadAndUpdate(genres);
   }
   else {
-  var trackUrl = 'https://soundcloud.com/' + 'justin-van-der-volgen/alexander-robotnick-undicidisco-justin-van-der-volgen-edit?in=h-track/sets/alexande-robotnick-florian';
-    loadAndUpdate(trackUrl);      
+    var genres = "disco";
+    //var trackUrl = 'https://soundcloud.com/' + 'justin-van-der-volgen/alexander-robotnick-undicidisco-justin-van-der-volgen-edit?in=h-track/sets/alexande-robotnick-florian';
+    loadAndUpdate(genres);      
   }
 } 
 
@@ -185,12 +195,6 @@ function createAudioElement(audio_name){
   return music;
 }
 
-
-
-
-
-
- 
 
 
 var audioChannelVolume = [];
@@ -210,7 +214,7 @@ audioRender();
 // player UI
 
 var ui = function(loader) {
-    
+    console.log(loader);
     // update the track and artist into in the controlPanel
     var artistLink = document.createElement('a');
     artistLink.setAttribute('href', loader.sound.user.permalink_url);
@@ -238,14 +242,14 @@ var ui = function(loader) {
 
         // add a hash to the URL so it can be shared or saved
         var trackToken = loader.sound.permalink_url.substr(22);
-        window.location = '#' + trackToken;
+        //window.location = '#' + trackToken;
         //loadPlayer();
     };
 
 
 
 function createPlayerUI() {
-  
+
   var audioplayer = document.createElement('div'); 
   audioplayer.setAttribute("id", "audioplayer");
   audioplayer.setAttribute("class", "wrapper");
@@ -272,10 +276,15 @@ function createPlayerUI() {
   audioplayer.appendChild(playButton);
   timeline = document.createElement('div');
   timeline.setAttribute("id", "timeline");
+
   audioplayer.appendChild(timeline);
   playhead = document.createElement('div');
   playhead.setAttribute("id", "playhead");
   timeline.appendChild(playhead);
+
+  playtime = document.createElement('span');
+  playtime.setAttribute("id", "playtime");
+  timeline.appendChild(playtime);
 
   soundcloud = document.createElement('img');
   soundcloud.setAttribute("id", "soundcloudLogo");
@@ -305,6 +314,7 @@ function playAudio() {
 function timeUpdate() {
   var playPercent = 100 * (music.currentTime / duration);
   playhead.style.marginLeft = playPercent + "%";
+  playtime.innerHTML = convertTime(Math.floor(music.currentTime)) + "/" + convertTime(Math.floor(duration));
 }
  
 // Gets audio file duration
@@ -336,4 +346,12 @@ function moveplayhead(e) {
     if (newMargLeft > timelineWidth) {
         playhead.style.marginLeft = timelineWidth + "px";
     }
+}
+
+function convertTime(totalSec){
+  //var totalSec = new Date().getTime() / 1000;
+  var hours = parseInt( totalSec / 3600 ) % 24;
+  var minutes = parseInt( totalSec / 60 ) % 60;
+  var seconds = totalSec % 60;
+  return (hours > 0 ? (hours < 10 ? "0" + hours : hours)+ ":" : "") + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds  < 10 ? "0" + seconds : seconds);
 }
