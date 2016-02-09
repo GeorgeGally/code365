@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+
+var particles = [];
+
+var c = 0;
+
+var radius = 10;
+var num_particles = 40;
+var margin = {
+  left: 200,
+  right: 200,
+  top: 100,
+  bottom: 100
+}
+
+var box_w = w - margin.right;
+var box_h = h - margin.bottom;
+
+
+// for (var yy = 0; yy < h; yy+= block_width/3) {
+for (var i = 0; i < num_particles; i++) {
+    var cc = rgba(255,255,255,1);
+		addParticle(random(margin.left+radius, box_w-radius), random(margin.top+radius, box_h-radius), cc, i);
+// };
+}
+
+
+function draw(){
+	//console.log(audioChannelVolume.length) //256
+	var ratio = w/audioChannelVolume.length;
+	ctx.fillStyle = rgba(255,255,255,1);
+	ctx.fillRect(0, 0, w, h);
+
+  ctx.fillStyle = rgba(230,230,230,1);
+  ctx.fillRect(margin.left, margin.top, box_w - margin.right, box_h - margin.top);
+
+	 moveParticles();
+}
+
+
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: _x,
+		y: _y,
+		c: _colour,
+		me: _me,
+		speedx: random(2),
+		speedy: random(2),
+		dirx: posNeg(),
+		diry: posNeg(),
+		radius: radius,
+		gravity: 0.3
+	}
+
+	particles.push(particle);
+}
+
+function moveParticles(){
+	
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		ctx.fillStyle = p.c;
+		hitCheck(p);
+
+		p.speedx = clamp(p.speedx, 1,10);
+		p.speedy = clamp(p.speedy, 1,10);
+		//p.me = (p.me)%256; 
+
+	    //p.speedx *= bounce(p.x, margin.left+p.sz/2, box_w-p.sz/2);
+	    //p.speedy *= bounce(p.y, margin.top+p.sz/2, box_h-p.sz/2);
+
+	    if (p.x > box_w - p.radius || p.x < margin.left + p.radius) 
+	    	{
+	    		p.dirx *=-1;
+	   //  		p.x += p.speedx;
+				// p.y += p.speedy;
+			}
+	    if (p.y < margin.top + p.radius || p.y > box_h - p.radius) {
+	    		p.diry *=-1;
+	   //  		p.x += p.speedx;
+				// p.y += p.speedy;
+	    	}
+	        
+	    p.x += p.speedx*p.dirx;
+	    //p.x += (audioChannelVolume[Math.floor(p.me)]/100 * p.speedx);
+	    p.y += p.speedy*p.diry;
+	    //p.y += (audioChannelVolume[Math.floor(p.me/2)]/100 * p.speedy);
+	    
+		
+		ctx.fillEllipse(p.x, p.y, p.radius*2, p.radius*2);
+		
+	};
+
+}
+
+function hitCheck(p){
+	for (var i = 0; i < particles.length; i++) {
+		if (i!=p.me) {
+			//console.log("p.me: "+p.me+ " i: " + i);
+			if (circleCollision(p, particles[i])){
+			//if (isCollide(p, particles[i]))	{
+				//console.log("hit")
+				// p.speedx *=-1;
+				// p.speedy *=-1;
+				ctx.fillStyle = "#ff0000";
+				// particles[i].speedx *=-1;
+				// particles[i].speedy *=-1;
+				// p.x += particles[i].speedx;
+				// p.y += particles[i].speedy;
+				// particles[i].x += particles[i].speedx;
+				// particles[i].y += particles[i].speedy;
+				//break;
+			}
+		}
+	}
+}
+
+function circleCollision(p1,p2){
+	return (dist(p1.x,p1.y,p2.x,p2.y) <= p1.radius+p2.radius)
+}
+
+function circlePointCollision(p1,p2){
+	return (dist(p1.x,p1.y,p2.x,p2.y) <= p1.radius)
+}
+
+function rectRectCollision(p1,p2){
+	return (dist(p1.x,p1.y,p2.x,p2.y) <= p1.radius)
+}
+
+
+// function hitTest(p1,p2){
+// 	// console.log("x1: "+x1+ " x2: " + x2);
+// 	// console.log(dist(x1,y1,x2,y2));
+// 	if (dist(p1.x,p1.y,p2.x,p2.y) <= p1.radius/2+p2.radius/2) return true;
+// }
+
+function constrain(num, min, max) {
+      return num > max ? max : num < min ? min : num
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

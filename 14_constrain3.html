@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+var ctx = createCanvas("canvas1");
+var particles = [];
+var num_particles = 20;
+var margin = {
+  left: 150,
+  right: 150,
+  top: 100,
+  bottom: 100
+}
+
+var box_w = w - margin.right;
+var box_h = h - margin.bottom;
+
+for (var i = 0; i < num_particles; i++) {
+    var cc = rgba(255,255,255,1);
+	addParticle(random(margin.left+100, box_w-100), random(margin.top+100, box_h-100), cc, i);
+
+}
+
+
+function draw(){
+
+	var ratio = w/audioChannelVolume.length;
+	ctx.fillStyle = rgba(255,255,255,1);
+	ctx.fillRect(0, 0, w, h);
+
+  	ctx.fillStyle = rgba(230,0,0,1);
+  	ctx.fillRect(margin.left, margin.top, box_w - margin.right, box_h - margin.top);
+
+  	drawParticles();
+	calculateCollisions();
+	moveParticles();
+		 
+}
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: _x,
+		y: _y,
+		c: _colour,
+		me: _me,
+		speedx: posNeg() * random(1,2),
+		speedy: posNeg() * random(1,2),
+		radius: random(5,30),
+	}
+	particle.mass = particle.radius*0.020;
+
+	particles.push(particle);
+}
+
+function moveParticles(){
+	
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+	    p.x += p.speedx;
+	   	p.y += p.speedy;
+			
+	};
+
+	// for (var j = 0; j < particles.length; j++) {
+	// 		if (j!=p.me) {
+	// 			collisionPoint(p, particles[j]);
+	// 		}
+	// }
+
+
+}
+
+
+
+function drawParticles(){
+	for (var i = 0; i < particles.length; i++) {
+	p = particles[i];
+	ctx.fillStyle = p.c;
+	ctx.fillEllipse(p.x, p.y, p.radius*2, p.radius*2);
+	}
+}
+
+
+
+function calculateCollisions(){
+	
+	for (var i = 0; i < particles.length; i++) {
+	
+		p = particles[i];
+		hitCheck(p);
+
+		if (p.x >= box_w - p.radius || p.x <= margin.left + p.radius) {
+		    p.speedx *=-1;
+		   	p.x += p.speedx;
+			p.y += p.speedy;
+		}
+		
+		if (p.y <= margin.top + p.radius || p.y >= box_h - p.radius) {
+		    p.speedy *=-1;
+		    p.x += p.speedx;
+			p.y += p.speedy;
+		}
+
+	}
+}
+
+// function collisionPoint(p1,p2){
+// 	collisionPointX = ((p1.x * p2.radius) + (p2.x * p1.radius)) / (p1.radius + p2.radius);
+ 
+// collisionPointY = ((p1.y * p2.radius) + (p2.y * p1.radius)) / (p1.radius + p2.radius);
+// ctx.fillStyle = "blue";
+//  ctx.fillEllipse (collisionPointX,collisionPointY, 10,10);
+// }
+
+function hitCheck(p1){
+	for (var i = 0; i < particles.length; i++) {
+		if (i!=p1.me) {
+			p2 = particles[i];
+		// console.log("p1.mass: "+p1.mass+ " i: " + i);
+		// if (circleCollision(p, p2)){
+		// p1.speedx = (p1.speedx * (p1.mass - p2.mass) + (2*p2.mass * p2.speedx))/(p1.mass+p2.mass);
+		// p1.speedy = (p1.speedy * (p1.mass - p2.mass) + (2*p2.mass * p2.speedy))/(p1.mass+p2.mass);
+		// p2.speedx = (p2.speedx * (p2.mass - p1.mass) + (2*p1.mass * p1.speedx))/(p1.mass+p2.mass);
+		// p2.speedy = (p2.speedy * (p2.mass - p1.mass) + (2*p1.mass * p1.speedy))/(p1.mass+p2.mass);
+
+		// p1.x += p1.speedx;
+		// 		p1.y += p1.speedy;
+				// p2.x += p2.speedx;
+				// p2.y += p2.speedy;
+
+			if (circleCollision(p1, p2))	{
+				//console.log("hit")
+				p1.speedx *=-1;
+				p1.speedy *=-1;
+				if (p1.me==10) console.log(p1.speedx)
+				
+				p2.speedx *=-1;
+				p2.speedy *=-1;
+				
+				p1.x += p1.speedx;
+				p1.y += p1.speedy;
+				// p2.x += p2.speedx;
+				// p2.y += p2.speedy;
+				ctx.fillStyle = "#ff0000";
+			// 	//break;
+			 }
+		}
+	}
+}
+
+function circleCollision(p1,p2){
+	return (dist(p1.x,p1.y,p2.x,p2.y) <= p1.radius+p2.radius)
+}
+
+function circlePointCollision(p1,p2){
+	return (dist(p1.x,p1.y,p2.x,p2.y) <= p1.radius)
+}
+
+function rectRectCollision(p1,p2){
+	return (dist(p1.x,p1.y,p2.x,p2.y) <= p1.radius)
+}
+
+
+// function hitTest(p1,p2){
+// 	// console.log("x1: "+x1+ " x2: " + x2);
+// 	// console.log(dist(x1,y1,x2,y2));
+// 	if (dist(p1.x,p1.y,p2.x,p2.y) <= p1.radius/2+p2.radius/2) return true;
+// }
+
+function constrain(num, min, max) {
+      return num > max ? max : num < min ? min : num
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

@@ -23,7 +23,7 @@ else {
     var analyser;
     var audioCtx = new (window.AudioContext || window.webkitAudioContext);
     analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 512;
+    analyser.fftSize = 256;
 
     var source = audioCtx.createMediaElementSource(player);
     source.connect(analyser);
@@ -95,7 +95,7 @@ else {
             client_id: client_id
         });
         // SC.get('/resolve', { url: track_url }, function(sound) {
-          SC.get('/tracks', { genres: genres }, function(tracks) {
+          SC.get('/tracks', { genres: genres, limit:50 }, function(tracks) {
             if (tracks.errors) {
                 self.errorMessage = "";
                 for (var i = 0; i < tracks.errors.length; i++) {
@@ -104,10 +104,10 @@ else {
                 self.errorMessage += 'Make sure the URL has the correct format: https://soundcloud.com/user/title-of-the-track';
                 errorCallback();
             } else {
-              random = Math.floor(Math.random()*(tracks.length-1));
-              console.log(tracks.length);
-              console.log(random);
-              sound = tracks[random];
+              randomTrack = Math.floor(Math.random()*(tracks.length-1));
+              console.log("Returned tracks: " + tracks.length);
+              console.log("Play track: " + randomTrack);
+              sound = tracks[randomTrack];
               //console.log(sound);
               self.sound = sound;
               self.streamUrl = function(){ return sound.stream_url + '?client_id=' + client_id; };
@@ -156,6 +156,15 @@ else {
 
 
   };
+
+function mapSound(_me, _total){ 
+
+  // HACK TO BECAUSE HIGHER VALUES NEVER HAVE DATA
+  var new_me = Math.floor(_me / _total * 110); 
+  //var new_me = Math.floor(map(_me, 0, _total, 0, 256));
+  return audioChannelVolume[new_me];
+}
+
 
 
 var player =  document.getElementById('player');

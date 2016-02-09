@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+// was getting annoyed with the same track playing, so changed soundcloud function to play random track
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 3;
+var particles = [];
+
+var c = 0;
+var block_width = 300;
+var img = [];
+img[0] = new Image();
+img[1] = new Image();
+img[0].src = 'img/blink/blink1.png';
+img[1].src = 'img/blink/blink2.png';
+var radius = 40;
+var margin = {
+  left: 200,
+  right: 200,
+  top: 100,
+  bottom: 100
+}
+
+var box_w = w - margin.right;
+var box_h = h - margin.bottom;
+
+// for (var yy = 0; yy < h; yy+= block_width/3) {
+for (var i = 0; i < 40; i++) {
+    var cc = rgba(255,255,255,1);
+		addParticle(random(margin.left, box_w), random(margin.top, box_h), cc, i);
+// };
+}
+
+
+function draw(){
+	//console.log(audioChannelVolume.length) //256
+	var ratio = w/audioChannelVolume.length;
+	ctx.fillStyle = rgba(255,255,255,1);
+	ctx.fillRect(0, 0, w, h);
+
+  ctx.fillStyle = rgba(0,0,0,1);
+  ctx.fillRect(margin.left, margin.top, box_w - margin.right, box_h - margin.top);
+
+	 moveParticles();
+}
+
+
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: _x,
+		y: _y,
+		c: _colour,
+		me: _me,
+		speedx: random(-2,2),
+		speedy: random(-2,2),
+		sz: radius
+	}
+
+	particles.push(particle);
+}
+
+function moveParticles(){
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		p.me = (p.me)%256; 
+    p.x += p.speedx;
+    p.y += p.speedy;
+    //console.log(bounce(p.x, margin.left+p.sz/2, box_w-p.sz/2))
+    p.speedx *= bounce(p.x, margin.left+p.sz/2, box_w-p.sz/2);
+    p.speedy *= bounce(p.y, margin.top+p.sz/2, box_h-p.sz/2);
+		//p.x = (audioChannelVolume[Math.floor(p.me)]/40 + p.x +p.speedx)%w;
+		//p.y =  tween(p.y,-1*audioChannelVolume[Math.floor(p.me)]/10 + p.y + p.speedy, 10);
+		//if (p.y > h) p.y = 0;
+		//p.sz = map(audioChannelVolume[Math.floor(p.me)],0,100, 0, 200);
+		ctx.fillStyle = p.c;
+		
+		
+		ctx.fillEllipse(p.x, p.y, p.sz, p.sz);
+
+		};
+
+}
+
+function bounce(num, min, max) {
+   return num >= max ? -1 : num <= min ? -1 : 1
+}
+
+function constrain(num, min, max) {
+      return num > max ? max : num < min ? min : num
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

@@ -103,7 +103,10 @@ p.line = function (x1, y1, x2, y2){
 
 function radians(deg) {return deg*Math.PI/180;}; 
 function degrees(rad) {return rad*180/Math.PI;};
-function rgb(r, g, b) { return 'rgb('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+')';};
+function rgb(r, g, b) { 
+	if (g == undefined) g = r;
+	if (b == undefined) b = r;
+	return 'rgb('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+')';};
 function rgba(r, g, b, a) { return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', '+clamp(a,0,1)+')';};
 function hsl(h, s, l) { return 'hsl('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%)';};
 function hsla(h, s, l, a) { return 'hsla('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%, '+clamp(a,0,1)+')';};
@@ -141,6 +144,41 @@ function randomInt(min, max) {
 	return Math.floor(Math.random() * (max+1-min)) +min;
 }
 
+
+
+function map(value, min1, max1, min2, max2, clampResult) { 
+	var returnvalue = ((value-min1) / (max1 - min1) * (max2-min2)) + min2; 
+	if(clampResult) return clamp(returnvalue, min2, max2); 
+	else return returnvalue; 
+};
+
+function log(val){
+	console.log(val);
+}
+
+// function clamp(value, min, max) { 
+// 	if(max<min) { 
+// 		var temp = min; 
+// 		min = max; 
+// 		max = temp; 
+		
+// 	}
+// 	return Math.max(min, Math.min(value, max)); 
+// };
+
+function clamp(value, min, max){
+ 	return Math.min(Math.max(value, Math.min(min, max)),Math.max(min, max));
+}
+
+function inRange(value){
+ 	return value >= Math.min(min, max) && value <= Math.max(min, max);
+}
+
+function dist(x1, y1, x2, y2) { 
+	x2-=x1; y2-=y1; 
+	return Math.sqrt((x2*x2) + (y2*y2)); 
+}
+
 function random(min, max) { 
 	if(min===undefined) { 
 		min = 0; 
@@ -151,28 +189,6 @@ function random(min, max) {
 	}
 	return (Math.random() * (max-min)) + min;
 };
-
-function map(value, min1, max1, min2, max2, clampResult) { 
-	var returnvalue = ((value-min1) / (max1 - min1) * (max2-min2)) + min2; 
-	if(clampResult) return clamp(returnvalue, min2, max2); 
-	else return returnvalue; 
-};
-
-function clamp(value, min, max) { 
-	if(max<min) { 
-		var temp = min; 
-		min = max; 
-		max = temp; 
-		
-	}
-	return Math.max(min, Math.min(value, max)); 
-};
-
-function dist(x1, y1, x2, y2) { 
-	x2-=x1; y2-=y1; 
-	return Math.sqrt((x2*x2) + (y2*y2)); 
-}
-
 
 function tween(pos, target, speed){
 	if (speed == undefined) speed = 20;
@@ -185,8 +201,26 @@ function chance(value){
 }
 
 function posNeg(){
-	return random(0,1) * 2 - 1;
+	return randomInt(0,1) * 2 - 1;
 }
+
+function bounce(num, min, max) {
+   return num > max ? -1 : num < min ? -1 : 1
+}
+
+function makeGrid(_w, _h){
+	var grid = [];
+	var k = 0
+	for (var y = 0; y < _h; y++) {
+		for (var x = 0; x < _w; x++) {
+		grid[k] = [x, y];
+		k++;
+		}
+	};
+	//console.log(grid);
+	return grid;
+}
+
 
 var mousePressed = 0;
 document.onmousedown = function() { 
@@ -201,7 +235,8 @@ var mouseX = 0,
 	mouseY = 0, 
 	lastMouseX = 0, 
 	lastMouseY = 0, 
-	frameRate = 60, 
+	frameRate = 60,
+	frameCount = 0, 
 	lastUpdate = Date.now(),
 	mouseDown = false;
 
@@ -210,14 +245,14 @@ function cjsloop() {
 	var now = Date.now(); 
 	var elapsedMils = now - lastUpdate; 
 	
-	
 	if((typeof window.draw == 'function') && (elapsedMils>=(1000/window.frameRate))) {
 		window.draw(); 
-		
+		frameCount++;
 		lastUpdate = now - elapsedMils % (1000/window.frameRate );
 		lastMouseX = mouseX; 
 		lastMouseY = mouseY; 		
 	}
+	
 	
 	requestAnimationFrame(cjsloop);
 

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var Wave = function(_gapsize) {
+
+	ctx.strokeStyle = rgba(0,0,0,0.8);
+	ctx.lineWidth = 2;
+
+	this.particles = [];
+	particles = this.particles;
+	var radius = 220;
+	// var c = 0;
+	this.num_particles = 50;
+	num_particles = this.num_particles;
+	this.gapsize = _gapsize;
+	gapsize = this.gapsize;
+
+	this.draw = function(){
+		//console.log(audioChannelVolume.length) //256
+		var ratio = w/audioChannelVolume.length;
+		ctx.clearRect(0, 0, w, h);
+		this.moveParticles();
+
+	}
+
+	this.addParticle = function(_x, _y, _colour, _me){
+		var particle = {
+			x: _x,
+			y: 0,
+			c: _colour,
+			me: _me,
+			speedx: 0.2,
+			speedy: random(2,20),
+			sz: 15,
+			angle: radians(-90+_me*360/num_particles)
+		}
+		//particle.x = w/2 + (particle.sz/2+radius) * Math.cos(particle.angle);
+		particle.y = h/2 + (particle.sz/2 + radius) * Math.sin(particle.angle);
+		particle.startx = particle.x;
+		particle.starty = particle.y;
+		this.particles.push(particle);
+	}
+	
+	this.setup = function(){
+		for (var i = 0; i < num_particles; i++) {
+		    var cc = rgba(random(25),random(255),0, 0.5);
+		    var x = Math.floor(i*w/num_particles); 
+			this.addParticle(x, random(55), cc, i);
+		}
+	}
+
+	this.moveParticles = function(){
+		var angle = audioChannelVolume[50];
+		//console.log(angle);
+		for (var i = 0; i < particles.length; i++) {
+			
+			p = particles[i];
+			var me = Math.floor(p.me*360/num_particles); 
+			p.angle += radians(angle/15); 
+			radius = audioChannelVolume[p.me];
+			
+			var r = radius;
+			p.sz = tween(p.sz, map(radius,0, 100, 6, 18), 2);
+			//p.x = w/2 + (200) * Math.cos(p.angle);
+			p.y = h/2 + (100) * Math.sin(p.angle);
+			ctx.fillStyle = rgba(0,0,0,1);
+			ctx.fillEllipse(p.x, p.y-this.gapsize, p.sz, p.sz);
+
+			var s = map(audioChannelVolume[Math.floor(me)],0,20, 0, 20);
+			
+			ctx.line(p.x, p.y, p.x, p.y-2*this.gapsize);
+			ctx.fillStyle = rgba(0,0,0,1);
+			ctx.fillEllipse(p.x, p.y-2*this.gapsize, p.sz, p.sz);
+
+			ctx.fillStyle = rgba(0,0,0,1);
+			ctx.fillEllipse(p.x, p.y, p.sz, p.sz);
+
+			ctx.fillStyle = rgba(0,0,0,1);
+			ctx.fillEllipse(p.x, p.y+this.gapsize, p.sz, p.sz);
+
+			ctx.line(p.x, p.y, p.x, p.y+2*this.gapsize);
+			ctx.fillStyle = rgba(0,0,0,1);
+			ctx.fillEllipse(p.x, p.y+2*this.gapsize, p.sz, p.sz);
+
+		};
+
+	}
+
+this.setup();
+
+}
+
+
+
+
+
+
+
+
+var g = 10;
+var dir = posNeg();
+
+var wave1 = new Wave(g);
+
+
+function draw(){
+	//if (g < 100 && g > 0) g = g + dir;
+	if (g > h/2 || g < 10) dir*=-1;
+	//var g = randomInt(30,280)
+	wave1.gapsize = tween(wave1.gapsize, g, 5);
+	wave1.draw();
+	g = g + 2*dir;
+	//console.log(g)
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
