@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+ <!-- gridmaker yeah! -->  
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var Wave = function(_me, _num_particles) {
+
+	ctx.strokeStyle = rgba(0,0,0,0.8);
+	var particles = [];
+	var radius = 150;
+	var me = _me;
+	var rot = 0;
+	var num_particles = _num_particles;
+
+	this.setup = function(){
+	
+  		r = Math.sqrt(i) / Math.sqrt(num_particles);
+		for (var i = 0; i < num_particles; i++) {
+			var b = random(100,225);
+			var g = random(100,225);
+		    var cc = rgba(0, g, b, 1);
+		    var x = w/2;
+		    var y = h/2;
+		    var z = 10;
+		    dir = 1;
+			this.addParticle(x, y, z, dir, cc, i);
+		}
+	}
+
+	this.backAndForth = function(p){
+	p.z += p.speed*p.dir;
+	if (p.z > 100){
+		p.z = 100;
+		p.dir = -1;
+	}else if (p.z < 0){
+		p.z = 0;
+		p.dir = 1;
+	}
+
+	var scaleRatio = focalLength/(focalLength + p.z);
+	p._x = p.origin_x + p.x * scaleRatio;
+	p._y = p.origin_y + p.y * scaleRatio;
+	p._xscale = p._yscale = 100 * scaleRatio;
+	//this.swapDepths(-p.z);
+};
+
+	this.draw = function(){
+		this.moveParticles();
+		
+	}
+
+	this.addParticle = function(_x, _y, _z, _dir, _colour, _me){
+		var sw = 12 * _me + 12;
+		var particle = {
+			x: _x,
+			y: _y,
+			origin_x: _x,
+			origin_y: _y,
+			z: _z,
+			_x: _x,
+			_y: _y,
+			scale_x: 1,
+			scale_y: 1,
+			origin_x: 150,
+			origin_y: 150,
+			dir: _dir,
+			c: _colour,
+			me: _me,
+			stroke_width: sw,
+			speedx: 1,
+			speed: 1,
+			speedy: random(2,10),
+			sz: 1,
+			angle: 0
+		}
+		//particle.x = particle.x/particle.z;
+		//particle.y = particle.y/particle.z;
+		console.log(particle.z)
+		particles.push(particle);
+	}
+	
+
+	this.moveParticles = function(){
+
+		for (var i = 0; i < particles.length; i++) {
+			
+			p = particles[i];
+			this.backAndForth(p);
+			log(p.z)
+			// //DISTRIBUTED MAPPED SOUND VALUE  
+			var s = mapSound(p.me, num_particles);
+			// p.speedx = tween(p.speedx, map(s, 0, 155, 0, 10), 5);
+			// radius = tween(radius, map(s, 0, 255, 0, 220), 5);
+			
+			// p.angle += p.speedx/140;
+			// p.x = w/2 + radius * Math.cos(p.angle);
+			// p.z = 2*Math.sin(p.angle);
+			// p.y = h/2;
+			// //p.sz = 20/p.z;
+			// // DRAW ARCS
+			 ctx.fillStyle = rgb(0);
+			//ctx.fillStyle = rgb(100-map(s, 0, 255, 0, 255));
+			//ctx.fillStyle = p.c;
+			ctx.fillEllipse (p.x, p.y+p.sz*p.z, p.sz*p._xscale, p.sz*p._yscale);
+			//ctx.fillEllipse (p._x, p._y+p.sz*p.z, 100, 100);
+			
+		};
+		
+
+	}
+
+this.setup();
+
+}
+
+
+// SETUP WAVES CLASS
+
+var waves = [];
+var grid_w = 1;
+var grid_h = 1;
+var num_waves = grid_w * grid_h;
+var spacing_x = w/grid_w;
+var spacing_y = h/grid_h;
+var focalLength = 100;
+console.log(spacing_x)
+console.log(spacing_y)
+var grid = makeGrid(grid_w, grid_h);
+var num_particles = 1;
+for (var i = 0; i < num_waves; i++) {
+	var rr = 80 + 20*i;
+	var n = 22 + 10*i;
+	console.log(rr)
+	waves[i] = new Wave(i, num_particles);
+};
+
+
+
+// DRAW WAVES CLASS
+
+function draw(){
+	ctx.clearRect(0, 0, w, h);
+	// ctx.fillStyle = rgba(255, 255, 255, 0.08);
+	// ctx.fillRect(0, 0, w, h);
+	for (var i = 0; i < num_waves; i++) {
+		waves[i].draw();
+	};
+}
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
+ 
