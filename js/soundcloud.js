@@ -161,6 +161,7 @@ function mapSound(_me, _total){
 
   // HACK TO BECAUSE HIGHER VALUES NEVER HAVE DATA
   var new_me = Math.floor(_me / _total * 110); 
+  //console.log(_total + " _me: "+ _me + " new_me: "+ new_me);
   //var new_me = Math.floor(map(_me, 0, _total, 0, 256));
   return audioChannelVolume[new_me];
 }
@@ -207,10 +208,11 @@ function createAudioElement(audio_name){
 
 
 var audioChannelVolume = [];
+var volume = [];
 var audioRender = function () { 
 if (audioCtxCheck) {
   for (var i = audioSource.streamData.length - 1; i >= 0; i--) {
-    audioChannelVolume[i] = audioSource.streamData[i];
+    audioChannelVolume[i] = volume[i] = audioSource.streamData[i];
   }
 }
 

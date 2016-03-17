@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var iStarSize = 150;
+var iCanvasWidth = 500;
+var iCanvasHeight = 500;
+var context, canvas;
+var x, y;
+var degrees = 0.0;
+var dx, dy;
+x = y = 1;
+dx = dy = 4;
+
+
+
+// DRAW WAVES CLASS
+
+function setup(){
+
+
+/*if (y + dy > iStarSize/2 || y + dy < -iStarSize/2) // for future
+dy = -dy;
+y += dy;*/
+
+
+}
+
+
+function draw() {
+    ctx.fillStyle = "#FFDE58";
+	ctx.fillRect(0, 0, w, h);
+    ctx.save();
+
+    degrees += 0.1;
+if (x + dx > iStarSize/2 || x + dx < -iStarSize/2)
+dx = -dx;
+x += dx;
+x = mouseX- w/2;
+    // set initial position
+    //ctx.translate( w/2, 0 );
+
+    // set the style properties
+    ctx.fillStyle = '#bbb';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+
+    // starting custom object - star
+    //ctx.beginPath();
+
+    // you can uncomment it to add ordinary rotate
+    //context.rotate(degrees);
+
+    // changing necessary points to simulate 3d rotating
+    // ctx.moveTo( 0, -iStarSize );
+    // ctx.lineTo( iStarSize / 10 - x / 5, - iStarSize / 5 );
+    // ctx.lineTo( iStarSize / 2 - x, 0 );
+    // ctx.lineTo( iStarSize / 10 - x / 5, iStarSize / 5 );
+    // ctx.lineTo( 0, iStarSize );
+    // ctx.lineTo( -iStarSize / 10 + x / 5, iStarSize / 5 );
+    // ctx.lineTo( -iStarSize / 2 + x, 0 );
+    // ctx.lineTo( -iStarSize / 10 + x / 5, - iStarSize / 5 );
+    // ctx.lineTo( 0, -iStarSize );
+
+    ctx.HstrokeEllipse(w/2, h/2+10, x, h-10);
+    ctx.HstrokeEllipse(w/2, h/2+10, x/1.5, h-10);
+    ctx.HstrokeEllipse(w/2, h/2+10, x/2, h-10);
+    ctx.HstrokeEllipse(w/2, h/2+10, x/3, h-10);
+    ctx.HstrokeEllipse(w/2, h/2+10, x/4, h-10);
+    ctx.HstrokeEllipse(w/2, h/2+10, x/5, h-10);
+    // add shadow to object
+    // ctx.shadowOffsetX = 10;
+    // ctx.shadowOffsetY = 10;
+    // ctx.shadowBlur    = 4;
+    // ctx.shadowColor   = 'rgba(180, 180, 180, 0.8)';
+
+    // fill shape, draw stroke
+    //ctx.fill();
+    // ctx.stroke();
+    // ctx.closePath();
+
+    //ctx.restore();
+
+}
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ 	
+ 	<script src='http://connect.soundcloud.com/sdk.js'></script>
+ 	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ 
+ </head>
+
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 2;
+var img = new Image();
+var img_w, img_h, img_scale;
+img.src = 'img/people/stevie-nicks2.jpg';
+
+
+var Wave = function(_num_particles, _h, _x, _y, _me, _num_waves) {
+
+	ctx.strokeStyle = rgba(0,0,0,0.8);
+	var particles = [];
+	var radius = 50;
+	var rot = 0;
+	var num_particles = _num_particles;
+	var num_waves = _num_waves;
+	var x = _x;
+	var hh = _h;
+	var y = _y;
+	var me = _me;
+	var total = num_particles*_me;
+	//console.log(total)
+
+	this.setup = function(){
+		for (var i = 0; i < num_particles; i++) {
+			var cc = rgb(random(255/40)*40);
+			//var cc = chance(2)? rgb(0):rgb(255);
+		    //var cc = rgba(0, random(125), random(150,235), 1);
+		    //if (chance(5)) cc = rgb(255,255,255);
+			this.addParticle(hh, random(50), y, cc, total);
+		}
+	}
+
+	this.draw = function(){
+		this.moveParticles();
+	}
+
+	this.addParticle = function(_hh, _x, _y, _colour, _me){
+		var particle = {
+			x: _x,
+			y: _y,
+			c: _colour,
+			me: _me,
+			w: img.width,
+			h: _hh,
+			stroke_width: 4,
+			speedx: 0,
+			speedy: random(2,20),
+			sz: radius+ _me*26,
+			dir: chance(2)? 1:-1
+		}
+		//console.log(_me);
+		particles.push(particle);
+	}
+	
+
+	this.moveParticles = function(){
+
+		for (var i = 0; i < particles.length; i++) {
+			p = particles[i];
+			ctx.save();
+
+			//DISTRIBUTED MAPPED SOUND VALUE  
+			var s = mapSound(p.me, num_waves* num_particles);
+			
+			//console.log(s)
+			//p.x = tween(p.x, p.x + p.dir * map(s, 0, 155, 0, 10)-4, 2);
+			if (p.x + p.w > w - x_offset) {p.dir *= -1};
+			if (p.x + x_offset < 0) p.dir *= -1;
+
+			// DRAW BLOCKS
+			ctx.shadowColor = '#444';
+			ctx.shadowBlur = 1;
+			ctx.shadowOffsetX = 1;
+			ctx.shadowOffsetY = 1;
+			ctx.drawImage( img, 
+			0, p.y, p.w, p.h - i*3, 
+			x_offset-s/2 + p.x + s, 40+p.y, p.w, p.h - i*3 );			
+			ctx.fill();
+			ctx.restore();
+			
+		};
+
+	}
+
+this.setup();
+
+}
+
+
+// SETUP WAVES CLASS
+
+var waves = [];
+var grid_w = 1;
+var grid_h = 80;
+var num_waves = grid_w * grid_h;
+var spacing_x = w/grid_w;
+var spacing_y = h/grid_h;
+console.log(spacing_x)
+console.log(spacing_y)
+var grid = makeGrid(grid_w, grid_h);
+var num_particles = 1;
+var x_offset = 0;
+
+
+img.onload = function() {
+    var img_loaded;
+    img_w = img.width;
+    img_h = img.height;
+    img_scale = w/img_w;
+    //img.width = w;
+    //img.height= img.height * img_scale
+    x_offset = w/2 - img.width/2-50;
+    console.log(x_offset)
+    for (var i = 0; i < num_waves; i++) {	
+	waves[i] = new Wave(num_particles, spacing_y, grid[i][0]*spacing_x+spacing_x/2, grid[i][1]*spacing_y + i*4, i, num_waves);
+	};
+};
+
+
+
+// DRAW WAVES CLASS
+
+function draw(){
+	
+	ctx.clearRect(0, 0, w, h);
+	for (var i = 0; i < waves.length; i++) {
+		waves[i].draw();
+	};
+
+}
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

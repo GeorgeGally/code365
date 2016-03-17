@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ 	
+ 	<script src='http://connect.soundcloud.com/sdk.js'></script>
+ 	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ 
+ </head>
+
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var img = new Image();
+var img_w, img_h, img_scale;
+img.src = 'img/people/stevie-nicks2.jpg';
+
+
+// SETUP WAVES CLASS
+
+var grid_w = 6;
+var grid_h = 90;
+var num_particles = grid_w * grid_h;
+var spacing_x = w/grid_w;
+var spacing_y = h/grid_h;
+console.log(spacing_x)
+console.log(spacing_y)
+var grid = makeGrid(grid_w, grid_h);
+console.log(grid)
+var x_offset = 0;
+ctx.strokeStyle = rgba(0,0,0,0.8);
+var particles = [];
+var hh = spacing_y;
+
+	img.onload = function() {
+    var img_loaded;
+    img_w = img.width;
+    img_h = img.height;
+    img_scale = w/img_w;
+    x_offset = w/2 - img.width/2-50;
+    //console.log(x_offset)
+		for (var i = 0; i < num_particles; i++) {	
+	// waves[i] = new Wave(spacing_y, grid[i][0]*spacing_x+spacing_x/2, grid[i][1]*spacing_y + i*4, i, num_waves);
+
+			var cc = rgb(random(255/40)*40);
+			//var cc = chance(2)? rgb(0):rgb(255);
+
+			addParticle(spacing_y, grid[i][0]*spacing_x, grid[i][1]*spacing_y + i*1, cc, i);
+		}
+	}
+
+	draw = function(){
+		ctx.clearRect(0, 0, w, h);
+		moveParticles();
+	}
+
+
+	addParticle = function(_hh, _x, _y, _colour, _me){
+		var particle = {
+			x: _x,
+			y: _y,
+			c: _colour,
+			me: _me,
+			w: img.width/grid_w,
+			h: _hh,
+			stroke_width: 4,
+			speedx: 0,
+			speedy: random(2,20),
+			dir: chance(2)? 1:-1,
+			snd: 0
+		}
+		console.log(_hh);
+		particles.push(particle);
+	}
+	
+
+	moveParticles = function(){
+		
+		for (var i = 0; i < particles.length; i++) {
+			p = particles[i];
+			p.snd = mapSound(p.me, num_particles);
+		}
+
+		if (chance(10)) sortArrOfObjectsByParam(particles, "snd", false);
+		for (var i = 0; i < particles.length; i++) {
+			p = particles[i];
+			ctx.save();
+
+			//DISTRIBUTED MAPPED SOUND VALUE  
+			//var s = mapSound(p.me, num_particles);
+			
+			//console.log(s)
+			//p.x = tween(p.x, p.x + p.dir * map(s, 0, 155, 0, 10)-4, 2);
+			if (p.x + p.w > w - x_offset) {p.dir *= -1};
+			if (p.x + x_offset < 0) p.dir *= -1;
+
+			// DRAW BLOCKS
+			// ctx.shadowColor = '#444';
+			// ctx.shadowBlur = 1;
+			// ctx.shadowOffsetX = 1;
+			// ctx.shadowOffsetY = 1;
+			ctx.drawImage( img, 
+			p.x, grid[i][1]*spacing_y, p.w, p.h, 
+			spacing_x/2 + p.x, 50 + p.y, p.w, p.h);			
+			ctx.fill();
+			ctx.restore();
+			
+		};
+
+	}
+
+function sortArrOfObjectsByParam(arrToSort /* array */, strObjParamToSortBy /* string */, sortAscending /* bool(optional, defaults to true) */) {
+    if(sortAscending == undefined) sortAscending = true;  // default to true
+    
+    if(sortAscending) {
+        arrToSort.sort(function (a, b) {
+            return a[strObjParamToSortBy] > b[strObjParamToSortBy];
+        });
+    }
+    else {
+        arrToSort.sort(function (a, b) {
+            return a[strObjParamToSortBy] < b[strObjParamToSortBy];
+        });
+    }
+}
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

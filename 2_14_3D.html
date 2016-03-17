@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <style>
+
+ .block { 
+ 	width: 100px;
+ 	height: 100px;
+ 	display: block;
+ 	background: #eee;
+ 	border: 1px solid #fff;
+ 	position: absolute;
+ 	box-shadow: 5px 5px 2px rgba(10,10,10, 0.2);
+ }
+ </style>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+ <!-- gridmaker yeah! -->  
+
+<script>
+
+
+var points = [];
+var cameraView = [];
+cameraView.x = 0;
+cameraView.y = -100;
+cameraView.z = 0;
+cameraView.velocity = 0;
+focalLength = 500;
+var particles = [];
+var radius = 100;
+var rot = 0;
+var num_particles = 8;
+var w, h, width, height;
+var angleStep = 2*Math.PI/8;
+var spin = 0;
+
+function resize(){
+	width = w = window.innerWidth;
+	height = h = window.innerHeight;
+	console.log("resize: " + w +":" + h);
+}
+resize();
+
+setup = function(){
+	
+  
+	for (var i = 0; i < num_particles; i++) {
+		var b = random(100,225);
+		var g = random(100,225);
+		var cc = rgba(0, g, b, 1);
+		var x = 0;
+		var y = h;
+		var z = 10;
+		dir = 1;
+		this.addParticle(x, y, z, dir, cc, i);
+	}
+
+}
+
+
+draw = function(){
+	spin -= (w/2-mouseX)/10000;
+	this.moveParticles();	
+}
+
+this.addParticle = function(_x, _y, _z, _dir, _colour, _me){
+
+	var sw = 12 * _me + 12;
+		var particle = {
+		x: _x,
+		y: _y,
+		z: _z,
+		scale_x: 1,
+		scale_y: 1,
+		c: _colour,
+		me: _me,
+		angle: angleStep * _me,
+		}
+
+		particles.push(particle);
+		var p = document.createElement('div');
+		p.id = particle.me;
+		p.setAttribute('class', 'block');
+		document.body.appendChild(p);
+	}
+
+
+this.moveParticles = function(){
+
+	for (var i = 0; i < particles.length; i++) {
+			
+		p = particles[i];
+			
+		var angle = p.angle + spin;
+		var x = Math.cos(angle)*radius;
+		var z = Math.sin(angle)*radius;
+		var y = p.y;
+	
+		var scaleRatio = focalLength/(focalLength + z);
+		p.x =  x * scaleRatio;
+		var _y = y * scaleRatio/2;
+		p.xscale = p.yscale = 100 * scaleRatio;
+		p.xscale *= Math.sin(angle);
+		// // this.swapDepths(Math.round(-z));
+
+
+	//DISTRIBUTED MAPPED SOUND VALUE  
+	var s = mapSound(p.me, num_particles);
+	
+	//DRAW BOXES
+	$("#" + p.me).css('width', p.width * p.xscale); 
+	$("#" + p.me).css('height', p.height * p.yscale); 
+	$("#" + p.me).css('left', w/2 + p.x); 
+	$("#" + p.me).css('top', _y);
+	$("#" + p.me).css('z-index', 1000 + Math.round(-p.z*5)); 
+		
+	};
+		
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
+ 

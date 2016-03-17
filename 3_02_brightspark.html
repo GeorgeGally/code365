@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+// SETUP WAVES CLASS
+
+var waves = [];
+var grid_w = 320;
+var grid_h = 240;
+var num_waves = grid_w * grid_h;
+var spacing_x = 20;
+var spacing_y = 20;
+var grid = makeGrid(grid_w, grid_h);
+ctx.strokeStyle = rgba(0,0,0,0.8);
+var particles = [];
+var loaded = 0;
+var imgData;
+var img = new Image();
+img.src = 'img/people/stevie-nicks1.jpg';
+img.onload = function() {
+	loaded = 1;
+	ctx.drawImage(img, 0, 0, w, h);
+	imgData = ctx.getImageData(0, 0, w, h).data;
+	ctx.clearRect(0, 0, w, h);
+}
+	function draw(){
+		if (loaded == 1) {
+
+
+	//ctx.fillStyle = rgb(0);
+	//ctx.fillRect(0, 0, w, h);
+	// ctx.fillStyle = rgb(255);
+	//ctx.clearRect(0, 0, w, h);
+	var i = 0;
+	//for (var y = 0; i < Things.length; i++) {
+
+	for (var y = 0; y < h; y+=spacing_y) {
+
+		for (var x = 0; x < w; x+=spacing_x) {
+			var s = mapSound(i, num_waves);
+			var pt = (x + y * w)*4;
+			//if (brightness(imgData[pt],imgData[pt+1],imgData[pt+2]) < 50) { 
+			//var cc = rgb(imgData[pt],imgData[pt+1],imgData[pt+2]);
+			
+			if (s>100 && brightness(imgData[pt],imgData[pt+1],imgData[pt+2]) < 50) {
+				//console.log(s);
+				var c = random(225);
+		    	var cc = rgba(c, c, c, 1);
+		    	var sx = (s-130)/10;
+		    	var sy = -s/10;
+		    	addParticle(x, y, cc, particles.length+1, sx, sy, s/40);
+			}
+			i++;
+		};
+	};
+
+	moveParticles();
+}
+	}
+
+	addParticle = function(_x, _y, _colour, _me, _sx, _sy, _sz){
+		var particle = {
+			x: _x,
+			y: h-_y + 50,
+			c: _colour,
+			me: _me,
+			speedx: _sx,
+			speedy: _sy,
+			sz: _sz,
+			dir: -1*_me%2
+		}
+		particles.push(particle);
+	}
+	
+
+	moveParticles = function(){
+
+		for (var i = 0; i < particles.length ; i++) {
+			
+			p = particles[i];
+
+			//DISTRIBUTED MAPPED SOUND VALUE  
+			
+			p.x += p.speedx;
+			p.y += p.speedy;
+			p.sz *= 0.82;
+			// console.log(s)
+			// if (s == 0) s = random(100)
+			// DRAW DOTS
+			// ctx.shadowColor = rgba(80,80,80, 0.5);
+			// ctx.shadowBlur = 2;
+			// ctx.shadowOffsetX = 2;
+			// ctx.shadowOffsetY = 2;
+	
+			ctx.fillStyle = rgb(0);
+			ctx.fillEllipse(p.x, p.y, p.sz, p.sz);
+			if (p.y > h || p.y < 0 || p.sz < 0.3) {
+				particles.splice(i,1);
+			}
+
+			
+		};
+
+	}
+
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

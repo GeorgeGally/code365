@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ 	<script src='http://connect.soundcloud.com/sdk.js'></script>
+ 	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/three.min.js"></script>	
+	<script language="javascript" src="js/Detector.js"></script>
+	<script language="javascript" src="js/three_setup.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var h, color, sprite, size;
+var materials = [];
+var particles;
+var particle_count = 160;
+
+function init() {
+
+	//scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+	geometry = new THREE.Geometry();
+	sprite = THREE.ImageUtils.loadTexture( "img/disc.png" );
+
+			for ( i = 0; i < particle_count; i ++ ) {
+
+				var vertex = new THREE.Vector3();
+				vertex.x = random(-1,1);
+				vertex.y = random(-1,1);
+				vertex.z = random(-1,1);
+				var d = 1 / Math.sqrt(Math.pow(vertex.x, 2) + Math.pow(vertex.y, 2) + Math.pow(vertex.z, 2));
+				vertex.x *= d;
+				vertex.y *= d;
+				vertex.z *= d;
+				vertex.x = 0;
+				vertex.y = 0;
+				vertex.z = 0;
+				geometry.vertices.push( vertex );
+
+				materials[i] = new THREE.PointCloudMaterial( { 
+					size: vertex.z/20, 
+					//sizeAttenuation: false, 
+					map: sprite, 
+					alphaTest: 0.5, 
+					transparent: true 
+					});
+				materials[i].color.setHSL( 1.0, 0.3, 0.7 );
+				particles = new THREE.PointCloud(geometry, materials[i]);
+				particles.rotation.x = random(60);
+				particles.rotation.y = random(60);
+				particles.rotation.z = random(60);
+				scene.add( particles );
+	}
+		
+	renderer.setClearColor( 0xffffff );
+	//particles = new THREE.PointCloud( geometry, materials );
+
+
+
+	
+	//console.log(particles)
+}
+
+
+function draw() {
+	// scene.rotation.y += (mouseX - windowHalfX ) * 0.0002;
+	scene.rotation.y += 0.002;
+	camera.position.x += ( mouseX - windowHalfX - camera.position.x ) * 0.85;
+	camera.position.y += ( - mouseY - windowHalfY - camera.position.y ) * 0.45;
+	camera.lookAt( scene.position );
+
+	for (var i = 0; i < particle_count; i++) {
+		h = mapSound(i, particle_count); 
+		v = particles.geometry.vertices[i];
+		if (h > 80) {
+		materials[i].color.setHSL( h, 0.7, 0 );
+		
+		
+		v.z = tween(v.z, Math.sin(h)*h*1.6, 5);
+		v.x = tween(v.z, Math.sin(h)*h*1.4, 2);
+		v.y = tween(v.z, Math.sin(i)*h*1.4, 2);
+		materials[i].size = Math.sin(h)*h*0.4;
+	} else {
+		v.z = 0;
+		materials[i].size = 0.1;
+	}
+		
+		//v.y = h*20
+		//		i++;
+
+	}
+	
+	particles.geometry.verticesNeedUpdate = true;
+	renderer.render( scene, camera );
+
+}
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

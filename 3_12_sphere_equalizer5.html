@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var particles = [];
+var radius = 190;
+var c = 0;
+var num_particles = 1280;
+//ctx.translate(0.5, 0.5);
+
+for (var i = 0; i < num_particles; i++) {
+
+    // var cc = rgba(random(25),random(255),0, 0.5);
+    var m = map(i, 0, num_particles, 0, 360);
+    var cc = hsl(m, 96, 60);
+    //var cc = rgb(0);
+	addParticle(random(55), random(55), cc, i);
+
+}
+
+
+function draw(){
+
+	ctx.fillStyle = rgb(0);
+	ctx.fillRect(0, 0, w, h);
+	moveParticles();
+	ctx.fillStyle = rgba(0,0,0,1);
+	//ctx.HfillEllipse(w/2, h/2, radius-8, radius-8);
+	
+}
+
+
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: w/2,
+		y: h/2,
+		xx: w/2,
+		yy: h/2,
+		c: _colour,
+		me: _me,
+		r: 0,
+		r2: 0,
+		me2: (_me + randomInt(-30,30))%num_particles,
+		speedx: random(-2,2)/2,
+		speedy: random(2,20),
+		sz: 0,
+		angle: radians((_me*4.6))
+	}
+
+	particles.push(particle);
+}
+
+function moveParticles(){
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		var r =  radius + map(volume[(p.me+randomInt(-40,40))%140], 0,200,
+			-120, 180);
+		p.r = tween(p.r, r, 22);
+		
+		p.xx = p.x + p.r * Math.cos(p.angle);
+		p.yy = p.y + p.r * Math.sin(p.angle);
+
+		ctx.strokeStyle = rgb(255);
+		
+		if(i>0) {
+			ctx.line(p.xx, p.yy, particles[(i-1)].xx, particles[(i-1)].yy);
+		} else {
+			ctx.line(p.xx, p.yy, particles[0].xx, particles[0].yy);
+		}
+		
+		ctx.fillStyle = p.c;
+		ctx.fillEllipse(p.xx, p.yy, p.r/10, p.r/10);
+		ctx.lineWidth = 2;			
+		
+		ctx.strokeStyle = rgb(0);
+		ctx.strokeEllipse(p.xx, p.yy, p.r/10, p.r/10);
+		
+		};
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

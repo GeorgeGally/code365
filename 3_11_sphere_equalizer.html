@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var particles = [];
+var radius = 320;
+var c = 0;
+var num_particles = 780;
+//ctx.translate(0.5, 0.5);
+
+for (var i = 0; i < num_particles; i++) {
+
+    // var cc = rgba(random(25),random(255),0, 0.5);
+    var m = map(i, 0, num_particles, 0, 360);
+    var cc = hsl(m, 96, 60);
+    //var cc = rgb(0);
+	addParticle(random(55), random(55), cc, i);
+
+}
+
+
+function draw(){
+
+	ctx.fillStyle = rgb(255);
+	ctx.fillRect(0, 0, w, h);
+	moveParticles();
+	ctx.fillStyle = rgba(0,0,0,1);
+	//ctx.HfillEllipse(w/2, h/2, radius-8, radius-8);
+	
+}
+
+
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: w/2,
+		y: h/2,
+		xx: w/2,
+		yy: h/2,
+		c: _colour,
+		me: _me,
+		r: 0,
+		r2: 0,
+		me2: (_me + randomInt(-30,30))%num_particles,
+		speedx: random(-2,2)/2,
+		speedy: random(2,20),
+		sz: 0,
+		angle: radians((25.2*_me)%360)
+	}
+
+	particles.push(particle);
+}
+
+function moveParticles(){
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		var r = 2+ radius/2;
+		if (chance(10)) r =  map(mapSound(p.me2, num_particles+20), 0,200,
+			-50, 200);
+		p.r = tween(p.r, random(20,30) + r, 5);
+		if (r < p.r2) { p.r2 = tween(p.r2, r, 15);
+		} else {
+			p.r2 = tween(p.r2, r, 5);
+		}
+		x2 = p.x + (radius/2 * Math.cos(p.angle));
+		y2 = p.y + (radius/2 * Math.sin(p.angle));
+		x3 = p.x + p.r2 * Math.cos(p.angle);
+		y3 = p.y + p.r2 * Math.sin(p.angle);
+		p.xx = p.x + p.r * Math.cos(p.angle);
+		p.yy = p.y + p.r * Math.sin(p.angle);
+		// ctx.strokeWeight = 0;
+		ctx.fillStyle = rgb(0);
+		//ctx.fillEllipse(x3, y3, 8, 8);
+		ctx.lineWidth = 0.5;			
+		ctx.strokeStyle = rgb(0);
+		
+		if(i>0) {
+			ctx.line(particles[(i-1)].xx, particles[(i-1)].yy, p.xx,p.yy);
+		} else {
+			ctx.line(particles[0].xx, particles[0].yy, p.xx,p.yy);
+		}
+		};
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

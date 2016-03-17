@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+// SETUP WAVES CLASS
+var particles = [];
+var imgData;
+var t = 140;
+var num_particles = 8;
+var triangle = [];
+triangle.push({x:w/2+t, y:h/2+t/2});
+triangle.push({x:w/2-t, y:h/2+t/2});
+triangle.push({x:w/2, y:h/2-t});
+
+
+for (var i = 0; i < num_particles; i++) {
+	addParticle(w/2, h/2-t/2, rgb(0), i, posNeg()*random(0.6,2), posNeg()*random(0.6,2), 10);
+};
+
+
+function draw(){
+	var tt = t + audioChannelVolume[randomInt(255)]/65;
+	// ctx.fillStyle = rgba(255, 255, 255, 0.1);
+	// ctx.fillRect(0, 0, w, h);
+	ctx.clearRect(0, 0, w, h);
+	ctx.fillStyle = rgb(0);
+	ctx.fillTriangle(w/2+tt, h/2+tt/2, w/2-tt, h/2+tt/2, w/2, h/2-tt);
+	//ctx.fillStyle = rgb(255);
+	//ctx.fillRect(w/2-10, h/2-10, 20, 20);
+	moveParticles();
+
+	}
+
+
+function addParticle(_x, _y, _colour, _me, _sx, _sy, _sz){
+		var particle = {
+			x: _x,
+			y: _y + 50,
+			c: _colour,
+			me: _me,
+			speedx: _sx,
+			speedy: _sy,
+			sz: _sz,
+			dir: -1*_me%2
+		}
+		particles.push(particle);
+	}
+	
+
+function moveParticles(){
+
+		for (var i = 0; i < particles.length ; i++) {
+			
+			p = particles[i];
+			p.x += p.speedx;
+			p.y += p.speedy;
+
+			if(hittestWall(p, 0,0, w, h)) {
+				p.speedx *=-1;
+				p.speedy *=-1;	
+			}
+	
+			if (!pointIsInPoly(p, triangle)) {
+				
+				p.speedx *=-1;
+				p.speedy *=-1;
+				p.x += p.speedx;
+				p.y += p.speedy;
+
+			}
+			var s = mapSound(i, num_particles)/15;
+			ctx.fillStyle = rgb(255);
+			ctx.fillEllipse(p.x, p.y, p.sz+s, p.sz+s);
+			// if (p.y > h || p.y < 0 || p.sz < 0.8) {
+			// 	particles.splice(i,1);
+			// }
+
+			
+		};
+
+}
+
+function hittestWall(p, xmin, ymin, xmax, ymax){
+
+      if(p.x  > xmax - p.sz  || p.x  < xmin + p.sz || p.y  >  ymax - p.sz  || p.y < ymin + p.sz) {
+        return true;
+      }  
+}
+
+function hittestBall(p, p2){
+
+      if(p.x + p.sz/2  > p2.x - p2.sz/2  && p.x - p.sz/2 <  p2.x + p2.sz/2  && p.y + p.sz/2  >  p2.y - p2.sz/2  && p.y - p.sz/2 < p2.y + p2.sz/2) {
+        return true;
+      }  
+      
+   
+    }
+
+function pointIsInPoly(p, polygon) {
+    var isInside = false;
+    var minX = polygon[0].x, maxX = polygon[0].x;
+    var minY = polygon[0].y, maxY = polygon[0].y;
+    for (var n = 1; n < polygon.length; n++) {
+        var q = polygon[n];
+        minX = Math.min(q.x, minX);
+        maxX = Math.max(q.x, maxX);
+        minY = Math.min(q.y, minY);
+        maxY = Math.max(q.y, maxY);
+    }
+
+    if (p.x < minX || p.x > maxX || p.y < minY || p.y > maxY) {
+        return false;
+    }
+
+    var i = 0, j = polygon.length - 1;
+    for (i, j; i < polygon.length; j = i++) {
+        if ( (polygon[i].y > p.y + p.sz/2) != (polygon[j].y > p.y + p.sz/2) &&
+                p.x  < (polygon[j].x - polygon[i].x) * (p.y - p.sz/2 - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x ) {
+            isInside = !isInside;
+        }
+    }
+
+    return isInside;
+}
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

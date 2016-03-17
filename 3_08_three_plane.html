@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+
+ 	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/three.min.js"></script>
+	
+  <script language="javascript" src="js/Detector.js"></script>
+  <script language="javascript" src="js/three_setup.js"></script> 
+	
+	<script language="javascript" src="js/threejs/controls/PointerLockControls.js"></script>
+
+	<script language="javascript" src="js/threejs/controls/FirstPersonControls.js"></script>
+	<script language="javascript" src="js/controls.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+
+<script>
+
+  var POS_X = 10;
+  var POS_Y = 50;
+  var POS_Z = 10;
+  var clock;
+  var floor;
+  var scene, camera, renderer;
+  var geometry, material, mesh;
+  var havePointerLock = checkForPointerLock();
+  var controls, controlsEnabled;
+  var moveForward,
+      moveBackward,
+      moveLeft,
+      moveRight,
+      canJump;
+  var velocity = new THREE.Vector3();
+  // var footStepSfx = new Audio('sfx/footstep.wav');
+  // var ambienceSfx = new Audio('sfx/ambience.wav');
+  // ambienceSfx.preload = 'auto';
+  // ambienceSfx.loop = true;
+
+  init();
+
+
+  function init() {
+    initControls();
+    // initPointerLock();
+
+    //ambienceSfx.play();
+    //footStepSfx.preload = 'auto';
+    //footStepSfx.loop = true;
+
+    clock = new THREE.Clock();
+
+    scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0xb2e1f2, 0, 750);
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+    camera.position.y = 10;
+    camera.position.z = -10;
+
+    controls = new THREE.PointerLockControls(camera);
+    scene.add(controls.getObject());
+
+    // floor
+    floor = createFloor();
+    scene.add(floor);
+    addLights();
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0xb2e1f2);
+    document.body.appendChild(renderer.domElement);
+  }
+
+  function draw() {
+    // floor.updateMatrix();
+    // floor.overdraw = true;
+    updateControls();
+    renderer.render(scene, camera);
+  }
+
+  function createFloor() {
+    geometry = new THREE.PlaneGeometry(2000, 2000, 55, 55);
+    geometry.applyMatrix(new THREE.Matrix4().makeRotationX(- Math.PI/2));
+    var texture = THREE.ImageUtils.loadTexture('img/people/stevie-nicks1.jpg');
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(64, 64);
+    material = new THREE.MeshPhongMaterial({ 
+      color: '#e8e8e8', 
+      //map: texture,
+      shading:THREE.FlatShading,
+      //wireframe: true,
+      shininess: 0.2
+    });
+    geometry.dynamic = true;
+    vertices_count = geometry.vertices.length;
+    for (var i = 0; i < vertices_count; i++) {
+      geometry.vertices[i].z = geometry.vertices[i].z + random(-50,50);
+    }
+
+    return new THREE.Mesh(geometry, material);
+  }
+
+   function addLights() {
+
+    //light = new THREE.AmbientLight( 0x2a2a2a); // soft white light
+  //scene.add( light );
+    light = new THREE.DirectionalLight(0x333333, 3.5, 500 );
+    scene.add( light );
+    light.position.set(POS_X,POS_Y,POS_Z);
+  
+ }
+
+  
+
+
+</script>
+ 
+</body>
+</html>
