@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+
+ 
+  <style type="text/css">
+    .hexagon {
+  position: absolute;
+  margin: 1em auto;
+  width: 10em; height: 17.32em;
+  border-radius: 1em/.5em;
+  opacity: .95;
+  background: orange;
+  transition: opacity .5s;
+  cursor: pointer;
+  mix-blend-mode: multiply;
+}
+.hexagon:before, .hexagon:after {
+  position: absolute;
+  width: inherit; height: inherit;
+  border-radius: inherit;
+  background: inherit;
+  content: '';
+}
+.hexagon:before {
+  transform: rotate(60deg);
+}
+.hexagon:after {
+  transform: rotate(-60deg);
+}
+.hexagon:hover {
+  opacity: 0.6;
+}
+#holder { position: relative; }
+</style>
+
+ </head>
+ <body>
+
+
+    <style type="text/css">
+    .hexagon {
+  position: absolute;
+  margin: 1em auto;
+  width: 8em; height: 13.8em;
+  border-radius: 1em/.5em;
+  opacity: .95;
+  background: orange;
+  transition: opacity .5s;
+  cursor: pointer;
+  mix-blend-mode: multiply;
+}
+.hexagon:before, .hexagon:after {
+  position: absolute;
+  width: inherit; height: inherit;
+  border-radius: inherit;
+  background: inherit;
+  content: '';
+}
+.hexagon:before {
+  transform: rotate(60deg);
+}
+.hexagon:after {
+  transform: rotate(-60deg);
+}
+.hexagon:hover {
+  opacity: 0.6;
+}
+</style>
+</head>
+
+<body>
+ <div style="height: 600px;" class="row">
+    <div id="services_holder"></div>
+</div>
+  
+
+
+
+<script type="text/javascript">
+
+  var width = w = $(window).width();
+  var height = h = $(window).height();
+  var particles = [];
+  var cols = ['#fdea00', '#50bfe8', '#f06724', '#8cc640'];
+  var text_cols = ['#7e782f', '#2e6e7f', '#7f3319', '#5e7f38'];
+  var idea_w = $('#idea').width();
+  var labels = ['Business', 'Strategy', 'Distribution', 'Creative'];
+  var numParticles = 10;
+  
+  for (var i = 0; i < numParticles; i++) {
+      
+    addParticle( radians(i*360/numParticles), cols[i%4], labels[i], i);
+  
+  };
+
+  function addParticle(angle, col, label, me){
+        _x = 85 * Math.cos(angle)-40;
+        _y = 170 * Math.sin(angle)- h/5;
+        sz = random(200,300);
+        var particle = {
+        label: label,
+        x: _x, 
+        y: _y,
+        target_x: _x, 
+        target_y: _y,
+        txt_x: _x, 
+        txt_y: _y,
+        txt_target_x: _x, 
+        txt_target_y: _y,
+        c: col,
+        me: me,
+        target: sz,
+        dir: posNeg(), 
+        reduce: random(0.8, 0.9999), 
+        angle: angle 
+    };
+
+   
+
+    var b = "<div id='" + me + "' class='hexagon'> </div>";
+   
+    $("#services_holder").append(b);
+    $("#"+me).css({'margin-left': w/2 + particle.x});
+    $("#"+me).css({'margin-top':  h/2 + particle.y});
+
+    $("#"+me).css({background: col });
+    particles.push(particle);
+}
+
+
+function update(p){
+
+  swap = randomInt(3);
+  if (chance(100) &&  swap != p.me) {
+    //console.log(swap)
+    old_targetx = p.target_x;
+    old_targety = p.target_y;
+    p.target_x = particles[swap].target_x;
+    particles[swap].target_x = old_targetx;
+    p.target_y = particles[swap].target_y;
+    particles[swap].target_y = old_targety;
+
+  }
+  // p.angle +=  radians(p.speed * p.dir);
+  p.x = tween(p.x, p.target_x, 6);
+  p.y = tween(p.y, p.target_y, 6);
+
+  p.txt_x = tween(p.txt_x, p.txt_target_x, 6);
+  p.txt_y = tween(p.txt_y, p.txt_target_y, 6);
+
+  var id = "#"+ p.me;
+  var txt = "."+ p.me;
+  $(id).css({'margin-left': w/2 + p.x});
+  $(id).css({'margin-top':  h/2 + p.y});
+  $(txt).css({'margin-left': w/2 + p.txt_x});
+  $(txt).css({'margin-top':  h/2 + p.txt_y});
+}
+
+
+
+function draw(){
+
+      for (var i = particles.length - 1; i >= 0; i--) {
+        p = particles[i];
+        update(p);
+      }
+
+};
+
+
+
+</script>
+
+    </body>
+</html>

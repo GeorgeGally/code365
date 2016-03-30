@@ -208,6 +208,13 @@ function bounce(num, min, max) {
    return num > max ? -1 : num < min ? -1 : 1
 }
 
+function cross(_x, _y, _w, _h){
+	if (_w === undefined) _w =20;
+	if (_h === undefined) _h =60;
+	ctx.fillRect( _x - _w/2, _y - _h/2,  _w, _h);
+	ctx.fillRect( _x - _h/2, _y - _w/2,  _h, _w);
+}
+
 function makeGrid(_w, _h){
 	var grid = [];
 	var k = 0
@@ -221,6 +228,50 @@ function makeGrid(_w, _h){
 	return grid;
 }
 
+function createGrid(_gw, _gh, _w, _h){
+	var spacing_x = _w/_gw;
+	var spacing_y = _h/_gh;
+	var grid = [];
+	var k = 0
+	for (var y = 0; y < _gh; y++) {
+		for (var x = 0; x < _gw; x++) {
+		grid[k] = [x*spacing_x+ spacing_x/2, y*spacing_y+ spacing_y/2];
+		k++;
+		}
+	};
+	//console.log(grid);
+	return grid;
+}
+
+
+function pixelate(blocksize,blockshape) {
+  if (blockshape == undefined) blockshape = 0;
+  if (blocksize == undefined) blocksize = 20;
+    var imgData=ctx.getImageData(0,0,w,h); 
+    ctx.clearRect(0,0,w,h);
+    //var sourceBuffer8 = new Uint8Array(imgData.data.buffer);
+    //var sourceBuffer8 = new Uint8ClampedArray(imgData.data.buffer);
+    var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+    for(var x = 0; x < w; x += blocksize)
+    {
+        for(var y = 0; y < h; y += blocksize)
+        {
+
+          var pos = (x + y * w);
+          var b = (sourceBuffer32[pos] >> 16) & 0xff;
+          var g = (sourceBuffer32[pos] >> 8) & 0xff;
+          var r = (sourceBuffer32[pos] >> 0) & 0xff;
+          ctx.fillStyle = rgb(r,g,b);
+          if (blockshape == 0) {
+            ctx.fillRect(x, y, blocksize, blocksize);
+          } else {
+            ctx.fillEllipse(x, y, blocksize, blocksize);
+          };
+
+        }
+    }
+
+}
 
 var mousePressed = 0;
 document.onmousedown = function() { 

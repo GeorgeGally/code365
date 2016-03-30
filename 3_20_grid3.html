@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <style>
+body {
+	//background: radial-gradient(circle, #f7f7f7, #777);
+}
+ </style>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var particles = [];
+
+//ctx.translate(0.5, 0.5);
+var grid_w = 320;
+var grid_h = 5;
+var grid = createGrid(grid_w, grid_h, w,h);
+var num_particles = grid_w * grid_h;
+
+for (var i = 0; i < num_particles; i++) {	
+
+    var m = map(i, 0, num_particles, 0, 360);
+    var cc = hsl(m, 96, 60);
+	addParticle(grid[i][0], grid[i][1], cc, i);
+
+}
+
+
+function draw(){
+
+	//ctx.fillStyle = rgb(255,0,0);
+	//ctx.fillRect(0, 0, w, h);
+	ctx.clearRect(0, 0, w, h);
+	moveParticles();
+	//pixelate(5);
+}
+
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: _x,
+		y: _y,
+		xx: w/2,
+		yy: h/2,
+		c: _colour,
+		me: _me,
+		r: 0,
+		r2: 0,
+		me2: (_me + randomInt(-30,30))%num_particles,
+		speedx: random(-2,2)/2,
+		speedy: random(2,20),
+		sz: 0,
+		angle: radians((2.2*_me)%360)
+	}
+
+	particles.push(particle);
+}
+
+function moveParticles(){
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		// var sz =  map(audioChannelVolume[80 + (p.me2)%150], 0,200,
+		// 	-550, 0);
+		// if (sz < p.sz) {
+		// 	p.sz = sz;
+		// } else {
+			p.sz =  tween(p.sz, map(audioChannelVolume[20+(p.me2)%120], 0,200,
+			0,200)-100, 4);
+		//}
+		//p.angle = tween(p.angle,radians(6 * p.sz), 5);
+		//ctx.translate(p.x, p.y);
+		//ctx.rotate(p.angle);
+		// ctx.fillStyle = p.c;
+		ctx.lineWidth = 0;
+		//ctx.strokeEllipse(p.x, p.y, p.sz, p.sz);
+		//noStroke();
+		ctx.fillStyle = rgb(0);
+		ctx.fillRect( p.x, p.y, 2, -p.sz);
+		//cross(0, 0, 30, 100);
+		//ctx.fillStyle = "#fff";
+		//cross(0, 0, p.sz*0.5, p.sz*1.2);
+		// ctx.rotate(-p.angle); 
+		// ctx.translate(-p.x, -p.y);
+		};
+
+}
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
