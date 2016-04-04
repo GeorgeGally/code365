@@ -24,6 +24,8 @@ else {
     var audioCtx = new (window.AudioContext || window.webkitAudioContext);
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 256;
+    //analyser.fftSize = 1024;
+    analyser.smoothingTimeConstant = 0.3;
 
     var source = audioCtx.createMediaElementSource(player);
     source.connect(analyser);

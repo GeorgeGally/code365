@@ -67,7 +67,9 @@ p.line = function (x1, y1, x2, y2){
 // p.fill = function (f){
 // 	this.fillStyle = f; 
 // };
-
+p.strokeWeight = function(j){
+	this.lineWidth = j;
+}
  p.triangle = function(x1, y1, x2, y2, x3, y3) {
       this.beginPath(); 
       this.moveTo(x1, y1);
@@ -77,6 +79,16 @@ p.line = function (x1, y1, x2, y2){
       this.stroke(); 
       this.closePath();
  };
+
+ p.strokeTriangle = function(x1, y1, x2, y2, x3, y3) {
+ 	this.beginPath(); 
+     this.moveTo(x1, y1);
+     this.lineTo(x2, y2);
+     this.lineTo(x3, y3);
+     this.lineTo(x1, y1);
+     this.stroke(); 
+     this.closePath();
+}
 
  p.fillTriangle = function(x1, y1, x2, y2, x3, y3) {
       this.beginPath(); 

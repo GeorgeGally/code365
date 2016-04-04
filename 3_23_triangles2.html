@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+</head>
+
+<style>
+body {
+	//background: radial-gradient(circle, #f7f7f7, #777);
+	}
+</style>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var particles = [];
+var grid_w = 10;
+var grid_h = 1;
+var grid = createGrid(grid_w, grid_h, w/2,h);
+var num_particles = grid_w * grid_h;
+ctx.strokeWeight(10);
+
+for (var i = 0; i < num_particles; i++) {	
+	
+	var x = w/2 + (-1 + i) * 350;
+    var m = map(i, 0, num_particles, 0, 255);
+    var cc = hsl(m, 96, 60);
+	addParticle(w/2-w/4, grid[i][1]+100, cc, i, m);
+}
+
+var cc = hsl(m, 96, 60);
+//addParticle(w/2, h/2+100, cc, 4);
+
+function draw(){
+
+	ctx.fillStyle = rgba(255,255,255, 0.4);
+	ctx.fillRect(0, 0, w, h);
+	//ctx.clearRect(0, 0, w, h);
+	
+	ctx.fillStyle = rgb(0);
+	ctx.fillTriangle(p.x, p.y, w/2 + w/4, p.y, w/2, p.y - 300);
+	moveParticles();
+	//pixelate(5);
+
+}
+
+
+function addParticle(_x, _y, _colour, _me, _me2){
+	
+	var particle = {
+		x: _x,
+		y: _y,
+		xx: w/2,
+		yy: h/2,
+		c: _colour,
+		me: _me,
+		r: 0,
+		subparticles: [],
+		me2: _me2,
+		speedx: random(-2,2)/2,
+		speedy: random(2,20),
+		sz: 100,
+		angle: radians((2.2*_me)%360)
+	}
+	
+	particles.push(particle);
+
+}
+
+
+function moveParticles(){
+
+	for (var i = 0; i < particles.length; i++) {
+		
+		p = particles[i];
+		p.sz =  tween(p.sz, map(audioChannelVolume[p.me2], 0, 150,
+			0, 450), 8);
+		var sz = p.sz + 100*(particles.length- p.me);
+		if (p.me == 4) sz *= 1.5;
+		//ctx.lineWidth = 0;
+		//ctx.fillStyle = p.c;
+		//ctx.fillRect( p.x-5, p.y, 10, -p.sz);
+		//ctx.fillTriangle(p.x, p.y, p.x + sz, p.y, w/2, p.y - 300);
+		ctx.strokeStyle = rgb(255);
+		//ctx.strokeTriangle(p.x, p.y, p.x + sz, p.y, w/2, p.y - sz/2);
+		ctx.strokeTriangle(p.x-sz/3, p.y, p.x + sz/3, p.y, p.x, p.y - sz/2);
+	};
+
+}
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
