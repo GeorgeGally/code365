@@ -285,6 +285,43 @@ function pixelate(blocksize,blockshape) {
 
 }
 
+function triangulate(grid_w, grid_h) {
+  	var grid = createGrid(grid_w, grid_h, w, h);
+	var spaces = makeGrid(grid_w, grid_h);
+	var ww = w/grid_w;
+	var	hh = h/grid_h;
+	var num_particles = grid_w * grid_h;
+//console.log(ww)
+    var imgData=ctx.getImageData(0,0,w,h); 
+    ctx.clearRect(0,0,w,h);
+    //var sourceBuffer8 = new Uint8Array(imgData.data.buffer);
+    //var sourceBuffer8 = new Uint8ClampedArray(imgData.data.buffer);
+    var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+    var i =0;
+    for(var x = 0; x < w; x += grid_w)
+    {
+        for(var y = 0; y < h; y += grid_h)
+        {
+
+          var pos = (x + y * w);
+          var b = (sourceBuffer32[pos] >> 16) & 0xff;
+          var g = (sourceBuffer32[pos] >> 8) & 0xff;
+          var r = (sourceBuffer32[pos] >> 0) & 0xff;
+          ctx.fillStyle = rgba(r,g,b, 0.6);
+          ctx.fillRect(x, y, ww, hh);
+          if (i%2) {
+			//ctx.fillTriangle(x, y - hh, x, y + hh, x - ww, y );
+			} else {
+			//ctx.fillTriangle(x - ww, y - hh, x, y, x - ww , y + hh);
+
+			}
+
+			i++;
+        }
+    }
+
+}
+
 var mousePressed = 0;
 document.onmousedown = function() { 
   ++mousePressed;
