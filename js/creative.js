@@ -285,13 +285,20 @@ function pixelate(blocksize,blockshape) {
 
 }
 
-function triangulate(grid_w, grid_h) {
-  	var grid = createGrid(grid_w, grid_h, w, h);
-	var spaces = makeGrid(grid_w, grid_h);
-	var ww = w/grid_w;
-	var	hh = h/grid_h;
-	var num_particles = grid_w * grid_h;
-//console.log(ww)
+
+function triangulate(grid_w, grid_h, alpha) {
+
+	if (grid_h == undefined) {
+		grid_h = grid_w;
+	}
+
+	if (alpha == undefined) {
+		alpha = 0.8;
+	}
+
+	var ww = Math.ceil(w/grid_w);
+	var	hh = Math.ceil(h/grid_h);
+	//console.log(ww)
     var imgData=ctx.getImageData(0,0,w,h); 
     ctx.clearRect(0,0,w,h);
     //var sourceBuffer8 = new Uint8Array(imgData.data.buffer);
@@ -307,12 +314,12 @@ function triangulate(grid_w, grid_h) {
           var b = (sourceBuffer32[pos] >> 16) & 0xff;
           var g = (sourceBuffer32[pos] >> 8) & 0xff;
           var r = (sourceBuffer32[pos] >> 0) & 0xff;
-          ctx.fillStyle = rgba(r,g,b, 0.6);
-          ctx.fillRect(x, y, ww, hh);
+          ctx.fillStyle = rgba(r,g,b, alpha);
+
           if (i%2) {
-			//ctx.fillTriangle(x, y - hh, x, y + hh, x - ww, y );
+			ctx.fillTriangle(x, y - grid_h, x, y + grid_h, x - grid_w, y );
 			} else {
-			//ctx.fillTriangle(x - ww, y - hh, x, y, x - ww , y + hh);
+			ctx.fillTriangle(x - grid_w, y - grid_h, x, y, x - grid_w , y + grid_h);
 
 			}
 

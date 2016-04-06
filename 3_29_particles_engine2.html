@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+</head>
+<body>
+
+ <!-- gridmaker yeah! -->  
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var Particle = function(_me, _num_particles) {
+	
+	var particles =  [];
+	var particle = {
+	//particles: [],
+	me: _me,
+	num_particles: _num_particles
+	}
+
+	particles.push(particle);
+
+
+   var setup = function(){
+			
+	for (var i = 0; i < num_particles; i++) {
+		
+		r = Math.sqrt(i) / Math.sqrt(num_particles);
+		var b = random(100,225);
+		var g = random(100,225);
+		var cc = rgba(0, g, b, 1);
+		speedx = posNeg()*random(4);
+		speedy = posNeg()*random(4);
+		this.addParticle(w/2, h/2, speedx, speedy, cc, i);
+	}
+
+}
+
+}
+
+Particle.draw = function(){
+		this.moveParticles();
+}
+
+Particle.addParticle = function(_x, _y, _speedx, _speedy, _colour, _me){
+		var sw = 12 * _me + 12;
+		var particle = {
+			x: _x,
+			y: _y,
+			startx: _x,
+			starty: _y,
+			z: me,
+			c: _colour,
+			me: _me,
+			stroke_width: sw,
+			speedx: _speedx,
+			speedy: _speedy,
+			sz: 8,
+			angle: 0
+		}
+
+	particles.push(particle);
+
+}
+	
+Particle.moveParticles = function(){
+
+		for (var i = 0; i < particles.length; i++) {
+			
+			p = particles[i];
+
+			p.x += p.speedx; 
+			p.y += p.speedy; 
+
+			if (p.x > w || p.x < 0 || p.y > h || p.y < 0) {
+				p.y = p.starty;
+				p.x = p.startx;
+			}
+			
+			ctx.fillStyle = p.c;
+			ctx.fillEllipse (p.x, p.y, p.sz, p.sz);
+			
+		};
+		
+
+	}
+
+//Particle.setup();
+
+
+
+
+// SETUP WAVES CLASS
+
+var particles = [];
+var num_particles = 1;
+var num_sub_particles = 20;
+
+for (var i = 0; i < num_particles; i++) {
+	particles[i] = new Particle(i, num_sub_particles);
+};
+
+console.log("xxxxx" +particles[0].num_particles);
+
+// DRAW WAVES CLASS
+
+function draw(){
+	//ctx.clearRect(0, 0, w, h);
+	ctx.fillStyle = rgba(255, 255, 255, 0.8);
+	ctx.fillRect(0, 0, w, h);
+	for (var i = 0; i < particles.length; i++) {
+
+		particles[i].draw();
+	};
+}
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
+ 
