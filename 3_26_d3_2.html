@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/d3.js"></script>
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+</head>
+
+<style>
+body {
+	//background: radial-gradient(circle, #f7f7f7, #777);
+	}
+</style>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var particles = [];
+var grid_w = 1;
+var grid_h = 1;
+var grid = createGrid(grid_w, grid_h, w/2,h);
+var num_particles = grid_w * grid_h;
+ctx.strokeWeight(1);
+var margin = 100;
+
+var url = "data/places_2015-05.csv";
+d3.csv(url, function(data) {
+
+	var minXDataPoint = d3.min(data, function(d) { return d['Latitude'];});
+  	var maxXDataPoint = d3.max(data, function(d) { return d['Latitude'];});
+  	var minYDataPoint = d3.min(data, function(d) { return d['Longitude'];});
+  	var maxYDataPoint = d3.max(data, function(d) { return d['Longitude'];});
+
+  	var xScale = d3.scale.linear()
+        .domain([minXDataPoint, maxXDataPoint])
+        .range([ 0 + margin, w - margin]);
+
+var yScale = d3.scale.linear()
+        .domain([minYDataPoint, maxYDataPoint])
+        .range([0 + margin, h - margin]);
+
+
+    for (var i = 0; i < data.length; i++) {	
+	var x = xScale(data[i]['Latitude']);
+	var y = yScale(data[i]['Longitude']);
+	if (i > 0) {
+		start_x = xScale(data[i-1]['Latitude']);
+		start_y = yScale(data[i-1]['Longitude']);
+	} else {
+		start_x = x;
+		start_y = y;
+	}
+
+    var m = map(i, 0, data.length, 0, 360);
+    var cc = hsl(m, 96, 60);
+	addParticle(x, y, start_x, start_y, cc, i);
+}
+
+});
+
+
+var count = 0;
+
+function draw(){
+
+	//ctx.fillStyle = rgba(255,255,255, 0.4);
+	//ctx.fillRect(0, 0, w, h);
+	ctx.clearRect(0, 0, w, h);
+	if (particles.length> 0 ) moveParticles(count);
+	if (count > 0) drawParticles(count);
+	//pixelate(10);
+
+}
+
+
+
+function showParticles(){
+
+	//ctx.fillStyle = rgba(255,255,255, 0.4);
+	//ctx.fillRect(0, 0, w, h);
+	ctx.clearRect(0, 0, w, h);
+	// if (count < particles.length)
+	// moveParticles(i);
+	// count++;
+
+}
+
+
+function addParticle(_x, _y, _start_x, _start_y, _colour, _me){
+		
+	var particle = {
+		x: _start_x,
+		y: _start_y,
+		start_x: _start_x,
+		start_y: _start_y,
+		target_x: _x,
+		target_y: _y,
+		c: _colour,
+		me: _me,
+		move: true,
+		r: 0,
+		subparticles: [],
+		me2: (_me + randomInt(-30,30))%num_particles,
+		speedx: random(-2,2)/2,
+		speedy: random(2,20),
+		sz: 10,
+		angle: radians((2.2*_me)%360)
+	}
+	
+	particles.push(particle);
+
+}
+
+
+function moveParticles(_i){
+
+
+	//for (var i = 0; i < particles.length; i++) {		
+	p = particles[_i];
+	//console.log(Math.ceil(p.y/10) + " : " + Math.ceil(p.target_y/10));
+
+	if (Math.ceil(p.x/10) == Math.ceil(p.target_x/10) && Math.ceil(p.y/10) == Math.ceil(p.target_y/10) && p.move == true) {
+			// next
+			p.move = false;
+			console.log("next");
+			if (count < particles.length) count++;
+	}
+	p.x = tween(p.x, p.target_x, 10);
+	p.y = tween(p.y, p.target_y, 10);
+
+	ctx.fillStyle = "#57C5F1";
+	ctx.fillEllipse( p.x, p.y, p.sz, p.sz);
+	ctx.strokeStyle = "#f7f7f7";
+	ctx.strokeEllipse( p.x, p.y, p.sz, p.sz);
+
+}
+
+function drawParticles(count){
+
+
+	for (var i = 0; i < count; i++) {		
+	p = particles[i];
+	ctx.fillStyle = "#57C5F1";
+	ctx.fillEllipse( p.x, p.y, p.sz, p.sz);
+	ctx.strokeStyle = "#f7f7f7";
+	ctx.strokeEllipse( p.x, p.y, p.sz, p.sz);
+	}
+}
+
+
+</script>
+
+</body>
+</html>

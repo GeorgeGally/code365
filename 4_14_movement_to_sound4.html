@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/d3.js"></script>
+<script src="js/Tone.js"></script>
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<style>
+body {
+	//background: radial-gradient(circle, #f7f7f7, #777);
+	}
+</style>
+ <body>
+   
+<script>
+
+// MAKE A SYNTH
+
+var reverb = new Tone.JCReverb(0.5).connect(Tone.Master);
+var pingPong = new Tone.PingPongDelay("4n", 0.1).toMaster();
+var delay = new Tone.FeedbackDelay(0.5); 
+
+//var synth = new Tone.PolySynth(6, Tone.MonoSynth).toMaster();
+//var synth = new Tone.PolySynth(3, Tone.MonoSynth).toMaster();
+var synth = new Tone.SimpleAM().toMaster();
+
+//var synth = new Tone.PolySynth(2, Tone.DuoSynth).toMaster();
+//var synth = new Tone.PolySynth(4, Tone.SimpleAM).chain(pingPong, reverb)
+
+var ping = new Tone.PingPongDelay(.01, 0.1).toMaster();
+var filter = new Tone.Filter(700, "highpass").connect(ping);
+//var synth = new Tone.PolySynth(20, Tone.MonoSynth).connect(filter);
+//var synth = new Tone.AMSynth().toMaster();
+			//set the attributes using the set interface
+			synth.set({
+				volume: 15,
+				oscillator:{
+					type:"sine"
+				},
+				reverd: reverb,
+				filter:{
+					Q:3,
+					type:"lowpass",
+					rolloff:-24
+				},
+				envelope:{
+					attack:0.1,
+					decay:0,
+					sustain:1,
+					release:0.2
+				},
+				delay: delay, 
+				filterEnvelope:{
+					attack:0.9,
+					decay:0,
+					sustain:0.5,
+					release:0.6,
+					min:0,
+					max:50,
+					exponent:2,
+				}
+			});
+
+//var synth = new Tone.MonoSynth().toMaster();
+//var synth = new Tone.PolySynth(6, Tone.MonoSynth).toMaster();
+
+//synth.set("detune", -1200);
+
+// CHOOSE A SCALE
+
+//var scale = ['A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G#4', 'A4'];
+//var scale = ['C3', 'D3', 'E3', 'F3', 'G3', 'A3', 'B#3', 'C3'];
+//var scale =  ["C3", "D#3", "F3", "F#3", "G3", "A#3"];
+//var scale =  ["C2", "D#2", "F2", "F#2", "G2", "A#2","C3", "D#3", "F3", "F#3", "G3", "A#3"];
+//var scale =  ["C2", "D#2", "F2", "F#2", "G2", "A#2","C3", "D#3", "F3", "F#3", "G3", "A#3","C4", "D#4", "F4", "F#4", "G4", "A#4"];
+// var scale =  ["C1", "D#1", "F1", "F#1", "G1", "A#1","C2", "D#2", "F2", "F#2", "G2", "A#2","C3", "D#3", "F3", "F#3", "G3", "A#3","C4", "D#4", "F4", "F#4", "G4", "A#4"];
+//var scale =  ["C2", "D#2", "F2", "F#2", "G2", "A#2","C3", "D#3", "F3", "F#3", "G3", "A#3","C3", "D#3", "F3", "F#3", "G4", "A#4","C5", "D#5", "F5", "F#5", "G5", "A#5"];
+//var scale =  ["C2", "D#2", "F2", "F#2", "G2", "A#2"];
+var scale =  ["C3", "C4", "D#3","D#4", "F4", "F#4", "G3", "G4", "A#3", "A#4","C3", "C4", "D#3","D#4", "F4", "F#4", "G3", "G4", "A#3", "A#4"];
+var scale = ["D3", "E3", "G3", "A3", "B3", "D4", "E4", "G4", "A4", "B4","D3", "E3", "G3", "A3", "B3", "D4", "E4", "G4", "A4", "B4"];
+//var scale = ["D1", "E1", "G1", "A1", "B1","D2", "E2", "G2", "A2", "B2","D3", "E3", "G3", "A3", "B3","D4", "E4", "G4", "A4", "B4"];
+
+
+var block_size = 40;
+var max_dist;
+var notes = [];
+var dist = [];
+var ctx = createCanvas("canvas1");
+var particles = [];
+var grid_w = 1;
+var grid_h = 1;
+var num_particles = grid_w * grid_h;
+
+var margin = 100;
+
+var url = "data/places_2015.csv";
+d3.csv(url, function(data) {
+
+	console.log(data.length);
+
+	var minXDataPoint = d3.min(data, function(d) { return d['Latitude'];});
+  	var maxXDataPoint = d3.max(data, function(d) { return d['Latitude'];});
+  	var minYDataPoint = d3.min(data, function(d) { return d['Longitude'];});
+  	var maxYDataPoint = d3.max(data, function(d) { return d['Longitude'];});
+
+  	max_dist = getDistanceFromLatLonInKm(minXDataPoint, minYDataPoint, maxXDataPoint, maxYDataPoint);
+  	console.log("Distance:" + max_dist);
+
+
+  	// compute distances
+  	dist[0] = 0;
+  	for (var i = 1; i < data.length; i++) {
+  		var c = data[i];
+  		var d = data[i-1];
+  		dist[i] = Math.abs(getDistanceFromLatLonInKm(c['Latitude'], c['Longitude'], d['Latitude'], d['Longitude']));
+  	}
+
+  	// map to notes to distances
+	for (var i = 0; i < data.length; i++) {
+		var d = data[i];
+	
+    	var index = Math.floor(map(dist[i], 0, max_dist, 0, scale.length));
+    	notes[i] = scale[index];
+}
+
+	// var xScale = function(val) {
+	// 	return minXDataPoint/maxXDataPoint*w*val;
+	// }
+	// var yScale = function(val) {
+	// 	return minYDataPoint/maxYDataPoint*h*val
+	// };
+  	var xScale = d3.scale.linear()
+        .domain([minXDataPoint, maxXDataPoint])
+        .range([0, w]);
+
+	var yScale = d3.scale.linear()
+        .domain([minYDataPoint, maxYDataPoint])
+        .range([0, h]);
+
+
+    for (var i = 0; i < data.length; i++) {	
+	var x = xScale(data[i]['Latitude']);
+	var y = yScale(data[i]['Longitude']);
+	if (i > 0) {
+		start_x = xScale(data[i-1]['Latitude']);
+		start_y = yScale(data[i-1]['Longitude']);
+	} else {
+		start_x = x;
+		start_y = y;
+	}
+
+    var m = map(dist[i], 0, max_dist, 10, 260);
+    var cc = hsl(m, 76, 50);
+	addParticle(x, y, start_x, start_y, cc, i);
+}
+
+});
+
+
+var count = 0;
+
+function draw(){
+
+	//ctx.clearRect(0, 0, w, h);
+	ctx.fillStyle = rgba(255,255,255, 0.05);
+	ctx.fillRect(0, 0, w, h);
+	//drawGrid();
+	if (particles.length> 0 ) moveParticles(count);
+	if (count > 0) drawParticles(count);
+	//triangulate(block_size);
+}
+
+
+
+function addParticle(_x, _y, _start_x, _start_y, _colour, _me){
+		
+	var particle = {
+		x: _start_x,
+		y: _start_y,
+		start_x: _start_x,
+		start_y: _start_y,
+		target_x: _x,
+		target_y: _y,
+		c: _colour,
+		me: _me,
+		move: true,
+		r: 0,
+		subparticles: [],
+		me2: (_me + randomInt(-30,30))%num_particles,
+		speedx: random(-2,2)/2,
+		speedy: random(2,20),
+		sz: map(dist[_me], 0, max_dist, 10, 200),
+		angle: radians((2.2*_me)%360)
+	}
+	
+	particles.push(particle);
+
+}
+
+
+function moveParticles(_i){
+	
+	p = particles[_i];
+
+	if (Math.ceil(p.x/10) + 2 > Math.ceil(p.target_x/10) &&  Math.ceil(p.x/10) -2 < Math.ceil(p.target_x/10) 
+		&& Math.ceil(p.y/10) + 2  > Math.ceil(p.target_y/10)  && Math.ceil(p.y/10) - 2  < Math.ceil(p.target_y/10) 
+		&& p.move == true) {
+			// next
+			p.move = false;
+			console.log("next");
+			if (count < particles.length)  {
+				count++;
+				playNote(count);
+			}
+	}
+	p.x = tween(p.x, p.target_x, dist[p.me]*4);
+	p.y = tween(p.y, p.target_y, dist[p.me]*4);
+
+	ctx.fillStyle = p.c;
+
+	ctx.fillRect( roundUp(p.x), roundUp(p.y), roundUp(p.sz), roundUp(p.sz));
+
+}
+
+
+
+function drawParticles(count){
+
+	for (var i = 0; i < count; i++) {		
+	p = particles[i];
+	ctx.fillStyle = p.c;
+	ctx.fillStyle = rgba(87, 197, 241, 0.4);
+	ctx.fillRect( roundUp(p.x), roundUp(p.y), roundUp(p.sz), roundUp(p.sz));
+
+	}
+}
+
+
+function playNote(i){
+
+      synth.triggerAttackRelease(notes[i], dist[i]*2);
+      //synth.triggerAttackRelease("C4", "8n", dist[i-1]/10);
+      //if (i > 0) synth.triggerRelease(notes[i-1], dist[i-1]/50);
+
+}
+
+
+function drawGrid(){
+	ctx.fillStyle = rgb(255);
+	ctx.strokeStyle = rgb(150);
+	for (var y = 0; y < h; y+= block_size) {
+	for (var x = 0; x < w; x+= block_size) {
+		ctx.fillRect(x, y, block_size, block_size);
+	};
+	;}
+}
+
+
+/////// UTILS
+
+
+function roundUp(v){
+	return Math.round(v/block_size)*block_size
+}
+
+function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+  var R = 6371; // Radius of the earth in km
+  var dLat = deg2rad(lat2-lat1);  // deg2rad below
+  var dLon = deg2rad(lon2-lon1); 
+  var a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+    ; 
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  var d = R * c; // Distance in km
+  return d;
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180)
+}
+
+
+</script>
+
+</body>
+</html>
