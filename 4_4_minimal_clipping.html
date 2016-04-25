@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+// was getting annoyed with the same track playing, so changed soundcloud function to play random track
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 2;
+var particles = [];
+var radius = 160;
+var step = 2;
+var num_particles = 6;
+var angle = 360/256;
+for (var i = 0; i < num_particles; i+= step) {
+		
+		//var x = 2*Math.cos(radians(i*angle))*radius;
+    	var x = width/2+random(-150,150);
+    	var y = height/2+random(-150,150);
+    	
+		addParticle(x, y, rgb(0,0,0), i);
+};
+
+
+function draw(){
+	//console.log(height) //256
+	//var ratio = w/audioChannelVolume.length;
+	ctx.clearRect(0, 0, w, h);
+	//c = (c + 0.001)%0.2;
+	// var step = randomInt(4,80);
+	ctx.save();
+
+	ctx.Hellipse(w/2, h/2, 360, 360);
+	ctx.clip();
+	moveParticles();
+	ctx.restore();
+	ctx.strokeStyle = "#f7f7f7";
+	ctx.HstrokeEllipse(w/2, h/2, 360, 360);	
+}
+
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: _x,
+		y: _y,
+		c: _colour,
+		me: _me,
+		speedx: posNeg()*random(1,4),
+		speedy: posNeg()*random(0.4,4),
+		sz: random(100,200),
+		angle: random(1)
+	}
+
+	particles.push(particle);
+}
+
+function moveParticles(){
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		//p.y = (tween(p.y, p.y + map(audioChannelVolume[Math.floor(p.me)],0,100, -20, 20), 3))%h;
+		p.speedx = tween(map(mapSound(p.me,num_particles),0,100, -1, 1),10);
+		p.angle += radians(p.speedx); 
+		radius = tween(radius, map(audioChannelVolume[Math.floor(p.me)], 0,100, 0, 20), 8);
+		var r = radius;
+		// p.y = map(audioChannelVolume[Math.floor(p.me)],-100,100, -50, 50);
+		//console.log(p.x)
+		p.sz = tween(p.sz, map(audioChannelVolume[Math.floor(p.me)],0,100, 150, 260), 15);
+		
+		x = p.x + (p.sz/2+r) * Math.cos(p.angle);
+		y = p.y + (p.sz/2+r) * Math.sin(p.angle);
+		//p.sz = tween(p.sz, map(mapSound(p.me,num_particles),0,100, 120, 300), 25);
+		//
+		
+		// p.x = p.x + p.speedx;
+		// //p.y = tween(p.y, p.y + p.speedy, 2);
+		// p.speedx = bounce(p.x, w/4, w-w/4)*p.speedx;
+		// p.speedy = bounce(p.y, 20, h-20)*p.speedy;
+		//p.sz *= 0.9;
+		ctx.fillStyle = p.c;
+		//p.me = (p.me+c)%256; 
+		//var sz = map(audioChannelVolume[Math.floor(p.me)],0,200, 0, h/2-20)
+		//if (audioChannelVolume[Math.floor(p.me)]>100)  
+		ctx.HfillEllipse(x, y, p.sz, p.sz);
+
+	};
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+ <script>document.write('<script src="http://' + (location.host || '${1:localhost}').split(':')[0] + ':${2:35729}/livereload.js?snipver=1"></' + 'script>')</script>
+</body>
+</html>

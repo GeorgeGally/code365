@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+var ctx = createCanvas("canvas1");
+movers = 2;
+num = 3;
+dots=300;
+var d = 280;
+var d2 = 120;
+var frames=400;
+var angle;
+var theta = 0;
+var offset = 0;
+var moverX;
+var moverY;
+var v = 0;
+var mover = [];
+var num_particles = 40;
+var cols = ['#9e1e62', '#ffeb2e', '#238ee5', '#c63b05', '#025c99'];
+
+for (var i = 0; i < dots; i+=1) {
+    
+      var x = random(w);
+      var y = random(h);
+      
+    addParticle(x, y, cols[i%5], i);
+};
+
+
+function addParticle(_x, _y, _colour, _me){
+  var particle = {
+    x: _x,
+    y: _y,
+    c: _colour,
+    me: _me,
+    speedx: posNeg()*random(0.4,2),
+    speedy: posNeg()*random(0.4,2),
+    sz: random(2,10),
+    angle: random(1)
+  }
+
+  mover.push(particle);
+}
+
+
+function drawParticles(){
+
+  for (var i = 0; i < mover.length; i++) {
+    p = mover[i];
+    // ctx.fillStyle = p.c;
+    ctx.fillStyle = rgb(255);
+    ctx.fillEllipse(p.x, p.y, p.sz, p.sz);
+  }
+
+}
+
+function moveParticles(){
+  
+  for (var i = 0; i < mover.length; i++) {
+    
+    p = mover[i];
+    p.sz = map(audioChannelVolume[p.me%100],0,150, 0.1, 2.5);
+
+    p.x = (p.x + p.speedx)%w;
+    p.y = (p.y + p.speedy)%h;
+
+  };
+
+}
+
+
+function draw() {
+
+  ctx.fillStyle = rgb(0);
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle="white";
+  ctx.fillStyle="white";
+  ctx.lineWidth = 6;
+  theta += 2*Math.PI/frames;
+  v = tween(v, map(audioChannelVolume[20],0,100, 20, 120), 4);
+  d2 = tween(d2, v,10);
+  drawLines();
+  addLines();
+
+  //moveParticles();
+  //drawParticles()
+
+}
+
+
+function addLines(){
+
+  if (chance(1000)) {
+    movers +=1; 
+    comsoleMovers()
+  } 
+  if (chance(1000)) {
+    movers = (movers - 1);
+    if (movers < 2) movers = 2;
+    comsoleMovers()
+  }
+  if (chance(1000)) {
+    num = (num + 1)%10; 
+    comsoleMovers()
+  } 
+  if (chance(1000)) {
+    num = (num - 1)%8; 
+    if (num < 2) num = 2;
+    comsoleMovers()
+  }
+
+
+}
+
+function comsoleMovers(){
+    console.log("movers: " + movers);
+  console.log("num: " + num);
+}
+
+function drawLines(){
+
+  ctx.save();
+  ctx.translate(window.innerWidth/2,window.innerHeight/2);
+  ctx.rotate(theta/10);
+  ctx.strokeStyle= rgb(255);
+
+  for (var i=0; i<num; i++) {
+
+    var outerX = Math.cos(angle)*d;
+    var outerY = Math.sin(angle)*d;
+
+    ctx.fillEllipse(outerX,outerY, 8, 8);
+    angle = 2*Math.PI/num*i;
+
+    for (var j=0; j<movers; j++) {
+
+      offset = theta+2*Math.PI/movers*j;
+      moverX = Math.cos(offset)*d2;
+      moverY = Math.sin(offset)*d2;
+      ctx.line(outerX, outerY, moverX, moverY);
+      ctx.fillEllipse(moverX, moverY, 8, 8);
+    }
+
+  }
+  ctx.restore();
+}
+
+
+window.onkeydown=function(event){
+  
+    if (event.which == 38) movers = (movers+1)%40
+    if (event.which == 40) movers = (movers-1); 
+    if (movers < 0) movers = 40;
+    if (event.which == 39) num = (num+1)%20;
+    if (event.which == 37) num = (num-1); if (num < 0) num = 40;
+    console.log("movers: " + movers);
+    console.log("num: " + num);
+
+};
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+ <script>document.write('<script src="http://' + (location.host || '${1:localhost}').split(':')[0] + ':${2:35729}/livereload.js?snipver=1"></' + 'script>')</script>
+</body>
+</html>
+

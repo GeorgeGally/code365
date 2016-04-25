@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+// DRAW WAVES CLASS
+var s = 0;
+var b = 0;
+
+function addBuilding(pos, i){
+
+	b+=0.05;
+
+	//ctx.clearRect(0, 0, w, h);
+
+	ctx.translate(pos, h/2+100);
+	
+	var ww = random(80, 140);
+	var hh = random(60, 220);
+	
+	var window_w = random(4,6);
+	var window_h = random(6,10);
+	ctx.fillStyle = rgb(0);
+	ctx.fillRect(-ww/2, -hh, ww, hh);
+
+	var window_count = randomInt(2, 10);
+	var grid = createGrid(window_w, window_h, ww-5, hh-5);
+
+	console.log((ww*hh)/(window_w*window_h));
+
+	for (var i = 0; i < grid.length; i++) {
+		var sz = randomInt(4,10);
+		var xx = grid[i][0];
+		var yy = grid[i][1];
+		ctx.fillStyle = rgb(255);
+		if (chance(20)) ctx.fillStyle = "yellow";
+		ctx.fillRect( -ww/2 + xx - sz, -hh + yy - sz/2, sz, sz);
+	}
+
+	ctx.translate(-pos, -h/2-100);
+}
+
+
+function addCity() {
+	ctx.fillStyle = rgb(250);
+	ctx.fillRect(0, 0, w, h);
+	ctx.fillStyle = rgb(0,0, 250);
+	ctx.fillRect(0, 0, w, h/2 + 100);
+
+for (var i = 0; i < w; i+=20) {
+	addBuilding(i, i);
+}
+ctx.fillStyle = rgb(0);
+ctx.fillRect(0, h/2 + 100, w, h);
+
+}
+
+addCity();
+document.addEventListener( 'keypress', addCity);
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

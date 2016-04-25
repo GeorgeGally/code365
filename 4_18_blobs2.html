@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+// was getting annoyed with the same track playing, so changed soundcloud function to play random track
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgb(0,0,0);
+
+var particles = [];
+var radius = 50;
+var num_particles = 8;
+var cols = ['#fdea00', '#50bfe8', '#f06724', '#8cc640'];
+var angle = 360/num_particles;
+var circ_sz = 300;
+var t_size = 350;
+var top_offset = 0;
+
+var s1 = 1;
+var s2 = -1;
+var extra = -6;
+var r = 0;
+var t_size = 2;
+var rot = 0;
+var rot2 = 0.1;
+
+function draw(){
+	
+	r+=0.01;
+	// var x = Math.sin(r)*220;
+
+	rot = tween(rot, radians(map(audioChannelVolume[20],0,100, -30, 30))/2, 15);
+
+	ctx.fillStyle = rgb(250);
+	ctx.fillRect(0, 0, w, h);
+
+
+	ctx.translate(w/2, h/2);
+
+	ctx.rotate(rot);
+
+	ctx.lineWidth = 4;
+	ctx.strokeStyle = rgb(0);
+
+	drawCircle(0, 0, 400);
+	ctx.fillStyle = rgb(300);
+	ctx.HfillEllipse(0, 0, 300, 300);
+
+	ctx.rotate(-rot);
+
+	rot2 = tween(rot2, radians(map(audioChannelVolume[60],0,100, -50, 30)), 55);
+	ctx.rotate(rot2);
+	ctx.lineWidth = 4;
+	ctx.strokeStyle = rgb(0);
+	drawCircle(0, 0, 300);
+	ctx.rotate(-rot2);
+
+	ctx.fillStyle = rgb(250);
+	ctx.HfillEllipse(0, 0, 180, 180);
+
+	ctx.translate(-w/2, -h/2);
+
+}
+
+function drawCircle(x, y, sz){
+	
+	ctx.save();
+	ctx.ellipse(0, 0, sz, sz);
+	//ctx.ellipse(-x, y, 300, 300);
+	ctx.clip();
+
+	for (var i = 0; i < h; i+=10) {
+		ctx.rotate(radians(i));
+		ctx.line(0, 0, w/2, h/2);
+		ctx.rotate(radians(-i));
+	}
+
+	ctx.restore();
+
+	//ctx.HstrokeEllipse(0, 0, sz, sz);
+
+}
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+ <script>document.write('<script src="http://' + (location.host || '${1:localhost}').split(':')[0] + ':${2:35729}/livereload.js?snipver=1"></' + 'script>')</script>
+</body>
+</html>

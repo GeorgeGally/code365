@@ -1,7 +1,7 @@
 var w, width, h;
-
+var canvas;
 function createCanvas(canvas_name){
-	var canvas = document.createElement('canvas');
+	canvas = document.createElement('canvas');
 	var body = document.querySelector('body');
 	canvas.setAttribute("id", canvas_name);
 	body.appendChild(canvas);

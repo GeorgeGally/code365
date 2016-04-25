@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+var ctx = createCanvas("canvas1");
+num=3;
+movers=3;
+var d = 280;
+var d2 = 120;
+var frames=400;
+var angle;
+var theta = 0;
+var offset = 0;
+var moverX;
+var moverY;
+var v = 0;
+var particles = [];
+
+
+draw = function() {
+
+  ctx.fillStyle = rgb(0);
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle="white";
+  ctx.fillStyle="white";
+  ctx.lineWidth = 4;
+  theta += 2*Math.PI/frames;
+  v = tween(v, map(audioChannelVolume[20],0,100, 40, 100), 4);
+  d2 = tween(d2, v,10);
+  drawLines();
+
+}
+
+
+function drawLines(){
+
+  if (chance(5000)) movers +=1;
+  if (chance(5000)) movers = 2 + (movers - 1)%10;
+  if (chance(5000)) num = 2 + (num + 1)%10;
+  if (chance(5000)) num = 2 + (num - 1)%8;
+
+  ctx.save();
+  ctx.translate(window.innerWidth/2,window.innerHeight/2);
+  ctx.rotate(theta/10);
+  ctx.strokeStyle= rgb(255);
+
+  for (var i=0; i<num; i++) {
+
+    var outerX = Math.cos(angle)*d;
+    var outerY = Math.sin(angle)*d;
+    ctx.fillEllipse(outerX,outerY, 6,6);
+    angle = 2*Math.PI/num*i;
+
+    for (var j=0; j<movers; j++) {
+
+      offset = theta+2*Math.PI/movers*j;
+      moverX = Math.cos(offset)*d2;
+      moverY = Math.sin(offset)*d2;
+      ctx.line(outerX, outerY, moverX, moverY);
+
+    }
+
+  }
+  ctx.restore();
+}
+
+
+window.onkeydown=function(event){
+  
+    if (event.which == 38) movers = (movers+1)%40
+    if (event.which == 40) movers = (movers-1); 
+    if (movers < 0) movers = 40;
+    if (event.which == 39) num = (num+1)%20;
+    if (event.which == 37) num = (num-2); if (num < 0) num = 40;
+    //console.log(movers);
+
+};
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+ <script>document.write('<script src="http://' + (location.host || '${1:localhost}').split(':')[0] + ':${2:35729}/livereload.js?snipver=1"></' + 'script>')</script>
+</body>
+</html>
+

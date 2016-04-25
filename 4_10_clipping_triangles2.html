@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+// was getting annoyed with the same track playing, so changed soundcloud function to play random track
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+
+var particles = [];
+var radius = 150;
+var num_particles = 1400;
+var cols = ['#fdea00', '#50bfe8', '#f06724', '#8cc640'];
+var angle = 360/num_particles;
+var circ_sz = 300;
+var t_size = 150;
+var top_offset = 0;
+
+for (var i = 0; i < num_particles; i+=1) {
+		
+		//var x = 2*Math.cos(radians(i*angle))*radius;
+    	var x = random(w);
+    	var y = random(h);
+    	
+		addParticle(x, y, cols[i%5], i);
+};
+
+var s1 = 1;
+var s2 = -1;
+
+function draw(){
+
+	// s1+=(bounce(s1 + w/2-t_size/2-21,0,w))*2;
+	// s2+=(bounce(s2 + w/2+t_size/2+21,0,w))*-2;
+	//console.log(height) //256
+	//var ratio = w/audioChannelVolume.length;
+	ctx.fillStyle = rgb(0);
+	ctx.fillRect(0, 0, w, h);
+
+	moveParticles();
+
+	ctx.save();
+	ctx.fillStyle = rgb(0);
+	ctx.ellipse(w/2, h/2, 400, 400);
+	//ctx.rect(w/2-circ_sz/2, h/2-circ_sz/2, circ_sz, circ_sz);
+	ctx.clip();
+	ctx.fillStyle = rgb(0);
+	//ctx.fillRect(w/2-circ_sz/2, h/2-circ_sz/2, circ_sz, circ_sz);
+	ctx.HfillEllipse(w/2, h/2, 400, 400);
+	// ctx.fillStyle = rgb(0);
+	// ctx.HfillEllipse(w/2, h/2, 400, 400);
+	// ctx.clip();
+	ctx.fillStyle = rgb(255,0,0);
+	drawParticles();
+	ctx.restore();
+	
+
+
+	ctx.lineWidth = 4;
+	ctx.strokeStyle = "#ffffff";
+	ctx.HstrokeEllipse(w/2, h/2, 400, 400);
+
+	
+	ctx.fillStyle = "#000";
+	ctx.lineWidth = 1;
+
+	// TOP
+	// ctx.save();
+	// ctx.eqDownFillTriangle(w/2, h/2 - t_size/4, t_size);
+	// ctx.clip();
+	// drawParticles();
+	// ctx.restore();
+	// ctx.strokeStyle = "#fff";
+	// ctx.eqDownTriangle(w/2+3, h/2 - t_size/4, t_size);
+
+	// // LEFT
+	// ctx.save();
+	// ctx.eqTriangle(s1 + w/2-t_size/2-21, top_offset + h/2, t_size);
+	// ctx.clip();
+	// drawParticles();
+	// ctx.restore();
+	// ctx.strokeStyle = "#fff";
+	// ctx.eqTriangle(s1 + w/2-t_size/2-21, top_offset + h/2, t_size);
+
+	// MIDDLE
+	ctx.save();
+	ctx.eqTriangle(w/2, top_offset + h/2, t_size);
+	ctx.clip();
+	ctx.globalCompositeOperation = 'lighten';
+	ctx.fillStyle = rgb(255);
+	drawParticles();
+	ctx.restore();
+	ctx.strokeStyle = "#fff";
+	ctx.eqTriangle(w/2, top_offset + h/2, t_size);
+
+	// BOTTOM
+	// ctx.save();
+	// ctx.eqTriangle(w/2, h/2 + t_size/2 -15, t_size);
+	// ctx.clip();
+	// drawParticles();
+	// ctx.restore();
+	// ctx.strokeStyle = "#fff";
+	// ctx.eqTriangle(w/2, h/2 + t_size/2 -15, t_size);
+
+	// BOTTOM LEFT
+	// ctx.save();
+	// ctx.eqDownTriangle(w/2-t_size/2-20, top_offset + h/2 + t_size, t_size);
+	// ctx.clip();
+	// drawParticles();
+	// ctx.restore();
+	// ctx.strokeStyle = "#fff";
+	// ctx.eqDownTriangle(w/2-t_size/2-20, top_offset + h/2 + t_size, t_size);
+
+	// BOTTOM RIGHT
+	// ctx.save();
+	// ctx.eqDownTriangle(w/2+t_size/2+26, top_offset + h/2 + t_size, t_size);
+	// ctx.clip();
+	// drawParticles();
+	// ctx.restore();
+	// ctx.strokeStyle = "#fff";
+	// ctx.eqDownTriangle(w/2+t_size/2+26, top_offset + h/2 + t_size, t_size);
+
+
+}
+
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: _x,
+		y: _y,
+		c: _colour,
+		me: _me,
+		speedx: posNeg()*random(0.4,4),
+		speedy: posNeg()*random(0.4,4),
+		sz: random(2,10),
+		angle: random(1)
+	}
+
+	particles.push(particle);
+}
+
+
+function drawParticles(){
+
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		//ctx.fillStyle = p.c;
+		ctx.fillEllipse(p.x, p.y, p.sz, p.sz);
+	}
+
+}
+
+function moveParticles(){
+	
+	for (var i = 0; i < particles.length; i++) {
+		
+		p = particles[i];
+		p.sz = map(audioChannelVolume[p.me%100],0,100, 0, 5);
+
+		p.x = (p.x + p.speedx)%w;
+		p.y = (p.y + p.speedy)%h;
+
+	};
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+ <script>document.write('<script src="http://' + (location.host || '${1:localhost}').split(':')[0] + ':${2:35729}/livereload.js?snipver=1"></' + 'script>')</script>
+</body>
+</html>

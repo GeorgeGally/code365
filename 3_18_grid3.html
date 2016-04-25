@@ -49,7 +49,8 @@ function draw(){
 	moveParticles();
 	ctx.fillStyle = rgba(0,0,0,1);
 	//ctx.HfillEllipse(w/2, h/2, radius-8, radius-8);
-	pixelate(5);
+	// pixelate(5);
+	triangulate(26);
 }
 
 
@@ -87,7 +88,7 @@ function moveParticles(){
 		
 
 		ctx.strokeStyle = p.c;
-		ctx.lineWidth = 10;
+		ctx.lineWidth = 12;
 		ctx.strokeEllipse(p.x, p.y, p.sz, p.sz);
 
 		};

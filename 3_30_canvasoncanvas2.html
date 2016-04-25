@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+ <!-- gridmaker yeah! -->  
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWeight = 2;
+
+var ParticleEngine = function(_num_particles, _x, _y) {
+
+	this.particles = [];
+	var radius = 60;
+	var rot = 0;
+	this.edgeType = 1;
+	this.sz = 24;
+	var num_particles = _num_particles;
+	var x = _x;
+	var y = _y;
+	console.log("num_particles: " + num_particles);
+	
+	this.setup = function(){
+		
+		for (var i = 0; i < num_particles; i++) {
+			y = h/2;
+			x = w/num_particles *i;
+			var c = random(225);
+		    var cc = rgba(c, c, c, 1);
+			this.addParticle(x, y, cc, i);
+			this.particles[i].speedy = 0;
+		}
+
+	}
+
+	
+	this.addParticle = function(_x, _y, _colour, _me){
+		
+		var particle = {
+			x: _x,
+			y: _y,
+			c: _colour,
+			me: _me,
+			stroke_width: 1,
+			speedx: posNeg() * random(1,5),
+			speedy: posNeg() * random(1,5),
+			sz: this.sz,
+			angle: 0
+		}
+
+		this.particles.push(particle);
+	}
+	
+	this.setup();
+
+	this.draw = function(){
+		this.moveParticles();
+	}
+
+	this.hittest = function(p){
+		
+		if (this.edgeType == 0) {
+			
+			if (p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
+				p.speedx *= -1;
+				p.speedy *= -1;
+			}
+
+		} else if (this.edgeType == 1 || this.edgeType == 2) {
+			
+			if (p.x < 0) {
+				p.x = w;
+			} else if (p.x > w) {
+				p.x = 0;
+			}
+			if (p.y < 0) {
+				p.y = h;
+			} else if (p.y > h) {
+				p.y = 0;
+			}
+		} 
+		if (this.edgeType == 2) {
+			for (var i = 0; i < this.particles.length; i++) {
+				if (i != p.e) {
+					p2 = this.particles[i];
+					if (this.hittestBall(p, p2)) {
+						p.speedx *= -1;
+						p.speedy *= -1;
+						p2.speedx *= -1;
+						p2.speedy *= -1;
+					}
+				}
+				
+			};
+		}
+	}
+
+
+	this.hittestBall = function(p, p2){ 
+
+      if(p.x + p.sz/2  > p2.x - p2.sz/2  && p.x - p.sz/2 <  p2.x + p2.sz/2  && p.y + p.sz/2  >  p2.y - p2.sz/2  && p.y - p.sz/2 < p2.y + p2.sz/2) {
+        return true;
+      } 
+    }
+
+	this.moveParticles = function(){
+
+		for (var i = 0; i < this.particles.length; i++) {
+			
+			p = this.	particles[i];
+
+			p.x += p.speedx;
+			p.y += p.speedy;
+			
+			this.hittest(p);
+			ctx.strokeStyle = rgb(0);
+			ctx.fillStyle = p.c;
+			ctx.fillEllipse (p.x, p.y, p.sz, p.sz);
+			var next = (i+1)%this.particles.length;
+			//if (i != p.me) {
+				ctx.line(p.x, p.y, this.particles[(i+1)%this.particles.length].x, this.particles[(i+1)%this.particles.length].y);
+			//}
+
+		};
+		
+
+	}
+
+}
+
+
+var num_particles = 20;
+var particle = new ParticleEngine(num_particles, w/2, h/2);
+
+particle.edgeType = 2;
+for (var i = 0; i < particle.particles.length; i++) {
+	particle.particles[i].sz = 14;
+};
+
+
+
+function draw(){
+	//ctx.clearRect(0, 0, w, h);
+	//ctx.fillStyle = rgba(255, 255, 255, 0.5);
+	//ctx.fillRect(0, 0, w, h);
+	particle.draw();
+	ctx.drawImage(canvas, -18, 18, w+18, h+18);
+	//ctx.drawImage(canvas, w-18, h-18, -w+18, -h+18);
+	//ctx.drawImage(canvas, 2*w-18, 2*h-18, -2*w+18, -2*h+18);
+}
+
+
+
+</script>
+
+</body>
+</html>

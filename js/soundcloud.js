@@ -93,23 +93,69 @@ else {
      * @param callback
      */
     this.loadStream = function(genres, successCallback, errorCallback) {
+      
+      if (SC != undefined) {
+
         SC.initialize({
             client_id: client_id
         });
         // SC.get('/resolve', { url: track_url }, function(sound) {
-          SC.get('/tracks', { genres: genres, limit:50 }, function(tracks) {
+        if (genres.charAt(0) == "!") {
+            genres = genres.substring(1);
+            var call = { track: genres }
+            console.log("track: " + genres);
+
+           SC.get('/tracks/' + genres , function(tracks) {
+            
+            console.log("tracks: " + tracks);
+            
             if (tracks.errors) {
-                self.errorMessage = "";
-                for (var i = 0; i < tracks.errors.length; i++) {
-                    self.errorMessage += tracks.errors[i].error_message + '<br>';
-                }
-                self.errorMessage += 'Make sure the URL has the correct format: https://soundcloud.com/user/title-of-the-track';
-                errorCallback();
+            
+              self.errorMessage = "";
+            
+              for (var i = 0; i < tracks.errors.length; i++) {
+                self.errorMessage += tracks.errors[i].error_message + '<br>';
+              }
+            
+              self.errorMessage += 'Make sure the URL has the correct format: https://soundcloud.com/user/title-of-the-track';
+              errorCallback();
+          
             } else {
-              randomTrack = Math.floor(Math.random()*(tracks.length-1));
-              console.log("Returned tracks: " + tracks.length);
-              console.log("Play track: " + randomTrack);
-              sound = tracks[randomTrack];
+            
+            // randomTrack = Math.floor(Math.random()*(tracks.length-1));
+            // console.log("Returned tracks: " + tracks.length);
+            // console.log("Play track: " + randomTrack);
+            sound = tracks;
+            self.sound = sound;
+            self.streamUrl = function(){ return sound.stream_url + '?client_id=' + client_id; };
+            successCallback();
+
+            }
+            
+        }); // END GENRE CALL
+
+        } else {
+          var call = {genres: genres }
+        
+
+        SC.get('/tracks', { call, limit:50 }, function(tracks) {
+          
+          if (tracks.errors) {
+            
+            self.errorMessage = "";
+            for (var i = 0; i < tracks.errors.length; i++) {
+              self.errorMessage += tracks.errors[i].error_message + '<br>';
+            }
+            
+            self.errorMessage += 'Make sure the URL has the correct format: https://soundcloud.com/user/title-of-the-track';
+            errorCallback();
+          
+          } else {
+            
+            randomTrack = Math.floor(Math.random()*(tracks.length-1));
+            console.log("Returned tracks: " + tracks.length);
+            console.log("Play track: " + randomTrack);
+            sound = tracks[randomTrack];
               //console.log(sound);
               self.sound = sound;
               self.streamUrl = function(){ return sound.stream_url + '?client_id=' + client_id; };
@@ -123,11 +169,17 @@ else {
                 //     successCallback();
                 // }else{
                 //     self.sound = sound;
-                //     self.streamUrl = function(){ return sound.stream_url + '?client_id=' + client_id; };
-                //     successCallback();
+                //     self.streamUrl = function(){ 
+                //        return sound.stream_url + '?client_id=' + client_id; };
+                //        successCallback();
                 // }
             }
-        });
+
+        }); // END GENRE CALL
+
+        }
+
+      }
     };
 
 
@@ -232,14 +284,14 @@ var ui = function(loader) {
     var artistLink = document.createElement('a');
     artistLink.setAttribute('href', loader.sound.user.permalink_url);
     artistLink.innerHTML = loader.sound.user.username;
-        var trackLink = document.createElement('a');
-        trackLink.setAttribute('href', loader.sound.permalink_url);
+    var trackLink = document.createElement('a');
+    trackLink.setAttribute('href', loader.sound.permalink_url);
 
-        if(loader.sound.kind=="playlist"){
-            trackLink.innerHTML = "<p>" + loader.sound.tracks[loader.streamPlaylistIndex].title + "</p>" + "<p>"+loader.sound.title+"</p>";
-        }else{
-            trackLink.innerHTML = loader.sound.title;
-        }
+    if(loader.sound.kind=="playlist"){
+      trackLink.innerHTML = "<p>" + loader.sound.tracks[loader.streamPlaylistIndex].title + "</p>" + "<p>"+loader.sound.title+"</p>";
+    }else{
+      trackLink.innerHTML = loader.sound.title;
+    }
 
         var image = loader.sound.artwork_url ? loader.sound.artwork_url : loader.sound.user.avatar_url; // if no track artwork exists, use the user's avatar.
         trackImage.setAttribute('src', image);

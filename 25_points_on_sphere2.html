@@ -24,7 +24,8 @@ ctx.lineWidth = 4;
 var particles = [];
 var radius = 180;
 var c = 0;
-var num_particles = 8;
+var num_particles = 12;
+
 
 for (var i = 0; i < num_particles; i++) {
     	var cc = rgba(random(25),random(255),0, 0.5);
@@ -43,6 +44,10 @@ function draw(){
 	// ctx.strokeEllipse(w/2, h/2, radius*2, radius*2);
 	//c = (c + 0.001)%0.2;
 	moveParticles();
+		for (var i = 0; i < emitter.length; i++) {
+		emitter[i].draw();
+
+	};
 }
 
 
@@ -65,25 +70,125 @@ function addParticle(_x, _y, _colour, _me){
 function moveParticles(){
 	for (var i = 0; i < particles.length; i++) {
 		p = particles[i];
-		var me = p.me *5 ;
-		if (me > 128) me = 256 - me ; 
+
 		p.angle += radians(p.speedx); 
-		radius = tween(radius, map(audioChannelVolume[Math.floor(me)], 0,100, 0, 20), 18);
+		radius = tween(radius, map(mapSound(p.me, particles.length), 0,150, 0, 40), 8);
 		var r = radius;
-		p.sz = tween(p.sz, map(audioChannelVolume[Math.floor(me)],0,100, 100, 220), 5);
+		p.sz = tween(p.sz, map(mapSound(p.me, particles.length),0,150, 100, 220), 5);
 		
 		p.x = w/2 + (p.sz/2+r) * Math.cos(p.angle);
 		p.y = h/2 + 50 + (p.sz/2+r) * Math.sin(p.angle);
 
 		ctx.fillStyle = rgba(0,0,0,1);
 		//ctx.fillEllipse(p.x, p.y, p.sz/20, p.sz/20);			
-		ctx.fillTriangle(p.x-p.sz/4, p.y, p.x + p.sz/4, p.y, p.x, p.y - p.sz/2);
+		//ctx.fillTriangle(p.x-p.sz/4, p.y, p.x + p.sz/4, p.y, p.x, p.y - p.sz/2);
 		ctx.strokeStyle = rgba(0,0,0,1);
-		ctx.line(w/2, h/2 + 50, p.x, p.y-p.sz/4);
+		ctx.line(w/2, h/2, p.x, p.y);
+		
+		if (r > 38.5) {
+			addEmitter(p.x, p.y, posNeg());
+			ctx.fillStyle = rgb(255, 0, 0);
+			ctx.fillEllipse(p.x, p.y, 25, 25);
+		} else {
+			ctx.fillStyle = rgba(0);
+			ctx.fillEllipse(p.x, p.y, 15, 15);
+		}
+		
+		
 		
 		};
 
 }
+
+
+// EMITTER
+
+var particleEmitter = function(_num_particles, _x, _y, _me, _dir) {
+
+	var particles = [];
+	var num_particles = _num_particles;
+	var x = _x;
+	var y = _y;
+	var me = _me;
+	var gravity = 0.15;
+	var dir = _dir;
+	var cols = ['#9e1e62', '#ffeb2e', '#238ee5', '#c63b05', '#025c99'];
+
+	this.setup = function(){
+		console.log("setup")
+		for (var i = 0; i < num_particles; i++) {
+			var c = random(225);
+
+		    var cc = rgba(c, c, c, 1);
+			this.addParticle(x, y, cols[i%5], me);
+		}
+
+	}
+
+
+	this.draw = function(){
+		this.moveParticles();
+	}
+
+
+	this.addParticle = function(_x, _y, _colour, _me) {
+
+		var particle = {
+			x: _x,
+			y: _y,
+			start_x: _x,
+			start_y: _y,
+			c: _colour,
+			me: _me,
+			shrink: 0.985,
+			speedx: dir * random(0.1, 3),
+			speedy: random(-4, -0.2),
+			sz: 10,
+		}
+		
+		particles.push(particle);
+
+	}
+
+
+	this.moveParticles = function(){
+
+		for (var i = 0; i < particles.length ; i++) {
+			
+			p = particles[i];
+			p.sz = p.sz * p.shrink;
+			p.x += p.speedx;
+			p.speedy += gravity;
+			p.y += p.speedy;
+			ctx.fillStyle = rgb(0);
+			//ctx.fillStyle = p.c;
+			ctx.fillEllipse( p.x, p.y, p.sz, p.sz);
+
+			if (p.y > h || p.sz < 0.1) particles.splice(i,1);
+			
+		};
+
+	}
+
+this.setup();
+
+}
+
+
+
+// SETUP WAVES CLASS
+
+var emitter = [];
+
+var count = 0;
+
+function addEmitter(x, y, dir){
+	var num_particles = 2;
+	emitter[count] = new particleEmitter(randomInt(1,8), x, y, count*num_particles, dir);
+	count++;
+
+};
+
 
 </script>
  <script language="javascript" src="js/soundcloud.js"></script>

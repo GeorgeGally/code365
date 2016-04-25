@@ -56,6 +56,14 @@ p.HstrokeEllipse = function(x, y, width, height) {
 	this.beginPath();
 };
 
+p.centreStrokeRect = function(x, y, width, height) { 
+	this.strokeRect(x - width/2, y - height/2, width, height)
+};
+
+p.centreFillRect = function(x, y, width, height) { 
+	this.fillRect(x - width/2, y - height/2, width, height)
+};
+
 p.line = function (x1, y1, x2, y2){
 	this.beginPath(); 
 	this.moveTo(x1,y1); 
@@ -70,7 +78,8 @@ p.line = function (x1, y1, x2, y2){
 p.strokeWeight = function(j){
 	this.lineWidth = j;
 }
- p.triangle = function(x1, y1, x2, y2, x3, y3) {
+
+p.triangle = function(x1, y1, x2, y2, x3, y3) {
       this.beginPath(); 
       this.moveTo(x1, y1);
       this.lineTo(x2, y2);
@@ -100,6 +109,35 @@ p.strokeWeight = function(j){
       this.closePath();
  };
 
+
+p.eqDownFillTriangle = function(x, y, sz, down) {
+	//ctx.save();
+	ctx.translate(x, y);
+	ctx.rotate(radians(180));
+	ctx.fillTriangle(0, 0 - sz, 0 + sz, 0 + sz/2, 0 - sz, 0 + sz/2);
+	ctx.rotate(radians(-180));
+	ctx.translate(-x, -y);
+	//ctx.restore();
+}
+
+
+p.eqDownTriangle = function(x, y, sz, down) {
+	//ctx.save();
+	ctx.translate(x, y);
+	ctx.rotate(radians(180));
+	ctx.triangle(0, 0 - sz, 0 + sz, 0 + sz/2, 0 - sz, 0 + sz/2);
+	ctx.rotate(radians(-180));
+	ctx.translate(-x, -y);
+
+}
+
+p.eqFillTriangle = function(x, y, sz, down) {
+	ctx.fillTriangle(x, y - sz, x + sz, y + sz/2, x - sz, y + sz/2);
+}
+
+p.eqTriangle = function(x, y, sz, down) {
+	ctx.triangle(x, y - sz, x + sz, y + sz/2, x - sz, y + sz/2);
+}
  // p.triangle2 = function(x,y,width, height) {
  // 	this.save();
  // 	this.translate(window.innerWidth/2-x/2,window.innerHeight/2-y/2);

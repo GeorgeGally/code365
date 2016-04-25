@@ -47,8 +47,8 @@ var Wave = function(_num_particles, _x, _y, _me) {
 			c: _colour,
 			me: _me,
 			stroke_width: 40,
-			speedx: 0,
-			speedy: random(2,20),
+			speedx: Math.round(random(5,10)/10),
+			speedy: posNeg()*random(2,20),
 			sz: radius+ _me*26,
 			angle: 0
 		}
@@ -61,18 +61,12 @@ var Wave = function(_num_particles, _x, _y, _me) {
 		for (var i = particles.length-1; i >=0 ; i--) {
 			
 			p = particles[i];
-
-			//DISTRIBUTED MAPPED SOUND VALUE  
+			p.x += p.speedx;
+			if (p.x >= w || p.x <= 0) p.speedx*=-1;
+			ctx.lineWidth = 0.5;
 			var s = mapSound(p.me, num_particles*num_waves);
-			// console.log(s)
-			// DRAW DOTS
-			// ctx.shadowColor = rgba(80,80,80, 0.5);
-			// ctx.shadowBlur = 3;
-			// ctx.shadowOffsetX = s/30;
-			// ctx.shadowOffsetY = -s/20;
-			//ctx.fillStyle = rgb(0,0,155-s);
-			//ctx.strokeEllipse(p.x, h-(30 + p.y), s, s);
-			ctx.line(p.x, h/2, w, p.y + s-0);
+			ctx.strokeStyle = rgb(s/10);
+			ctx.line(p.x, h/2, w, p.y + s/20*p.speedy);
 		};
 
 	}
@@ -85,7 +79,7 @@ this.setup();
 // SETUP WAVES CLASS
 
 var waves = [];
-var grid_w = 2;
+var grid_w = 8;
 var grid_h = 20;
 var num_waves = grid_w * grid_h;
 var spacing_x = w/grid_w;
@@ -93,7 +87,7 @@ var spacing_y = h/grid_h;
 console.log(spacing_x)
 console.log(spacing_y)
 var grid = makeGrid(grid_w, grid_h);
-var num_particles = 1;
+var num_particles = 4;
 
 for (var i = 0; i < num_waves; i++) {	
 	waves[i] = new Wave(num_particles, grid[i][0]*spacing_x+spacing_x/2,grid[i][1]*spacing_y + spacing_y/2, i);
