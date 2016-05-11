@@ -40,6 +40,15 @@ Vector.prototype = {
   length: function() {
     return Math.sqrt(this.dot(this));
   },
+  magnitude: function() {
+    return Math.sqrt(this.dot(this));
+  },
+  mag: function() {
+    var x = this.x,
+      y = this.y,
+      z = this.z;
+    return Math.sqrt(x * x + y * y + z * z);
+  },
   unit: function() {
     return this.divide(this.length());
   },
@@ -48,6 +57,52 @@ Vector.prototype = {
   },
   max: function() {
     return Math.max(Math.max(this.x, this.y), this.z);
+  },
+  limit: function(high) {
+      if (this.mag() > high) {
+        this.normalize();
+        this.mult(high);
+      }
+    },
+  mult: function(v) {
+    if (typeof v === "number") {
+      this.x *= v;
+      this.y *= v;
+      this.z *= v;
+    } else {
+      this.x *= v.x;
+      this.y *= v.y;
+      this.z *= v.z;
+    }
+  },
+  div: function(v) {
+    if (typeof v === "number") {
+      this.x /= v;
+      this.y /= v;
+      this.z /= v;
+    } else {
+      this.x /= v.x;
+      this.y /= v.y;
+      this.z /= v.z;
+    }
+  },
+  setMag: function(v_or_len, len) {
+    if (len === undefined) {
+      len = v_or_len;
+      this.normalize();
+      this.mult(len);
+    } else {
+      var v = v_or_len;
+      v.normalize();
+      v.mult(len);
+      return v;
+    }
+  },
+  normalize: function() {
+    var m = this.mag();
+    if (m > 0) {
+      this.div(m);
+    }
   },
   toAngles: function() {
     return {
@@ -128,3 +183,12 @@ Vector.fromArray = function(a) {
 Vector.angleBetween = function(a, b) {
   return a.angleTo(b);
 };
+
+// Vector.lengthSq = function () {
+//   return this.x * this.x + this.y * this.y;
+// };
+
+// Victor.length = function () {
+//   return Math.sqrt(this.lengthSq());
+// };
+

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var grid = createGrid(1, 1, w, h);
+console.log(grid)
+var flies = [];
+var balls = new particleEngine(3);
+
+//for (var i = 0; i < balls.particles.length; i++) {
+    b = balls.particles[0];
+    b.position.x = grid[0][0];
+    b.position.y = h/2;
+    b.speed.x = 0;
+    b.sz = 20;
+
+    flies[0] = new particleEngine(50);
+    for (var j = 0; j < flies[0].particles.length; j++) {
+        p = flies[0].particles[j];
+        p.position.x = b.position.x;
+        p.position.y = b.position.y;
+    }
+//}
+
+// FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+function draw(){
+
+    // ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = rgba(255, 255, 255, 0.9);
+    ctx.fillRect(0, 0, w, h);
+    //particle.draw();
+    //console.log();
+  
+        
+    //for (var i = 0; i < balls.particles.length; i++) {
+        var i = 0;
+        b = balls.particles[i];
+        
+        for (var j = 0; j < flies[i].particles.length; j++) {
+            
+            p = flies[i].particles[j];
+            ctx.fillStyle = hsl(map(audioChannelVolume[p.me%50], 0, 150, 0, 100),map(audioChannelVolume[p.me%100], 0, 150, 0, 100), 40);
+            var mouse = b.position;
+            //console.log(mouse)
+            mouse = mouse.subtract(p.position);
+            mouse.setMag(0.4);
+            //console.log(mouse)
+            acceleration = mouse;
+            p.speed = p.speed.add(acceleration);
+            p.position = p.position.add(p.speed);
+            p.speed.limit(8);
+            //p.sz = 2;
+            p.sz =  map(audioChannelVolume[p.me*5], 0, 150, 0, 15);
+            //console.log(p.dist)
+            // ctx.line(p.position.x, p.position.y, mouseX, mouseY);
+            ctx.fillEllipse(p.position.x, p.position.y, p.sz, p.sz);
+
+        }
+
+    //} 
+     // for (var i = 0; i < balls.particles.length; i++) {
+
+        b = balls.particles[i];
+        b.position.y =  tween(h/2, grid[i][1] + map(audioChannelVolume[b.me*5], 0, 150, -180, 80), 8);
+        b.sz =  tween(b.sz, map(audioChannelVolume[b.me], 0, 100, 5, 25), 2);
+        //ctx.fillStyle = hsl(map(audioChannelVolume[p.me*5], 0, 150, 30, 70),map(audioChannelVolume[p.me%100], 0, 150, 0, 100), 15);
+        ctx.fillStyle = "black";
+        ctx.fillEllipse(b.position.x, b.position.y, b.sz, b.sz);
+
+    //}
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

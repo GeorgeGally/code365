@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+// was getting annoyed with the same track playing, so changed soundcloud function to play random track
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 2;
+var particles = [];
+var radius = 150;
+var num_particles = 160;
+var cols = ['#fdea00', '#50bfe8', '#f06724', '#8cc640'];
+var grid = createGrid(5,1,w,h);
+
+var x1 = grid[1][0];
+var x2 = grid[2][0];
+var x3 = grid[3][0];
+console.log(x1)
+console.log(x2)
+console.log(x3)
+var t_size = 100;
+
+function draw(){
+
+	ctx.fillStyle = rgb(255);
+	ctx.fillRect(0, 0, w, h);
+
+
+	// // TRIANGLE 1
+	ctx.save();
+	
+	ctx.eqTriangle(x1, h/2, t_size);
+	ctx.clip();
+	drawParticles();
+	ctx.restore();
+
+	// // TRIANGLE 2
+	ctx.save();
+	ctx.eqTriangle(x2, h/2, t_size);
+	ctx.clip();
+	drawParticles();
+	ctx.restore();
+	
+	// // TRIANGLE 3
+	ctx.save();
+	ctx.eqTriangle(x3, h/2, t_size);
+	ctx.clip();
+	drawParticles();
+	ctx.restore();
+
+	// ctx.globalCompositeOperation = "normal";
+	// ctx.restore();
+	ctx.strokeStyle = "#000";
+	ctx.eqTriangle(x1, h/2, t_size);
+	ctx.eqTriangle(x2, h/2, t_size);	
+	ctx.eqTriangle(x3, h/2, t_size);	
+
+}
+
+var h1 = 0, h2 = 0, h3 = 0;
+
+function drawParticles(){
+	ctx.fillStyle = "blue";
+	h1 =  tween(h1, audioChannelVolume[20], 2);
+	ctx.fillRect(x1-t_size, h/2 + 80, 2*t_size, -h1);
+	h2 =  tween(h2, audioChannelVolume[40], 2);
+	ctx.fillRect(x2-t_size, h/2 + 80, 2*t_size, -h2);
+	h3 =  tween(h3, audioChannelVolume[80], 2);
+	ctx.fillRect(x3-t_size, h/2 + 80, 2*t_size, -h3);
+}
+
+
+
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+ <script>document.write('<script src="http://' + (location.host || '${1:localhost}').split(':')[0] + ':${2:35729}/livereload.js?snipver=1"></' + 'script>')</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+ 	<meta charset="utf-8">
+	<title>Soundcloud Viz</title>
+	
+	<script src='http://connect.soundcloud.com/sdk.js'></script>
+	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+	<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+
+var particle = new particleEngine(8);
+
+// FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+function draw(){
+    // ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = rgba(255, 255, 255, 0.1);
+    ctx.fillRect(0, 0, w, h);
+    particle.draw();
+    //console.log()
+    for (var i = 0; i < particle.particles.length; i++) {
+        p = particle.particles[i];
+        ctx.fillStyle = "black";
+        // var mouse = new Vector(mouseX, mouseY);
+        // p.dist = p.location.sub(mouse);
+        ctx.fillRect(p.position.x, p.position.y, p.sz, p.sz);
+    }
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

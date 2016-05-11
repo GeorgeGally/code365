@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+
+ 	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/three.min.js"></script>
+	
+  <script language="javascript" src="js/Detector.js"></script>
+  <script language="javascript" src="js/three_setup.js"></script> 
+	
+	<script language="javascript" src="js/threejs/controls/PointerLockControls.js"></script>
+
+	<script language="javascript" src="js/threejs/controls/FirstPersonControls.js"></script>
+	
+  <script language="javascript" src="js/threejs/controls/OrbitControls.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+
+<script>
+
+
+      var group, logo, plane;
+
+      var targetRotation = 0;
+      var targetRotationOnMouseDown = 0;
+
+      var targetRotationY = 0;
+      var targetRotationOnMouseDownY = 0;
+
+      var mouseX = 0;
+      var mouseXOnMouseDown = 0;
+
+      var mouseY = 0;
+      var mouseYOnMouseDown = 0;
+
+      var windowHalfX = window.innerWidth / 2;
+      var windowHalfY = window.innerHeight / 2;
+
+      init();
+      
+
+      function init() {
+
+container = document.createElement( 'div' );
+        document.body.appendChild( container );
+
+renderer = new THREE.WebGLRenderer();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(new THREE.Color(0xEEEEEE, 1.0));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMapEnabled = true;
+
+    document.body.appendChild(renderer.domElement);
+    // camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+    // camera.position.set(0, 0, 100);
+    // camera.lookAt(new THREE.Vector3(0, 0, 0));
+            // position and point the camera to the center of the scene
+    	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        camera.position.x = -50;
+        camera.position.y = 30;
+        camera.position.z = 20;
+        camera.lookAt(new THREE.Vector3(-10,0,0));
+
+    scene = new THREE.Scene();
+
+
+    var material = new THREE.LineBasicMaterial({
+        color: 0xffffff,linewidth: 10
+    });
+    
+
+
+
+    logo = new THREE.Object3D();
+    logo.castShadow=true;
+    addLogo();
+
+    addPlane();
+
+
+        addLights();
+
+
+
+
+    renderer.render(scene, camera);
+
+    //stats = new Stats();
+        // stats.domElement.style.position = 'absolute';
+        // stats.domElement.style.top = '0px';
+        // container.appendChild( stats.domElement );
+ 
+        document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+        document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+        document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+
+        //
+
+        window.addEventListener( 'resize', onWindowResize, false );
+        animate();
+
+}
+
+
+function addPlane(){
+
+	var planeGeometry = new THREE.PlaneGeometry(120,120,1,1);
+    var planeMaterial =    new THREE.MeshLambertMaterial({color: 0xffffff});
+    plane = new THREE.Mesh(planeGeometry,planeMaterial);
+    plane.receiveShadow  = true;
+
+    // rotate and position the plane
+    plane.rotation.x=-0.5*Math.PI;
+    plane.position.x=0
+    plane.position.y=-10
+    plane.position.z=0
+
+    // add the plane to the scene
+    scene.add(plane);
+
+}
+
+
+function addLogo(){
+
+	var color = ~rand(0, 0xccffff);
+    //var color = "0xCC0000";
+    var emissive = new THREE.Color(color).multiplyScalar(0.3);
+
+    var pipe_material = new THREE.MeshPhongMaterial({
+            specular: 0xa9fcff,
+            color: color,
+            emissive: emissive,
+            shininess: 100
+          });
+
+    // LEFT VERT
+    var line = cylinderBetweenPoints(new THREE.Vector3(20,-10, 0), new THREE.Vector3(20,10, 0), pipe_material);
+    line.position.x = -20;
+    line.castShadow = true;
+    logo.add(line);
+
+    // RIGHT VERT
+    var line = cylinderBetweenPoints(new THREE.Vector3(20,-10, 0), new THREE.Vector3(20,10, 0), pipe_material);
+    line.position.x = 20;
+    line.castShadow = true;
+    logo.add(line);
+
+    // LEFT HORIZ
+    var line = cylinderBetweenPoints(new THREE.Vector3(20, 0, 0), new THREE.Vector3(10, 0, 0), pipe_material);
+    line.position.x = -15;
+    line.rotation.z = radians(90);
+    line.castShadow = true;
+    logo.add(line);
+
+    // RIGHT HORIZ
+    var line = cylinderBetweenPoints(new THREE.Vector3(20, 0, 0), new THREE.Vector3(10, 0, 0), pipe_material);
+    line.position.x = 15;
+    line.rotation.z = radians(90);
+    line.castShadow = true;
+    logo.add(line);
+
+     // LEFT SLANT
+    var line = cylinderBetweenPoints(new THREE.Vector3(-20, -20, 0), new THREE.Vector3(0, 20, 0), pipe_material);
+    line.rotation.z = radians(-26);
+    line.position.x = -10;
+    line.castShadow = true;
+    logo.add(line);
+
+     // RIGHT SLANT
+     var line = cylinderBetweenPoints(new THREE.Vector3(-20, -20, 0), new THREE.Vector3(0, 20, 0), pipe_material);
+    line.rotation.z = radians(26);
+    line.position.x = 10;
+    line.castShadow = true;
+    logo.add(line);
+
+    //BOTTOM LEFT SLANT
+     var line = cylinderBetweenPoints(new THREE.Vector3(-10, 0, 0), new THREE.Vector3(0, 15, 0), pipe_material);
+    line.rotation.z = radians(33);
+    line.position.x = -5;
+    line.position.y = -7.5;
+    line.castShadow = true;
+    logo.add(line);
+
+    //BOTTOM RIGHT SLANT
+    var line = cylinderBetweenPoints(new THREE.Vector3(-10, 0, 0), new THREE.Vector3(0, 15, 0), pipe_material);
+    line.rotation.z = radians(-33);
+    line.position.x = 5;
+    line.position.y = -7.5;
+    line.castShadow = true;
+    logo.add(line);
+
+    logo.scale.set(0.4, 0.4, 0.4);
+    scene.add(logo);
+}
+
+function addLights(){
+        // add subtle ambient lighting
+        var ambientLight = new THREE.AmbientLight(0x090909);
+        scene.add(ambientLight);
+
+        // add spotlight for the shadows
+        var spotLight = new THREE.SpotLight( 0xffffff );
+        spotLight.position.set( -40, 40, 50 );
+        spotLight.castShadow = true;
+        scene.add( spotLight );
+}
+
+function cylinderBetweenPoints(point1, point2, material){
+        var direction = new THREE.Vector3().subVectors(point2, point1);
+        //var arrow = new THREE.ArrowHelper(direction.clone().normalize(), point1);
+        var geom = new THREE.CylinderGeometry(0.6, 0.6, direction.length()-20*0, 10, 4, true);
+        var mesh = new THREE.Mesh(geom, material);
+        //mesh.rotation.setFromQuaternion(arrow.quaternion);
+        //mesh.position = new THREE.Vector3().addVectors(point1, direction.multiplyScalar(2.5));
+
+//         var focalPoint = new THREE.Vector3(
+//             mesh.position.x + point1.x,
+//             mesh.position.y + point1.y,
+//             mesh.position.z + point1.z
+// );
+
+//mesh.up = point1;//Z axis up
+// mesh.lookAt(focalPoint); 
+  //      mesh.updateMatrix();
+         return mesh;
+ };
+
+
+ function drawCylinder(vstart, vend, mat, scene){
+    var HALF_PI = Math.PI * .5;
+    var distance = vstart.distanceTo(vend);
+    var position  = vend.clone().add(vstart).divideScalar(2);
+
+    var material = mat;
+    var cylinder = new THREE.CylinderGeometry(1,1,distance,10,10,false);
+
+    var orientation = new THREE.Matrix4();//a new orientation matrix to offset pivot
+    var offsetRotation = new THREE.Matrix4();//a matrix to fix pivot rotation
+    var offsetPosition = new THREE.Matrix4();//a matrix to fix pivot position
+    orientation.lookAt(vstart,vend,new THREE.Vector3(0,1,0));//look at destination
+    offsetRotation.makeRotationX(HALF_PI);//rotate 90 degs on X
+    orientation.multiply(offsetRotation);//combine orientation with rotation transformations
+    cylinder.applyMatrix(orientation)
+
+    var mesh = new THREE.Mesh(cylinder,material);
+    mesh.position=position;
+    scene.add(mesh);
+    }
+
+
+    function onWindowResize() {
+
+        windowHalfX = window.innerWidth / 2;
+        windowHalfY = window.innerHeight / 2;
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+      }
+
+
+          function animate() {
+
+        requestAnimationFrame( animate );
+
+        render();
+        //stats.update();
+
+      }
+
+      function render() {
+
+        scene.rotation.y += ( targetRotation - scene.rotation.y ) * 0.05;
+        scene.rotation.x += ( targetRotationY - scene.rotation.x ) * 0.05;
+        renderer.render( scene, camera );
+
+      }
+
+
+  function onDocumentMouseDown( event ) {
+
+        event.preventDefault();
+
+        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+        document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+        document.addEventListener( 'mouseout', onDocumentMouseOut, false );
+
+        mouseXOnMouseDown = event.clientX - windowHalfX;
+        targetRotationOnMouseDown = targetRotation;
+
+      }
+
+      function onDocumentMouseMove( event ) {
+
+        mouseX = event.clientX - windowHalfX;
+        mouseY = event.clientY - windowHalfY;
+
+        targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.02;
+        targetRotationY = targetRotationOnMouseDownY + ( mouseY - mouseYOnMouseDown ) * 0.02;
+
+      }
+
+      function onDocumentMouseUp( event ) {
+
+        document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+        document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+        document.removeEventListener( 'mouseout', onDocumentMouseOut, false );
+
+      }
+
+      function onDocumentMouseOut( event ) {
+
+        document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+        document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+        document.removeEventListener( 'mouseout', onDocumentMouseOut, false );
+
+      }
+
+      function onDocumentTouchStart( event ) {
+
+        if ( event.touches.length == 1 ) {
+
+          event.preventDefault();
+
+          mouseXOnMouseDown = event.touches[ 0 ].pageX - windowHalfX;
+          targetRotationOnMouseDown = targetRotation;
+
+          mouseYOnMouseDown = event.touches[ 0 ].pageY - windowHalfY;
+          targetRotationOnMouseDownY = targetRotationY;
+
+        }
+
+      }
+
+      function onDocumentTouchMove( event ) {
+
+        if ( event.touches.length == 1 ) {
+
+          event.preventDefault();
+
+          mouseX = event.touches[ 0 ].pageX - windowHalfX;
+          targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.05;
+
+        }
+
+      }
+
+  function rand(x1,x2){
+      return Math.random()*(x2-x1)+x1;
+  }
+</script>
+ 
+</body>
+</html>
