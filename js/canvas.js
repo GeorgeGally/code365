@@ -1,4 +1,4 @@
-var w, width, h;
+var w, width, h, height;
 var canvas;
 function createCanvas(canvas_name){
 	canvas = document.createElement('canvas');

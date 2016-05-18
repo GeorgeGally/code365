@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var theta = 0;;   
+
+var a;
+
+
+function draw(){
+
+  ctx.fillStyle = rgba(255, 255, 255, 0.1);
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = rgba(13, 13, 13, 0.2);
+  ctx.lineWeight = 0.3;
+
+  // Let's pick an angle 0 to 90 degrees based on the mouse position
+  //a = tween(a, map(audioChannelVolume[20], 0, 100, 0, 90), 10);
+  //var s = map(audioChannelVolume[20], 0, 100, 0, 90);
+  //a = tween(a, s, 2);
+  a = map(audioChannelVolume[20], 0, 150, 0, 30);
+  //a=  tween(a, map(audioChannelVolume[30], 0, 100, 5, 45), 4);
+  //var a = map(mouseX, 0, w, 0, 90);
+  //console.log(a)
+  // Convert it to radians
+  //theta = radians(a);
+  theta = tween(theta, radians(a), 10);
+
+  // Start the tree from the bottom of the screen
+  ctx.save();
+  ctx.translate(width/2,height);
+
+  // // Draw a line 60 pixels
+
+  ctx.line(0,0,0,-120);
+
+  // // Move to the end of that line
+
+  ctx.translate(0,-120);
+  branch(160);
+  // // Start the recursive branching!
+  // ctx.translate(0,90);
+  ctx.restore();
+  // ctx.fillStyle = rgb(0, 255, 255);
+  // ctx.fillRect(random(w), random(h), 100, 100);
+  //
+  
+  // ctx.translate(0,180);
+  // ctx.translate(-width/2,-height);
+
+}
+
+
+
+function branch(hh) {
+
+  // Each branch will be 2/3rds the size of the previous one
+
+  hh *= 0.75;
+
+  //console.log(hh)
+
+  // All recursive functions must have an exit condition!!!!
+
+  // Here, ours is when the length of the branch is 2 pixels or less
+
+  if (hh > 2) {
+
+    ctx.save();
+    //pushMatrix();    // Save the current state of transformation (i.e. where are we now)
+
+    ctx.rotate(theta);   // Rotate by theta
+
+    ctx.line(0,0,0,-hh);  // Draw the branch
+
+    ctx.translate(0,-hh); // Move to the end of the branch
+
+    branch(hh);       // Ok, now call myself to draw two new branches!!
+    //console.log(hh)
+    ctx.restore();   // Whenever we get back here, we "pop" in order to restore the previous matrix state
+
+    
+
+    // Repeat the same thing, only branch off to the "left" this time!
+    ctx.save();
+
+    ctx.rotate(-theta);
+
+    ctx.line(0,0,0,-hh);
+
+    ctx.translate(0,-hh);
+
+    branch(hh);
+
+    ctx.restore();
+
+  }
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
+  

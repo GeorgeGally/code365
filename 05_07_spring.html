@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 2;
+var particles = [];
+var flies = [];
+var radius = 220;
+var num_particles = 2;
+ctx.translate(0.5, 0.5);
+var margin = 160;
+var theta = 0.0;
+var xx = [];
+var yy = [];
+
+
+for (var i = 0; i < num_particles; i++) {
+	xx[i] = width/2;
+	yy[i] = height/2;
+	flies[i] = new particleEngine(46);
+	for (var j = 0; j < flies[i].particles.length; j++) {
+		b = flies[i].particles[j];
+		b.speed.x = random(-0.2, 2);
+		b.speed.y = random(-0.2, 2);
+	}
+}
+
+
+function draw(){
+
+	ctx.fillStyle = rgb(255);
+	ctx.fillRect(0, 0, w, h);
+	
+	theta += 0.05;
+	
+
+	moveParticles();
+
+}
+
+
+function moveParticles(){
+
+	xx[0] = map(Math.sin(theta),-1,1,2*margin,width-margin*2);
+   	xx[1] = map(Math.sin(theta),-1,1,width-2*margin,margin*2);
+   	xx[2] = map(Math.sin(theta),-1,1,2*margin,width-margin*2);
+   	xx[3] = map(Math.sin(theta),-1,1,width-2*margin,margin*2);
+   	
+   	yy[0] = height-margin;
+   	yy[1] = margin;
+   	yy[2] = margin;
+   	yy[3] = margin;
+   	ctx.strokeStyle = "black";
+   	ctx.fillStyle = "black";
+   	var sz =  map(audioChannelVolume[b.me%80], 0, 150, 10, 50);
+   	ctx.line(xx[1],yy[1],xx[0],yy[0]);
+  	ctx.fillEllipse(xx[0],yy[0],sz,sz);
+  	ctx.fillEllipse(xx[1],yy[1],sz,sz);
+
+	for (var i = 0; i < num_particles; i++) {
+
+		x = xx[i];
+		//console.log(x)
+
+        for (var j = 0; j < flies[i].particles.length; j++) {
+            
+            var mouse = new Vector(xx[i], yy[i]);
+            b = flies[i].particles[j];
+            mouse = mouse.subtract(b.position);
+             mouse.setMag(random(0.8));
+            //console.log(mouse)
+            acceleration = mouse;
+            b.speed = b.speed.add(acceleration);
+            b.position = b.position.add(b.speed);
+            b.speed.limit(5);
+            //p.sz = 2;
+            b.sz =  map(audioChannelVolume[b.me%80], 0, 150, 0.1, 3);
+            ctx.strokeStyle = b.c;
+            ctx.fillStyle = b.c;
+            ctx.strokeStyle ="black";
+            ctx.fillStyle ="black";
+            //ctx.line(b.position.x, b.position.y, x, y);
+            //ctx.fillEllipse(b.position.x, b.position.y, b.sz, b.sz);
+            //ctx.fillEllipse(b.position.x, b.position.y, 20, 20);
+
+
+        }
+        };
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
