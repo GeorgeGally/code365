@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/toxiclibs.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var names = [];
+var worms = [];
+
+ var  VerletPhysics2D = toxi.physics2d.VerletPhysics2D,
+      VerletParticle2D = toxi.physics2d.VerletParticle2D,
+      VerletSpring2D = toxi.physics2d.VerletSpring2D,
+      AttractionBehavior = toxi.physics2d.behaviors.AttractionBehavior,
+      GravityBehavior = toxi.physics2d.behaviors.GravityBehavior,
+      ZoomLensInterpolation = toxi.math.ZoomLensInterpolation,
+      NamedColor = toxi.color.NamedColor,
+      Collections = toxi.color.Collections,
+      Vec2D = toxi.geom.Vec2D,
+      TColor = toxi.color.TColor,
+      Rect = toxi.geom.Rect;
+
+
+var zoomLens = new ZoomLensInterpolation();
+
+var showColorPalette = true;
+var selectedColorID;
+
+// screen center
+var center;
+
+// background color (readonly colors can't be modified)
+var bg;
+
+function setup() {
+
+  center = new Vec2D(width/2, height/2);
+  // create a list of all the Toxiclibs NamedColors
+  names = NamedColor.getNames();
+  // sort it alphabetically
+  //Collections.sort(names);
+  //textFont(createFont("SansSerif", 28));
+  // set zoom lens to a dilating characteristic
+  // setting the first parameter to a negative value will create a bundling effect
+  zoomLens.setLensStrength(0.45, 1);
+  // set the background color to deepskyblue
+  bg = NamedColor.getForName("deepskyblue");
+}
+
+function draw() {
+  // convert the bg color into ARGB color format (32bit packed integer)
+  //background(bg.toARGB());
+  ctx.fillStyle = toColor(bg.toARGB());
+  ctx.fillStyle = rgb(255);
+  ctx.fillRect(0, 0, w, h);
+  // run through all the worms (backwards cause we are also removing some from the list)
+  for (var i = 0; i < worms.length; i++) {
+    var w = worms[i]
+
+  
+    // if the worm's last point is 'off the screen' remove the worm
+    // distanceToSquared() is faster than distanceTo() since it avoids
+    // the square root calculation and we don't need precise values here...
+    if (w.points[0].distanceToSquared(center) > 640000) {
+      i.remove();
+    } 
+    else {
+      // otherwise update and display the worm
+      w.update();
+      w.display();
+    }
+  }
+
+  // set the zoom location based on the normalized mouseX (0.0 .. 1.0 interval)
+  var normX= mouseX / width;
+  // interpolate focal point to new mouse position (15% step per frame)
+  zoomLens.setLensPos(normX, 0.15);
+  // determine the selected color based on mouseX
+  // by finding which color area contains mouseX
+  var focalX=zoomLens.interpolate(0, width, normX);
+  for (var i=0, num=names.length-1; i<=num; i++) {
+    var x=zoomLens.interpolate(0, width, i/num);
+    var x2=zoomLens.interpolate(0, width, (i+1)/num);
+    // select color if focalX is between x and x2
+    if (focalX >= x && focalX < x2) {
+      selectedColorID=i;
+      break;
+    }
+  }
+
+  // toggle the color palette
+  if (showColorPalette) {
+    drawColorPalette();
+  }
+
+  if (mousePressed) {
+    // Create worms with the LEFT mouse button
+    if (mouseButton == LEFT) {
+      var mouse = new Vec2D(mouseX, mouseY);
+      var c = NamedColor.getForName(names[selectedColorID]);
+      worms.add(new ColorWorm(mouse, c));
+      // Change the background color with the RIGHT or MIDDLE mouse button
+    } 
+    else {
+      bg = NamedColor.getForName(names[selectedColorID]);
+    }
+  }
+}
+
+// Press ANY key to toggle the color palette
+function keyPressed() {
+  showColorPalette = !showColorPalette;
+}
+
+ ColorWorm = function(origin, c) {
+  var  points = array();
+  var direction;
+  var c;
+
+  // ColorWorm(Vec2D origin, ReadonlyTColor c) {
+    // at the origin point (mouseX,mouseY)
+    points.add(origin);
+    // create a copy of the readonly color for later manipulation
+    this.c = c.copy();
+    // create a random direction
+    direction = Vec2D.randomVector();
+  //}
+
+  function update() {
+    // every second frame (not too fast, not too slow)
+    if (frameCount % 2 == 0) {
+      // create a new point given the last point's coordinates
+      var p = points[points.size()-1].copy();
+      // rotate the direction randomly somewhere between -30 and 30 degrees
+      direction.rotate(radians(random(-30, 30)));
+      // create a movement vector in that direction with a random magnitude between 15 and 30
+      var move = direction.getNormalizedTo(random(15, 30));
+      // move the point in that direction and with that distance
+      p.addSelf(move);
+      // add the new point to the list
+      points.add(p);
+    }
+
+    // truncate at 25 points (remove the oldest point)
+    while (points.size () > 25) {
+      points.remove(0);
+    }
+  }
+
+  function display() {
+    // need at least 3 points to construct a spline
+    if (points.size()>2) {
+      // create Spline2D from the points
+      var s = new Spline2D(points);
+      // subdivide it by 8 into a list of vertices
+      var vertices = s.computeVertices(8);
+      //noFill();
+      //strokeWeight(2);
+      ctx.lineWidth = 2;
+      // draw a line through all the vertices
+      beginShape();
+      for (var i=0,num=vertices.size()-1; i<=num; i++) {
+        var v = vertices.get(i);
+        // the position in the list determines the transparency of the segment
+        c.setAlpha(map(i, 0, num, 0, 1));
+        // convert the color into ARGB color format (32bit packed integer)
+        ctx.lineStyle = c.toARGB();
+        vertex(v.x, v.y);
+      }
+      endShape();
+    }
+  }
+}
+
+
+function toColor(num) {
+    num >>>= 0;
+    var b = num & 0xFF,
+        g = (num & 0xFF00) >>> 8,
+        r = (num & 0xFF0000) >>> 16,
+        a = ( (num & 0xFF000000) >>> 24 ) / 255 ;
+    return "rgba(" + [r, g, b, a].join(",") + ")";
+}
+
+
+function drawColorPalette() {
+  //noStroke();
+  ctx.strokeWeight = 0;
+  // display all the colors over the width of the screen
+  var num = names.length-1;
+  for (var i=0; i<=names.length-1; i++) {
+    // determine the color swatch's position & width based on
+    // it's relative position and the zoom location (mouseX)
+    var x = zoomLens.interpolate(0, width, i / num);
+    var x2 = zoomLens.interpolate(0, width, (i+1) / num);
+    // convert the color into ARGB color format (32bit packed integer);
+    var col = toColor(NamedColor.getForName(names[i]).toARGB())
+    console.log(x);
+    ctx.fillStyle = col;
+    // move the colors vertically with mouseY
+    ctx.fillRect(x, mouseY-15, x2-x, 30);
+  }
+
+  // get the name of the selectedColor
+  var name = names[selectedColorID];
+  //var ascent = textAscent();
+  var ascent =  50;
+  //var textwidth = textWidth(name);
+  // keep the text and it's background fill within screen boundaries
+  // var x = Math.min(mouseX, width-textwidth-8);
+  var x = Math.min(mouseX, width-200);
+  var y = Math.min(mouseY + 52, height-4);
+  // draw a white text background
+  ctx.fillStyle = rgb(255);
+  // ctx.rect(x, y-ascent-4, textwidth+8, ascent+8);
+  ctx.rect(x, y-ascent-4, 200, ascent+8);
+  // draw a black text
+  ctx.fillStyle = rgb(0);
+  ctx.fillText(name, x+4, y);
+}
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

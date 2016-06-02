@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/toxiclibs.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+// var myVector = new toxi.geom.Vec2D( 2, 3 ).scaleSelf(0.5);
+// var myColor = toxi.color.TColor.newRGB(128/255,64/255,32/255);
+// console.log(myVector);
+
+ var  VerletPhysics2D = toxi.physics2d.VerletPhysics2D,
+      VerletParticle2D = toxi.physics2d.VerletParticle2D,
+      VerletSpring2D = toxi.physics2d.VerletSpring2D,
+      AttractionBehavior = toxi.physics2d.behaviors.AttractionBehavior,
+      GravityBehavior = toxi.physics2d.behaviors.GravityBehavior,
+      Vec2D = toxi.geom.Vec2D,
+      TColor = toxi.color.TColor,
+      Rect = toxi.geom.Rect;
+
+var physics;
+var prev;
+
+var continuous,current; // variables to create a new continuous line on each mouse drag
+ 
+ physics = new VerletPhysics2D();
+  // add gravity in positive Y direction
+  physics.addBehavior(new GravityBehavior(new Vec2D(0,0.1)));
+  // set the stroke weight of the line
+  ctx.lineWidth = 4;
+
+
+
+function draw() {
+  //background(255);
+ 	ctx.fillStyle = rgba(255,255,255,1);
+	ctx.fillRect(0, 0, w, h);
+  // update all the physics stuff (particles, springs, gravity)
+  	physics.update();
+ 
+  // draw a line segment for each spring and change the color of it based on the x position
+  for(var i = 0; i< physics.springs.length; i++) {
+  	s = physics.springs[i];
+    // map the direction of each spring to a hue
+    var currHue=map(s.b.sub(s.a).heading(),-Math.PI,Math.PI,0,1);
+    // define a color in HSV and convert into ARGB format (32bit packed integer)
+    var col = TColor.newHSV(currHue,1,1).toARGB()
+    //console.log(col);
+    ctx.strokeStyle = hsl(currHue,50,50);
+    ctx.line(s.a.x,s.a.y,s.b.x,s.b.y);
+  }
+ 	//console.log(physics.springs.length);
+  // remove stuff that is off the screen to keep things running smoothly ;-)
+  removeOffscreen();
+}
+ 
+function removeOffscreen() {
+  // remove off-screen springs
+  for (var i = 0; i < physics.springs.length; i++) {
+  	var s = physics.springs[i];
+  	   if (s.a.y > height+100 || s.b.y > height+100) {
+      //i.remove();
+      physics.springs.splice(i, 1);
+    }
+  }
+
+  //remove off-screen particles & behaviors
+  for (var i=physics.particles.length-1; i>=0; i--) {
+    var p = physics.particles[i];
+    if (p.y > height+200) {
+      physics.removeParticle(p);
+      var b = physics.behaviors[i+1];
+      physics.removeBehavior(b);
+    }
+  }
+}
+ 
+dragMe = function() {
+//console.log("dragMe");
+  // create a locked (unmovable) particle at the mouse position
+  var p = new VerletParticle2D(mouseX,mouseY);
+  p.lock();
+  // if there is at least one particle and this is the current continuous line
+  if (physics.particles.length > 0 && continuous == current) {
+    // get the previous particle (aka the last in the list)
+    var prev = physics.particles[physics.particles.length-1];
+    // create a spring between the previous and the current particle of length 10 and strength 1
+    var s = new VerletSpring2D(p,prev,10,1);
+    // add the spring to the physics system
+    physics.addSpring(s);
+  } else {
+    current = continuous;
+  }
+  // unlock previous particle
+  if (prev!=null) {
+    prev.unlock();
+  }
+  // add the particle to the physics system
+  physics.addParticle(p);
+  // create a forcefield around this particle with radius 20 and force -1.5 (aka push)
+  var b = new AttractionBehavior(p,20,-1.5);
+  // add the behavior to the physics system (will be applied to all particles)
+  physics.addBehavior(b);
+  // make current particle the previous one...
+  prev=p;
+}
+ 
+
+var isDragging = false;
+$(document)
+.mousedown(function() {
+    isDragging = false;
+}).mousemove(function() {
+    isDragging = true;
+    dragMe();
+ }).mouseup(function() {
+    var wasDragging = isDragging;
+    isDragging = false;
+    // if (!wasDragging) {
+    //     $("#throbble").toggle();
+    // }
+     if (prev!=null) {
+    	prev.unlock();
+  	}
+  	continuous++;
+});
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>
