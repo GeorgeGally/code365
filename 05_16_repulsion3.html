@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+
+
+var ctx = createCanvas("canvas1");
+ctx.lineCap="round";
+var x = [];
+var y = [];
+var xx = w/2;
+var yy = h/2;
+var segLength = 10;
+ctx.lineWidth = 15;
+ctx.lineStyle = rgba(0,0,0,0.5);
+for (var i = 0; i < 90; i++) {
+  x[i]=w/2;
+  y[i]=h/2;
+}
+function dragSegment(i, xin, yin) {
+  var dx = xin - x[i];
+  var dy = yin - y[i];
+  var angle = Math.atan2(dy, dx);  
+  x[i] = xin - Math.cos(angle) * segLength;
+  y[i] = yin - Math.sin(angle) * segLength;
+  //if ( i== 0) ctx.fillEllipse(x[0], y[0], 60, 60);
+  segment(x[i], y[i], angle);
+}
+
+function segment(x, y, a) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(a);
+  ctx.line(0, 0, segLength, 0);
+  ctx.restore();
+}
+
+
+function draw()
+{  
+  ctx.fillStyle = rgba(255, 255, 255, 0.9);
+  ctx.fillRect(0, 0, w, h);
+  
+  xx = tween(xx, map(audioChannelVolume[10], 0, 200, 0, w), 50);; // Set the first element
+  yy = tween(yy,map(audioChannelVolume[20], 0, 200, 0, h), 50); // Set the first element
+  
+  dragSegment(0, xx, yy);
+  for(var i=0; i<x.length-1; i++) {
+    dragSegment(i+1, x[i], y[i]);
+  }
+
+} 
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
+  

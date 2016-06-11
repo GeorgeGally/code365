@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var x = [];
+var y = [];
+for (var i = 59; i >= 0; i--) {
+x[i] = w/2;
+y[i] = h/2;
+}
+console.log(x[0]) 
+
+function draw()
+{  
+  ctx.fillStyle = rgb(55, 55, 55);
+  ctx.fillRect(0, 0, w, h);
+   for (var i = x.length; i > 0; i--) {
+    x[i] = x[i-1];
+    y[i] = y[i-1];
+  }
+  x[0] = tween(x[0], map(audioChannelVolume[10], 0, 200, 0, w),40);; // Set the first element
+  y[0] = tween(y[0],map(audioChannelVolume[20], 0, 200, 0, h),40); // Set the first element
+  
+  for (var i = 0; i < x.length; i++) {
+    ctx.fillStyle = rgb(255,255,255-(i * 4));
+    ctx.fillEllipse(x[i], y[i], 10, 10);
+  }
+  
+  } 
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
+  

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/physics.js"></script>
+
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+
+var ctx = createCanvas("canvas1");
+
+var gravity = 0.01; // Occurs in the y-direction, negative y goes up.
+var physics = new Physics();
+
+ctx.lineWidth = 2;
+ctx.lineCap = 'round';
+
+var mass = 1;
+var x1 = width * 0.25;
+var x2 = width * 0.75;
+var y = height / 2;
+
+var a = physics.makeParticle(mass, x1, y);
+a.position.x = x1;
+a.position.y = y;
+console.log(a)
+
+var b = physics.makeParticle(mass, x2, y);
+
+var strength = 0.75; // What is the strength of the bond?
+var drag = 0.1; // How much drag is on the string?
+var rest = radius * 2; // What is the rest length of the spring?
+
+var radius = 50;
+var spring = physics.makeSpring(a, b, strength, drag, rest);
+
+physics.onUpdate(draw);
+
+function draw() {  
+  
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // If out of view then reset it's position to where it started.
+    // if (particle.position.y > height + radius * 2) {
+    //   particle.position.set(width / 2, - radius * 2);
+    //   particle.velocity.clear();
+    // }
+
+    // var x = particle.position.x;
+    //var y = a.position.y;
+    //console.log(y)
+    // Draw the particle
+    ctx.fillStyle = "black";
+    ctx.fillEllipse(a.position.x, a.position.y, radius);
+    ctx.fillEllipse(b.position.x, b.position.y, radius);
+    ctx.line(a.position.x, a.position.y, b.position.x, b.position.y);
+
+    if (b.resting()) {
+      a.position.set(x1, y);
+      b.position.set(x2, y);
+    }
+
+} 
+
+
+//physics.play();
+
+canvas.physics = physics;
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
+  

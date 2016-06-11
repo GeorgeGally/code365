@@ -47,7 +47,7 @@ var center;
 // background color (readonly colors can't be modified)
 var bg;
 
-function setup() {
+//function setup() {
 
   center = new Vec2D(width/2, height/2);
   // create a list of all the Toxiclibs NamedColors
@@ -60,14 +60,15 @@ function setup() {
   zoomLens.setLensStrength(0.45, 1);
   // set the background color to deepskyblue
   bg = NamedColor.getForName("deepskyblue");
-}
+//}
 
 function draw() {
   // convert the bg color into ARGB color format (32bit packed integer)
   //background(bg.toARGB());
-  ctx.fillStyle = toColor(bg.toARGB());
-  ctx.fillStyle = rgb(255);
-  ctx.fillRect(0, 0, w, h);
+  //ctx.fillStyle = toColor(bg.toARGB());
+  //ctx.fillStyle = rgb(255);
+  // ctx.fillRect(0, 0, w, h);
+  ctx.clearRect(0, 0, w, h);
   // run through all the worms (backwards cause we are also removing some from the list)
   for (var i = 0; i < worms.length; i++) {
     var w = worms[i]
@@ -200,6 +201,10 @@ function toColor(num) {
 
 function drawColorPalette() {
   //noStroke();
+  bg = NamedColor.getForName(names[selectedColorID]);
+  ctx.fillStyle = toColor(bg.toARGB());
+  ctx.fillRect(0, 0, w, h);
+  //ctx.clearRect(0,0,w,h)
   ctx.strokeWeight = 0;
   // display all the colors over the width of the screen
   var num = names.length-1;
@@ -210,7 +215,7 @@ function drawColorPalette() {
     var x2 = zoomLens.interpolate(0, width, (i+1) / num);
     // convert the color into ARGB color format (32bit packed integer);
     var col = toColor(NamedColor.getForName(names[i]).toARGB())
-    console.log(x);
+    //console.log(x);
     ctx.fillStyle = col;
     // move the colors vertically with mouseY
     ctx.fillRect(x, mouseY-15, x2-x, 30);
@@ -228,7 +233,7 @@ function drawColorPalette() {
   // draw a white text background
   ctx.fillStyle = rgb(255);
   // ctx.rect(x, y-ascent-4, textwidth+8, ascent+8);
-  ctx.rect(x, y-ascent-4, 200, ascent+8);
+  ctx.fillRect(x, y-ascent-4, 200, ascent+8);
   // draw a black text
   ctx.fillStyle = rgb(0);
   ctx.fillText(name, x+4, y);

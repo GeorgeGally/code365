@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var particle = new particleEngine(30);
+for (var j = 0; j < particle.particles.length; j++) {
+  particle.particles[j].x = [];
+  particle.particles[j].y = [];
+  for (var i = 29; i >= 0; i--) {
+  particle.particles[j].x[i] = w/2;
+  particle.particles[j].y[i] = h/2;
+}
+}
+
+
+
+
+function draw()
+{  
+  ctx.fillStyle = rgb(55, 55, 55);
+  ctx.fillRect(0, 0, w, h);
+  
+  for (var j = 0; j < particle.particles.length; j++) {
+    p = particle.particles[j];
+
+    for (var i = p.x.length; i > 0; i--) {
+      p.x[i] = p.x[i-1];
+      p.y[i] = p.y[i-1];
+    }
+  
+    p.x[0] = tween(p.x[0], map(audioChannelVolume[j], 0, 200, 0, w),80);; // Set the first element
+    p.y[0] = tween(p.y[0],map(audioChannelVolume[60-j], 0, 200, 0, h),80); // Set the first element
+  
+    for (var i = 0; i < p.x.length; i++) {
+      ctx.fillStyle = rgb(255,255,255-(i * 4));
+      ctx.fillEllipse(p.x[i], p.y[i], 4, 4);
+    }
+
+  }
+
+} 
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
+  

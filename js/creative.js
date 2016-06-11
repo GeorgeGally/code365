@@ -19,6 +19,7 @@ p.strokeCircle = function(x, y, radius) {
 };
 
 p.ellipse = function(x, y, width, height) { 
+	if (height == undefined) height = width;
 	this.beginPath(); 
 	for(var i=0;i<Math.PI*2;i+=Math.PI/16) { 
 		this.lineTo(x+(Math.cos(i)*width/2), y+(Math.sin(i)*height/2));
@@ -27,6 +28,7 @@ p.ellipse = function(x, y, width, height) {
 };
 
 p.Hellipse = function(x, y, width, height) { 
+	if (height == undefined) height = width;
 	this.beginPath(); 
 	for(var i=0;i<Math.PI*2;i+=Math.PI/64) { 
 		this.lineTo(x+(Math.cos(i)*width/2), y+(Math.sin(i)*height/2));		
@@ -35,22 +37,26 @@ p.Hellipse = function(x, y, width, height) {
 };
 
 p.fillEllipse = function(x, y, width, height) { 
+	if (height == undefined) height = width;
 	this.ellipse(x,y,width, height); 
 	this.fill(); 
 	this.beginPath();
 };
 p.HfillEllipse = function(x, y, width, height) { 
+	if (height == undefined) height = width;
 	this.Hellipse(x,y,width, height); 
 	this.fill(); 
 	this.beginPath();
 };
 
 p.strokeEllipse = function(x, y, width, height) { 
+	if (height == undefined) height = width;
 	this.ellipse(x,y,width, height); 
 	this.stroke(); 
 	this.beginPath();
 };
 p.HstrokeEllipse = function(x, y, width, height) { 
+	if (height == undefined) height = width;
 	this.Hellipse(x,y,width, height); 
 	this.stroke(); 
 	this.beginPath();
@@ -151,12 +157,25 @@ p.eqTriangle = function(x, y, sz, down) {
  //    this.restore();
  // };
 
+p.background = function (r, g, b){
+	if (b == undefined) {
+		this.fillStyle = rgb(r); 
+	}
+		else {
+			this.fillStyle = rgb(r, g, b); 
+		}
+	
+	this.fillRect(0, 0, w, h); 
+};
+
 function radians(deg) {return deg*Math.PI/180;}; 
 function degrees(rad) {return rad*180/Math.PI;};
+
 function rgb(r, g, b) { 
 	if (g == undefined) g = r;
 	if (b == undefined) b = r;
 	return 'rgb('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+')';};
+
 function rgba(r, g, b, a) { return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', '+clamp(a,0,1)+')';};
 function hsl(h, s, l) { return 'hsl('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%)';};
 function hsla(h, s, l, a) { return 'hsla('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%, '+clamp(a,0,1)+')';};
@@ -369,10 +388,12 @@ function triangulate(grid_w, grid_h, alpha) {
 
 var mousePressed = 0;
 document.onmousedown = function() { 
-  ++mousePressed;
+  mousePressed = 1;
+  //window.mousePressed();
 }
 document.onmouseup = function() {
-  --mousePressed;
+  mousePressed = 0;
+  //window.mouseup();
 }
 
 

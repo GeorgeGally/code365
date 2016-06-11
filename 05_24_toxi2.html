@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/toxiclibs.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var waves = [];
+var num_waves = 12;
+
+var  VerletPhysics2D = toxi.physics2d.VerletPhysics2D,
+      VerletParticle2D = toxi.physics2d.VerletParticle2D,
+      VerletSpring2D = toxi.physics2d.VerletSpring2D,
+      AttractionBehavior = toxi.physics2d.behaviors.AttractionBehavior,
+      GravityBehavior = toxi.physics2d.behaviors.GravityBehavior,
+      ZoomLensInterpolation = toxi.math.ZoomLensInterpolation,
+      NamedColor = toxi.color.NamedColor,
+      Collections = toxi.color.Collections,
+      Vec2D = toxi.geom.Vec2D,
+      TColor = toxi.color.TColor,
+      Rect = toxi.geom.Rect;
+
+
+
+
+Wave = function(k){ 
+var p1, p2;
+var physics = new VerletPhysics2D();
+physics.addBehavior(new GravityBehavior(new Vec2D(0,0.6)));
+physics.setWorldBounds(new Rect(0, 0, w, h));
+var s = randomInt(0.1,3);
+var num_particles = 107;
+var p = [];
+var springs = [];
+
+ctx.strokeStyle = rgba(90, 90, 90, 0.3);
+var spacing = Math.floor(w/(num_particles));
+console.log(spacing);
+for (var i = 0; i < num_particles; i++) {
+  var x = (i*spacing)%(w)
+  p[i] = new VerletParticle2D(new Vec2D(x, h/2));
+  p[i].me = (i) %80;
+  var cc = randomInt(30);
+  p[i].me2 = (cc+num_particles*k+i) %50;
+
+  physics.addParticle(p[i]);
+  if(i>0) {
+    springs[i] = new VerletSpring2D(p[i], p[i-1], 35, 0.05);
+    physics.addSpring(springs[i]);
+  }
+}
+
+
+this.draw = function(){
+  physics.update();
+  ctx.lineWidth = s;
+  ctx.fillStyle = rgb(0);
+  for (var i = 0; i < p.length; i++) {
+    var particle = p[i];
+    //p[i].x = tween(p[i].x, map(audioChannelVolume[p[i].me], 0, 250, 0, w), 180); 
+    p[i].x = i * spacing;
+    p[i].y = tween(p[i].y, map(audioChannelVolume[p[i].me2], 0, 250, h/4, h-h/4), random(20,80)); 
+    //ctx.fillEllipse(particle.x, particle.y, audioChannelVolume[(i)%60]/5, audioChannelVolume[(i)%60]/5);
+    if(i>0 && p[i].x < w-20 && p[i-1].x > 20) {
+      ctx.line(p[i].x, p[i].y, p[i-1].x, p[i-1].y);
+    }
+  }
+
+
+  if (mousePressed) {
+    p[0].lock();
+    p[0].x = mouseX;
+    p[0].y = mouseY;
+    p[0].unlock();
+  }
+
+}
+
+}
+
+for (var i = 0; i < num_waves; i++) {
+  waves[i] = new Wave(i);
+}
+
+
+function draw(){
+  ctx.fillStyle = rgba(250, 250, 250, 0.5);
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  for (var i = 0; i < num_waves; i++) {
+  waves[i].draw();
+}
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

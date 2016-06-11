@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/toxiclibs.js"></script>
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+</head>
+ <body>
+   
+<script>
+
+
+var ctx = createCanvas("canvas1");
+
+ 
+var SineWave = toxi.math.waves.SineWave,
+    Vec2D = toxi.geom.Vec2D,
+    Circle = toxi.geom.Circle;
+
+var wave1 = new SineWave(0,0.02,100,200);
+var wave2 = new SineWave(0,0.023,100,200);
+
+var xx = 0;
+var yy = 0;
+var yy2 = 0;
+
+function draw() {
+  //background(#cceeff);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.globalCompositeOperation = 'lighter';
+
+    xx = tween(xx, map(audioChannelVolume[10], 0, 200, 0, w), 50);; // Set the first element
+    yy = tween(yy,map(audioChannelVolume[20], 0, 200, 0, h), 50); 
+    yy2 = tween(yy2,map(audioChannelVolume[20], 0, 200, 0, w*2), 50); 
+  var p1 = new Vec2D(200, wave1.update());
+  var p2 = new Vec2D(400, wave2.update());
+  var p3 = new Vec2D(xx, yy2);
+
+
+  
+
+var circle = Circle.from3Points(p1, p2, p3);
+//console.log(circle)
+  if (circle != undefined) {
+    ctx.fillStyle = rgb(255,255,0, 0.8)
+    ctx.HfillEllipse(circle.x,circle.y,circle.getRadius()*2,circle.getRadius()*2);
+    ctx.fillStyle = rgba(0, 0, 235, 0.8);
+    ctx.HfillEllipse(p1.x,p1.y,xx,xx);
+    ctx.fillStyle = rgba(0, 235 ,0 , 0.8);
+    ctx.HfillEllipse(p2.x,p2.y,yy,yy);
+    ctx.fillStyle = rgba(235, 0 ,0 , 0.8);
+    ctx.HfillEllipse(p3.x,p3.y,xx,xx);
+    
+  }
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
+  

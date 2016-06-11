@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/toxiclibs.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+ var  VerletPhysics2D = toxi.physics2d.VerletPhysics2D,
+      VerletParticle2D = toxi.physics2d.VerletParticle2D,
+      VerletSpring2D = toxi.physics2d.VerletSpring2D,
+      AttractionBehavior = toxi.physics2d.behaviors.AttractionBehavior,
+      GravityBehavior = toxi.physics2d.behaviors.GravityBehavior,
+      ZoomLensInterpolation = toxi.math.ZoomLensInterpolation,
+      NamedColor = toxi.color.NamedColor,
+      Collections = toxi.color.Collections,
+      Vec2D = toxi.geom.Vec2D,
+      TColor = toxi.color.TColor,
+      Rect = toxi.geom.Rect;
+
+
+//var Partile = new VerletParticle2D();
+var p1, p2;
+var physics = new VerletPhysics2D();
+physics.addBehavior(new GravityBehavior(new Vec2D(0,0.5)));
+physics.setWorldBounds(new Rect(0, 0, w, h));
+
+var num_particles = 50;
+var p = [];
+var springs = [];
+
+for (var i = 0; i < num_particles; i++) {
+  p[i] = new VerletParticle2D(new Vec2D(random(w), random(h)));
+  physics.addParticle(p[i]);
+  if(i>0) {
+    springs[i] = new VerletSpring2D(p[i], p[i-1], 20, 0.005);
+    physics.addSpring(springs[i]);
+  }
+}
+
+
+function draw(){
+  physics.update();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = rgb(0);
+  for (var i = 0; i < p.length; i++) {
+    var particle = p[i];
+    ctx.fillEllipse(particle.x, particle.y, 20, 20);
+  }
+
+  p[0].x = tween(p[0].x, map(audioChannelVolume[10], 0, 250, 0, w), 80); 
+  p[0].y = tween(p[0].y, map(audioChannelVolume[20], 0, 250, 0, h), 80); 
+  
+  p[p.length-1].x = tween(p[p.length-1].x, map(audioChannelVolume[30], 0, 250, 0, w), 80); 
+  p[p.length-1].y = tween(p[p.length-1].y, map(audioChannelVolume[40], 0, 250, 0, h), 80); 
+
+  // ctx.fillEllipse(p1.x, p1.y, 40, 40);
+  // ctx.fillEllipse(p2.x, p2.y, 40, 40);
+  //ctx.line(p1.x, p1.y, p2.x, p2.y);
+  if (mousePressed) {
+    p[0].lock();
+    p[0].x = mouseX;
+    p[0].y = mouseY;
+    p[0].unlock();
+  }
+
+}
+
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var maxDots = 700; 
+var g; //golden ratio 
+var gAng; 
+var rad; 
+var rgrowth; 
+var cur = 0; 
+var rot = 0; 
+var x,y; 
+var ww = 2; 
+var hh = 2; 
+var deg = 0.9992; 
+var colorInc; 
+var r=0;
+var r2=0;
+
+rgrowth = 1.004; 
+
+ 
+function draw() { 
+  g = 1/1.618033989; 
+gAng = 360-360 * g + 0; //change this value for varying effects 
+rad = 5; 
+r2 = (r2 + 0.001)%20;
+cur = 0; 
+rot = 0; 
+
+ww = 2; 
+hh = 2; 
+deg = 0.9992; 
+  ctx.fillStyle = rgba(255, 255, 255, 0.01);
+  ctx.fillRect(0, 0, w, h);
+
+  for (var i = 0; i < 1200; i++) {
+
+  ctx.strokeStyle = rgba(233, 233, 233, 1);
+  ctx.lineWeight = 0.6;
+
+  ctx.save();
+  ctx.translate(width/2,height);
+
+  ctx.rotate(r);
+  ctx.restore();
+
+  cur++; 
+  rot += (gAng+r2); 
+  rot -= Math.floor(rot/360) * 360; 
+  rad *= rgrowth; 
+//  fill(g*cur/3,g*cur/3,255,20); 
+  ctx.fillStyle = hsla(r,g*cur/3,0.4*g*cur/3,0.80); 
+  //ctx.fillStyle = "black";
+  x = Math.cos(rot * Math.PI/180) * rad + width/2; 
+  y = Math.sin(rot * Math.PI/180) * rad + height/2; 
+  
+  r+=(0.001+r2);
+
+  ctx.save();
+  ctx.translate(x,y);
+ // rotate(r);
+  ctx.fillEllipse(0,0,ww,hh); 
+  ctx.strokeEllipse(0,0,ww,hh); 
+  ctx.restore();
+  ww+=g/4; 
+  hh+=g/4; 
+  //console.log(g)
+    }
+} 
+
+
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>
+  
