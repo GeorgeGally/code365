@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/toxiclibs.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+
+
+//============== colour sampling
+
+
+ var SampleColour = function(_numberColours, _img) {
+  var numberColours; 
+  var sampledColours = [];
+
+
+    numberColours = _numberColours;
+    console.log("numberColours: " + numberColours);
+
+    ctx.drawImage(_img,0,0, w, h);
+    var imgData = ctx.getImageData(0, 0, w, h).data;
+
+    var count = 0;
+
+      for (var x=0; x < w; x+=2){
+      
+      for (var y=0; y < h; y+=2) {
+
+    // for (var x=0; x < img.width; x+=2){
+      
+    //   for (var y=0; y < img.height; y+=2) {
+        var pt = (x + y * w)*4;
+        var c  = rgb(imgData[pt], imgData[pt+1],imgData[pt+2]);
+       //var c = get(x,y);
+       //console.log(c);
+        if (checkDuplicates(c, count)) {
+          continue;
+        }
+
+        if (count < numberColours-1) {
+          sampledColours.push(c);
+          count++;
+        }
+        
+      }
+ 
+    }
+    
+    // ctx.fillStyle = rgba(255,255,255,1);
+    // ctx.fillRect(0, 0, w, h);
+    console.log(sampledColours);  
+    return sampledColours;
+    //console.log(colourNumber.length); 
+
+  
+  function checkDuplicates(_c, _count){
+    var duplicates = 0;
+   for (var i=0; i < _count; i++) { 
+     if (sampledColours[i] == _c) {
+      duplicates++; 
+     }
+   }
+  //println ("Duplicates: "+ duplicates);
+if (duplicates>0) { return true;} else { return false;}
+  }
+
+
+
+
+}
+
+// radarboy code365
+// www.radarboy.com/code365
+var colors = [];
+var boxSize=50;
+var numberColours=128;
+var img = new Image();
+img.src = 'img/blink/blink1.png';
+
+
+img.onload = function() {
+colors = SampleColour(numberColours, img);
+console.log(colors);
+
+}
+
+
+function draw() {
+  showColours();
+}
+
+// function keyPressed(){
+//  showColours(); 
+// }
+
+
+function showColours(){
+  
+  console.log(colors.length);
+  ctx.fillStyle = rgba(155,255,255,1);
+  ctx.fillRect(0, 0, w, h); 
+  var xpos=0;
+  var ypos=0;
+  for (var i=0; i< width*height/boxSize; i++) { 
+    if (xpos >= width) {
+      xpos =0; 
+      ypos+=boxSize;
+    }
+
+  var c = colors[randomInt(colors.length-1)];
+
+ctx.fillStyle = c;
+//println(c);  
+//ellipse(boxSize/2+xpos,ypos,boxSize,boxSize);
+  ctx.fillRect(xpos,ypos,boxSize,boxSize);
+  xpos+=boxSize;
+} 
+
+}
+
+
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>
