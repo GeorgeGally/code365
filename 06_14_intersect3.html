@@ -46,7 +46,7 @@ var active_lines = [];
 var was_hit, hit, curr_line_width; 
 var simplex = new SimplexNoise();
 ctx.moveTo(w/2, h/2);
-
+ctx.lineCap="round";
 
 // ctx.shadowBlur = 3;
 // ctx.shadowColor = "white";
@@ -109,10 +109,10 @@ function draw() {
 
 function checkHit(){
 
-    if (active_lines.length > 1) {
+    //if (active_lines.length > 0) {
     for (var j = 0; j < active_lines.length; j++) {
     var lines2 = active_lines[j];
-    if (lines2.length > 1) {
+    if (lines2.length > 0) {
     for (var i = 1; i < lines2.length; i++) {
       
       hit = checkIntersection(x1, y1, x2, y2, lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y );
@@ -130,7 +130,7 @@ function checkHit(){
   }
 }
 
-}
+//}
 
 }
 
