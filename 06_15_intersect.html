@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/toxiclibs.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+<script language="javascript" src="js/simplex-noise.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body style="background: #111">
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var seed = window.location.hash.substr(1) || String(Math.random()).split('.')[1]
+var r = random( seed )
+var simplex = new SimplexNoise( r )
+var simplex3 = simplex.noise3D.bind(simplex)
+
+var config = {
+    margin: 0.9,
+    activeLines : 10,
+    line_width: 3,
+    random : random,
+    simplex3 : simplex3,
+    maxAngle : Math.PI * 0.2,
+    lineLength : 5,
+    simplexScale : 0.6,
+    simplexDepthScale : 0.001,
+  }
+
+var x1 = w/2, y1 = h/2;
+var x2 = w/2, y2 = h/2;
+var s = rgb(randomInt(255), randomInt(255), randomInt(255));
+var lines = [];
+var active_lines = [];
+var moving_lines = [];
+var was_hit, hit, curr_line_width; 
+var simplex = new SimplexNoise();
+
+
+for (var i = 0; i < config.activeLines; i++) {
+  addLines(i);
+}
+
+function addLines(_me){
+  var particle = {
+    x1: w/2 + random(-150,150),
+    y1: h/2 + random(-150,150),
+    x2: 0,
+    y2: 0,
+    me: _me,
+    curve: 0,
+    theta: 0,
+    change: 0,
+    t: 0
+  }
+
+  moving_lines.push(particle);
+  resetLine(_me);
+}
+
+
+
+var t = 0;
+var count = 0;
+var curve, change;
+
+
+function draw() {
+
+  for (var k = 0; k < moving_lines.length; k++) {
+    ll = moving_lines[k];
+  
+  //if (chance(20)) change = random(-0.0002, 0.0002);
+  if (chance(20)) {
+    moving_lines[k].change  = simplex.noise3D(x1, y1, t) * 0.0005;
+    //console.log(change);
+  }
+  moving_lines[k].curve += moving_lines[k].change;
+  moving_lines[k].t+= moving_lines[k].curve;
+  
+  moving_lines[k].x2 = moving_lines[k].x1, moving_lines[k].y2 = moving_lines[k].y1;
+  //var noise = simplex.noise2D(x1, y1);
+  var noise = simplex3(
+    moving_lines[k].x1 * config.simplexScale,
+    moving_lines[k].y1 * config.simplexScale,
+    lines.length * config.simplexDepthScale
+  )
+  //console.log(noise);
+  var theta = noise * Math.PI * 2;
+
+
+  //x1+=random(-55,55);
+  moving_lines[k].x1 = moving_lines[k].x1 + Math.cos( moving_lines[k].t ) * config.lineLength;
+  //y1+=random(-55,55);
+  moving_lines[k].y1 = moving_lines[k].y1 + Math.sin( moving_lines[k].t ) * config.lineLength
+  if (moving_lines[k].x1>w) resetLine(k);
+  if (moving_lines[k].x1<0) resetLine(k);
+  if (moving_lines[k].y1>h) resetLine(k);
+  if (moving_lines[k].y1<0) resetLine(k);
+
+  if(moving_lines[k].curr_line_width > 0.5) moving_lines[k].curr_line_width -= 0.005;
+  ctx.lineWidth = curr_line_width;
+  ctx.strokeStyle = s;
+  checkHit(k);
+  ctx.line(moving_lines[k].x1, moving_lines[k].y1, moving_lines[k].x2, moving_lines[k].y2);
+  //ctx.arcTo(x1, y1, x2, y2, radius);
+  
+  
+
+  var l = {
+    x: moving_lines[k].x1, y: moving_lines[k].y1
+  }
+  lines.push(l);
+  }
+}
+
+function checkHit(k){
+
+    if (active_lines.length > 1) {
+    for (var j = 0; j < active_lines.length; j++) {
+    var lines2 = active_lines[j];
+    if (lines2.length > 1) {
+    for (var i = 1; i < lines2.length; i++) {
+      
+      hit = checkIntersection(moving_lines[k].x1, moving_lines[k].y1, moving_lines[k].x2, moving_lines[k].y2, lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y );
+  
+      if (hit!= undefined && hit!= false) {
+
+        //ctx.strokeStyle = "red";
+        //ctx.line(lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y);
+        ctx.strokeStyle = s;
+        resetLine(k);
+        break;
+      }
+  }
+
+  }
+}
+
+}
+
+}
+
+function resetLine(k){
+    active_lines.push(lines);
+    lines = [];
+    moving_lines[k].x1 = w/2 + random(-150,150);
+    moving_lines[k].y1 = h/2 + random(-150,150);
+    moving_lines[k].x2 = moving_lines[k].x1, moving_lines[k].y2 = moving_lines[k].y1;
+    moving_lines[k].curve = random(-0.05, 0.05);
+    //console.log(curve);
+    moving_lines[k].change = random(-0.0002, 0.0002);
+    //console.log("change: " + change);
+    if (config.line_width > 1) config.line_width -=0.005;
+    
+    moving_lines[k].curr_line_width = config.line_width;
+    
+    // s = rgb(randomInt(255), randomInt(255), randomInt(255));
+    s = rgb(255);
+}
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

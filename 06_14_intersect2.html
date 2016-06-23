@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/toxiclibs.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+<script language="javascript" src="js/simplex-noise.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var seed = window.location.hash.substr(1) || String(Math.random()).split('.')[1]
+var r = random( seed )
+var simplex = new SimplexNoise( r )
+var simplex3 = simplex.noise3D.bind(simplex)
+
+var config = {
+    margin: 0.9,
+    activeLines : 10,
+    line_width: 8,
+    random : random,
+    simplex3 : simplex3,
+    maxAngle : Math.PI * 0.2,
+    lineLength : 2,
+    simplexScale : 1,
+    simplexDepthScale : 0.001,
+  }
+
+var x1 = w/2, y1 = h/2;
+var x2 = w/2, y2 = h/2;
+var s = rgb(randomInt(255), randomInt(255), randomInt(255));
+var lines = [];
+var was_hit, hit; 
+var simplex = new SimplexNoise();
+ctx.moveTo(w/2, h/2);
+
+
+
+
+var t = 0;
+var curve, change;
+resetLine();
+
+function draw() {
+
+  //if (chance(20)) change = random(-0.0002, 0.0002);
+  if (chance(20)) {
+    change  = simplex.noise3D(x1, y1, t) * 0.0005;
+    //console.log(change);
+  }
+  curve += change;
+  t+= curve;
+  
+  //if (chance(5)) {
+  ctx.fillStyle = rgb(0);
+  x2 = x1, y2 = y1;
+  //var noise = simplex.noise2D(x1, y1);
+  var noise = simplex3(
+    x1 * config.simplexScale,
+    y1 * config.simplexScale,
+    lines.length * config.simplexDepthScale
+  )
+  //console.log(noise);
+  var theta = noise * Math.PI * 2;
+
+
+  //x1+=random(-55,55);
+  x1 = x1 + Math.cos( t ) * config.lineLength;
+  //y1+=random(-55,55);
+  y1 = y1 + Math.sin( t ) * config.lineLength
+  if (x1>w) resetLine();
+  if (x1<0) resetLine();
+  if (y1>h) resetLine();
+  if (y1<0) resetLine();
+
+  var l = {
+    x: x2, y: y2
+  }
+  lines.push(l);
+
+  ctx.fillStyle = rgb(0);
+  ctx.strokeStyle = s;
+  var radius = randomInt(1, 10);
+  ctx.line(x1, y1, x2, y2);
+  //ctx.arcTo(x1, y1, x2, y2, radius);
+  
+  checkHit();
+
+ 
+}
+
+function checkHit(){
+    if (lines.length > 1) {
+
+    for (var i = 1; i < lines.length-1; i++) {
+      
+      hit = checkIntersection( x1, y1, x2, y2, lines[i].x, lines[i].y, lines[i-1].x, lines[i-1].y );
+      if (hit!= undefined && hit!= false) {
+        console.log("x1: " + x1 + "y1: " + y1 );
+        console.log("x2: " + x2 + "y2: " + y2 );
+       resetLine();
+        break;
+      }
+
+
+    }
+
+}
+
+}
+
+function resetLine(){
+    x1 = w/2 + random(-150,150);
+    y1 = h/2 + random(-150,150);
+    x2 = x1, y2 = y1;
+    curve = random(-0.05, 0.05);
+    //console.log(curve);
+    change = random(-0.0002, 0.0002);
+    //console.log("change: " + change);
+    if (config.line_width > 0.5) config.line_width -=0.05;
+    ctx.lineWidth = config.line_width;
+    // s = rgb(randomInt(255), randomInt(255), randomInt(255));
+    s = rgb(0);
+}
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

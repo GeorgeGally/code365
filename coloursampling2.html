@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/toxiclibs.js"></script>
+<script language="javascript" src="js/color-thief.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var colors = [];
+var boxSize=70;
+var numberColours=128;
+var img = new Image();
+// img.src = 'img/jesus.gif';
+// img.src = 'img/deepart.png';
+img.src = 'img/flowers2.jpg';
+var colorThief = new ColorThief();
+
+img.onload = function() {
+  //ctx.drawImage(img, 0, 0)
+//colors = SampleColour(numberColours, img);
+var c = colorThief.getPalette(img, 22);
+for (var i = 0; i < c.length; i++) {
+   colors.push(rgb(c[i][0], c[i][1], c[i][2]));
+}
+console.log(colors);
+
+}
+
+
+function draw() {
+  showColours();
+}
+
+// function keyPressed(){
+//  showColours(); 
+// }
+
+
+function showColours(){
+  
+  //console.log(colors.length);
+  ctx.fillStyle = rgba(155,255,255,1);
+  ctx.fillRect(0, 0, w, h); 
+  var xpos=0;
+  var ypos=0;
+  for (var i=0; i< width*height/boxSize; i++) { 
+    if (xpos >= width) {
+      xpos =0; 
+      ypos+=boxSize;
+    }
+
+  var c = colors[i%(colors.length-1)];
+
+ctx.fillStyle = c;
+//println(c);  
+//ellipse(boxSize/2+xpos,ypos,boxSize,boxSize);
+  ctx.fillRect(xpos,ypos,boxSize,boxSize);
+  xpos+=boxSize;
+} 
+
+}
+
+
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

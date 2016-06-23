@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/toxiclibs.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+// var myVector = new toxi.geom.Vec2D( 2, 3 ).scaleSelf(0.5);
+// var myColor = toxi.color.TColor.newRGB(128/255,64/255,32/255);
+// console.log(myVector);
+
+ var  VerletPhysics2D = toxi.physics2d.VerletPhysics2D,
+      VerletParticle2D = toxi.physics2d.VerletParticle2D,
+      VerletSpring2D = toxi.physics2d.VerletSpring2D,
+      VerletMinDistanceSpring2D = toxi.physics2d.VerletMinDistanceSpring2D,
+      AttractionBehavior = toxi.physics2d.behaviors.AttractionBehavior,
+      GravityBehavior = toxi.physics2d.behaviors.GravityBehavior,
+      Vec2D = toxi.geom.Vec2D,
+      TColor = toxi.color.TColor,
+      Rect = toxi.geom.Rect;
+
+var physics;
+var prev;
+
+var continuous,current; // variables to create a new continuous line on each mouse drag
+ 
+var clusters = [];
+
+// Boolean that indicates whether we draw connections or not
+var showPhysics = true;
+var showParticles = true;
+
+function setup(){
+  // Initialize the physics
+  physics=new VerletPhysics2D();
+  physics.setWorldBounds(new Rect(10,10,width-20,height-20));
+  newGraph();
+}
+////
+
+
+
+var Node = function (pos) {
+
+this.pos = pos;
+
+  // All we're doing really is adding a display() function to a VerletParticle
+  this.display = function () {
+    ctx.fill = rgb(0,150);
+    ctx.stroke = rgb(0);
+    ctx.lineWeight = 2;
+    ctx.fillEllipse(x,y,16,16);
+  }
+  var p = new VerletParticle2D(new Vec2D(pos.x, pos.y));
+  var node = physics.addParticle(p);
+  return node;
+}
+
+
+
+// We initialize a Cluster with a number of nodes, a diameter, and centerpoint
+Cluster = function(n, d, center) {
+
+  // A cluster is a grouping of nodes
+  var nodes = [];
+  var springs = [];
+  var diameter = d;
+  //console.log(diameter)
+    // Create the nodes
+    for (var i = 0; i < n; i++) {
+      // We can't put them right on top of each other
+      var p = new VerletParticle2D(new Vec2D(random(w), random(h)));
+      var node = physics.addParticle(p);
+      nodes.push(node);
+    }
+    console.log(nodes)
+    // Connect all the nodes with a Spring
+    for (var i = 1; i < nodes.length-1; i++) {
+      var pi = nodes[i];
+      
+      for (var j = 0; j < i; j++) {
+      var pj = nodes[j];
+      
+      //   // A Spring needs two particles, a resting length, and a strength
+      //var spring = new VerletSpring2D(pi,pj,diameter,0.01);
+     // physics.addSpring(spring);
+      physics.addSpring(new VerletSpring2D(pi,pj,diameter,0.01));
+      }
+    }
+ 
+
+  // this.display = function() {
+  //   // Show all the nodes
+  //   for (var i = 0; i < nodes.length; i++) {
+  //     var n = nodes[i];
+  //     n.display();
+  //   }
+  // }
+
+  // // This functons connects one cluster to another
+  // // Each point of one cluster connects to each point of the other cluster
+  // // The connection is a "VerletMinDistanceSpring"
+  // // A VerletMinDistanceSpring is a spring which only enforces its rest length if the 
+  // // current distance is less than its rest length. This is handy if you just want to
+  // // ensure objects are at least a certain distance from each other, but don't
+  // // care if it's bigger than the enforced minimum.
+  // this.connect = function(other) {
+  //   var otherNodes = other.getNodes();
+  //   for (var i = 0; i < nodes.length; i++) {
+  //     var pi = nodes[i];
+  //     for (var j = 0; j < otherNodes.length; j++) {
+  //       var pj = nodes[j];
+  //       // Create the spring
+  //       physics.addSpring(new VerletMinDistanceSpring2D(pi,pj,(diameter+other.diameter)*0.5,0.05));
+  //     }
+  //   }
+  // }
+
+
+  // // Draw all the internal connections
+  // this.showConnections = function() {
+  //   stroke(0,150);
+  //   for (var i = 0; i < nodes.length; i++) {
+  //     var pi = nodes[i];
+  //     for (var j = i+1; j < nodes.length; j++) {
+  //       var pj = nodes[j];;
+  //       ctx.line(pi.x,pi.y,pj.x,pj.y);
+  //     }
+  //   }
+  // }
+
+  // // Draw all the connections between this Cluster and another Cluster
+  // this.showConnections = function(other) {
+  //   stroke(0,50);
+  //   strokeWeight(2);
+  //   var otherNodes = other.getNodes();
+  //   for (var i = 0; i < nodes.length; i++) {
+  //     var pi = nodes[i];
+  //     for (var j = 0; j < otherNodes.length; j++) {
+  //       var pj = otherNodes[j];
+  //       line(pi.x,pi.y,pj.x,pj.y);
+  //     }
+  //   }
+  // }
+
+  // this.getNodes= function() {
+  //   return nodes;
+  // }
+
+
+ }
+
+
+ /////////
+  // Spawn a new random graph
+
+
+
+// Spawn a new random graph
+  function newGraph() {
+
+  // Clear physics
+  physics.clear();
+
+  // Create new ArrayList (clears old one)
+  clusters = [];
+
+  // // Create 8 random clusters
+  for (var i = 0; i < 8; i++) {
+    var center = new Vec2D(width/2,height/2);
+    clusters.push(new Cluster(randomInt(3,8),randomInt(20,100),center));
+  }
+
+  // //  All clusters connect to all clusters  
+  // for (var i = 0; i < clusters.length; i++) {
+  //   for (var j = i+1; j < clusters.length; j++) {
+  //     var ci = clusters[i];
+  //     var cj = clusters[j];
+  //     ci.connect(cj);
+  //   }
+  // }
+
+}
+
+function draw() {
+
+  // Update the physics world
+  physics.update();
+
+  // ctx.fillStyle = rgba(255,255,255,1);
+  // ctx.fillRect(0, 0, w, h);
+
+  // Display all points
+  // if (showParticles) {
+  //   for (var i = 0; i < clusters.length; i++) {
+  //     var c = clusters[i];
+  //     c.display();
+  //   }
+  // }
+
+  // If we want to see the physics
+  // if (showPhysics) {
+  //   for (var i = 0; i < clusters.length; i++) {
+  //     // Cluster internal connections
+  //     var ci = clusters[i];
+  //     ci.showConnections();
+
+  //     // Cluster connections to other clusters
+  //     for (var j = i+1; j < clusters.length; j++) {
+  //       var cj = clusters[j];
+  //       ci.showConnections(cj);
+  //     }
+  //   }
+  // }
+
+  // Instructions
+  ctx.fillStyle = rgb(0);
+  //textFont(f);
+  //text("'p' to display or hide particles\n'c' to display or hide connections\n'n' for new graph",10,20);
+}
+
+// Key press commands
+// function keyPressed() {
+//   if (key == 'c') {
+//     showPhysics = !showPhysics;
+//     if (!showPhysics) showParticles = true;
+//   } 
+//   else if (key == 'p') {
+//     showParticles = !showParticles;
+//     if (!showParticles) showPhysics = true;
+//   } 
+//   else if (key == 'n') {
+//     newGraph();
+//   }
+// }
+
+
+////////////////////////////////////////////////
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

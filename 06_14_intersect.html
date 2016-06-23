@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/toxiclibs.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+<script language="javascript" src="js/simplex-noise.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var x1 = w/2, y1 = h/2;
+var x2 = w/2, y2 = h/2;
+var s = rgb(randomInt(255), randomInt(255), randomInt(255));
+
+
+
+
+function draw() {
+
+  ctx.fillStyle = rgb(0);
+  x2 = x1, y2 = y1;
+  x1+=random(-50,50);
+  y1+=random(-50,50);
+  x1 = x1%w;
+  y1=y1%h;
+  //ctx.fillStyle = rgba(255,255,255,1);
+  //ctx.fillRect(0, 0, w, h);
+
+  ctx.fillStyle = rgb(0);
+  ctx.strokeStyle = s;
+  ctx.line(x1, y1, x2, y2);
+  console.log(checkIntersection( x1, y1, x2, y2, mouseX, mouseY, 0, h/2 ));
+  var hit = checkIntersection( x1, y1, x2, y2, mouseX, mouseY, 0, h/2 );
+  if (hit!= undefined) {
+    x1 = random(w);
+    y1 = random(h);
+    s = rgb(randomInt(255), randomInt(255), randomInt(255));
+  }
+  ctx.strokeStyle = rgb(0);
+  ctx.line(mouseX, mouseY, 0,h/2);
+;
+}
+
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>
