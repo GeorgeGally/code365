@@ -29,7 +29,7 @@ var simplex3 = simplex.noise3D.bind(simplex)
 var config = {
     margin: 0.9,
     activeLines : 10,
-    line_width: 4,
+    line_width: 3,
     random : random,
     simplex3 : simplex3,
     maxAngle : Math.PI * 0.2,
@@ -94,21 +94,42 @@ function draw() {
   if(curr_line_width > 0.5) curr_line_width -= 0.005;
   ctx.lineWidth = curr_line_width;
   ctx.strokeStyle = s;
-  var radius = randomInt(1, 10);
-  ctx.line(x1, y1, x2, y2);
-  //ctx.arcTo(x1, y1, x2, y2, radius);
-  
-  checkHit();
 
+// check self hit
+  selfHit();
+
+  if (!checkHit()) {
+  ctx.line(x1, y1, x2, y2);;
   var l = {
     x: x1, y: y1
   }
   lines.push(l);
+  }
+}
 
+
+function selfHit(){
+  if (lines.length > 0) {
+    
+    for (var i = 1; i < lines.length; i++) {
+      
+      hit = checkIntersection(x1, y1, x2, y2, lines[i].x, lines[i].y, lines[i-1].x, lines[i-1].y );
+  
+      if (hit!= undefined && hit!= false) {
+        console.log("selfhit");
+        //ctx.strokeStyle = "black";
+        //ctx.line(lines[i].x, lines[i].y, lines[i-1].x, lines[i-1].y);
+        //ctx.strokeStyle = s;
+        resetLine();
+        break;
+      }
+  }
+
+  }
 }
 
 function checkHit(){
-
+    var is_hit = false;
     //if (active_lines.length > 0) {
     for (var j = 0; j < active_lines.length; j++) {
     var lines2 = active_lines[j];
@@ -119,10 +140,11 @@ function checkHit(){
   
       if (hit!= undefined && hit!= false) {
 
-        ctx.strokeStyle = "black";
-        ctx.line(lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y);
-        ctx.strokeStyle = s;
+        // ctx.strokeStyle = "black";
+        // ctx.line(lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y);
+        // ctx.strokeStyle = s;
         resetLine();
+        is_hit = true;
         break;
       }
   }
@@ -130,7 +152,7 @@ function checkHit(){
   }
 }
 
-//}
+return is_hit;
 
 }
 

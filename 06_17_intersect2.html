@@ -10,12 +10,12 @@
 <script language="javascript" src="js/jquery-1.6.2.js"></script>
 <script language="javascript" src="js/simplex-noise.js"></script>
 
-	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
-	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
-	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
 
 </head>
- <body style="background: #111">
+ <body style="background: #f7f7f7">
    
 <script>
 
@@ -29,11 +29,11 @@ var simplex3 = simplex.noise3D.bind(simplex)
 var config = {
     margin: 0.9,
     activeLines : 10,
-    line_width: 4,
+    line_width: 3,
     random : random,
     simplex3 : simplex3,
     maxAngle : Math.PI * 0.2,
-    lineLength : 5,
+    lineLength : 10,
     simplexScale : 0.6,
     simplexDepthScale : 0.001,
   }
@@ -57,6 +57,8 @@ ctx.lineCap="round";
 
 var t = 0;
 var count = 0;
+var speedx = 0;
+var speedy = 0;
 var curve, change;
 resetLine();
 
@@ -83,9 +85,9 @@ function draw() {
 
 
   //x1+=random(-55,55);
-  x1 = x1 + Math.cos( t ) * config.lineLength;
+  x1 = x1 + speedx;
   //y1+=random(-55,55);
-  y1 = y1 + Math.sin( t ) * config.lineLength
+  y1 = y1 + speedy;
   if (x1>w) resetLine();
   if (x1<0) resetLine();
   if (y1>h) resetLine();
@@ -94,21 +96,42 @@ function draw() {
   if(curr_line_width > 0.5) curr_line_width -= 0.005;
   ctx.lineWidth = curr_line_width;
   ctx.strokeStyle = s;
-  var radius = randomInt(1, 10);
-  ctx.line(x1, y1, x2, y2);
-  //ctx.arcTo(x1, y1, x2, y2, radius);
-  
-  checkHit();
 
+// check self hit
+  selfHit();
+
+  if (!checkHit()) {
+  ctx.line(x1, y1, x2, y2);;
   var l = {
     x: x1, y: y1
   }
   lines.push(l);
+  }
+}
 
+
+function selfHit(){
+  if (lines.length > 0) {
+    
+    for (var i = 1; i < lines.length; i++) {
+      
+      hit = checkIntersection(x1, y1, x2, y2, lines[i].x, lines[i].y, lines[i-1].x, lines[i-1].y );
+  
+      if (hit!= undefined && hit!= false) {
+        console.log("selfhit");
+        //ctx.strokeStyle = "black";
+        //ctx.line(lines[i].x, lines[i].y, lines[i-1].x, lines[i-1].y);
+        //ctx.strokeStyle = s;
+        resetLine();
+        break;
+      }
+  }
+
+  }
 }
 
 function checkHit(){
-
+    var is_hit = false;
     //if (active_lines.length > 0) {
     for (var j = 0; j < active_lines.length; j++) {
     var lines2 = active_lines[j];
@@ -119,10 +142,11 @@ function checkHit(){
   
       if (hit!= undefined && hit!= false) {
 
-        ctx.strokeStyle = "black";
-        ctx.line(lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y);
-        ctx.strokeStyle = s;
+        // ctx.strokeStyle = "black";
+        // ctx.line(lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y);
+        // ctx.strokeStyle = s;
         resetLine();
+        is_hit = true;
         break;
       }
   }
@@ -130,26 +154,33 @@ function checkHit(){
   }
 }
 
-//}
+return is_hit;
 
 }
 
 function resetLine(){
     active_lines.push(lines);
     lines = [];
-    x1 = w/2 + random(-150,150);
-    y1 = h/2 + random(-150,150);
+    x1 = w/2 + random(-280,280);
+    y1 = h/2 + random(-280,280);
     x2 = x1, y2 = y1;
     curve = random(-0.05, 0.05);
+    if(chance(2)) {
+      speedx = posNeg() * config.lineLength;
+      speedy = 0;
+    } else {
+      speedx = 0;
+      speedy = posNeg() * config.lineLength;
+    }
     //console.log(curve);
     change = random(-0.0002, 0.0002);
     //console.log("change: " + change);
-    if (config.line_width > 0.5) config.line_width -=0.005;
+    if (config.line_width > 0.2) config.line_width -=0.001;
     
     curr_line_width = config.line_width;
     
     // s = rgb(randomInt(255), randomInt(255), randomInt(255));
-    s = rgb(222);
+    s = rgb(0);
 }
 
 
