@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/url.js"></script>
+<script language="javascript" src="js/physics2.js"></script>
+<script language="javascript" src="js/three.min.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+var ctx = createCanvas("canvas1");
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 70, aspect, 0.1, 1000 );
+
+var d=0, t=0;
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+
+var geometry = new THREE.SphereGeometry( 25, 35, 48, 18 );
+geometry.dynamic = true;
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+var plane = new THREE.Mesh( geometry, dMaterial );
+scene.add( plane );
+camera.position.z = 80;
+camera.near = 20;
+camera.far  = 95;
+plane.rotation.z += Math.PI;
+
+var tt = [];
+var start_z = [];
+for (i=0;i<plane.geometry.vertices.length;i++) {
+  start_z[i] = plane.geometry.vertices[i].z;
+  tt[i] = 0;
+}
+
+function draw() {
+  
+  scene.rotation.y = 8;
+  t+=.0001
+  d+=.01
+  for (i=0;i<plane.geometry.vertices.length;i++){
+    tt[i] = tween(tt[i], map(audioChannelVolume[i%100],0,140, 0, 4), 10);
+    
+    // if (plane.geometry.vertices[i].y != 25 && plane.geometry.vertices[i].y != -25) {
+    // plane.geometry.vertices[i].z = tween(plane.geometry.vertices[i].z, start_z[i] + Math.sin(tt[i])*Math.cos(i*d)*96, 10);
+    plane.geometry.vertices[i].z=start_z[i]+Math.sin(tt[i]/1000*i+d)*Math.cos(i+d*tt[i]/1000)*5;
+
+     // plane.geometry.vertices[i].z = start_z + Math.sin(d+tt[i])*Math.cos(i*d)*22.6;
+    //plane.geometry.vertices[i].z = 10 + Math.abs(Math.sin(t*i+d)*Math.cos(i+d*t)*10);
+    //}
+    //console.log(plane.geometry.vertices[i].y)
+    //plane.geometry.vertices[i].y = tween(plane.geometry.vertices[i].y, plane.geometry.vertices[i].y + Math.sin(t)*Math.cos(i)*1.2, 2);
+    //plane.geometry.vertices[i].y = -20 + Math.sin(tt[i])*40;
+    //plane.geometry.vertices[i].x = -20 + Math.cos(tt[i])*10;
+  }
+  //camera.rotation.z+=0.01;
+  scene.rotation.y = tween(scene.rotation.y, scene.rotation.y + map(audioChannelVolume[10],0,140, -0.4, 0.4), 90);
+  plane.geometry.verticesNeedUpdate=true
+  renderer.render( scene, camera );
+};
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

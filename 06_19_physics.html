@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/url.js"></script>
+<script language="javascript" src="js/physics2.js"></script>
+<script language="javascript" src="js/two.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+console.log("xxx")
+var ctx = createCanvas("canvas1");
+
+  
+  ctx.fillStyle = '#333';
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+
+  var physics = new Physics();
+
+  var mass = 5;
+  var radius = 100;
+
+  var x1 = width * 0.25;
+  var x2 = width * 0.75;
+  var y = height / 2;
+
+  var a = physics.makeParticle(mass, x1, y);
+  var b = physics.makeParticle(mass, x2, y);
+
+  var strength = 0.55; // What is the strength of the bond?
+  var drag = 0.1; // How much drag is on the string?
+  var rest = radius * 2; // What is the rest length of the spring?
+
+  var spring = physics.makeSpring(a, b, strength, drag, rest);
+
+  function draw() {
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw each particle
+
+    ctx.fillEllipse(a.position.x, a.position.y, radius, radius);
+    ctx.fillEllipse(b.position.x, b.position.y, radius, radius);
+
+
+    // Draw a line connecting them
+
+    ctx.beginPath();
+    ctx.line(a.position.x, a.position.y, b.position.x, b.position.y);
+
+
+    // If b is resting then reset it.
+    if (b.resting()) {
+      a.position.set(x1, y);
+      b.position.set(x2, y);
+    }
+
+  };
+
+  // Bind the render function to when physics updates.
+  physics.onUpdate(draw);
+
+  // Render a posterframe.
+  physics.toggle();
+
+  // Bind canvas click to toggle.
+  // canvas.onclick = function(e) {
+  //   physics.toggle(); // Toggle between play and paused states.
+  // };
+  
+  // store our physics object on the canvas so we can access it later
+  canvas.physics = physics;
+
+</script>script>
+</body>
+</html>

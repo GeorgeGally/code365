@@ -36,7 +36,7 @@ var ctx = createCanvas("canvas1");
 //var Partile = new VerletParticle2D();
 var p1, p2;
 var physics = new VerletPhysics2D();
-physics.addBehavior(new GravityBehavior(new Vec2D(0,0.5)));
+physics.addBehavior(new GravityBehavior(new Vec2D(0,0.01)));
 physics.setWorldBounds(new Rect(0, 0, w, h));
 
 
@@ -48,7 +48,7 @@ p1.lock();
 physics.addParticle(p1);
 physics.addParticle(p2);
 
-var spring = new VerletSpring2D(p1, p2, 150, 0.005);
+var spring = new VerletSpring2D(p1, p2, 50, 0.001);
 physics.addSpring(spring);
 
 function draw(){

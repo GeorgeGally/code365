@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/url.js"></script>
+<script language="javascript" src="js/physics2.js"></script>
+<script language="javascript" src="js/three.min.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+var ctx = createCanvas("canvas1");
+
+
+var numParticles=120;
+var frames=400;
+var angle;
+var dir = 1;
+var movers =1;;
+var ss = 0;
+var r = 0.0;
+
+function draw(){
+  ctx.clearRect(0,0,w,h);
+  // ctx.strokeStyle = rgba(255,0,255,0.5);
+  ctx.strokeStyle = rgba(19,19,19,0.5);
+
+   var x = map(Math.sin(r),-1,1,22,688);
+  //float x = (sin(r) + 1) * width/2; 
+  r+=0.0002;
+  //ss++;
+  ctx.save();
+  ctx.translate(window.innerWidth/2,window.innerHeight/2);
+  ctx.lineWidth = movers;
+  //ss = tween (ss, findMapping(mic.getSprectrum(100),200),10);
+  ss = tween(ss, map(audioChannelVolume[50],0,140, 0, 200),10);
+   for (var i = 0; i < numParticles; ++i) {
+    ctx.rotate(radians(x));
+    ctx.strokeEllipse(x, x, i/ss, i/ss);
+    ctx.strokeEllipse(i, 0, x+i, x);
+    //ctx.fillStyle = rgba(255,0,255,0.5);
+    //if (random(500)>299) ctx.fillEllipse(x, i/5, 10, 10);
+   } 
+   ctx.restore(); 
+
+}
+
+
+window.onkeydown=function(event){
+  
+  if (event.which == 38) movers = (movers+1)%10
+    if (event.which == 40) movers = (movers-1); if (movers < 0) movers = 10;
+  
+  if (event.which == 39) {
+    numParticles = (numParticles+1)%400;   
+    }
+  if (event.which == 37) 
+     {
+      numParticles = (numParticles-2); 
+      if (numParticles < 1) {numParticles = 1; } 
+      //else {particles.shift();}  
+    }
+      console.log("numParticles: " + numParticles);
+};
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

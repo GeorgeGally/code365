@@ -33,7 +33,7 @@ var config = {
     rnd : r,
     simplex3 : simplex3,
     maxAngle : Math.PI * 0.2,
-    lineLength : 10,
+    lineLength : 80,
     simplexScale : 0.6,
     simplexDepthScale : 0.001,
   }
@@ -63,27 +63,17 @@ var curve, change;
 resetLine();
 
 function draw() {
-
-
-  //if (chance(20)) change = random(-0.0002, 0.0002);
-  if (chance(20)) {
-    change  = simplex.noise3D(x1, y1, t) * 0.0005;
-    //console.log(change);
-  }
-  curve += change;
-  t+= curve;
   
   x2 = x1, y2 = y1;
-  //var noise = simplex.noise2D(x1, y1);
-  var noise = simplex3(
-    x1 * config.simplexScale,
-    y1 * config.simplexScale,
-    lines.length * config.simplexDepthScale
-  )
-  //console.log(noise);
-  var theta = noise * Math.PI * 2;
 
-
+  if(chance(20)) {
+    speedx = 0;
+    speedy = posNeg() * config.lineLength;  
+  }
+  if(chance(20)) {
+     speedx = posNeg() * config.lineLength;
+      speedy = 0;
+  };
   //x1+=random(-55,55);
   x1 = x1 + speedx;
   //y1+=random(-55,55);
@@ -93,7 +83,7 @@ function draw() {
   if (y1>h) resetLine();
   if (y1<0) resetLine();
 
-  if(curr_line_width > 0.5) curr_line_width -= 0.005;
+  if(curr_line_width > 0.1) curr_line_width -= 0.05;
   ctx.lineWidth = curr_line_width;
   ctx.strokeStyle = s;
 
@@ -167,9 +157,9 @@ function resetLine(){
     curve = random(-0.05, 0.05);
     if(chance(2)) {
       speedx = posNeg() * config.lineLength;
-      speedy = 0;
+      speedy = posNeg() * config.lineLength;;
     } else {
-      speedx = 0;
+      speedx = posNeg() * config.lineLength;;
       speedy = posNeg() * config.lineLength;
     }
     //console.log(curve);
@@ -177,7 +167,7 @@ function resetLine(){
     //console.log("change: " + change);
     if (config.line_width > 0.2) config.line_width -=0.001;
     
-    curr_line_width = config.line_width;
+    curr_line_width = random(5);
     
     // s = rgb(randomInt(255), randomInt(255), randomInt(255));
     s = rgb(0);

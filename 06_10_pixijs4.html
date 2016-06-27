@@ -54,9 +54,6 @@ g.x = strip.x;
 g.y = strip.y;
 stage.addChild(g);
 
-// start animating
-//animate();
-
 function draw() {
 
     count += 0.1;
@@ -72,10 +69,8 @@ function draw() {
 
     // render the stage
     renderer.render(stage);
-
     renderPoints();
 
-    //requestAnimationFrame(animate);
 }
 
 function renderPoints () {

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/url.js"></script>
+<script language="javascript" src="js/physics2.js"></script>
+<script language="javascript" src="js/two.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+// was getting annoyed with the same track playing, so changed soundcloud function to play random track
+//var ctx = createCanvas("canvas1");
+var type = /(canvas|webgl)/.test(url.type) ? url.type : 'svg';
+        var two = new Two({
+          type: Two.Types[type],
+          fullscreen: true
+        }).appendTo(document.body);
+
+        var mass = 10;
+        var radius = two.height / 5;
+        var strength = 0.0625;
+        var drag = 0.0;
+
+        var background = two.makeGroup();
+        var foreground = two.makeGroup();
+
+        var physics = new Physics();
+        var points = [];
+        var i = 0;
+
+        for (i = 0; i < Two.Resolution; i++) {
+
+          var pct = i / Two.Resolution;
+          var theta = pct * Math.PI * 2;
+
+          var ax = radius * Math.cos(theta);
+          var ay = radius * Math.sin(theta);
+
+          var variance = Math.random() * 0.5 + 0.5;
+          var bx = variance * ax;
+          var by = variance * ay;
+
+          var origin = physics.makeParticle(mass, ax, ay)
+          var particle = physics.makeParticle(Math.random() * mass * 0.6 + mass * 0.33, bx, by);
+          var spring = physics.makeSpring(particle, origin, strength, drag, 0);
+
+          origin.makeFixed();
+
+          particle.shape = two.makeCircle(particle.position.x, particle.position.y, 5);
+          particle.shape.noStroke().fill = '#fff';
+          particle.position = particle.shape.translation;
+
+          foreground.add(particle.shape)
+          points.push(particle.position);
+
+        }
+
+        var outer = new Two.Path(points, true, true);
+        var color = getRandomColor();
+        outer.stroke = color.toString();
+        outer.fill = color.toString(0.5);
+        outer.scale = 1.75;
+        outer.linewidth = 10;
+
+        background.add(outer);
+
+        var inner = new Two.Path(points, true, true);
+        inner.noStroke();
+        inner.fill = getRandomColor().toString();
+        inner.scale = 1.25;
+
+        background.add(inner);
+
+        _.extend(two.renderer.domElement.style, {
+          background: 'url(' + generateGrid() + ') center center'
+        });
+
+        resizeMe();
+
+        two
+          .bind('resize', resizeMe)
+          .bind('update', function() {
+            physics.update();
+          })
+          .play();
+
+        function resizeMe() {
+          background.translation.set(two.width / 2, two.height / 2);
+          foreground.translation.copy(background.translation);
+        }
+
+        function getRandomColor() {
+        	var color = rgba(randomInt(255),randomInt(255),randomInt(255),randomInt(255))
+          // var color = {
+          //   r: Math.floor(Math.random() * 255),
+          //   g: Math.floor(Math.random() * 255),
+          //   b: Math.floor(Math.random() * 255),
+          //   toString: function(a) {
+          //     if (a) {
+          //       return 'rgba('
+          //         + color.r + ','
+          //         + color.g + ','
+          //         + color.b + ','
+          //         + a + ')';
+          //     }
+          //     return 'rgb('
+          //       + color.r + ','
+          //       + color.g + ','
+          //       + color.b + ')';
+          //   }
+          // };
+          return color;
+        }
+
+        function generateGrid() {
+
+          var two = new Two({
+            type: Two.Types.canvas,
+            width: 16,
+            height: 16,
+            ratio: 2
+          });
+
+          var width = two.width / 2;
+          var height = two.height / 2;
+
+          var background = two.makeRectangle(two.width / 2, two.height / 2, two.width, two.height);
+          background.noStroke().fill = '#efefef';
+
+          var c = two.makeCircle(two.width / 2, two.height / 2, 0.5);
+          c.noStroke().fill = '#999';
+
+          two.update();
+
+          return two.renderer.domElement.toDataURL('image/png');
+
+        }
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+ <script>document.write('<script src="http://' + (location.host || '${1:localhost}').split(':')[0] + ':${2:35729}/livereload.js?snipver=1"></' + 'script>')</script>
+</body>
+</html>

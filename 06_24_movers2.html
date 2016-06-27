@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/url.js"></script>
+<script language="javascript" src="js/physics2.js"></script>
+<script language="javascript" src="js/three.min.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+var ctx = createCanvas("canvas1");
+
+
+num=3;
+movers=3;
+var d = 280;
+var d2 = 120;
+var frames=400;
+var angle;
+var theta = 0;
+var offset = 0;
+var moverX;
+var moverY;
+var v = 0;
+ctx.lineWidth = 0.1;
+
+draw = function() {
+  ctx.fillStyle = rgba(255, 255, 255, 0.1);
+  ctx.fillRect(0, 0, w, h);
+  //ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
+  ctx.strokeStyle="black";
+  ctx.fillStyle="black";
+  ctx.lineWidth = 0.5;
+  theta += 2*Math.PI/frames;
+  v = tween(v, map(audioChannelVolume[10],0,140, 0, 250), 5);
+  d = tween(d, v, 15);
+  d2 = tween(d2, v, 5);
+  drawLines();
+
+}
+
+
+function drawLines(){
+
+  if (chance(5000)) movers +=1;
+  if (chance(5000)) movers -=1;
+  if (chance(5000)) num +=1;
+  if (chance(5000)) num -=1;
+
+  ctx.save();
+  ctx.translate(w/2, h/2);
+  ctx.rotate(theta/10);
+
+  for (var i=0; i<num; i++) {
+
+    var outerX = Math.cos(angle)*d;
+    var outerY = Math.sin(angle)*d;
+    //ctx.fillEllipse(outerX,outerY, 2, 2);
+    angle = 2*Math.PI/num*i;
+
+    for (var j=0; j<movers; j++) {
+
+      offset = theta+2*Math.PI/movers*j;
+      moverX = Math.cos(offset)*d2;
+      moverY = Math.sin(offset)*d2;
+      ctx.line(outerX, outerY, moverX, moverY);
+
+    }
+
+  }
+  ctx.restore();
+}
+
+
+window.onkeydown=function(event){
+  
+    if (event.which == 38) movers = (movers+1)%40
+    if (event.which == 40) movers = (movers-1); 
+    if (movers < 0) movers = 40;
+    if (event.which == 39) num = (num+1)%20;
+    if (event.which == 37) num = (num-1); if (num < 0) num = 40;
+    //console.log(movers);
+
+};
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

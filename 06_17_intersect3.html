@@ -83,7 +83,14 @@ function draw() {
   //console.log(noise);
   var theta = noise * Math.PI * 2;
 
-
+  if(chance(20)) {
+    speedx = 0;
+    speedy = posNeg() * config.lineLength;  
+  }
+  if(chance(20)) {
+     speedx = posNeg() * config.lineLength;
+      speedy = 0;
+  };
   //x1+=random(-55,55);
   x1 = x1 + speedx;
   //y1+=random(-55,55);

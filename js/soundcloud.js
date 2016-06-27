@@ -63,7 +63,8 @@ else {
     this.playStream = function(streamUrl) {
         // Get the input stream from the audio element
         player.addEventListener('ended', function(){
-            self.directStream('coasting');
+            //self.directStream('coasting');
+            console.log('end track.')
         });
         player.crossOrigin = 'anonymous';
         player.setAttribute('src', streamUrl);

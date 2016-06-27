@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/url.js"></script>
+<script language="javascript" src="js/physics2.js"></script>
+<script language="javascript" src="js/three.min.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+var ctx = createCanvas("canvas1");
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 70, aspect, 0.1, 1000 );
+
+var d=0, t=0;
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+
+var geometry = new THREE.PlaneGeometry( 60, 40, 3, 76 );
+geometry.dynamic = true;
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+var plane = new THREE.Mesh( geometry, dMaterial );
+scene.add( plane );
+camera.position.z = 80;
+camera.near = 50;
+camera.far  = 95;
+plane.rotation.z += Math.PI;
+
+var tt = [];
+
+for (i=0;i<plane.geometry.vertices.length;i++) {
+  plane.geometry.vertices[i].z+=100-random(200);
+  tt[i] = 0;
+}
+
+function draw() {
+  
+  
+  //t+=.0001
+  d+=.01
+  for (i=0;i<plane.geometry.vertices.length;i++){
+    tt[i] = tween(tt[i], map(audioChannelVolume[i%100],0,140, 0, 2),10);
+    plane.geometry.vertices[i].z = 10 + Math.sin(tt[i])*Math.cos(i)*40;
+
+  }
+  //camera.rotation.z+=0.01;
+  scene.rotation.y = tween(scene.rotation.y, map(audioChannelVolume[10],0,140, -2, 2), 60);
+  plane.geometry.verticesNeedUpdate=true
+  renderer.render( scene, camera );
+};
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
