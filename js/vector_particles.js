@@ -22,6 +22,7 @@ this.addParticle = function(_x, _y, _colour, _me){
 	
 	var particle = {
 		position: new Vector(_x, _y),
+		start: new Vector(_x, _y),
 		location: new Vector(_x, _y),
 		orig_position: new Vector(_x, _y),
 		speed: new Vector(posNeg()*random(0.2,2), posNeg()*random(0.2,2)),
