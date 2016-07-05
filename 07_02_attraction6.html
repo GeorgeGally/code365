@@ -25,13 +25,13 @@ var ctx = createCanvas("canvas1");
 
 var grid = createGrid(30, 20, w, h);
 var world = new particleEngine(grid.length);
-var segment_length = 20;
+var segment_length = 220;
 
 var balls = new particleEngine(1);
 balls.particles[0].position.x = w/2;
 balls.particles[0].position.y = h/2;
-balls.particles[0].speed.x = 2;
-balls.particles[0].speed.y = 2;
+balls.particles[0].speed = new Vector(2, 2);
+balls.particles[0].sz = 20;
 
 for (var i = 0; i < world.particles.length; i++) {
     b = world.particles[i];
@@ -45,14 +45,26 @@ function draw(){
     ctx.background(255);
     //balls.particles[0].position = balls.particles[0].position.add( balls.particles[0].speed);
     ctx.fillStyle = "red";
-    ctx.fillEllipse(balls.particles[0].x, balls.particles[0].y, 50, 50)
+    var p = balls.particles[0];
+    //p.position = p.position.add(p.speed);
+    p.position.x = tween(p.position.x, p.position.x + p.speed.x * map(audioChannelVolume[(10)], 0, 150, 0, 40), 18); 
+    p.position.y = tween(p.position.y, p.position.y + p.speed.y * map(audioChannelVolume[(20)], 0, 150, 0, 40), 18); 
+    if (p.position.x > w - p.sz/2 || p.position.x < p.sz/2) {
+        p.speed.x*=-1;
+    }
+
+    if (p.position.y > h - p.sz/2 || p.position.y < p.sz/2) {
+        p.speed.y*=-1;
+    }
+
     for (var i = 0; i < world.particles.length; i++) {
     b = world.particles[i];
 
     ctx.fillStyle = "black";
     var target = new Vector(b.position.x, b.position.y);
-    var mouse = new Vector(mouseX, mouseY);
-    ctx.fillEllipse(target.x, target.y, 10, 10);
+    var mouse = new Vector(p.position.x, p.position.y);
+    ctx.fillEllipse(target.x, target.y, 4, 4);
+
     var dx = target.x-mouse.x,
         dy = target.y-mouse.y
         angle = Math.atan2(dy, dx);
@@ -60,7 +72,9 @@ function draw(){
     final.x = target.x - Math.cos(angle) * segment_length;
     final.y = target.y - Math.sin(angle) * segment_length;
     ctx.line(final.x, final.y, target.x, target.y);
+    ctx.fillEllipse(final.x, final.y, 4, 4);
 }
+    ctx.fillEllipse(p.position.x, p.position.y, p.sz, p.sz);
 }
 
 </script>

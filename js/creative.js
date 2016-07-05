@@ -157,13 +157,21 @@ p.eqTriangle = function(x, y, sz, down) {
  //    this.restore();
  // };
 
-p.background = function (r, g, b){
-	if (b == undefined) {
-		this.fillStyle = rgb(r); 
+p.background = function (r, g, b, a){
+	if (g == undefined) {
+
+		this.fillStyle = rgb(r, r, r);
+
+	} else if (b == undefined && a == undefined) {
+
+		this.fillStyle = rgba(r, r, r, g); 
+
+	} else if (a == undefined) {
+
+		this.fillStyle = rgb(r, g, b);
+	} else {
+		this.fillStyle = rgba(r, g, b, a); 
 	}
-		else {
-			this.fillStyle = rgb(r, g, b); 
-		}
 	
 	this.fillRect(0, 0, w, h); 
 };
