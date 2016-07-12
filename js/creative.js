@@ -157,19 +157,62 @@ p.eqTriangle = function(x, y, sz, down) {
  //    this.restore();
  // };
 
-p.background = function (r, g, b){
-	if (b == undefined) {
-		this.fillStyle = rgb(r); 
+
+
+
+p.background = function (r, g, b, a){
+	if (b == undefined && g == undefined && a == undefined) {
+		this.fillStyle = rgb(r, r, r); 
+	} else if (b == undefined && a == undefined) {
+		this.fillStyle = rgba(r, r, r, g); 
+	} else if (a == undefined) {
+		this.fillStyle = rgb(r, g, b); 
+	} else {
+		this.fillStyle = rgba(r, g, b, a); 
 	}
-		else {
-			this.fillStyle = rgb(r, g, b); 
-		}
 	
 	this.fillRect(0, 0, w, h); 
 };
 
 function radians(deg) {return deg*Math.PI/180;}; 
 function degrees(rad) {return rad*180/Math.PI;};
+
+function degreesToPoint(deg, diameter) {
+    var rad = Math.PI * deg / 180;
+    var r = diameter / 2;
+    return {x: r * Math.cos(rad), y: r * Math.sin(rad)};
+}
+
+
+function xyz(px, py, pz, pitch, roll, yaw) {
+	
+    var cosa = Math.cos(yaw);
+    var sina = Math.sin(yaw);
+
+    var cosb = Math.cos(pitch);
+    var sinb = Math.sin(pitch);
+
+    var cosc = Math.cos(roll);
+    var sinc = Math.sin(roll);
+
+    var Axx = cosa*cosb;
+    var Axy = cosa*sinb*sinc - sina*cosc;
+    var Axz = cosa*sinb*cosc + sina*sinc;
+
+    var Ayx = sina*cosb;
+    var Ayy = sina*sinb*sinc + cosa*cosc;
+    var Ayz = sina*sinb*cosc - cosa*sinc;
+
+    var Azx = -sinb;
+    var Azy = cosb*sinc;
+    var Azz = cosb*cosc;
+
+    x = Axx*px + Axy*py + Axz*pz;
+    y = Ayx*px + Ayy*py + Ayz*pz;
+    z = Azx*px + Azy*py + Azz*pz;
+
+    return {x:x, y:y, z:z};
+}
 
 function rgb(r, g, b) { 
 	if (g == undefined) g = r;

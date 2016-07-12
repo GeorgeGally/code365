@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+ <script type="text/javascript" src="js/d3.js"></script>
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+
+
+<body>
+
+
+<script>
+var ctx = createCanvas("canvas1");
+
+var url = "data/twiz.csv";
+ctx.strokeStyle = rgba(0,0,0,0.1);
+var movement = [];
+var x1 = y1 = z1 = 0;
+var x2 = y2 = z2 = 0;
+
+// just loading and fixing twiz data from textfile
+
+d3.csv(url, function(error, data) {
+    //console.log(data);
+    movement = data;
+    //console.log(movement[0]);
+    for (var i = 0; i < data.length; i++) {
+    	movement[i]['x1'] = data[i]['x1'].substr(14);
+    	//console.log(data[0]);
+
+    	for (var j = 0; j < data[i]['z1'].length; j++) {
+    		if (data[i]['z1'].charAt(j) == "	") {
+    		  //console.log("xx: " + data[i]['z1'].substr(j))
+    		  movement[i]['x2'] = data[i]['z1'].substr(j).trim();
+              movement[i]['z1'] = data[i]['z1'].substr(0, j-1);
+    		  
+    		  break;
+    		}
+    	}
+    }
+
+  console.log(movement[0]);
+
+});
+
+
+var counter = 0;
+function draw(){
+	if (movement.length > 0 && frameCount%2 == 0) {
+		makeMovement(movement[counter]);
+		counter = (counter + 1)%movement.length;
+	}
+	
+}
+
+
+function makeMovement(data){
+	
+    ctx.background(242, 0.05);
+
+	ctx.fillStyle = "red"
+	x1 = tween(x1, map(data['x1'], -1, 1, 0, w/2), 140);
+	y1 = tween(y1, map(data['y1'], -1, 1, 0, h/2), 140);
+	z1 = tween(z1, map(data['z1'], -1, 1, -100, 100), 40);
+
+    ctx.fillStyle = "black";
+    x2 = tween(x2, map(data['x2'], -180, 180, 0, 360), 140);
+    y2 = tween(y2, map(data['y2'], -180, 180, 0, 360), 140);
+    z2 = tween(z2, data['z2'], 40);
+    
+    // var pt1 = degreesToPoint(x2, 300);
+    // var pt2 = degreesToPoint(z2, 400);
+    var pt = xyz(x1, y1, z1, x2, y2, z2);
+    // ctx.line(w/2 + pt1.x, h/2 + pt1.y, x1, y1);
+    // ctx.line(w/2 + pt2.x, h/2 + pt2.y, z1, y2);
+    ctx.fillStyle = "black";
+    ctx.fillEllipse(w/2 + pt.x, h/2 + pt.y, pt.z/5, pt.z/5);
+    // ctx.fillStyle = "red";
+    // ctx.fillEllipse(w/2 + pt2.x, h/2 + pt2.y, 10, 10);
+
+}
+
+
+
+</script>
+</body>

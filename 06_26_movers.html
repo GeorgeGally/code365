@@ -37,7 +37,7 @@ physics.addBehavior(new GravityBehavior(new Vec2D(0,0.5)));
 physics.setWorldBounds(new Rect(0, 0, w, h));
 
 
-num_shakers = 2;
+num_shakers = 5;
 num_movers = 2;
 var d = 280;
 var d2 = 120;
@@ -64,7 +64,6 @@ for (var i = 0; i < num_shakers; i++) {
 
 function addShaker(i){
 
-  console.log("addShaker");
   shakers[i] = new VerletParticle2D(new Vec2D(w/2, h/4));
   particles[i] = new VerletParticle2D(new Vec2D(w/2, h/2));
   particles[i].x = w/2;
@@ -72,7 +71,7 @@ function addShaker(i){
   //shakers[i].lock();
   physics.addParticle(shakers[i]);
   physics.addParticle(particles[i]);
-  springs[i] = new VerletSpring2D(shakers[i], particles[i], 160, 0.0001);
+  springs[i] = new VerletSpring2D(shakers[i], particles[i], 90, 0.0001);
   physics.addSpring(springs[i]);
   // shakers.push(shaker);
   // particles.push(particle);
@@ -82,8 +81,8 @@ function addShaker(i){
 
 draw = function() {
   physics.update();
-  ctx.fillStyle = rgba(255, 255, 255, 1);
-  //ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = rgba(255, 255, 255, 0.1);
+  ctx.fillRect(0, 0, w, h);
   //ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
   ctx.strokeStyle="black";
   ctx.fillStyle="black";
@@ -112,11 +111,11 @@ function drawLines(){
     
     shakers[i].x = Math.cos(angle)*d;
     shakers[i].y = Math.sin(angle)*d;
-    ctx.fillStyle="blue";
-    ctx.fillEllipse(shakers[i].x, shakers[i].y, 2, 2);
     ctx.fillStyle="black";
+    //ctx.fillEllipse(shakers[i].x, shakers[i].y, 12, 12);
+    ctx.fillStyle="red";
     //if (i == 0) ctx.fillStyle="orange";
-    ctx.fillEllipse(particles[i].x, particles[i].y, 2, 2);
+    //ctx.fillEllipse(particles[i].x, particles[i].y, 12, 12);
     //ctx.line(shakers[i].x, shakers[i].y, particles[i].x, particles[i].y);
 
     angle = 2*Math.PI/shakers.length*i;
@@ -126,9 +125,9 @@ function drawLines(){
       offset = theta+2*Math.PI/num_movers*j;
       moverX = Math.cos(offset)*d2;
       moverY = Math.sin(offset)*d2;
-      //ctx.line(particles[i].x, particles[i].y, moverX, moverY);
+      ctx.line(shakers[i].x, shakers[i].y, moverX, moverY);
       ctx.fillStyle="black";
-      //ctx.fillEllipse(moverX, moverY, 12, 12);
+      ctx.fillEllipse(moverX, moverY, 12, 12);
 
     }
 
@@ -142,7 +141,7 @@ window.onkeydown=function(event){
     //if (event.which == 38) movers = (movers+1)%40
     //if (event.which == 40) movers = (movers-1); 
     //if (movers < 0) movers = 40;
-    if (event.which == 39) addShaker(shakers.length);
+    if (event.which == 39) addShaker();
     //if (event.which == 37) num = (num-1); if (num < 0) num = 40;
     //console.log(movers);
 

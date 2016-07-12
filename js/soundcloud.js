@@ -71,6 +71,7 @@ else {
         player.play();
     }
   };
+
   var Visualizer = function() {
     var audioSource;
       this.init = function(options) {
@@ -106,7 +107,7 @@ else {
             var call = { track: genres }
             console.log("track: " + genres);
 
-           SC.get('/tracks/' + genres , function(tracks) {
+           SC.get('/tracks/', {genres: genres} , function(tracks) {
             
             console.log("tracks: " + tracks);
             
@@ -136,8 +137,8 @@ else {
         }); // END GENRE CALL
 
         } else {
-          var call = {genres: genres }
-        
+          var call = {tags: genres }
+          
 
         SC.get('/tracks', { call, limit:50 }, function(tracks) {
           
