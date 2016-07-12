@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 7;
+ctx.lineCap="round";
+ctx.lineJoin = "miter";
+var particles = [];
+var radius = 150;
+var num_particles = 10;
+var cols = ['#fdea00', '#50bfe8', '#f06724', '#8cc640'];
+var angle = 360/num_particles;
+var circ_sz = 300;
+var t_size = 200;
+
+for (var i = 0; i < num_particles; i+=1) {
+    	var x = w/2;
+    	var y = h/2;    	
+		addParticle(x, y, cols[i%5], i);
+};
+
+
+
+function draw(){
+
+	ctx.background(255);
+	ctx.save();
+	ctx.translate(w/2, h/2);
+	//ctx.rotate(radians(180));	
+	drawParticles();
+	ctx.restore();
+}
+
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: _x,
+		y: _y,
+		c: _colour,
+		me: _me,
+		offset: 0,
+		speedx: posNeg()*random(0.4,4),
+		speedy: posNeg()*random(0.4,4),
+		sz: t_size - _me*30,
+	}
+
+	particles.push(particle);
+}
+
+
+function drawParticles(){
+
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		//ctx.strokeStyle = rgba(0,0,0, map(audioChannelVolume[p.me%100],0,140, 0, 0.8));
+		p.offset = tween(p.offset, map(audioChannelVolume[p.me*3],0,180, -30, 80), (num_particles+3-i)*2);
+		ctx.fillStyle = rgba(0, 0, 0, 0.09);
+		ctx.fillTriangle(0, 10 - p.sz + p.offset, particles[0].sz, 20 + particles[0].sz/2, - particles[0].sz , 20 + particles[0].sz/2);
+		//ctx.triangle(0, 10 - p.sz + p.offset, particles[0].sz, 20 + particles[0].sz/2, - particles[0].sz , 20 + particles[0].sz/2);
+	}
+	//ctx.line(-w/2, 95, w/2, 95);
+}
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+ <script>document.write('<script src="http://' + (location.host || '${1:localhost}').split(':')[0] + ':${2:35729}/livereload.js?snipver=1"></' + 'script>')</script>
+</body>
+</html>
