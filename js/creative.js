@@ -157,18 +157,7 @@ p.eqTriangle = function(x, y, sz, down) {
  //    this.restore();
  // };
 
-<<<<<<< HEAD
 
-
-
-p.background = function (r, g, b, a){
-	if (b == undefined && g == undefined && a == undefined) {
-		this.fillStyle = rgb(r, r, r); 
-	} else if (b == undefined && a == undefined) {
-		this.fillStyle = rgba(r, r, r, g); 
-	} else if (a == undefined) {
-		this.fillStyle = rgb(r, g, b); 
-=======
 p.background = function (r, g, b, a){
 	if (g == undefined) {
 
@@ -181,7 +170,6 @@ p.background = function (r, g, b, a){
 	} else if (a == undefined) {
 
 		this.fillStyle = rgb(r, g, b);
->>>>>>> f712f74c1dd9b38e84fa4637c020bef4baeb13a6
 	} else {
 		this.fillStyle = rgba(r, g, b, a); 
 	}
