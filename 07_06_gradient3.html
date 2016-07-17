@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+	<meta charset="utf-8">
+	<title>Soundcloud Viz</title>
+
+	<script src='http://connect.soundcloud.com/sdk.js'></script> 
+	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/perlin.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0);
+ctx.lineWidth = 1;
+var num = 80;
+var block_width = 140;
+var r = 0;
+noise.seed(Math.random());
+
+var s = 0;
+var waves = [];
+
+
+var Wave = function(){
+	var yoff = random(1);
+	var ht_offset = h - h/2.3 + random(-50, 350);
+	var alpha = random(0.2)
+	var col = rgba(0, 0, 0, alpha);
+	this.drawWave = function(){
+	var xoff = 0;       // Option #1: 2D Noise
+  	// var xoff = yoff; // Option #2: 1D Noise
+  	ctx.fillStyle= col;
+  	ctx.beginPath();
+  	ctx.moveTo(-50, h/2);
+  // Iterate over horizontal pixels
+  for (var x = 0; x <= w+20; x += 40) {
+    // Calculate a y value according to noise, map to 
+    s = tween (s, audioChannelVolume[10], 90);
+    var y = ht_offset + map(noise.simplex2(xoff, yoff), 0, 1, 0, 50); // Option #1: 2D Noise
+   
+    // Set the vertex
+    //ctx.fillEllipse(x, y, 4, 4);
+	ctx.lineTo(x,y);
+    // Increment x dimension for noise
+    xoff += 0.05;
+  }
+  // increment y dimension for noise
+  	yoff += 0.02;
+  	ctx.lineTo(w+50, h/2);
+  	ctx.lineTo(w+50, h);
+  	ctx.lineTo(-50, h);
+  //ctx.vertex(width, height);
+  //ctx.vertex(0, height);
+  ctx.closePath();
+  ctx.fill();
+  //ctx.stroke();
+}
+}
+
+
+for (var i = 0; i < num; i++) {
+	waves[i] = new Wave();
+}
+
+function draw(){
+	//ctx.fillStyle = rgba(255,255,255, 0.1);
+	//ctx.fillRect(0,0,w,h);
+	ctx.background(255);
+	//r = tween(r, map(audioChannelVolume[(10)], 0, 150, 100, h-100), 10);
+	r = 400;
+	//var grd=ctx.createLinearGradient(w/2, h/2+300, w/2, r);
+	var grd=ctx.createLinearGradient(w/2, h/2-150, w/2, r);
+	grd.addColorStop(1,rgb(255,255,255, 1));
+	//grd.addColorStop(r/2,rgba(255,255,255, 0.9));
+	grd.addColorStop(0,rgba(0,0,0, 1));
+	
+	ctx.fillStyle=grd;
+
+	ctx.fillRect(w/2 - 40, 100, block_width, r);
+
+	for (var i = 0; i < num; i++) {
+		waves[i].drawWave();
+	}
+
+}
+
+
+
+
+
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+
+</body>
+</html>

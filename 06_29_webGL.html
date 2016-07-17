@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script>  -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var init = function () {
+
+var gl = createGLCanvas("canvas1");
+console.log(gl);
+
+var vertexShaderText = 
+[
+'precision mediump float;',
+'',
+'attribute vec2 vertPosition;',
+'attribute vec3 vertColor;',
+'uniform float screenWidth;',
+'',
+'void main()',
+'{',
+' gl_Position = vec4(vertPosition, 0.0, 1.0);',
+'}'
+].join('\n');
+
+
+var fragmentShaderText = [
+'precision mediump float;',
+'',
+'void main()',
+'{',
+' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);',
+'}',
+].join('\n');
+
+
+var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+
+gl.shaderSource(vertexShader, vertexShaderText);
+gl.shaderSource(fragmentShader, fragmentShaderText);
+
+gl.compileShader(vertexShader);
+	if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+		console.error('ERROR compiling vertex shader!', gl.getShaderInfoLog(vertexShader));
+		return;
+	}
+
+gl.compileShader(fragmentShader);
+	if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+		console.error('ERROR compiling fragmentShader shader!', gl.getShaderInfoLog(fragmentShader));
+		return;
+	}
+
+gl.clearColor(0.75, 0.85, 0.8, 1.0);
+gl.clear(gl.COLOR_BUFFER_BIT || gl.DEPTH_BUFFER_BIT);
+
+var program = gl.createProgram();
+gl.attachShader(program, vertexShader);
+gl.attachShader(program, fragmentShader);
+gl.linkProgram(program);
+	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+		console.error('ERROR compiling program!', gl.getProgramInfoLog(program));
+		return;
+	}
+
+
+
+gl.validateProgram(program);
+	if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
+		console.error('ERROR validating program!', gl.getProgramInfoLog(program));
+		return;
+	}
+
+
+var triangleVertices = 
+	[ // X, Y           R, G, B
+		0.0, 0.5,	1.0, 0.0, 0.0,
+		-0.5,0.5,	0.7, 0.0, 0.0,
+		0.5,-0.5,	0.1, 1.0, 0.6,
+	]
+
+var triangleVertexBufferObject = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleVertexBufferObject), gl.STATIC_DRAW);
+
+var positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
+var colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
+
+gl.vertexAttribPointer(
+	positionAttribLocation,
+	2, // no. of elements per atrribute
+	gl.FLOAT, // type of elements
+	gl.FALSE,
+	5 * Float32Array.BYTES_PER_ELEMENT, // sz of indiv vertex
+	0 // offset
+);
+
+gl.vertexAttribPointer(
+	colorAttribLocation,
+	3, // no. of elements per atrribute
+	gl.FLOAT, // type of elements
+	gl.FALSE,
+	5 * Float32Array.BYTES_PER_ELEMENT, // sz of indiv vertex
+	2 * Float32Array.BYTES_PER_ELEMENT  // offset
+);
+
+gl.enableVertexAttribArray(positionAttribLocation);
+gl.enableVertexAttribArray(colorAttribLocation);
+
+gl.useProgram(program);
+gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+} //
+
+init();
+
+function draw(){
+	//ctx.background(250);
+	
+}
+
+
+</script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+
+</body>
+</html>

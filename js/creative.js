@@ -158,10 +158,13 @@ p.eqTriangle = function(x, y, sz, down) {
  // };
 
 
+<<<<<<< HEAD
 
 
 
 
+=======
+>>>>>>> f36654b018f8c91353c4685eb3c9b938364fd27f
 p.background = function (r, g, b, a){
 	if (g == undefined) {
 
@@ -174,7 +177,10 @@ p.background = function (r, g, b, a){
 	} else if (a == undefined) {
 
 		this.fillStyle = rgb(r, g, b);
+<<<<<<< HEAD
 
+=======
+>>>>>>> f36654b018f8c91353c4685eb3c9b938364fd27f
 	} else {
 		this.fillStyle = rgba(r, g, b, a); 
 	}
@@ -400,6 +406,8 @@ function createGrid(_gw, _gh, _w, _h){
 function pixelate(blocksize,blockshape) {
   if (blockshape == undefined) blockshape = 0;
   if (blocksize == undefined) blocksize = 20;
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = rgb(0);
     var imgData=ctx.getImageData(0,0,w,h); 
     ctx.clearRect(0,0,w,h);
     //var sourceBuffer8 = new Uint8Array(imgData.data.buffer);
@@ -417,8 +425,26 @@ function pixelate(blocksize,blockshape) {
           ctx.fillStyle = rgb(r,g,b);
           if (blockshape == 0) {
             ctx.fillRect(x, y, blocksize, blocksize);
+          } else if (blockshape == 1) {
+          	ctx.fillEllipse(x, y, blocksize, blocksize);
+          } else if (blockshape == 2) {
+          	var bb = brightness(r,g,b);
+          	ctx.fillStyle = (bb < 40 ? rgb(0) : rgb(255));
+            ctx.fillEllipse(x, y, blocksize-1, blocksize-1);
           } else {
-            ctx.fillEllipse(x, y, blocksize, blocksize);
+          	var bb = brightness(r,g,b);
+          	if (bb< 40) {
+          		ctx.fillStyle = rgb(0);
+          		ctx.fillEllipse(x, y, blocksize-1, blocksize-1);
+          	} else {
+          		ctx.fillStyle = rgb(255);
+          		ctx.fillEllipse(x, y, blocksize-1, blocksize-1);
+            	ctx.strokeEllipse(x, y, blocksize, blocksize);
+          	}
+          	//ctx.fillStyle = (bb < 40 ? rgb(0) : rgb(255));
+          	
+          	
+            
           };
 
         }
