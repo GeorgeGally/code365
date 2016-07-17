@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var r = 260;
+var rot = 0;
+
+// FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+function draw(){
+
+    ctx.background(250);
+    rot = tween(rot, map(audioChannelVolume[15],0,180, 0, 90), 20);
+    ctx.save();
+    ctx.translate(w/2, h/2);
+    ctx.rotate(radians(rot));
+    ctx.strokeStyle = rgb(0);
+    ctx.lineWidth = 12;
+
+    ctx.HstrokeEllipse(0, 0, r, r);
+    ctx.HstrokeEllipse(0, 0, r/2, r/2);
+    ctx.lineWidth = 12;
+    ctx.beginPath();
+    ctx.arc(0, 0, r/2-20, 0, 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0, 0, r/2-20, -3.2, -1.5);
+    ctx.stroke();
+        ctx.line(20-r/2, 0, 20-r/2, r);
+    ctx.line(r/2-20, 0, r/2-20, -r);
+
+    ctx.fillStyle = "black";
+    //ctx.fillEllipse(0, 0, 20, 20);
+    ctx.restore();
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
