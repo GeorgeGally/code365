@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script> 
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 7;
+ctx.lineCap="square";
+ctx.lineJoin = "miter";
+var circ_size = 180;
+var middle = 0;
+var r = -50;
+var lines = [];
+for (var i = 0; i < 10; i++) {
+	lines[i] = circ_size + 100;
+}
+
+function draw(){
+
+	ctx.background(250);
+	r = tween(r, map(audioChannelVolume[(10)], 0, 160, 0, 40)-78, 180);
+	ctx.save();
+	ctx.translate(w/2, h/2);	
+	ctx.strokeStyle = rgb(0);
+	ctx.lineWidth = 12;
+	ctx.rotate(radians(-95));
+	for (var i = 0; i < 10; i++) {
+		ctx.rotate(radians(6));
+		//lines[i] = tween(lines[i], map(audioChannelVolume[(20*i)], 0, 160, 60, circ_size/3), 15);
+		ctx.fillStyle = rgba(0, 0, 0, 0.8-i/10);
+		//ctx.eqFillTriangle(100, 100, 200);
+		ctx.fillTriangle(0, - circ_size, circ_size, circ_size/2, - circ_size , circ_size/2);
+		//ctx.fillTriangle(0, 0, circ_size/2, circ_size/2, circ_size, -circ_size);
+	}
+	//ctx.rotate(radians(-4*5));
+	ctx.restore();
+	
+}
+
+
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+
+</body>
+</html>

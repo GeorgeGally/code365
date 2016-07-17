@@ -11,6 +11,18 @@ function createCanvas(canvas_name){
 	return ctx;
 }
 
+function createGLCanvas(canvas_name){
+	canvas = document.createElement('canvas');
+	var body = document.querySelector('body');
+	canvas.setAttribute("id", canvas_name);
+	body.appendChild(canvas);
+	var gl = canvas.getContext('webgl');
+	if (!gl) var gl = canvas.getContext('experimental-webgl');
+	resize();
+	window.addEventListener("resize", resize, false);
+	return gl;
+}
+
 function resize(){
 	var c = document.getElementsByTagName('canvas');
 	width = w = window.innerWidth;

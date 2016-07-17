@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background:#fff">
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var img = new Image();
+var img_w, img_h, img_scale;
+img.src = 'img/Dalai_Lama.jpg';
+var grid_size = 14;
+
+img.onload = function() {
+
+draw = function(){
+	ctx.drawImage(img, 0,0,w,h);
+	pixelate(grid_size,2);
+}
+
+}
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script> 
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 7;
+ctx.lineCap="square";
+ctx.lineJoin = "miter";
+var circ_size = 300;
+var r = 0;
+
+function draw(){
+	//ctx.fillStyle = rgba(255,255,255, 0.1);
+	//ctx.fillRect(0,0,w,h);
+	ctx.background(255);
+	r = tween(r, map(audioChannelVolume[(10)], 0, 150, 0, h/2 + 150), 40);
+	var grd=ctx.createLinearGradient(w/2, h/2-150, w/2, r);
+	grd.addColorStop(0,"black");
+	grd.addColorStop(1,"white");
+	ctx.fillStyle=grd;
+
+	ctx.fillRect(w/2,h/2-150,80, 300);
+}
+
+
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+
+</body>
+</html>
