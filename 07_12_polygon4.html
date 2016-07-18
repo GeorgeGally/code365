@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    
+<!--     <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var rot = 0;
+var roty = 0;
+var particles = [];
+var x = 0;
+var y = 0;
+var speedx = 1;
+var speedy = 1;
+
+function draw(){
+
+    //ctx.background(255, 0.05);
+    x = Math.sin(rot)*w;
+    y = Math.cos(roty)*h;
+    if (x > w +100 || x < 0-100) speedx*=-1;
+    if (y > h+100 || y < 0-100) speedy*=-1;
+    //rot = tween(rot, map(audioChannelVolume[15],0,180, 0, 90), 20);
+    rot += (0.001)*speedx;
+    roty += (0.0075)*speedy;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(radians(rot*250));
+    ctx.strokeStyle = rgba(0,0,0,0.5);
+    ctx.fillStyle = rgba(255, 255, 255, 1);
+    ctx.fillPolygon(0, 0, 5, 80);
+    ctx.strokePolygon(0, 0, 8, 80);
+    ctx.restore();
+
+}
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>
