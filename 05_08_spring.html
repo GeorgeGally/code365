@@ -50,9 +50,9 @@ function draw(){
 	theta +=  map(audioChannelVolume[randomInt(80)], 0, 150, 1, 5)/100;
 	//theta += 0.05;
 	
-
+  ctx.translate(0, -200);
 	moveParticles();
-
+  ctx.translate(0, 200);
 }
 
 

@@ -94,6 +94,7 @@ else {
      * @param track_url
      * @param callback
      */
+
     this.loadStream = function(genres, successCallback, errorCallback) {
       
       if (SC != undefined) {
@@ -102,7 +103,10 @@ else {
             client_id: client_id
         });
         // SC.get('/resolve', { url: track_url }, function(sound) {
+        
+        // load a specific track
         if (genres.charAt(0) == "!") {
+
             genres = genres.substring(1);
             var call = { track: genres }
             console.log("track: " + genres);
@@ -136,11 +140,14 @@ else {
             
         }); // END GENRE CALL
 
+        // load tags
         } else {
-          var call = {tags: genres }
+
+          console.log(genres);
+          var call = {genres: genres }
           
 
-        SC.get('/tracks', { call, limit:50 }, function(tracks) {
+        SC.get('/tracks', { genres: genres, limit: 100 }, function(tracks) {
           
           if (tracks.errors) {
             

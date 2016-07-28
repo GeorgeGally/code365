@@ -158,13 +158,7 @@ p.eqTriangle = function(x, y, sz, down) {
  // };
 
 
-<<<<<<< HEAD
 
-
-
-
-=======
->>>>>>> f36654b018f8c91353c4685eb3c9b938364fd27f
 p.background = function (r, g, b, a){
 	if (g == undefined) {
 
@@ -177,10 +171,7 @@ p.background = function (r, g, b, a){
 	} else if (a == undefined) {
 
 		this.fillStyle = rgb(r, g, b);
-<<<<<<< HEAD
 
-=======
->>>>>>> f36654b018f8c91353c4685eb3c9b938364fd27f
 	} else {
 		this.fillStyle = rgba(r, g, b, a); 
 	}
@@ -470,6 +461,7 @@ function triangulate(grid_w, grid_h, alpha) {
     ctx.clearRect(0,0,w,h);
     //var sourceBuffer8 = new Uint8Array(imgData.data.buffer);
     //var sourceBuffer8 = new Uint8ClampedArray(imgData.data.buffer);
+
     var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
     var i =0;
     for(var x = 0; x < w; x += grid_w)

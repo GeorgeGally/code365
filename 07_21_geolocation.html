@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+ <div id="map" style='height:550px; width:100%; position: absolute; left:0; top: 0;'></div>
+
+ <div id="demo" style="position: absolute; left: 0; top: 0; z-index: 999">dsadsaadasd</div>
+<script>
+// was getting annoyed with the same track playing, so changed soundcloud function to play random track
+var ctx = createCanvas("canvas1");
+var geocoder;
+
+var x = document.getElementById("demo");
+var map;
+var initialised = false;
+var lat, lng;
+
+function addMap(lat, lng) {
+	lat = lat;
+	lng = lng;
+  var mapProp = {
+    	center:new google.maps.LatLng(lat,lng),
+    	zoom: 8,
+    	mapTypeId:google.maps.MapTypeId.SATELLITE
+  };
+ 	map=new google.maps.Map(document.getElementById("map"),mapProp);
+
+ 	resizeMapDiv();
+
+    $(window).resize(map.resizeMapDiv);
+
+	google.maps.event.addDomListener(window, 'load', initialize);
+
+
+	google.maps.event.addListener(map, 'tilesloaded', function(){
+    	console.log("initialised"); initialised = true;  
+    	
+    	});
+
+	google.maps.event.addDomListener(map, 'drag', 
+
+	function(){
+		$("#c").fadeOut();	});
+		google.maps.event.addDomListener(map, 'zoom', 
+		function(){
+		$("#c").fadeOut();	});
+	}
+
+function initialize() {
+	
+	geocoder = new google.maps.Geocoder;
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition);
+    } else {
+        x.innerHTML = "Geolocation is not supported by this browser.";
+    }
+
+}
+function showPosition(position) {
+
+
+
+    x.innerHTML = "Latitude: " + position.coords.latitude + 
+    "<br>Longitude: " + position.coords.longitude; 
+    geocodeLatLng(position);
+    addMap(position.coords.latitude, position.coords.longitude);
+
+    getLifeExpectancy();
+    //map.setCenter(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+    //getWeather(position.coords.latitude, position.coords.longitude);
+}
+
+
+function geocodeLatLng(position) {
+        var latlng = {lat: parseFloat(position.coords.latitude), lng: parseFloat(position.coords.longitude)};
+        geocoder.geocode({'location': latlng}, function(results, status) {
+          if (status === google.maps.GeocoderStatus.OK) {
+            if (results[1]) {
+             console.log(results[1]);
+            } else {
+              window.alert('No results found');
+            }
+          } else {
+            window.alert('Geocoder failed due to: ' + status);
+          }
+        });
+      }
+
+resizeMapDiv = function () {
+    $("#map").height($(window).height());
+    $("#map").width($(window).width());
+    $("#c").height($(window).height());
+    $("#c").width($(window).width());
+    // Notify the map a resize has occurred, and center on that point
+
+    google.maps.event.trigger(map, 'resize');
+
+
+}
+
+
+function getLifeExpectancy(){
+	var sex = "male";
+	var dob = "1976-09-11";
+	var country = "South Africa";
+	url = "https://api.population.io:80/1.0/life-expectancy/total/"+sex+"/"+country+"/"+dob+"/";
+	 $.<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 0.2;
+var radius = 100;
+var flies = [];
+var balls = new particleEngine(10);
+
+for (var i = 0; i < balls.particles.length; i++) {
+    b = balls.particles[i];
+    b.position.x = b.x = random(55);
+    b.position.y = b.y = random(55);
+    b.speed.x = random(0.1,2);
+	b.speed.y = random(2,20);
+    b.angle = radians(i*360/balls.particles.length);
+    c = randomInt(0,100);
+    b.c = rgba(c, c, c, random(0.1, 0.8));
+    b.sz = 20;
+
+    flies[i] = new particleEngine(95);
+    for (var j = 0; j < flies[i].particles.length; j++) {
+        p = flies[i].particles[j];
+        p.position.x = w/2;
+        p.position.y = h/2;
+        p.me = (p.me + randomInt(100))%80;
+        c = randomInt(0,100);
+        p.c = rgba(c, c, c, random(0.1, 0.8));
+    }
+}
+
+// FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+function draw(){
+
+    // ctx.clearRect(0, 0, w, h);
+
+    ctx.fillStyle = rgba(255, 255, 255, 0.5);
+    ctx.fillRect(0, 0, w, h);
+    //particle.draw();
+    //console.log();
+  
+        
+    for (var i = 0; i < balls.particles.length; i++) {
+        
+        b = balls.particles[i];
+        //b.angle += radians(b.speed.x); 
+        b.angle += radians(1); 
+        //b.angle += radians(map(audioChannelVolume[b.me%60], 0, 100, -1, 1)); 
+        b.x = w/2 +  (b.sz/2+radius) * Math.cos(b.angle);
+		b.y = h/2 +  + (b.sz/2+radius) * Math.sin(b.angle);
+
+        b.sz =  map(audioChannelVolume[b.me%80], 0, 150, 0, 6);
+       	//b.sz = 5;
+        ctx.fillStyle = b.c;
+
+        ctx.fillEllipse(b.x, b.y, b.sz, b.sz);
+
+          
+
+        for (var j = 0; j < flies[i].particles.length; j++) {
+            
+            var mouse = new Vector(b.x+b.sz/2, b.y+b.sz/2);
+            p = flies[i].particles[j];
+            mouse = mouse.subtract(p.position);
+             mouse.setMag(0.9);
+            //console.log(mouse)
+            acceleration = mouse;
+            p.speed = p.speed.add(acceleration);
+            p.position = p.position.add(p.speed);
+            p.speed.limit(18);
+            //p.sz = 2;
+            p.sz =  map(audioChannelVolume[p.me%80], 0, 120, 0, 5);
+            ctx.strokeStyle = p.c;
+            ctx.fillStyle = p.c;
+            // ctx.strokeStyle = "black";
+            // ctx.fillStyle = "black";
+            ctx.line(p.position.x, p.position.y, b.x, b.y);
+            ctx.fillEllipse(p.position.x, p.position.y, p.sz, p.sz);
+
+
+        }
+
+    } 
+
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
+({url: url, success: function(result){
+        $("#demo").html(result);
+    }});
+}
+
+function getWeather(lat, lng){
+
+	var api ="6fb8c037edc949db233cbebd83e9641d";
+	var url = 'http://api.openweathermap.org/data/2.5/weather?lat='+lat+'&lon=' + lng +"&units=metric&APPID="+api;
+	console.log(url);
+	 $.ajax({url: url, success: function(result){
+        $("#demo").html(result);
+    }});
+
+
+}
+var zoom = 6;
+var counter = 0;
+
+function draw(){
+	//console.log(initialised);
+	if (initialised && counter%50 == 0 && zoom<10) {
+		zoom+=1;
+		map.panTo(new google.maps.LatLng(lat,lng+zoom));
+	}
+	counter++;
+}
+
+
+</script>
+	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDEKAnXP_v0EOZxJ5bv0K4UNqYFRM1JAj0&callback=initialize"
+    async defer></script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+
+</body>
+</html>

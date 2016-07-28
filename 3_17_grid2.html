@@ -39,7 +39,7 @@ for (var i = 0; i < num_particles; i++) {
     // var cc = rgba(random(25),random(255),0, 0.5);
     var m = map(i, 0, num_particles, 0, 360);
     //var cc = hsl(m, 96, 60);
-    var cc = rgba(i%255, 20, 60, 1);
+    var cc = rgba(i%255, random(100), 60, 1);
     //var cc = rgb(0);
 	addParticle(grid[i][0], grid[i][1], cc, i);
 
@@ -48,12 +48,12 @@ for (var i = 0; i < num_particles; i++) {
 
 function draw(){
 
-	//ctx.fillStyle = rgb(255);
-	//ctx.fillRect(0, 0, w, h);
-	ctx.clearRect(0, 0, w, h);
+	ctx.fillStyle = rgb(0,0,0);
+	ctx.fillRect(0, 0, w, h);
+	//ctx.clearRect(0, 0, w, h);
 	moveParticles();
-	ctx.fillStyle = rgba(0,0,0,1);
-	//ctx.HfillEllipse(w/2, h/2, radius-8, radius-8);
+	//ctx.fillStyle = rgba(0,0,0,1);
+	triangulate(55,55,1)
 	
 }
 

@@ -20,7 +20,7 @@ ctx.strokeStyle = rgba(0,0,0,0.8);
 ctx.lineWidth = 2;
 var particles = [];
 var radius = 150;
-var num_particles = 1100;
+var num_particles = 4600;
 var cols = ['#fdea00', '#50bfe8', '#f06724', '#8cc640'];
 var angle = 360/num_particles;
 var circ_sz = 300;
@@ -47,14 +47,14 @@ function draw(){
 
 	// circ_sz = tween(circ_sz, map(audioChannelVolume[50],0,150, 200, 580), 27);
 	
-	ctx.save();
-	ctx.eqTriangle(w/2-t_size, h/2, t_size);
-	ctx.clip();
-	drawParticles();
-	ctx.restore();
+	// ctx.save();
+	// ctx.eqTriangle(w/2-t_size, h/2, t_size);
+	// ctx.clip();
+	// drawParticles();
+	// ctx.restore();
 
 	ctx.save();
-	ctx.eqTriangle(w/2+t_size, h/2, t_size);
+	ctx.eqTriangle(w/2, h/2, t_size);
 	ctx.clip();
 	drawParticles();
 
@@ -64,9 +64,9 @@ function draw(){
 	
 	ctx.globalCompositeOperation = "normal";
 	ctx.restore();
-	ctx.strokeStyle = "#000";
-	ctx.eqTriangle(w/2-t_size, h/2, t_size);
-	ctx.eqTriangle(w/2+t_size, h/2, t_size);	
+	// ctx.strokeStyle = "#000";
+	// ctx.eqTriangle(w/2-t_size, h/2, t_size);
+	// ctx.eqTriangle(w/2+t_size, h/2, t_size);	
 }
 
 
@@ -76,8 +76,8 @@ function addParticle(_x, _y, _colour, _me){
 		y: _y,
 		c: _colour,
 		me: _me,
-		speedx: posNeg()*random(0.2,1.2),
-		speedy: posNeg()*random(0.4,2.4),
+		speedx: posNeg()*random(1)*5,
+		speedy: posNeg()*random(1.4),
 		sz: random(20,100),
 		angle: random(1)
 	}
@@ -110,18 +110,22 @@ function moveParticles(){
 		var r = radius;
 		// p.y = map(audioChannelVolume[Math.floor(p.me)],-100,100, -50, 50);
 		//console.log(p.x)
-		p.sz = map(audioChannelVolume[Math.floor(p.me%100)],0,150, 0, 4);
+		p.sz = map(audioChannelVolume[Math.floor(p.me%250)],0,150, 0, 4);
 		
-		x = p.x + (r) * Math.cos(p.angle);
-		y = p.y + (r) * Math.sin(p.angle);
+		// x = p.x + (r) * Math.cos(p.angle);
+		// y = p.y + (r) * Math.sin(p.angle);
 		//p.sz = tween(p.sz, map(mapSound(p.me,num_particles),0,100, 120, 300), 25);
 		//
 		
 		p.x = p.x + p.speedx;
-		p.y = p.y + p.speedx;
+		p.y = p.y + p.speedy;
 		//p.y = tween(p.y, p.y + p.speedy, 2);
-		p.speedx = bounce(p.x, 0, w)*p.speedx;
-		p.speedy = bounce(p.y, 20, h-20)*p.speedy;
+		//p.speedx = bounce(p.x, 0, w)*p.speedx;
+		if(p.x < 200) p.x = w-200;
+		if(p.x > w-200) p.x = 200;
+		//p.speedy = bounce(p.y, 20, h-20)*p.speedy;
+		if(p.y < 200) p.y = h-200;
+		if(p.y > h-200) p.y = 200;
 		//p.sz *= 0.9;
 		// ctx.fillStyle = p.c;
 		

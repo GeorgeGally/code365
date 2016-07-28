@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/perlin.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var bg_alpha = 0.3;
+
+noise.seed(14);
+
+
+var num = 596;
+var pos = [];
+var vel = [];
+var acc = [];
+
+for(var i = 0; i < num; i++) {
+      pos[i] = new Vector(random(0, w), random(0, h));
+      vel[i] = new Vector(0, 0);
+      acc[i] = new Vector(0, 0);
+}
+
+var R1 = random(0, 255);
+var R2 = random(0, 255);
+var G1 = random(0, 255);
+var G2 = random(0, 255);
+var B1 = random(0, 255);
+var B2 = random(0, 255);
+var noisy = .007;
+
+function draw() {
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.background(255, 0.003);
+  ctx.globalCompositeOperation = 'source-over';
+  for(var  i = 0; i < num; i++) {
+    
+    // ctx.fillStyle = rgba(R1, G1, B1, 0.10);
+    ctx.fillStyle = rgba(0, 0, 0, 0.10);
+    ctx.fillRect(pos[i].x, pos[i].y, 1, 1);
+
+    vel[i].x = 5*noise.perlin3(200+pos[i].x*.007, 200+pos[i].y*.007, noisy*2)*Math.cos(4*Math.PI*noise.perlin3(pos[i].x*.007, pos[i].y*.007, noisy*.5));
+    vel[i].y = 5*noise.perlin3(200+pos[i].x*.007, 200+pos[i].y*.007, noisy*2)*Math.sin(4*Math.PI*noise.perlin3(pos[i].x*.007, pos[i].y*.007, noisy*.5));
+    // pos[i].add(vel[i]);
+    pos[i].x += vel[i].x;
+    pos[i].y += vel[i].y;
+    //console.log(pos[1]);
+    if(pos[i].x < 0 || pos[i].y < 0 || pos[i].x > w || pos[i].y > h){
+      pos[i].x = random(0, w);
+      pos[i].y = random(0, h);
+      vel[i].x = 0;
+      vel[i].y = 0;
+    }
+    acc[i].x = 0;
+    acc[i].y = 0;
+  }
+  noisy += .007;
+}
+// void mousePressed(){
+//   R1 = random(0, 255);
+//   R2 = random(0, 255);
+//   G1 = random(0, 255);
+//   G2 = random(0, 255);
+//   B1 = random(0, 255);
+//   B2 = random(0, 255);
+// }
+
+
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

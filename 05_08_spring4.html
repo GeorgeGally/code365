@@ -75,15 +75,18 @@ function moveParticles(){
    	yy[1] = xx[1];
    	yy[2] = xx[3];
    	yy[3] = xx[2];
+
+    // xx[4] = w/2;
+    // yy[4] = h/2;
     ctx.lineWidth = 2;
    	ctx.strokeStyle = "black";
    	ctx.fillStyle = "black";
    	
-   	ctx.line(xx[1],yy[1],xx[0],yy[0]);
+   	//ctx.line(xx[1],yy[1],xx[0],yy[0]);
   	// ctx.fillEllipse(xx[0],yy[0],sz,sz);
   	// ctx.fillEllipse(xx[1],yy[1],sz,sz);
 
-    ctx.line(xx[3],yy[3],xx[2],yy[2]);
+    //ctx.line(xx[3],yy[3],xx[2],yy[2]);
     // ctx.fillEllipse(xx[2],yy[2],sz,sz);
     // ctx.fillEllipse(xx[3],yy[3],sz,sz);
 

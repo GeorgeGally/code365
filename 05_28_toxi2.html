@@ -82,7 +82,7 @@ this.draw = function(){
     p[i].x = i * spacing + x;
     // p[i].y = tween(p[i].y, map(audioChannelVolume[p[i].me2], 0, 100, -160, 160), randomInt(10,60)); 
     p[i].y = tween(p[i].y, map(audioChannelVolume[p[i].me2], 0, 100, -60, 60), 20); 
-    ctx.fillEllipse(particle.x, yy + particle.y, audioChannelVolume[p[i].me2]/8, audioChannelVolume[p[i].me2]/8);
+    ctx.fillEllipse(particle.x, yy + particle.y, audioChannelVolume[p[i].me2]/2, audioChannelVolume[p[i].me2]/2);
     if(i>0 && p[i].x < w-20 && p[i-1].x > 20) {
       //ctx.line(p[i].x, yy + p[i].y, p[i-1].x, yy + p[i-1].y);
     }
@@ -114,6 +114,8 @@ function draw(){
   for (var i = 0; i < num_waves; i++) {
   waves[i].draw();
 }
+triangulate(40, 40, 1);
+
 }
 
 </script>

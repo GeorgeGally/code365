@@ -23,7 +23,7 @@
 
 var ctx = createCanvas("canvas1");
 ctx.lineWidth = 0.2;
-var radius = 100;
+var radius = 30;
 var flies = [];
 var balls = new particleEngine(10);
 
@@ -41,14 +41,15 @@ for (var i = 0; i < balls.particles.length; i++) {
     flies[i] = new particleEngine(95);
     for (var j = 0; j < flies[i].particles.length; j++) {
         p = flies[i].particles[j];
-        p.position.x = w/2;
-        p.position.y = h/2;
+        p.position.x = 0;
+        p.position.y = 0;
         p.me = (p.me + randomInt(100))%80;
         c = randomInt(0,100);
         p.c = rgba(c, c, c, random(0.1, 0.8));
     }
 }
 
+var rot = 0;
 // FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
 function draw(){
 
@@ -58,16 +59,18 @@ function draw(){
     ctx.fillRect(0, 0, w, h);
     //particle.draw();
     //console.log();
-  
-        
+    ctx.save();
+    ctx.translate(w/2, h/2);
+    ctx.rotate(radians(rot));
+    rot += 0.1;
     for (var i = 0; i < balls.particles.length; i++) {
         
         b = balls.particles[i];
         //b.angle += radians(b.speed.x); 
         b.angle += radians(1); 
         //b.angle += radians(map(audioChannelVolume[b.me%60], 0, 100, -1, 1)); 
-        b.x = w/2 +  (b.sz/2+radius) * Math.cos(b.angle);
-		b.y = h/2 +  + (b.sz/2+radius) * Math.sin(b.angle);
+        b.x = (b.sz/2+radius) * Math.cos(b.angle);
+		b.y = (b.sz/2+radius) * Math.sin(b.angle);
 
         b.sz =  map(audioChannelVolume[b.me%80], 0, 150, 0, 6);
        	//b.sz = 5;
@@ -94,7 +97,7 @@ function draw(){
             ctx.fillStyle = p.c;
             // ctx.strokeStyle = "black";
             // ctx.fillStyle = "black";
-            ctx.line(p.position.x, p.position.y, b.x, b.y);
+            //ctx.line(p.position.x, p.position.y, b.x, b.y);
             ctx.fillEllipse(p.position.x, p.position.y, p.sz, p.sz);
 
 
@@ -102,7 +105,7 @@ function draw(){
 
     } 
 
-
+    ctx.restore();
 }
 
 </script>

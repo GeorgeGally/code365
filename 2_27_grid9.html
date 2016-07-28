@@ -63,13 +63,9 @@ var Wave = function(_num_particles, _x, _y, _me) {
 			p = particles[i];
 
 			//DISTRIBUTED MAPPED SOUND VALUE  
-			var s = mapSound(p.me, num_particles*num_waves);
-			// console.log(s)
-			// DRAW DOTS
-			// ctx.shadowColor = rgba(80,80,80, 0.5);
-			// ctx.shadowBlur = 3;
-			// ctx.shadowOffsetX = s/30;
-			
+			var s = mapSound(p.me, (num_particles*num_waves));
+
+			ctx.lineWidth = 1+ p.me%2;
 			//ctx.fillStyle = rgb(0,0,155-s);
 			//ctx.strokeEllipse(p.x, h-(30 + p.y), s, s);
 			if (p.y < h/2) {
@@ -100,11 +96,11 @@ var spacing_x = w/grid_w;
 var spacing_y = h/grid_h;
 console.log(spacing_x)
 console.log(spacing_y)
-var grid = makeGrid(grid_w, grid_h);
+var grid = createGrid(grid_w, grid_h, w/2, h/2);
 var num_particles = 1;
 
 for (var i = 0; i < num_waves; i++) {	
-	waves[i] = new Wave(num_particles, grid[i][0]*spacing_x+spacing_x/2,grid[i][1]*spacing_y + spacing_y/2, i);
+	waves[i] = new Wave(num_particles, w/4 + grid[i][0], h/4 + grid[i][1], i);
 
 			// if (i>0) ctx.line(waves[i].particles[i].x, waves[i].particles[i].y, waves[i].particles[i-1].x, waves[i]particles[i-1].y);
 };

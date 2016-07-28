@@ -19,18 +19,17 @@ var ctx = createCanvas("canvas1");
 var img = new Image();
 var img_w, img_h, img_scale;
 img.src = 'img/people/stevie-nicks1.jpg';
-
+var txt = "Discarded";
 // SETUP WAVES CLASS
 
 img.onload = function() {
-var grid_size = 3;
+var grid_size = 8;
 var grid_w = w/grid_size;
 var grid_h = h/grid_size;
 var num_particles = grid_w * grid_h;
 var spacing_x = w/grid_w;
 var spacing_y = h/grid_h;
-// console.log(spacing_x)
-// console.log(spacing_y)
+
 
 var grid = makeGrid(grid_w, grid_h);
 ctx.strokeStyle = rgba(0,0,0,0.8);
@@ -42,18 +41,19 @@ setup = function(){
 	ctx.fillStyle = rgb(255);
 	ctx.fillRect(0, 0, w, h);
 	ctx.fillStyle = rgb(0);
-	ctx.font="160px Helvetica";
+	ctx.font="120px Helvetica";
 	ctx.textAlign = "center";
-	// ctx.fillText("Music is life",w/2,h/2);
-	ctx.fillText("Techno or else",w/2,h/2);
+
+	ctx.fillText(txt,w/2,h/2);
 	imgData = ctx.getImageData(0, 0, w, h).data;
 	ctx.clearRect(0, 0, w, h);
 	var i = 0;
+
 	for (var y = 0; y < h; y+=grid_size) {
 		for (var x = 0; x < w; x+=grid_size) {
 			var pt = (x + y * w)*4;
-			if (brightness(imgData[pt],imgData[pt+1],imgData[pt+2]) < 50) { 
-			var cc = rgb(imgData[pt],imgData[pt+1],imgData[pt+2]);
+			if (brightness(imgData[pt],imgData[pt+1],imgData[pt+2]) < 40) { 
+			var cc = rgba(255-imgData[pt],255-imgData[pt+1],255-imgData[pt+2], 0.8);
 			addParticle(x, y, cc, i);
 			i++;
 			}
@@ -64,14 +64,13 @@ setup = function(){
 
 
 draw = function(){
-	// ctx.fillStyle = rgb(0);
-	// ctx.fillRect(0, 0, w, h);
-	// ctx.fillStyle = rgb(255);
-	ctx.clearRect(0, 0, w, h);
+
+	ctx.fillStyle = rgba(0, 0, 0, 0.1);
+	ctx.fillRect(0, 0, w, h);
+
 	moveParticles();
-	ctx.fillStyle = rgb(255);
-	//ctx.fillText("Music is life",w/2,h/2);
-	ctx.fillText("Acid please",w/2,h/2);
+	ctx.fillStyle = rgba(255, 255, 255, 0.5);
+	if (chance(100)) ctx.fillText(txt,w/2,h/2);
 }
 
 
@@ -84,8 +83,9 @@ addParticle = function(_x, _y, _colour, _me){
 			stroke_width: random(0.1, 1),
 			speedx: 0,
 			speedy: random(2,20),
-			dirx: posNeg(),
+			dirx: posNeg()* random(1),
 			diry: posNeg(),
+			sz: 0
 		}
 		//console.log(particle.dir)
 		particles.push(particle);
@@ -99,13 +99,15 @@ moveParticles = function(){
 			p = particles[i];
 
 			//DISTRIBUTED MAPPED SOUND VALUE  
-			var s = audioChannelVolume[p.me]/2;
+			p.sz = tween(p.sz, audioChannelVolume[p.me]/2, 2);
+			// p.dirx += map(audioChannelVolume[p.me], 0, 150, -2,2);
 			//var s = mapSound(p.me, 100+particles.length)/4;
-
+			if (chance(20)) p.dirx *= posNeg();
+			if (chance(20)) p.diry *= posNeg();
 			// DRAW DOTS
 			ctx.fillStyle = p.c;
 			//ctx.fillEllipse(p.x, p.y, grid_size, grid_size);
-			ctx.fillTriangle(p.x, p.y, p.x + p.dirx * s, p.y + p.diry * s, p.x, p.y + grid_size + s/10)
+			ctx.fillTriangle(p.x, p.y, p.x + p.dirx * p.sz, p.y + p.diry * p.sz, p.x, p.y + grid_size + p.sz/10)
 		};
 
 	}

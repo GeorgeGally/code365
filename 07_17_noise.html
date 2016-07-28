@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/simplex-noise.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var c = 0;
+
+var Wave = function(_num_particles, _x, _y, _me) {
+
+	ctx.strokeStyle = rgba(0,0,0,0.8);
+	var particles = [];
+	var radius = 50;
+	var rot = 0;
+	var num_particles = _num_particles;
+	var x = _x;
+	var y = _y;
+	var me = _me;
+	var noise = new SimplexNoise();
+
+	
+
+	this.setup = function(){
+		for (var i = 0; i < num_particles; i++) {
+			var c = random(225);
+			//var c = 0;
+			//if (chance(5)) {
+				var cc = rgba(c, c, c, 0.8);
+			//} else {
+				//var cc = rgba(random(1), random(40,125), random(140,225), 0.4);
+			//}
+		    
+			this.addParticle(x, y, cc, i+me);
+		}
+	}
+
+	this.draw = function(){
+		this.moveParticles();
+	}
+
+	this.addParticle = function(_x, _y, _colour, _me){
+		var particle = {
+			x: _x,
+			y: _y,
+			x2: _x,
+			y2: _y,
+			tx: _x,
+			ty: _y,
+			c: _colour,
+			me: _me,
+			speedx: 0.006,
+			speedy: 0.0003,
+			sz: 1,
+			start_sz: 1,
+			start: false
+		}
+		particles.push(particle);
+	}
+	
+
+	this.moveParticles = function(){
+		c+= 0.00001;
+		for (var i = 0; i < particles.length; i++) {
+			
+			p = particles[i];
+
+			//DISTRIBUTED MAPPED SOUND VALUE  
+			var s = tween(s, map(mapSound(p.me, num_waves*num_particles), 0, 120, 0, 0.001), 20);
+			
+			p.tx += p.speedx;
+			p.ty += p.speedy;
+			
+			p.x2 = p.x;
+			p.y2 = p.y;
+
+			p.x = map(noise.noise2D(p.tx, c), 0, 1, 0, width);
+    		p.y = map(noise.noise2D(p.ty, p.tx), 0, 1, 0, height);
+    		p.sz -= 0.001;
+    		if (p.sz< 0 || p.x < 0 || p.y < 0 || p.x > w || p.y > h) {
+    			p.sz = p.start_sz;
+    			p.tx = 0;
+    			p.ty = 0;
+    			p.x = map(noise.noise2D(p.tx, 1), 0, 1, 0, width);
+    			p.y = map(noise.noise2D(p.tx, p.ty), 0, 1, 0, height);
+    			p.x2 = p.x;
+				p.y2 = p.y;
+    			//p.x = random(w);
+    			//p.y = random(h);
+    		}
+    		if (!p.start) {
+    			p.x2 = p.x;
+				p.y2 = p.y;
+				p.start = true;
+    		}
+    		ctx.strokeStyle = p.c;
+			ctx.lineWidth = p.sz;
+			ctx.line(p.x, p.y, p.x2, p.y2);
+			
+			
+			
+		};
+
+	}
+
+this.setup();
+
+}
+
+
+// SETUP WAVES CLASS
+
+var waves = [];
+var grid_w = 15;
+var grid_h = 12;
+var num_waves = grid_w * grid_h;
+var spacing_x = w/grid_w;
+var spacing_y = h/grid_h;
+console.log(spacing_x)
+console.log(spacing_y)
+var grid = makeGrid(grid_w, grid_h);
+var num_particles = grid_w * grid_h;
+
+for (var i = 0; i < num_waves; i++) {	
+	waves[i] = new Wave(num_particles, grid[i][0]*spacing_x+spacing_x/2,grid[i][1]*spacing_y + spacing_y/2, i);
+};
+
+ctx.fillStyle = rgba(255, 255, 255, 1);
+
+// DRAW WAVES CLASS
+
+function draw(){
+	//ctx.clearRect(0, 0, w, h);
+	if (chance(150)) { 
+		ctx.fillStyle = rgba(255, 255, 255, 0.01);
+	ctx.fillRect(0, 0, w, h);
+	}
+	//ctx.background(255, 0.01);
+	
+	for (var i = 0; i < num_waves; i++) {
+		waves[i].draw();
+	};
+}
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

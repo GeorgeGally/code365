@@ -112,3 +112,8 @@ canvas {
   padding: 20px;
   display: none;
 }
+
+#gui {
+  position: absolute;
+  z-index: 999;
+}

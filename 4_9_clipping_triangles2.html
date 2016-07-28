@@ -49,12 +49,12 @@ function draw(){
 
 	// TOP
 	ctx.save();
-	ctx.eqDownFillTriangle(w/2, h/2 - t_size/2, t_size);
+	ctx.eqDownFillTriangle(w/2, h/2 - t_size/2+4, t_size);
 	ctx.clip();
 	drawParticles();
 	ctx.restore();
 	ctx.strokeStyle = "#fff";
-	ctx.eqDownTriangle(w/2, h/2 - t_size/2, t_size);
+	ctx.eqDownTriangle(w/2, h/2 - t_size/2+4, t_size);
 
 	// LEFT
 	ctx.save();
@@ -77,12 +77,12 @@ function draw(){
 
 	// BOTTOM
 	ctx.save();
-	ctx.eqTriangle(w/2, h/2 + t_size/2 -15, t_size);
+	ctx.eqTriangle(w/2, h/2 + t_size/2 -25, t_size);
 	ctx.clip();
 	drawParticles();
 	ctx.restore();
 	ctx.strokeStyle = "#fff";
-	ctx.eqTriangle(w/2, h/2 + t_size/2 -15, t_size);
+	ctx.eqTriangle(w/2, h/2 + t_size/2 -25, t_size);
 
 	// BOTTOM LEFT
 	ctx.save();

@@ -10,9 +10,9 @@
 <script language="javascript" src="js/jquery-1.6.2.js"></script>
 <script language="javascript" src="js/simplex-noise.js"></script>
 
-  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
-  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
-  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
 
 </head>
  <body style="background: #f7f7f7">
@@ -29,7 +29,7 @@ var simplex3 = simplex.noise3D.bind(simplex)
 var config = {
     margin: 0.9,
     activeLines : 10,
-    line_width: 3,
+    line_width: 5,
     random : random,
     simplex3 : simplex3,
     maxAngle : Math.PI * 0.2,
@@ -48,17 +48,8 @@ var simplex = new SimplexNoise();
 ctx.moveTo(w/2, h/2);
 ctx.lineCap="round";
 
-// ctx.shadowBlur = 3;
-// ctx.shadowColor = "white";
-
-
-
-
-
 var t = 0;
 var count = 0;
-var speedx = 0;
-var speedy = 0;
 var curve, change;
 resetLine();
 
@@ -83,17 +74,19 @@ function draw() {
   //console.log(noise);
   var theta = noise * Math.PI * 2;
 
+  x1 = x1 + Math.cos( t ) * config.lineLength;
 
-  //x1+=random(-55,55);
-  x1 = x1 + speedx;
-  //y1+=random(-55,55);
-  y1 = y1 + speedy;
+  y1 = y1 + Math.sin( t ) * config.lineLength
   if (x1>w) resetLine();
   if (x1<0) resetLine();
   if (y1>h) resetLine();
   if (y1<0) resetLine();
 
-  if(curr_line_width > 0.5) curr_line_width -= 0.005;
+  if(curr_line_width > 0.1) {
+    curr_line_width -= 0.02;
+  } else {
+    resetLine();
+  }
   ctx.lineWidth = curr_line_width;
   ctx.strokeStyle = s;
 
@@ -101,7 +94,7 @@ function draw() {
   selfHit();
 
   if (!checkHit()) {
-  ctx.line(x1, y1, x2, y2);
+  ctx.line(x1, y1, x2, y2);;
   var l = {
     x: x1, y: y1
   }
@@ -131,25 +124,27 @@ function selfHit(){
 }
 
 function checkHit(){
+
     var is_hit = false;
     //if (active_lines.length > 0) {
     for (var j = 0; j < active_lines.length; j++) {
-    var lines2 = active_lines[j];
-    if (lines2.length > 0) {
-    for (var i = 1; i < lines2.length; i++) {
-      
-      hit = checkIntersection(x1, y1, x2, y2, lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y );
-  
-      if (hit!= undefined && hit!= false) {
 
-        // ctx.strokeStyle = "black";
-        // ctx.line(lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y);
-        // ctx.strokeStyle = s;
-        resetLine();
-        is_hit = true;
-        break;
-      }
-  }
+      var lines2 = active_lines[j];
+      if (lines2.length > 0) {
+      for (var i = 1; i < lines2.length; i++) {
+        
+        hit = checkIntersection(x1, y1, x2, y2, lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y );
+    
+        if (hit!= undefined && hit!= false) {
+
+          // ctx.strokeStyle = "black";
+          // ctx.line(lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y);
+          // ctx.strokeStyle = s;
+          resetLine();
+          is_hit = true;
+          break;
+        }
+    }
 
   }
 }
@@ -161,26 +156,45 @@ return is_hit;
 function resetLine(){
     active_lines.push(lines);
     lines = [];
-    x1 = w/2 + random(-80,80);
-    y1 = h/2 + random(-80,80);
-    x2 = x1, y2 = y1;
-    curve = random(-0.05, 0.05);
-    if(chance(2)) {
-      speedx = posNeg() * config.lineLength;
-      speedy = 0;
-    } else {
-      speedx = 0;
-      speedy = posNeg() * config.lineLength;
+    if (chance(3)) {
+      x1 = 0;
+      y1 = Math.floor(random(h)/10)*10;
+      change = random(0.0001, 0.0002);
+      curve = random(0.01, 0.03);
+     } else if (chance(3)) {
+      x1 = w;
+      y1 = Math.floor(random(h)/10)*10;
+      change = random(-0.0005, -0.0002);
+      curve = random(-0.03, -0.01);
+      } else if(chance(3)) {
+      x1 = Math.floor(random(w)/10)*10;
+      y1 = h;
+      change = random(-0.0002, -0.0001);
+      curve = random(-0.05, 0.01);
+       } else if(chance(3)) {
+      x1 = random(w);
+      y1 = random(h);
+      change = random(-0.0002, 0.0005);
+      curve = random(-0.05, 0.05);
+      } else {
+      x1 = Math.floor(random(w)/10)*10;
+      y1 = 0;
+      change = random(-0.0002, -0.0001);
+      curve = random(0.01, 0.05);
     }
+      
+    
+    x2 = x1, y2 = y1;
+    
     //console.log(curve);
-    change = random(-0.0002, 0.0002);
+    
     //console.log("change: " + change);
-    if (config.line_width > 0.2) config.line_width -=0.001;
+    if (config.line_width > 0.1) config.line_width -=0.002;
     
     curr_line_width = config.line_width;
     
     // s = rgb(randomInt(255), randomInt(255), randomInt(255));
-    s = rgb(randomInt(100));
+    s = rgb(randomInt(200));
 }
 
 

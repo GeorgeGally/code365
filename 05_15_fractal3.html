@@ -3,7 +3,7 @@
  <head>
  <meta charset="utf-8">
  <title>Soundcloud Viz</title>
-<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script src='http://connect.soundcloud.com/sdk.js'></script>
  <script language="javascript" src="js/creative.js"></script>
 <script language="javascript" src="js/canvas.js"></script>
     <script language="javascript" src="js/vector.js"></script>
@@ -39,15 +39,15 @@ rgrowth = 1.004;
  
 function draw() { 
   g = 1/1.618033989; 
-gAng = 360-360 * g + 0; //change this value for varying effects 
-rad = 5; 
-r2+=0.001;
-cur = 0; 
-rot = 0; 
+  gAng = 360-60 * g + 2; 
+  rad = 5; 
+  r2+=0.001;
+  cur = 0; 
+  rot = 0; 
 
-ww = 2; 
-hh = 2; 
-deg = 0.9992; 
+  ww = 2; 
+  hh = 2; 
+  deg = 0.9992; 
   ctx.fillStyle = rgba(255, 255, 255, 0.2);
   ctx.fillRect(0, 0, w, h);
 
@@ -59,7 +59,7 @@ deg = 0.9992;
   ctx.save();
   ctx.translate(width/2,height);
 
-  ctx.rotate(r);
+  ctx.rotate(radians(r));
   ctx.restore();
 
   cur++; 
@@ -67,7 +67,7 @@ deg = 0.9992;
   rot -= Math.floor(rot/360) * 360; 
   rad *= rgrowth; 
 //  fill(g*cur/3,g*cur/3,255,20); 
-  ctx.fillStyle = hsla(r,g*cur/3,0.4*g*cur/3,0.40); 
+  ctx.fillStyle = hsla(r,g*cur/3,0.4*g*cur/3,0.80); 
   //ctx.fillStyle = "black";
   x = Math.cos(rot * Math.PI/180) * rad + width/2; 
   y = Math.sin(rot * Math.PI/180) * rad + height/2; 
@@ -91,7 +91,7 @@ deg = 0.9992;
 
 
 </script>
-<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+<script language="javascript" src="js/soundcloud.js"></script>
 </body>
 </html>
   

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+    <style type="text/css">
+        #demo {
+            font-family: helvetica;
+            font-size: 120px;
+            padding: 60px;
+        }
+
+    </style>
+ </head>
+ <body>
+ <div id="map" style='height:550px; width:100%; position: absolute; left:0; top: 0;'></div>
+
+ <div id="demo" style="position: absolute; left: 0; top: 0; z-index: 999">dsadsaadasd</div>
+<script>
+// was getting annoyed with the same track playing, so changed soundcloud function to play random track
+var ctx = createCanvas("canvas1");
+var geocoder;
+
+var x = document.getElementById("demo");
+var map;
+var initialised = false;
+
+function addMap(lat, lng) {
+  var mapProp = {
+    center:new google.maps.LatLng(lat,lng),
+    zoom: 2,
+    mapTypeId:google.maps.MapTypeId.SATELLITE
+  };
+ 	map=new google.maps.Map(document.getElementById("map"),mapProp);
+
+ 	resizeMapDiv();
+
+    $(window).resize(map.resizeMapDiv);
+
+	google.maps.event.addDomListener(window, 'load', initialize);
+	google.maps.event.addListener(map, 'idle', function(){
+	});
+		 google.maps.event.addListener(map, 'tilesloaded', function(){
+    		console.log("initialised");initialised = true;  });
+
+	google.maps.event.addDomListener(map, 'drag', 
+
+	function(){
+		$("#c").fadeOut();	});
+		google.maps.event.addDomListener(map, 'zoom', 
+		function(){
+		$("#c").fadeOut();	});
+	}
+
+function initialize() {
+	
+    getLifeExpectancy();
+
+
+}
+function showPosition(position) {
+
+
+
+    x.innerHTML = "Latitude: " + position.coords.latitude + 
+    "<br>Longitude: " + position.coords.longitude; 
+    //geocodeLatLng(position);
+    //addMap(position.coords.latitude, position.coords.longitude);
+
+    getLifeExpectancy();
+    //map.setCenter(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+    //getWeather(position.coords.latitude, position.coords.longitude);
+}
+
+
+function geocodeLatLng(position) {
+        var latlng = {lat: parseFloat(position.coords.latitude), lng: parseFloat(position.coords.longitude)};
+        geocoder.geocode({'location': latlng}, function(results, status) {
+          if (status === google.maps.GeocoderStatus.OK) {
+            if (results[1]) {
+             console.log(results[1]);
+            } else {
+              window.alert('No results found');
+            }
+          } else {
+            window.alert('Geocoder failed due to: ' + status);
+          }
+        });
+      }
+
+resizeMapDiv = function () {
+    $("#map").height($(window).height());
+    $("#map").width($(window).width());
+    $("#c").height($(window).height());
+    $("#c").width($(window).width());
+    // Notify the map a resize has occurred, and center on that point
+
+    google.maps.event.trigger(map, 'resize');
+
+
+}
+
+
+function getLifeExpectancy(){
+	var sex = "male";
+	var dob = "1976-09-11";
+	var country = "South Africa";
+	url = "http://api.population.io:80/1.0/life-expectancy/total/"+sex+"/"+country+"/"+dob+"/";
+	 $.ajax({url: url, success: function(result){
+        var b = new Date(dob);
+        console.log(b);
+        var n = new Date();
+        var d = new Date();
+        d.setFullYear(d.getFullYear(), b.getYear() + result.total_life_expectancy);
+        console.log("Death: " + d);
+        console.log(daydiff(n, d));
+        var days = daydiff(n, d);
+        var output = "According to the global population index you have " + days + " days left on the planet";
+        $("#demo").html(output);
+        console.log(output);
+        getPopulation()
+    }});
+}
+
+
+// it is estimated that 106 billion people have been born since the dawn of the human species
+
+function getWorldPopulation(){
+
+    var sex = "male";
+    var dob = "1976-09-11";
+    var country = "World";
+    var n = new Date();
+    var b = new Date(dob);
+    var age = n.getFullYear() - b.getFullYear();
+    var seconds = 24*60*60;
+    url = "http://api.population.io:80/1.0/population/"+country+"/today-and-tomorrow/";
+
+    $.ajax({url: url, success: function(result){
+        var growth = result['total_population'][1]['population'] - result['total_population'][0]['population'];
+        var growth_per_sec = (growth/seconds).toFixed(2);;
+        growth = addCommas(growth);
+    //     growth = growth.toFixed(0).replace(/./g, function(c, i, a) {
+    // return i && c !== "." && ((a.length - i) % 3 === 0) ? ',' + c : c;
+    // });
+        var pop = result['total_population'][0]['population'].toFixed(0).replace(/./g, function(c, i, a) {
+    return i && c !== "." && ((a.length - i) % 3 === 0) ? ',' + c : c;
+});
+        console.log("Current world population: " + pop);
+        console.log(growth + " more people will be born in the world by tomorrow");
+        console.log(growth_per_sec + " per second");
+    }});
+
+}
+
+
+function addCommas(nStr)
+{
+    nStr += '';
+    x = nStr.split('.');
+    x1 = x[0];
+    x2 = x.length > 1 ? '.' + x[1] : '';
+    var rgx = /(\d+)(\d{3})/;
+    while (rgx.test(x1)) {
+        x1 = x1.replace(rgx, '$1' + ',' + '$2');
+    }
+    return x1 + x2;
+}
+
+
+function getPopulation(){
+
+    var sex = "male";
+    var dob = "1976-09-11";
+    var country = "South Africa";
+    var n = new Date();
+    var b = new Date(dob);
+    var age = n.getFullYear() - b.getFullYear();
+    url = "http://api.population.io:80/1.0/population/"+country+"/today-and-tomorrow/";
+
+    $.ajax({url: url, success: function(result){
+        var growth = result['total_population'][1]['population'] - result['total_population'][0]['population'];
+        console.log(growth + " more people will be born in " + country + " tomorrow");
+        getWorldPopulation();
+    }});
+
+}
+
+function daydiff(first, second) {
+    return Math.round((second-first)/(1000*60*60*24));
+}
+
+
+function getWeather(lat, lng){
+
+	// var api ="6fb8c037edc949db233cbebd83e9641d";
+	// var url = 'http://api.openweathermap.org/data/2.5/weather?lat='+lat+'&lon=' + lng +"&units=metric&APPID="+api;
+	// console.log(url);
+	//  $.ajax({url: url, success: function(result){
+ //        $("#demo").html(result);
+ //    }});
+
+
+}
+var zoom = 1;
+var counter = 0;
+
+function draw(){
+	//console.log(initialised);
+	if (initialised && counter%50 == 0 && zoom<16) {
+		zoom+=1;
+		map.setZoom(zoom); 
+	}
+	counter++;
+}
+
+
+</script>
+	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDEKAnXP_v0EOZxJ5bv0K4UNqYFRM1JAj0&callback=initialize"
+    async defer></script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/perlin.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var bg_alpha = 0.3;
+
+noise.seed(random(1));
+var time_speed = 1;
+
+var params = {
+            xOffset: 120,
+            yOffset: 10,
+            scaleX: 200,
+            scaleY: 150,
+            scaleT: 400
+        };
+
+
+
+
+// SETUP WAVES CLASS
+
+
+// DRAW WAVES CLASS
+var alpha = 1;
+var count = 0;
+
+function draw(){
+
+
+    	ctx.globalCompositeOperation = 'lighter';
+    	ctx.fillStyle = rgba(255, 255, 255, bg_alpha);
+		ctx.fillRect(0, 0, w, h);
+	//}
+	ctx.globalCompositeOperation = 'source-over';
+	
+
+	for (var y = -300; y <= height+300; y+=params.yOffset) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                var py = y;
+                for (var x = -100; x <= width+100; x+=params.xOffset) {
+                    var ny = y + noise.perlin3(x / mouseY, y / mouseY, count/params.scaleT) * 40;
+                    ctx.bezierCurveTo(x, py, x+params.xOffset/3, ny, x+2*params.xOffset/3, ny);
+                    py = ny;
+                }
+                ctx.stroke();
+            }
+            //t++;
+
+	count++;
+	
+}
+
+
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>
