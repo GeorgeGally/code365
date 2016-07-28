@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+	<meta charset="utf-8">
+	<title>Soundcloud Viz</title>
+
+	<script src='http://connect.soundcloud.com/sdk.js'></script> 
+	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/perlin.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgb(255);
+ctx.lineWidth = 2;
+var num = 40;
+var block_width = 140;
+var r = 0;
+noise.seed(Math.random());
+
+var s = 0;
+var waves = [];
+
+
+var Wave = function(i){
+	var yoff = random(1);
+	this.ht_offset = h/num * i;
+	var ht_offset= this.ht_offset;
+	if (chance(4) && i > 0)  
+		{
+			console.log(waves[i-1].ht_offset);
+			ht_offset = waves[i-1].ht_offset + random(1, 10);
+		}
+	//var ht_offset = h - h/2.3 + random(-50, 350);
+	var alpha = random(0.2)
+	var grey = Math.floor(randomInt(255)/100)*100;
+	if (chance(10)) grey = 255;
+	var col = rgba(grey, grey, grey, 0.8);
+	
+
+
+	this.drawWave = function(){
+
+		var xoff = 0;       // Option #1: 2D Noise
+	  	ctx.fillStyle= col;
+	  	ctx.beginPath();
+	  	ctx.moveTo(-50, h/2);
+  // Iterate over horizontal pixels
+  for (var x = -20; x <= w + 100; x += 20) {
+    // Calculate a y value according to noise, map to 
+    s = tween (s, audioChannelVolume[10], 90);
+    //var y = ht_offset + map(noise.simplex2(xoff, yoff), 0, 1, -10, 50);
+    var start = new Date().getTime();
+   	var y = ht_offset + map(noise.perlin3(xoff, yoff, start/10000), 0, 1, -10, 30);
+    // Set the vertex
+    //ctx.fillEllipse(x, y, 4, 4);
+	ctx.lineTo(x,y);
+    // Increment x dimension for noise
+    xoff += 0.05;
+  }
+  // increment y dimension for noise
+  	yoff += 0.03;
+  	ctx.lineTo(w+50, h/2);
+  	ctx.lineTo(w+50, ht_offset + 200);
+  	ctx.lineTo(-50, ht_offset + 200);
+  //ctx.vertex(width, height);
+  //ctx.vertex(0, height);
+  ctx.closePath();
+  ctx.fill();
+  //ctx.stroke();
+}
+}
+
+
+for (var i = 0; i < num; i++) {
+	waves[i] = new Wave(i);
+}
+
+function draw(){
+	//ctx.fillStyle = rgba(255,255,255, 0.1);
+	//ctx.fillRect(0,0,w,h);
+	ctx.background(255);
+	//r = tween(r, map(audioChannelVolume[(10)], 0, 150, 100, h-100), 10);
+	r = 400;
+
+	for (var i = 0; i < num; i++) {
+		waves[i].drawWave(i);
+	}
+
+}
+
+
+
+
+
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+
+</body>
+</html>

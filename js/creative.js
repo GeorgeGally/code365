@@ -78,6 +78,34 @@ p.line = function (x1, y1, x2, y2){
 	this.beginPath();
 };
 
+
+p.strokePolygon = function (x, y, sides, size) {
+	this.polygon(x, y, sides, size);
+	this.stroke();
+}
+
+
+p.fillPolygon = function (x, y, sides, size){
+	this.polygon(x, y, sides, size);
+	this.fill();
+}
+
+p.polygon = function (x, y, sides, size){
+	 //var numberOfSides = 6;
+       // size = 10;
+        Xcenter = x;
+        Ycenter = y;
+
+    this.beginPath();
+    this.moveTo (Xcenter +  size * Math.cos(0), Ycenter +  size *  Math.sin(0));          
+
+    for (var i = 1; i <= sides; i += 1) 
+    {
+        this.lineTo (Xcenter + size * Math.cos(i * 2 * Math.PI / sides), Ycenter + size * Math.sin(i * 2 * Math.PI / sides));
+    }
+
+  
+}
 // p.fill = function (f){
 // 	this.fillStyle = f; 
 // };
