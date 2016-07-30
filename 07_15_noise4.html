@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+	<meta charset="utf-8">
+	<title>Soundcloud Viz</title>
+
+	<script src='http://connect.soundcloud.com/sdk.js'></script> 
+	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/perlin.js"></script>
+	<script language="javascript" src="js/vector.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgb(255);
+ctx.lineWidth = 2;
+
+var perlin;
+var xanchor, yanchor, midx, midy, xposnoise, yposnoise;
+var xstart, ystart;
+var squaresize;
+noise.seed(Math.random());
+
+	xanchor = w/2;
+	yanchor = h/2;
+	
+	xstart = random(20);
+	ystart = random(20);
+	xposnoise = random(20);
+	yposnoise = random(20);
+	squaresize = 10;
+	
+
+
+function draw() {
+	ctx.fillStyle = rgba(255, 255, 255, 1);
+	ctx.fillRect (0, 0, width, height);
+		
+	ctx.strokeStyle = rgba(0, 0, 0, 0.05);
+	ctx.fillStyle = rgba(0, 0, 0, 0.8);
+	
+	xposnoise += 0.02;
+	yposnoise += 0.01;
+	midx = xanchor + Math.floor(noise.perlin2(xposnoise, 0) * w);
+	midy = yanchor + Math.floor(noise.perlin2(yposnoise, 0) * h);
+	xstart += 0.02;
+	ystart += 0.03;
+	var ynoise = ystart;
+	for (var y = 0; y < h; y+=squaresize) {
+		ynoise += 0.02;
+		var xnoise = xstart;
+		for (var x = 0; x < w; x+=squaresize) {
+			xnoise += 0.02;
+			var nFactor = Math.abs(noise.perlin2(xnoise, ynoise));
+			drawPoint(x, y, nFactor);
+		}
+	}
+}
+
+function drawPoint(ex, why, noiseFactor) {
+	var x =  (ex * noiseFactor * 23);
+	var y =  (why * noiseFactor * 19);
+	var edgeSize = noiseFactor * 166;
+	
+	ctx.fillEllipse(x, y, edgeSize);
+	
+	// ctx.beginPath();
+	// ctx.arc(x, y, edgeSize, 0, Math.PI*2,true); 
+	// // x, y, rad, start angle, end angle, anti/clockwise
+	// ctx.fill();
+	ctx.stroke();
+}
+
+
+
+
+
+
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+
+</body>
+</html>
