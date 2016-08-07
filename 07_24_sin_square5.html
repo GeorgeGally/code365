@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.5);
+ctx.lineWidth = 1;
+var particles = [];
+var num_particles = 180;
+//ctx.translate(0.5, 0.5);
+var rot = 0;
+
+particles = new particleEngine(num_particles);
+console.log(particles);
+for (var i = 0; i < particles.particles.length; i++) {
+    b = particles.particles[i];
+    //console.log(b)
+    b.angle = (particles.particles.length-i)/100;
+    b.speed = 1/100;
+    b.sides = randomInt(3,5);
+}
+
+
+
+function draw(){
+
+  ctx.fillStyle = rgba(255, 255, 255, 1);
+  ctx.fillRect(0, 0, w, h);
+  moveParticles();
+
+}
+
+var sides = 5;
+function moveParticles(){
+
+ 
+  rot = map(audioChannelVolume[20] + audioChannelVolume[40],0,300, 0, 2)/2;
+  ctx.translate(w/2, h/2);
+  ctx.rotate(radians(rot));
+  ctx.fillStyle = rgba(0, 0, 0, 0.05);
+  for (var i = 0; i < particles.particles.length; i++) {
+        ctx.lineWidth = i/60;
+        b = particles.particles[i];
+        b.angle = (b.angle + b.speed)%1; 
+
+        var ww = i * 2 * Math.sin(b.angle);
+        var hh = i * 2;
+
+        b.sides = 3 + i%2
+        //  if (chance(300)) {
+        //   b.sides = randomInt(3,5);
+        // }
+
+        //ctx.fillPolygon(0,0, 6, ww);
+        ctx.strokePolygon(0,0, b.sides, ww);
+    
+        };
+
+        ctx.translate(-w/2, -h/2);
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

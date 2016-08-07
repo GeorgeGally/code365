@@ -23,13 +23,13 @@ var ctx = createCanvas("canvas1");
 	var particles = [];
 	var radius = 50;
 	var rot = 0;
-	var num_particles = 20;
+	var num_particles = 30;
 
 
 		for (var i = 0; i < num_particles; i++) {
 			var c = random(225);
 		    var cc = rgba(c, c, c, 1);
-			addParticle(- i *10 , 120, cc, i);
+			addParticle(i*12 , 140, cc, i);
 		}
 
 
@@ -37,7 +37,7 @@ function draw(){
 	ctx.clearRect(0, 0, w, h);
 	ctx.strokeStyle = rgb(0);
 	ctx.lineWidth = 0.5;
-	ctx.line(w/2, 0, w/2, h);
+	//ctx.line(w/2, 0, w/2, h);
 		this.moveParticles();
 	}
 
@@ -67,17 +67,17 @@ function moveParticles(){
 
 			//DISTRIBUTED MAPPED SOUND VALUE  
 			//var s = mapSound(p.me, (num_particles));
-			var s =map(audioChannelVolume[p.me*5], 0, 150, -200, 50);
-			ctx.lineWidth = 1+ p.me%2;
+			var s =map(audioChannelVolume[50], 0, 150, -10, 60);
+			ctx.lineWidth = p.me/30;
 			//ctx.fillStyle = rgb(0,0,155-s);
 			//ctx.strokeEllipse(p.x, h-(30 + p.y), s, s);
 			//if (p.y < h/2) {
-			p.x2 = tween(p.x2, p.x + s, 20);
-			ctx.line(w/2 - p.x2, h/2, w/2, h/2 - p.y);
-			ctx.line(w/2 + p.x2, h/2, w/2, h/2 - p.y);
+			p.y2 = tween(p.y2, p.y + s, 10);
+			ctx.line(w/2 - p.x, h/2, w/2, h/2 - p.y2);
+			ctx.line(w/2 + p.x, h/2, w/2, h/2 - p.y2);
 
-			ctx.line(w/2 - p.x2, h/2, w/2, h/2 + p.y);
-			ctx.line(w/2 + p.x2, h/2, w/2, h/2 + p.y);
+			ctx.line(w/2 - p.x, h/2, w/2, h/2 + p.y2);
+			ctx.line(w/2 + p.x, h/2, w/2, h/2 + p.y2);
 			//} else {
 				
 				//ctx.shadowOffsetY = -s/20;

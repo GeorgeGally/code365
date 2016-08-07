@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var nbr_circles = 400;
+var cx = width/2;
+var cy = height/2;
+var outer_rad = width*.15;
+var q = Math.PI/180;
+
+function draw(){
+    ctx.globalCompositeOperation = 'lighten';
+    ctx.background(255, 1);
+    ctx.globalCompositeOperation = "normal";
+    var angle_incr = (frameNumber)/80 * q;
+
+    ctx.fillStyle = rgb(0);
+    
+    for (var i = 1; i <= nbr_circles; ++i) {
+    var ratio = i/nbr_circles;
+    var angle = i*angle_incr;
+    var spiral_rad = ratio * outer_rad;
+    var x = cx + Math.cos(angle) * spiral_rad;
+    var y = cy + Math.sin(angle) * spiral_rad;
+  
+    ctx.strokeEllipse(x, y, 1+i/10, 1+i/10);
+  }
+
+
+}
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

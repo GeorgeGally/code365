@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var nbr_circles = 600;
+var cx = width/2;
+var cy = height/2;
+ctx.lineWidth = 0.2;
+
+function draw(){
+    ctx.globalCompositeOperation = 'lighten';
+    ctx.background(255, 1);
+    ctx.globalCompositeOperation = "normal";
+    
+
+    ctx.fillStyle = rgb(0);
+    
+    var nbr_circles = Math.floor(Math.round(Math.sin((frameNumber/200) % 1300)*1000));
+  
+    var lg_rad = (width/2) * .25;
+    var lg_circ = 2*Math.PI*lg_rad;
+    var sm_rad = (lg_circ / nbr_circles) / 2;
+
+  
+  for (var i = 1; i <= nbr_circles; ++i) {
+
+    var angle = i*2*Math.PI/nbr_circles;
+    var x = cx + Math.cos(angle) * lg_rad;
+    var y = cy + Math.sin(angle) * lg_rad;
+    ctx.strokeEllipse(x, y, 1+i/5, 1+i/5);
+  }
+
+
+
+
+}
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    
+<!--     <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var rot = 0;
+var roty = 0;
+var particles = [];
+var x = 0;
+var y = 0;
+var speedx = 4;
+var speedy = 1;
+var particles = new particleEngine(16);
+
+for (var i = 0; i < particles.particles.length; i++) {
+    p = particles.particles[i];
+    p.x = random(-10, 10);
+    p.y = random(-10, 10);
+    p.stroke = random(2, 10);
+}
+
+function draw(){
+
+    ctx.background(0);
+    ctx.save();
+    ctx.translate(w/2, h/2);
+    ctx.fillStyle = rgb(255);
+    ctx.HfillEllipse(0, 0, 400, 400);
+    ctx.strokeStyle = rgb(0);
+    
+    rot += (0.1)*speedx;
+    ctx.rotate(radians(rot));
+    for (var i = 0; i < particles.particles.length; i++) {
+        p = particles.particles[i];
+        ctx.lineWidth = p.stroke;
+        ctx.HstrokeEllipse(p.x, 0, 80 + 22*i, 80 + 22*i);
+    }
+   
+    
+    ctx.translate(-w/2, -h/2);
+    ctx.restore();
+
+}
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

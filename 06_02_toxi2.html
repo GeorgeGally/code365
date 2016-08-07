@@ -39,13 +39,14 @@ var physics = new VerletPhysics2D();
 physics.addBehavior(new GravityBehavior(new Vec2D(0,0.02)));
 physics.setWorldBounds(new Rect(0, 0, w, h));
 
-var num_particles = 4;
+var num_particles = 8;
 var p = [];
 var springs = [];
 
 for (var i = 0; i < num_particles; i++) {
   p[i] = new VerletParticle2D(new Vec2D(random(w), random(h)));
   physics.addParticle(p[i]);
+  p.sz = 15;
   if(i>1) {
     springs[i] = new VerletSpring2D(p[i], p[i%2], 225, 0.02);
     physics.addSpring(springs[i]);
@@ -62,24 +63,24 @@ for (var i = 0; i < num_particles; i++) {
 
 
 function draw(){
-  
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.globalCompositeOperation = 'lighten';
+  ctx.background(255,0.07);
+  ctx.globalCompositeOperation = 'normal';
+  //ctx.clearRect(0, 0, canvas.width, canvas.height);
   physics.update();
   
   for (var i = 2; i < p.length; i++) {
     var particle = p[i];
-    p[i].x = tween(p[i].x, map(audioChannelVolume[(i)%110], 0, 150, 0, w), 18); 
-    p[i].y = tween(p[i].y, map(audioChannelVolume[(i*2)%110], 0, 150, 0, h), 18); 
+    p[i].x = tween(p[i].x, map(mix[i%3], 0, 150, 0, w), 18); 
+    p[i].y = tween(p[i].y, map(mix[i%2], 0, 150, 0, h), 18); 
     //ctx.fillStyle = rgba(0,0,0,0.1);
+    p.sz = tween(p.sz, mapSound(i, p.length), 10);
     //ctx.fillEllipse(p[i].x, p[i].y, audioChannelVolume[(i)%80]/2, audioChannelVolume[(i)%80]/2);
-    ctx.fillStyle = rgba(0,0,0,0.1);
-    ctx.fillEllipse(p[i].x, p[i].y,55,55);
-    ctx.fillStyle = rgba(0,0,0,0.8);
-    ctx.fillEllipse(p[i].x, p[i].y,15,15);
-    if(i>2) {
-      ctx.line(p[i].x, p[i].y, p[0].x, p[0].y);
-      ctx.line(p[i].x, p[i].y, p[1].x, p[1].y);
-    }
+    drawCircs(p[i].x, p[i].y, p.sz);
+    //if(i>2) {
+      // ctx.line(p[i].x, p[i].y, p[0].x, p[0].y);
+      // ctx.line(p[i].x, p[i].y, p[1].x, p[1].y);
+    //}
   }
 
 
@@ -96,6 +97,12 @@ function draw(){
 }
 
 
+function drawCircs(x, y, sz){
+    ctx.fillStyle = rgba(0,0,0,0.1);
+    ctx.fillEllipse(x, y,sz*1.4,sz*1.4);
+    ctx.fillStyle = rgba(0,0,0,0.8);
+    ctx.fillEllipse(x, y, 15, 15);
+}
 
 
 </script>

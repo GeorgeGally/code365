@@ -252,7 +252,14 @@ function rgb(r, g, b) {
 	if (b == undefined) b = r;
 	return 'rgb('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+')';};
 
-function rgba(r, g, b, a) { return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', '+clamp(a,0,1)+')';};
+function rgba(r, g, b, a) { 
+	if (b == undefined) {
+		return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(g,0,1)+')';
+	} else {
+		return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', '+clamp(a,0,1)+')';
+	
+	}
+	};
 function hsl(h, s, l) { return 'hsl('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%)';};
 function hsla(h, s, l, a) { return 'hsla('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%, '+clamp(a,0,1)+')';};
 
@@ -350,7 +357,12 @@ function posNeg(){
 }
 
 function bounce(num, min, max) {
-   return num > max ? -1 : num < min ? -1 : 1
+	if (num >= max || num <= min) {
+		return 1 
+	} else {
+		return 0;
+	}
+   //return num > max ? -1 : num < min ? -1 : 1
 }
 
 // Adapted from https://github.com/psalaets/line-intersect/
@@ -532,7 +544,7 @@ var mouseX = 0,
 	lastMouseX = 0, 
 	lastMouseY = 0, 
 	frameRate = 60,
-	frameCount = 0, 
+	frameCount = frameNumber = 0, 
 	lastUpdate = Date.now(),
 	mouseDown = false;
 
@@ -544,6 +556,7 @@ function cjsloop() {
 	if((typeof window.draw == 'function') && (elapsedMils>=(1000/window.frameRate))) {
 		window.draw(); 
 		frameCount++;
+		frameNumber++;
 		lastUpdate = now - elapsedMils % (1000/window.frameRate );
 		lastMouseX = mouseX; 
 		lastMouseY = mouseY; 		

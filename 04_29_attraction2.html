@@ -22,17 +22,17 @@
 <script>
 
 var ctx = createCanvas("canvas1");
-var grid = createGrid(1, 1, w, h);
+var grid = createGrid(3, 1, w, h);
 console.log(grid)
 var flies = [];
 var balls = new particleEngine(3);
 
-//for (var i = 0; i < balls.particles.length; i++) {
+for (var i = 0; i < balls.particles.length; i++) {
     b = balls.particles[0];
-    b.position.x = grid[0][0];
+    b.position.x = grid[i][0];
     b.position.y = h/2;
     b.speed.x = 0;
-    b.sz = 20;
+    b.sz = 80;
 
     flies[0] = new particleEngine(50);
     for (var j = 0; j < flies[0].particles.length; j++) {
@@ -40,7 +40,7 @@ var balls = new particleEngine(3);
         p.position.x = b.position.x;
         p.position.y = b.position.y;
     }
-//}
+}
 
 // FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
 function draw(){
@@ -59,7 +59,7 @@ function draw(){
         for (var j = 0; j < flies[i].particles.length; j++) {
             
             p = flies[i].particles[j];
-            ctx.fillStyle = hsl(map(audioChannelVolume[p.me%50], 0, 150, 0, 100),map(audioChannelVolume[p.me%100], 0, 150, 0, 100), 40);
+            ctx.fillStyle = rgb(0);
             var mouse = b.position;
             //console.log(mouse)
             mouse = mouse.subtract(p.position);
@@ -77,8 +77,6 @@ function draw(){
 
         }
 
-    //} 
-     // for (var i = 0; i < balls.particles.length; i++) {
 
         b = balls.particles[i];
         b.position.y =  tween(h/2, grid[i][1] + map(audioChannelVolume[b.me*5], 0, 150, -180, 80), 8);

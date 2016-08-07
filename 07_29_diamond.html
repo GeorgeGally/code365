@@ -23,13 +23,13 @@ var ctx = createCanvas("canvas1");
 	var particles = [];
 	var radius = 50;
 	var rot = 0;
-	var num_particles = 20;
+	var num_particles = 6;
 
 
 		for (var i = 0; i < num_particles; i++) {
 			var c = random(225);
 		    var cc = rgba(c, c, c, 1);
-			addParticle(- i *10 , 120, cc, i);
+			addParticle(-100 - i *50 , 120, cc, i);
 		}
 
 
@@ -45,8 +45,6 @@ function addParticle(_x, _y, _colour, _me){
 		var particle = {
 			x: _x,
 			y: _y,
-			x2: _x,
-			y2: _y,
 			c: _colour,
 			me: _me,
 			stroke_width: 40,
@@ -66,18 +64,18 @@ function moveParticles(){
 			p = particles[i];
 
 			//DISTRIBUTED MAPPED SOUND VALUE  
-			//var s = mapSound(p.me, (num_particles));
-			var s =map(audioChannelVolume[p.me*5], 0, 150, -200, 50);
+			var s = mapSound(p.me, (num_particles));
+
 			ctx.lineWidth = 1+ p.me%2;
 			//ctx.fillStyle = rgb(0,0,155-s);
 			//ctx.strokeEllipse(p.x, h-(30 + p.y), s, s);
 			//if (p.y < h/2) {
-			p.x2 = tween(p.x2, p.x + s, 20);
-			ctx.line(w/2 - p.x2, h/2, w/2, h/2 - p.y);
-			ctx.line(w/2 + p.x2, h/2, w/2, h/2 - p.y);
+			var x = p.x + s;
+			ctx.line(w/2 - x, h/2, w/2, h/2 - p.y);
+			ctx.line(w/2 + x, h/2, w/2, h/2 - p.y);
 
-			ctx.line(w/2 - p.x2, h/2, w/2, h/2 + p.y);
-			ctx.line(w/2 + p.x2, h/2, w/2, h/2 + p.y);
+			ctx.line(w/2 - x, h/2, w/2, h/2 + p.y);
+			ctx.line(w/2 + x, h/2, w/2, h/2 + p.y);
 			//} else {
 				
 				//ctx.shadowOffsetY = -s/20;

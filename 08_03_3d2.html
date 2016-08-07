@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/url.js"></script>
+<script language="javascript" src="js/physics2.js"></script>
+<script language="javascript" src="js/three.min.js"></script>
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+   
+<script>
+var ctx = createCanvas("canvas1");
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+var num_particles = 390;
+var plane = [];
+
+var d=0, t=0;
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+
+document.body.appendChild( renderer.domElement );
+
+var geometry = new THREE.SphereGeometry( 2.2, 18, 18, 2 );
+geometry.dynamic = true;
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+
+
+for (var i = 0; i < num_particles; i++) {
+  plane[i] = new THREE.Mesh( geometry, dMaterial );
+  scene.add( plane[i] );
+  plane[i].rotation.z += (i * Math.PI);
+  // plane[i].position.x = random(-15,15);
+  plane[i].position.x = Math.sin(i/50)*22;
+  plane[i].position.y = Math.sin(i/50)*22;
+  plane[i].position.z = Math.cos(i/50)*22;
+var tt = [];
+var start_z = [];
+var start_y = [];
+for (j=0;j<plane[i].geometry.vertices.length;j++) {
+  start_z[j] = plane[i].geometry.vertices[j].z;
+  start_y[j] = plane[i].geometry.vertices[j].y;
+  tt[j] = 0;
+}
+
+
+}
+
+
+camera.position.z = 80;
+camera.near = 20;
+camera.far  = 95;
+
+function draw() {
+  
+  //scene.rotation.y = 8;
+  t+=.0001
+  d+=.01
+  for (var i = 0; i < num_particles; i++) {
+
+    //plane[i].position.x = tween(plane[i].position.x,map(mapSound(i, num_particles), 0,100, -10, 10), 10);
+    //plane[i].position.y = tween(plane[i].position.y, map(mapSound(i, num_particles), 0,100, -10, 10), 10);
+  // for (j=0;j<plane[i].geometry.vertices.length;j++){
+  //   tt[j] = tween(tt[j], map(audioChannelVolume[j%120],0,140, 0, 40), 50);
+  //   plane[i].geometry.vertices[j].z=start_z[j]+Math.sin(tt[j]/1000*i+d)*Math.cos(i+d*tt[j]/1000)*5;
+  var s =map(mapSound(i, num_particles), 0, 150, 0.9, 2.5);
+  plane[i].scale.x = s;
+  plane[i].scale.y = s;
+  plane[i].scale.z = s;
+  // }
+  //   plane[i].geometry.verticesNeedUpdate=true;
+  }
+  //plane.geometry.vertices[0].y = tween(plane.geometry.vertices[0].y, start_y[0] + map(audioChannelVolume[10],0,140, 0, 40), 10);
+  // scene.rotation.z+= 0.01;
+  scene.rotation.x+= 0.01;
+  scene.rotation.y += 0.01;
+  //scene.rotation.y = tween(scene.rotation.y, scene.rotation.y + map(audioChannelVolume[10],0,140, -0.4, 0.4), 90);
+
+  renderer.render( scene, camera );
+};
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

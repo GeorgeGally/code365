@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/url.js"></script>
+<script language="javascript" src="js/toxiclibs.js"></script>
+<script language="javascript" src="js/dat.gui.min.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+<div id="gui" style="margin-top:40px"></div> 
+
+<script>
+var ctx = createCanvas("canvas1");
+
+ var  VerletPhysics2D = toxi.physics2d.VerletPhysics2D,
+      VerletParticle2D = toxi.physics2d.VerletParticle2D,
+      VerletSpring2D = toxi.physics2d.VerletSpring2D,
+      AttractionBehavior = toxi.physics2d.behaviors.AttractionBehavior,
+      GravityBehavior = toxi.physics2d.behaviors.GravityBehavior,
+      ZoomLensInterpolation = toxi.math.ZoomLensInterpolation,
+      NamedColor = toxi.color.NamedColor,
+      Collections = toxi.color.Collections,
+      Vec2D = toxi.geom.Vec2D,
+      TColor = toxi.color.TColor,
+      Rect = toxi.geom.Rect;
+
+
+var physics = new VerletPhysics2D();
+physics.addBehavior(new GravityBehavior(new Vec2D(0,0.5)));
+physics.setWorldBounds(new Rect(0, 0, w, h));
+
+
+num_shakers = 45;
+num_movers = 5;
+var d = 120;
+var d2 = 120;
+var frames=400;
+var angle;
+var theta = 0;
+var offset = 0;
+var moverX;
+var moverY;
+var v = 0;
+ctx.lineWidth = 0.1;
+
+var movers = [];
+var shakers = [];
+var particles = [];
+var particles = [];
+var springs = [];
+
+var params = {
+            d: 120,
+            d2: 120,
+            num_shakers: 10,
+            num_movers: 200,
+            vol: 150,
+        };
+        
+var gui = new dat.GUI({ autoPlace: false });
+
+        gui.add(params, 'd', 10, 420);
+        gui.add(params, 'd2', 10, 500);
+        gui.add(params, 'num_shakers', 1, 1500);
+        gui.add(params, 'num_movers', 1, 1500);
+        gui.add(params, 'vol', 1, 300);
+
+
+document.getElementById('gui').appendChild(gui.domElement);
+
+
+for (var i = 0; i < num_shakers; i++) {
+  addShaker(i);
+}
+
+
+function addShaker(i){
+
+  shakers[i] = new VerletParticle2D(new Vec2D(w/2, h/4));
+  particles[i] = new VerletParticle2D(new Vec2D(w/2, h/2));
+  particles[i].x = w/2;
+  particles[i].y = h/2;
+  //shakers[i].lock();
+  physics.addParticle(shakers[i]);
+  physics.addParticle(particles[i]);
+  springs[i] = new VerletSpring2D(shakers[i], particles[i], 90, 0.0001);
+  physics.addSpring(springs[i]);
+
+
+}
+
+
+draw = function() {
+  physics.update();
+  ctx.fillStyle = rgba(255, 255, 255, 1);
+  ctx.fillRect(0, 0, w, h);
+  //ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
+  ctx.strokeStyle="black";
+  ctx.fillStyle="black";
+  ctx.lineWidth = 0.5;
+  theta += 2*Math.PI/frames;
+  v = tween(v, map(audioChannelVolume[10],0,140, 20, params.vol), 5);
+  params.d = tween(params.d, v, 15);
+  params.d2 = tween(params.d2, v, 5);
+  drawLines();
+
+}
+
+
+function drawLines(){
+
+  ctx.save();
+  ctx.translate(w/2, h/2);
+  ctx.rotate(theta/10);
+
+  for (var i=0; i < shakers.length; i++) {
+    
+    shakers[i].x = Math.cos(angle)*params.d;
+    shakers[i].y = Math.sin(angle)*params.d;
+    ctx.fillStyle="black";
+    ctx.fillEllipse(shakers[i].x, shakers[i].y, 6, 6);
+
+    angle = 2*Math.PI/shakers.length*i;
+
+    for (var j=0; j< num_movers; j++) {
+
+      offset = theta+2*Math.PI/num_movers*j;
+      moverX = Math.cos(offset)*params.d2;
+      moverY = Math.sin(offset)*params.d2;
+      ctx.line(shakers[i].x, shakers[i].y, moverX, moverY);
+      ctx.fillStyle="black";
+      ctx.fillEllipse(moverX, moverY, 6, 6);
+
+    }
+
+  }
+  ctx.restore();
+}
+
+
+window.onkeydown=function(event){
+  
+    if (event.which == 38) movers = (movers+1)%80
+    if (event.which == 40) movers = (movers-1); 
+    if (movers < 0) movers = 1;
+    if (event.which == 39) addShaker(shakers.length);
+    //if (event.which == 37) num = (num-1); if (num < 0) num = 40;
+    //console.log(movers);
+
+};
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

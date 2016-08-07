@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 2;
+var particles = [];
+var flies = [];
+var radius = 220;
+var num_particles = 4;
+ctx.translate(0.5, 0.5);
+var margin = 160;
+var theta = 0.0;
+var xx = [];
+var yy = [];
+
+
+for (var i = 0; i < num_particles; i++) {
+	xx[i] = width/2;
+	yy[i] = height/2;
+	flies[i] = new particleEngine(46);
+	for (var j = 0; j < flies[i].particles.length; j++) {
+		b = flies[i].particles[j];
+		b.speed.x = random(-0.2, 2);
+		b.speed.y = random(-0.2, 2);
+	}
+}
+
+
+function draw(){
+
+	ctx.fillStyle = rgb(255);
+	ctx.fillRect(0, 0, w, h);
+	theta += 0.05;
+	moveParticles();
+
+}
+
+
+function moveParticles(){
+
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    particles[i].x = map(Math.sin(theta),-1,1,2*margin,width-margin*2);
+ 
+	// xx[0] = map(Math.sin(theta),-1,1,2*margin,width-margin*2);
+ //   	xx[1] = map(Math.sin(theta),-1,1,width-2*margin,margin*2);
+ //   	xx[2] = map(Math.sin(theta),-1,1,2*margin,width-margin*2);
+ //   	xx[3] = map(Math.sin(theta),-1,1,width-2*margin,margin*2);
+   	if (i%2 == 0 ) {
+      particles[i].y = height-margin;
+    } else {
+      particles[i].y = margin;
+    }
+   	// yy[0] = height-margin;
+   	// yy[1] = margin;
+   	// yy[2] = margin;
+   	// yy[3] = margin;
+   	ctx.strokeStyle = "black";
+   	ctx.fillStyle = "black";
+   	var sz =  map(audioChannelVolume[b.me%80], 0, 150, 10, 50);
+   	if (i>0) ctx.line(particles[i-1].x,particles[i-1].y,particles[i].x,particles[i].y);
+  	ctx.fillEllipse(particles[i].x,particles[i].y,sz,sz);
+  	//ctx.fillEllipse(xx[1],yy[1],sz,sz);
+
+     }
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

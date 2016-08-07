@@ -29,7 +29,7 @@ var ctx = createCanvas("canvas1");
 		for (var i = 0; i < num_particles; i++) {
 			var c = random(225);
 		    var cc = rgba(c, c, c, 1);
-			addParticle(- i *10 , 120, cc, i);
+			addParticle(-i *14 , 180, cc, i);
 		}
 
 
@@ -37,7 +37,7 @@ function draw(){
 	ctx.clearRect(0, 0, w, h);
 	ctx.strokeStyle = rgb(0);
 	ctx.lineWidth = 0.5;
-	ctx.line(w/2, 0, w/2, h);
+	//ctx.line(w/2, 0, w/2, h);
 		this.moveParticles();
 	}
 
@@ -67,8 +67,8 @@ function moveParticles(){
 
 			//DISTRIBUTED MAPPED SOUND VALUE  
 			//var s = mapSound(p.me, (num_particles));
-			var s =map(audioChannelVolume[p.me*5], 0, 150, -200, 50);
-			ctx.lineWidth = 1+ p.me%2;
+			var s =map(audioChannelVolume[p.me*5], 0, 150, -100, 50);
+			ctx.lineWidth = p.me/12;
 			//ctx.fillStyle = rgb(0,0,155-s);
 			//ctx.strokeEllipse(p.x, h-(30 + p.y), s, s);
 			//if (p.y < h/2) {

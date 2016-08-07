@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var rot = 0;
+var roty = 0;
+var particles = [];
+var x = 0;
+var y = 0;
+var speedx = 4;
+var speedy = 1;
+var nbr_circles = 54;
+var particles = new particleEngine(nbr_circles);
+
+
+var lg_rad = 200;
+var lg_circ = 2*Math.PI*lg_rad;
+var sm_rad = (lg_circ / nbr_circles) / 2;
+var cx = width/2;
+var cy = height/2;
+  
+  // for (var i = 1; i <= nbr_circles; ++i) {
+  //   dc.beginPath();
+    
+  //   var x = cx + Math.cos(angle) * lg_rad;
+  //   var y = cy + Math.sin(angle) * lg_rad;
+  //   dc.arc(x, y, sm_rad, 0, 2*Math.PI, false);
+  //   dc.fill();
+  // }
+
+for (var i = 0; i < particles.particles.length; i++) {
+    p = particles.particles[i];
+    p.r = 80;
+    //p.stroke = random(2, 10);
+}
+
+
+    
+
+
+// function spiral(a, b){
+//     var radius = 0;
+//     var angle = 0;
+//     ctx.moveTo(0, 0);
+//     ctx.beginPath();
+//     for (i = 0; i < b; i++) {
+//         radius += a;
+//         // make a complete circle every 50 iterations
+//         angle += (Math.PI * 2) / 150;
+//         //x = 0+ (a + b * angle) * Math.cos(angle);
+//         //y = 0 + (a + b * angle) * Math.sin(angle);
+//         var x =radius * Math.cos(angle);
+//         var y = radius * Math.sin(angle);
+//         ctx.lineTo(x, y);
+//     }
+//     ctx.strokeStyle = "#000";
+//     ctx.stroke();
+// }
+
+function draw(){
+
+    ctx.background(255);
+    ctx.save();
+    ctx.translate(w/2, h/2);
+    ctx.fillStyle = rgb(0);
+    // ctx.HfillEllipse(0, 0, 400, 400);
+    ctx.strokeStyle = rgb(0);
+    
+    rot += (0.1)*speedx;
+    ctx.rotate(radians(rot));
+    for (var i = 0; i < particles.particles.length; i++) {
+        p = particles.particles[i];
+        var s = mapSound(i, particles.particles.length);
+        p.angle = i*2*Math.PI/nbr_circles;
+        p.x = cx + Math.cos(p.angle) * lg_rad*map(s, 0, 100, 1,1.2);
+        p.y = cy + Math.sin(p.angle) * lg_rad*map(s, 0, 100, 1,1.2);
+        ctx.lineWidth = p.stroke;
+        ctx.fillEllipse(w/2-p.x, h/2-p.y, 5, 5);
+        p.r = 80 + map(s, 0, 150, -10, 50);
+        ctx.strokeEllipse(w/2-p.x, h/2-p.y, p.r, p.r);
+        //spiral(i/10, 1920)
+    }
+   
+    
+    ctx.translate(-w/2, -h/2);
+    ctx.restore();
+
+}
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
