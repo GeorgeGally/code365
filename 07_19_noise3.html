@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/perlin.js"></script>
+<script language="javascript" src="js/dat.gui.min.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+  <div id="gui"></div>
+<script>
+
+var ctx = createCanvas("canvas1");
+var bg_alpha = 0.003;
+var waves = [];
+var grid_w = 12;
+var grid_h = 12;
+
+var fieldIntensity = 200000;
+var noiseScale = 2000;
+noise.seed(0.002);
+var time_speed = 0.1;
+var stepSize = 1;
+var angle2_scale = 0.8;
+var angle3_scale = 0.8;
+
+var params = {
+            bg_alpha: 0.001,
+            fieldIntensity: 200000,
+            angle2_scale: 0.8,
+            angle3_scale: 0.8,
+            stepSize: 1,
+            noiseScale: 200000,
+            time_speed: 5
+        };
+
+var gui = new dat.GUI({ autoPlace: false });
+
+document.getElementById('gui').appendChild(gui.domElement);
+		
+		gui.add(params, 'bg_alpha', 0.001, 1);
+        gui.add(params, 'fieldIntensity', 100, 2000000);
+        gui.add(params, 'angle2_scale', 0.000001, 5);
+        gui.add(params, 'angle3_scale', 0.000001, 5);
+        gui.add(params, 'stepSize', 0.01, 20);
+        gui.add(params, 'noiseScale', 1, 1500000);
+        gui.add(params, 'time_speed', 0.001, 50);
+
+var Wave = function(_num_particles, _x, _y, _me) {
+	var c = 1;
+	
+	ctx.strokeStyle = rgba(0,0,0,0.8);
+	var particles = [];
+	var num_particles = _num_particles;
+	var x = _x;
+	var y = _y;
+	var me = _me;
+	
+// initGUI();	
+
+	this.setup = function(){
+		for (var i = 0; i < num_particles; i++) {
+			var c = random(0.6);
+			var cc = rgba(0, randomInt(80), 100, c);
+		    x = randomInt(0, w);
+		    y = randomInt(h/2-h/4, h/2+h/4);
+			this.addParticle(x, y, cc, i+me);
+		}
+	}
+
+	this.draw = function(){
+		this.moveParticles();
+	}
+
+	this.addParticle = function(_x, _y, _colour, _me){
+		var sz = random(0.5, 1);
+		var particle = {
+			x: _x,
+			y: _y,
+			x2: _x,
+			y2: _y,
+			tx: 0.1,
+			ty: 0.1,
+			angle: random(Math.TWO_PI),
+			angle2: 0,
+			angle3: 0,
+			c: _colour,
+			me: _me,
+			stepSize: 1,
+			speedx: 0.1,
+			speedy: 0.1,
+			sz: sz,
+			start_sz: sz,
+			start: false
+		}
+
+		particles.push(particle);
+	}
+	
+
+	this.moveParticles = function(){
+		
+		for (var i = 0; i < particles.length; i++) {
+
+			p = particles[i];
+
+			//DISTRIBUTED MAPPED SOUND VALUE  
+			//var s = tween(s, map(mapSound(p.me, num_waves*num_particles), 0, 120, 0, 0.001), 20);
+
+			p.angle = radians(noise.perlin2(p.x / params.noiseScale, p.y / params.noiseScale));
+    		p.angle2 = radians(noise.perlin2(p.y / params.noiseScale * i, p.angle * params.angle2_scale));
+    		p.angle3 = radians(noise.perlin2(p.angle2 * params.angle3_scale, p.angle2 * 30 * count / 10) * params.fieldIntensity);
+    		if (Math.floor(p.angle3) > 0.05 ) {
+    		p.x += p.angle3 * params.stepSize;
+    		p.y += p.angle2 * params.stepSize;
+
+
+    		
+    		ctx.fillStyle = p.c;
+			//ctx.line(p.x, p.y, p.x2, p.y2);	
+			ctx.fillRect(p.x, p.y, p.sz, p.sz);
+			}
+			//if (p.x < 0 || p.x > w || p.y < 0 || p.y > h || p.sz < 0) p = reset(p);
+			if (p.x < 0 || p.x > w) params.stepSize*=-1;
+			
+			if (p.y < 0 || p.y > h) params.stepSize*=-1;
+			// //if () p.x = 0;
+			if (p.sz < 0) {
+				//p.sz = p.start_sz;
+
+				// p.x = randomInt(h/2-h/4, h/2+h/4);
+				// p.y =randomInt(w/2-w/4, w/2+w/4);
+			}
+
+			
+		};
+
+
+
+		function reset(p) {
+			p.x = 0;
+			p.y = randomInt(h);
+			p.sz = p.start_sz;
+			return p;
+		}
+	}
+
+this.setup();
+
+}
+
+
+// SETUP WAVES CLASS
+
+
+var num_waves = grid_w * grid_h;
+var spacing_x = w/grid_w;
+var spacing_y = h/grid_h;
+console.log(spacing_x)
+console.log(spacing_y)
+var grid = makeGrid(grid_w, grid_h);
+var num_particles = grid_w * grid_h;
+
+for (var i = 0; i < num_waves; i++) {	
+	waves[i] = new Wave(num_particles, grid[i][0]*spacing_x+spacing_x/2,grid[i][1]*spacing_y + spacing_y/2, i);
+};
+
+ctx.fillStyle = rgba(255, 255, 255, 1);
+
+// DRAW WAVES CLASS
+var alpha = 1;
+var count = 0;
+function draw(){
+	
+	count++;
+    ctx.globalCompositeOperation = 'lighter';
+    	ctx.fillStyle = rgba(255, 255, 255, params.bg_alpha);
+		ctx.fillRect(0, 0, w, h);
+	ctx.globalCompositeOperation = 'source-over';
+	
+	for (var i = 0; i < num_waves; i++) {
+		waves[i].draw();
+	};
+}
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

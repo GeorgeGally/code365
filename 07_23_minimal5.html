@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var r = 400;
+var rot = 0;
+
+// FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+function draw(){
+
+    ctx.background(240);
+    rot = tween(rot, map(audioChannelVolume[15],0,180, 0, 90), 20);
+    ctx.save();
+    ctx.translate(w/2, h/2);
+    ctx.rotate(radians(rot));
+    ctx.strokeStyle = rgb(0);
+
+    ctx.fillStyle = 'white';
+
+    ctx.lineWidth = 1;
+    for (var i = 0; i < 30; i++) {
+    ctx.beginPath();
+    // ctx.lineWidth = map(audioChannelVolume[i*5],0,150, 0.5, 3)
+    ctx.strokeStyle = rgb(map(audioChannelVolume[i*5],0,150, 0.5, 255));
+    ctx.arc(0, 0, r/2 - i*5, radians(0), radians(360));
+    
+    ctx.fill();
+    ctx.stroke();
+    }
+
+
+    ctx.strokeStyle = rgb(0);
+    ctx.lineWidth = 4;
+    ctx.HstrokeEllipse(0, 0, r, r);
+    ctx.HstrokeEllipse(0, 0, 90, 90);
+
+    ctx.restore();
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>
