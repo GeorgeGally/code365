@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/perlin.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var count = 0;
+var count2 = 0;
+x = old_x = 0;
+y = old_y = random(h);
+noise.seed(2);
+speed = 10;
+function draw(){
+	old_x = x;
+	old_y = y;
+	//ctx.background(255);
+	x += noise.perlin3(frameCount/100, count/1000, count2/100)*speed;
+	y += noise.perlin2(count, count2/100)*speed;
+	ctx.line(x, y, old_x, old_y);
+	if (y>h) { y = 0; ctx.lineWidth = random(0.3); }
+	if (x>w) { x = 0; ctx.lineWidth = random(0.3); }
+	if (y<0) { y = h; ctx.lineWidth = random(0.3); }
+	if (x<0) { x = w; ctx.lineWidth = random(0.3); }
+	// for (var i = 0; i < 20; i++) {
+	// 	Things[i]
+	// }
+	// if (p.y < h/2) {
+	// 			ctx.line(p.x, h/2, w/2, p.y - s-0);
+	// 			//ctx.shadowOffsetY = s/20;
+	// 		} else {
+	// 			ctx.line(p.x, h/2, w/2, p.y + s-0);
+	// 			//ctx.shadowOffsetY = -s/20;
+	// 		}
+	count+= 0.0001;
+	count2+= random(10)/10000;
+}
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

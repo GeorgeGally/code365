@@ -76,29 +76,29 @@ var Wave = function(_num_particles, _x, _y, _me) {
 			ctx.rotate(radians(p.angle+180));
 			ctx.strokeStyle = p.c;
 			//ctx.lineWidth = p.stroke_width;
-			ctx.lineWidth = s/4;
+			ctx.lineWidth = s/8;
 			//ctx.lineWidth = 1;
 			// ctx.beginPath();
 			// ctx.arc(0, 0, p.sz/2, -arc/2, arc/2);
 			// ctx.stroke();
-			ctx.line(-s, 0, s, 0);
-			ctx.line(0, -s, 0, s);
-			ctx.fillStyle = "#ffffff";
-			ctx.fillEllipse(0, s, 22, 22);
-			ctx.fillStyle = "#000000";
+			// ctx.line(-s, 0, s, 0);
+			// ctx.line(0, -s, 0, s);
+			// ctx.fillStyle = "#ffffff";
+			// ctx.fillEllipse(0, s, 22, 22);
+			ctx.fillStyle = p.c;
 			ctx.fillEllipse(0, s, 16, 16);
-			ctx.fillStyle = "#ffffff";
-			ctx.fillEllipse(s, 0, 22, 22);
-			ctx.fillStyle = "#000000";
+			// ctx.fillStyle = "#ffffff";
+			// ctx.fillEllipse(s, 0, 22, 22);
+			ctx.fillStyle = p.c;
 			ctx.fillEllipse(s, 0, 16, 16);
 
-			ctx.fillStyle = "#ffffff";
-			ctx.fillEllipse(0, -s, 22, 22);
-			ctx.fillStyle = "#000000";
+			//ctx.fillStyle = "#ffffff";
+			//ctx.fillEllipse(0, -s, 22, 22);
+			ctx.fillStyle = p.c;
 			ctx.fillEllipse(0, -s, 16, 16);
-			ctx.fillStyle = "#ffffff";
-			ctx.fillEllipse(-s, 0, 22, 22);
-			ctx.fillStyle = "#000000";
+			//ctx.fillStyle = "#ffffff";
+			//ctx.fillEllipse(-s, 0, 22, 22);
+			ctx.fillStyle = p.c;
 			ctx.fillEllipse(-s, 0, 16, 16);
 
 			ctx.rotate(radians(-p.angle-180));
@@ -116,8 +116,8 @@ this.setup();
 // SETUP WAVES CLASS
 
 var waves = [];
-var grid_w = 10;
-var grid_h = 10;
+var grid_w = 20;
+var grid_h = 20;
 var num_waves = grid_w * grid_h;
 var spacing_x = w/grid_w;
 var spacing_y = h/grid_h;
