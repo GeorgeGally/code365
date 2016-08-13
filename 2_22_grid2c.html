@@ -33,9 +33,9 @@ var Wave = function(_num_particles, _x, _y, _me) {
 			var c = random(225);
 			//var c = 0;
 			if (chance(5)) {
-				var cc = rgba(255, 255, 255, 0.8);
+				var cc = rgba(0, 0, 0, 0.7);
 			} else {
-				var cc = rgba(random(1), random(40,125), random(140,225), 0.4);
+				var cc = rgba(random(0,125), 0.4);
 			}
 		    
 			this.addParticle(x, y, cc, me);
@@ -72,7 +72,7 @@ var Wave = function(_num_particles, _x, _y, _me) {
 			var s = mapSound(p.me, num_waves);
 			p.speedx = tween(p.speedx, map(s, 0, 100, 0, 400)-260, 40);
 			var arc =  p.speedx * Math.PI;
-			p.angle += p.speedx/90;
+			p.angle += p.speedx/180;
 			// if (p.angle > 180) p.angle = 180;
 			// if (p.angle < 0) p.angle = 0;
 
@@ -136,7 +136,7 @@ for (var i = 0; i < num_waves; i++) {
 // DRAW WAVES CLASS
 
 function draw(){
-	ctx.clearRect(0, 0, w, h);
+	ctx.background(255);
 	for (var i = 0; i < num_waves; i++) {
 		waves[i].draw();
 	};

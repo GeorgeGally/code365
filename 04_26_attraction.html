@@ -24,16 +24,16 @@
 var ctx = createCanvas("canvas1");
 ctx.strokeStyle = rgba(0,0,0,0.8);
 var flies = [];
-var balls = new particleEngine(8);
+var balls = new particleEngine(4);
 
 for (var i = 0; i < balls.particles.length; i++) {
     b = balls.particles[i];
     b.position.x = i*w/balls.particles.length + w/balls.particles.length/2;
     b.position.y = h/2+100;
     b.speed.x = 0;
-    b.sz = 80;
+    b.sz = 90;
 
-    flies[i] = new particleEngine(10);
+    flies[i] = new particleEngine(30);
     for (var j = 0; j < flies[i].particles.length; j++) {
         p = flies[i].particles[j];
         p.position.x = b.position.x;
@@ -45,25 +45,25 @@ for (var i = 0; i < balls.particles.length; i++) {
 function draw(){
 
     // ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = rgba(255, 255, 255, 0.8);
+    ctx.fillStyle = rgba(255, 255, 255, 0.9);
     ctx.fillRect(0, 0, w, h);
     //particle.draw();
     //console.log();
     for (var i = 0; i < balls.particles.length; i++) {
 
         b = balls.particles[i];
-        b.position.y =  tween(b.position.y, h/2 + map(audioChannelVolume[b.me*5], 0, 100, -40, 40), 8);
+        b.position.y =  tween(b.position.y, h/2 + map(audioChannelVolume[b.me%90], 0, 100, -40, 40), 8);
         ctx.fillStyle = "black";
-        ctx.fillEllipse(b.position.x, b.position.y, b.sz, b.sz);
-          
+        //ctx.fillEllipse(b.position.x, b.position.y, b.sz, b.sz);
+          ctx.eqFillTriangle(b.position.x, b.position.y, b.sz);
         for (var j = 0; j < flies[i].particles.length; j++) {
             
             p = flies[i].particles[j];
-            ctx.fillStyle = "black";
+            ctx.fillStyle = "white";
             var mouse = b.position;
             //console.log(mouse)
             mouse = mouse.subtract(p.position);
-            mouse.setMag(0.4);
+            mouse.setMag(0.2);
             //console.log(mouse)
             acceleration = mouse;
             p.speed = p.speed.add(acceleration);
@@ -71,10 +71,11 @@ function draw(){
             p.speed.limit(5);
             //console.log(p.dist)
             // ctx.line(p.position.x, p.position.y, mouseX, mouseY);
-            ctx.fillEllipse(p.position.x, p.position.y, p.sz, p.sz);
+            ctx.fillRect(p.position.x, p.position.y, 2, 2);
 
         }
 
+        
     } 
 
 }

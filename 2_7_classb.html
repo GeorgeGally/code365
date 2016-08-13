@@ -20,7 +20,7 @@ var ctx = createCanvas("canvas1");
 var Wave = function(_num_particles, _y) {
 
 	ctx.strokeStyle = rgba(0,0,0,0.8);
-	ctx.lineWidth = 25;
+
 	var particles = [];
 	var radius = 220;
 	var num_particles = _num_particles;
@@ -29,8 +29,7 @@ var Wave = function(_num_particles, _y) {
 
 	this.setup = function(){
 		for (var i = 0; i < num_particles; i++) {
-		    var cc = rgba(random(25),random(255),0, 0.5);
-			this.addParticle(w/2, h/2, cc, i);
+			this.addParticle(w/2, h/2, num_particles, i);
 		}
 	}
 
@@ -38,15 +37,15 @@ var Wave = function(_num_particles, _y) {
 		this.moveParticles();
 	}
 
-	this.addParticle = function(_x, _y, _colour, _me){
+	this.addParticle = function(_x, _y, num_particles, _me){
 		var particle = {
 			x: _x,
 			y: _y,
-			c: _colour,
 			me: _me,
 			speedx: 0,
 			speedy: random(2,20),
-			sz: 100+_me*28,
+			sz: 100+_me*(num_particles-_me)+num_particles-_me+_me*1,
+			lw: (num_particles-_me)/1.3,
 			angle: radians(-90+_me*360/num_particles)
 		}
 		particles.push(particle);
@@ -63,7 +62,7 @@ var Wave = function(_num_particles, _y) {
 			//DISTRIBUTED MAPPED SOUND VALUE  
 			var s = mapSound(p.me, num_particles);
 			p.speedx = tween(p.speedx, map(s, 0, 255, 0, 2),10);
-			
+			ctx.lineWidth = p.lw;
 			// DRAW ARCS
 			ctx.beginPath();
 			ctx.arc(p.x, p.y, p.sz, 0, p.speedx * Math.PI);
@@ -86,7 +85,7 @@ var num_waves = 1;
 var spacing = h/num_waves;
 
 for (var i = 0; i < num_waves; i++) {	
-	var num_particles = 6;
+	var num_particles = 20;
 	waves[i] = new Wave(num_particles,i*spacing+spacing/2);
 };
 

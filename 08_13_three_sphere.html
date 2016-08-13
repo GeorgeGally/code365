@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/url.js"></script>
+<script language="javascript" src="js/physics2.js"></script>
+<script language="javascript" src="js/three.min.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+var ctx = createCanvas("canvas1");
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 70, aspect, 0.1, 1000 );
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+
+// Velocity
+var vx = 0;
+var vy = random(1,2);
+
+var gravity = 0.04;
+var bounce_factor = 0.8;
+var radius = 8;
+var geometry = new THREE.SphereGeometry( radius, 20, 42, 12 );
+geometry.dynamic = true;
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+var sphere = new THREE.Mesh( geometry, dMaterial );
+scene.add( sphere );
+camera.position.z = 80;
+camera.near = 20;
+camera.far  = 95;
+//sphere.rotation.z += Math.PI;
+sphere.position.y = 30;
+
+function draw() {
+  
+  //scene.rotation.y = 8;
+
+  vy += gravity;
+  //sphere.position.x += vx;
+  sphere.position.y -= vy;
+
+     if (
+    //     sphere.position.x + radius > width ||
+    //     sphere.position.x - radius < 0 ||
+        sphere.position.y < -30// ||
+    //     //ball.y - ball.radius  < 0
+       ) {
+      
+    //   // Re-positioning on the base ;)
+    //   sphere.position.x = w / 2;
+        sphere.position.y = -30;
+      
+    //   // If we do not re-set the velocities
+    //   // then the ball will stick to bottom :D
+      
+    //   // Velocity x
+      vx = 0;
+      // Velocity y
+      vy *= -bounce_factor;
+    }
+
+
+  renderer.render( scene, camera );
+};
+
+
+</script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

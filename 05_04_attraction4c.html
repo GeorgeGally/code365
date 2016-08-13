@@ -25,7 +25,7 @@ var ctx = createCanvas("canvas1");
 ctx.lineWidth = 0.2;
 var radius = 160;
 var flies = [];
-var balls = new particleEngine(10);
+var balls = new particleEngine(20);
 
 for (var i = 0; i < balls.particles.length; i++) {
     b = balls.particles[i];
@@ -38,7 +38,7 @@ for (var i = 0; i < balls.particles.length; i++) {
     b.c = rgba(c, c, c, random(0.1, 0.8));
     b.sz = 20;
 
-    flies[i] = new particleEngine(95);
+    flies[i] = new particleEngine(1555);
     for (var j = 0; j < flies[i].particles.length; j++) {
         p = flies[i].particles[j];
         p.position.x = w/2;
@@ -49,52 +49,49 @@ for (var i = 0; i < balls.particles.length; i++) {
     }
 }
 
+
 // FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
 function draw(){
 
-    // ctx.clearRect(0, 0, w, h);
+    //ctx.clearRect(0, 0, w, h);
 
-    ctx.fillStyle = rgba(255, 255, 255, 0.8);
+    ctx.fillStyle = rgba(255, 255, 255, 0.1);
     ctx.fillRect(0, 0, w, h);
     //particle.draw();
     //console.log();
-  
-        
+    ctx.fillStyle = "black";
+    //if (chance(50)) radius =  tween(radius, map(audioChannelVolume[b.me%80], 0, 150, 60, 90),2);
+
     for (var i = 0; i < balls.particles.length; i++) {
         
         b = balls.particles[i];
-        //b.angle += radians(b.speed.x); 
-        b.angle += radians(1); 
+        //b.angle += radians(b.speed.x);
+        if (i%2 == 0) {
+            b.angle -= radians(audioChannelVolume[i*5]/200); 
+        }  else {
+           b.angle += radians(audioChannelVolume[i*5]/200);  
+        }
+        
         b.x = w/2 +  (b.sz/2+radius) * Math.cos(b.angle);
 		b.y = h/2 +  + (b.sz/2+radius) * Math.sin(b.angle);
 
-        b.sz =  map(audioChannelVolume[b.me%80], 0, 150, 0, 6);
-
-        ctx.fillStyle = b.c;
-
-        ctx.fillEllipse(b.x, b.y, b.sz, b.sz);
-
-          
+        //ctx.fillStyle = b.c;
+        //ctx.fillEllipse(b.x, b.y, b.sz, b.sz);
 
         for (var j = 0; j < flies[i].particles.length; j++) {
             
             var mouse = new Vector(b.x+b.sz/2, b.y+b.sz/2);
             p = flies[i].particles[j];
             mouse = mouse.subtract(p.position);
-             mouse.setMag(0.7);
+             mouse.setMag(0.3);
             //console.log(mouse)
             acceleration = mouse;
             p.speed = p.speed.add(acceleration);
             p.position = p.position.add(p.speed);
-            p.speed.limit(11);
-            //p.sz = 2;
-            p.sz =  map(audioChannelVolume[p.me%80], 0, 120, 0, 5);
-            ctx.strokeStyle = p.c;
-            ctx.fillStyle = p.c;
-            // ctx.strokeStyle = "black";
-            // ctx.fillStyle = "black";
-            ctx.line(p.position.x, p.position.y, b.x, b.y);
-            ctx.fillEllipse(p.position.x, p.position.y, p.sz, p.sz);
+            p.speed.limit(7);
+            //p.sz = 1;
+            p.sz =  map(audioChannelVolume[p.me%80], 0, 120, 0.4, 1.6);
+            ctx.fillRect(p.position.x, p.position.y, p.sz, p.sz);
 
 
         }

@@ -19,9 +19,9 @@ var ctx = createCanvas("canvas1");
 ctx.strokeStyle = rgba(0,0,0,0.8);
 ctx.lineWidth = 2;
 var particles = [];
-var radius = 180;
+var radius = 360;
 var c = 0;
-var num_particles = 50;
+var num_particles = 180;
 
 for (var i = 0; i < num_particles; i++) {
     	var cc = rgba(random(25),random(255),0, 0.5);
@@ -59,22 +59,25 @@ function addParticle(_x, _y, _colour, _me){
 	particles.push(particle);
 }
 
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 0.5;
+
 function moveParticles(){
 	for (var i = 0; i < num_particles; i++) {
 		p = particles[i];
 		//var me = p.me *5 ;
 		//if (me > 128) me = 256 - me ; 
 		p.angle += radians(p.speedx); 
-		radius = tween(radius, map(mapSound(p.me, particles.length), 0,100, 0, 10), 3);
+		radius = tween(radius, map(volume[p.me%(256/2)], 0,100, 0, 80), 3);
 		var r = radius;
-		p.sz = tween(p.sz, map(mapSound(p.me, particles.length),0,100, 100, 150), 5);
+		p.sz = tween(p.sz, map(volume[p.me%(256/2)],0,100, 0, 200), 5);
 		
 		p.x = w/2 + (p.sz/2+r) * Math.cos(p.angle);
 		p.y = h/2 + (p.sz/2+r) * Math.sin(p.angle);
 
-		ctx.fillStyle = rgba(0,0,0,0.3);	
-		ctx.fillTriangle(p.x-p.sz/4, p.y, p.x + p.sz/4, p.y, p.x, p.y - p.sz/2);
-		ctx.strokeStyle = rgba(0,0,0,1);
+		//ctx.fillStyle = rgba(0,0,0,0.3);	
+		//ctx.eqFillTriangle(p.x, p.y, p.sz/5);
+		
 		ctx.line(w/2, h/2, p.x,p.y);
 		
 		};

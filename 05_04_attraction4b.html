@@ -38,7 +38,7 @@ for (var i = 0; i < balls.particles.length; i++) {
     b.c = rgba(c, c, c, random(0.1, 0.8));
     b.sz = 20;
 
-    flies[i] = new particleEngine(95);
+    flies[i] = new particleEngine(155);
     for (var j = 0; j < flies[i].particles.length; j++) {
         p = flies[i].particles[j];
         p.position.x = w/2;
@@ -54,23 +54,28 @@ function draw(){
 
     // ctx.clearRect(0, 0, w, h);
 
-    ctx.fillStyle = rgba(255, 255, 255, 0.8);
+    ctx.fillStyle = rgba(255, 255, 255, 1);
     ctx.fillRect(0, 0, w, h);
     //particle.draw();
     //console.log();
-  
+    ctx.fillStyle = "black";
         
     for (var i = 0; i < balls.particles.length; i++) {
         
         b = balls.particles[i];
-        //b.angle += radians(b.speed.x); 
-        b.angle += radians(1); 
+        //b.angle += radians(b.speed.x);
+        if (i%2 == 0) {
+            b.angle -= radians(1); 
+        }  else {
+           b.angle += radians(1);  
+        }
+        
         b.x = w/2 +  (b.sz/2+radius) * Math.cos(b.angle);
 		b.y = h/2 +  + (b.sz/2+radius) * Math.sin(b.angle);
 
         b.sz =  map(audioChannelVolume[b.me%80], 0, 150, 0, 6);
 
-        ctx.fillStyle = b.c;
+        //ctx.fillStyle = b.c;
 
         ctx.fillEllipse(b.x, b.y, b.sz, b.sz);
 
@@ -89,11 +94,11 @@ function draw(){
             p.speed.limit(11);
             //p.sz = 2;
             p.sz =  map(audioChannelVolume[p.me%80], 0, 120, 0, 5);
-            ctx.strokeStyle = p.c;
-            ctx.fillStyle = p.c;
+            // ctx.strokeStyle = p.c;
+            // ctx.fillStyle = p.c;
             // ctx.strokeStyle = "black";
             // ctx.fillStyle = "black";
-            ctx.line(p.position.x, p.position.y, b.x, b.y);
+            //ctx.line(p.position.x, p.position.y, b.x, b.y);
             ctx.fillEllipse(p.position.x, p.position.y, p.sz, p.sz);
 
 
