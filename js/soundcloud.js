@@ -11,6 +11,10 @@ var playhead;
 var duration;
 var timelineWidth;
 var mix = [];
+var audioChannelVolume = [];
+var volume = [];
+
+
 
 var audioCtxCheck = window.AudioContext || window.webkitAudioContext;
 if (!audioCtxCheck) {
@@ -38,6 +42,13 @@ else {
       analyser.getByteFrequencyData(self.streamData);
       
       mix = getMixFromFFT(self.streamData);
+
+      audioChannelVolume = volume = getVolume(self.streamData);
+
+
+
+
+
       // Calculate an overall volume value
       // var total = 0;
       // for (var i = 0; i < 64; i++) { // Get the volume from the first 64 bins
@@ -297,19 +308,7 @@ function createAudioElement(audio_name){
 
 
 
-var audioChannelVolume = [];
-var volume = [];
-var audioRender = function () { 
-if (audioCtxCheck) {
-  for (var i = audioSource.streamData.length - 1; i >= 0; i--) {
-    audioChannelVolume[i] = volume[i] = audioSource.streamData[i];
-  }
-}
 
-requestAnimationFrame(audioRender); 
-}
-
-audioRender();
 
 
 // player UI
@@ -653,3 +652,27 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
 
         return [closest, closestFreq];
     }  
+
+
+    // -----------------------------------------------------------------------------
+// calculate RMS - a good approximation of "loudness"
+
+function getRMS(freq) {
+  var rms = 0;
+  for (var i = 0; i < buffer.length; i++) {
+    rms += buffer[i] * buffer[i];
+  }
+  rms /= buffer.length;
+  rms = Math.sqrt(rms);
+  /* rms now has the value we want. */
+}
+
+
+function getVolume(streamData) {
+    var vol = [];
+    for (var i = streamData.length - 1; i >= 0; i--) {
+        vol[i] = streamData[i];
+    }
+
+    return vol;
+}

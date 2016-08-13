@@ -78,11 +78,11 @@ function moveParticles(){
 
 		ctx.fillStyle = rgba(0,0,0,1);
 		//ctx.fillEllipse(p.x, p.y, p.sz/20, p.sz/20);			
-		ctx.fillTriangle(p.x-p.sz/4, p.y, p.x + p.sz/4, p.y, p.x, p.y - p.sz/2);
+		ctx.eqFillTriangle(p.x, p.y, p.sz/10);
 		ctx.strokeStyle = rgba(0,0,0,1);
-		ctx.line(w/2, h/2 + 50, p.x, p.y-p.sz/5);
-		ctx.fillStyle = rgba(255,255,255,1);
-		ctx.fillEllipse(p.x, p.y-p.sz/5, p.sz/5,p.sz/5);
+		//ctx.line(w/2, h/2 + 50, p.x, p.y-p.sz/5);
+		//ctx.fillStyle = rgba(255,255,255,1);
+		//ctx.fillEllipse(p.x, p.y-p.sz/5, p.sz/5,p.sz/5);
 		
 		};
 

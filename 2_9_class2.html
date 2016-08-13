@@ -46,6 +46,7 @@ var Wave = function(_me, _num_particles) {
 	}
 
 	this.addParticle = function(_x, _y, _colour, _me){
+		
 		var sw = 12 * _me + 12;
 		var particle = {
 			x: _x,
@@ -78,8 +79,9 @@ var Wave = function(_me, _num_particles) {
 			radius = map(s, 0, 255, 0, 250);
 			p.sz = map(s, 0, 255, 2, 12);
 			p.angle += p.speedx/40;
-			p.x = w/2 + radius * Math.cos(p.angle);
-			p.y = h/2 + radius * Math.sin(p.angle);
+			var constrain = 12;
+			p.x = Math.round((w/2 + radius * Math.cos(p.angle))/constrain)*constrain;
+			p.y = Math.round((h/2 + radius * Math.sin(p.angle))/constrain)*constrain;
 			// DRAW ARCS
 			// ctx.fillStyle = rgb(0);
 			ctx.fillStyle = p.c;
@@ -120,8 +122,8 @@ for (var i = 0; i < num_waves; i++) {
 
 function draw(){
 	//ctx.clearRect(0, 0, w, h);
-	ctx.fillStyle = rgba(255, 255, 255, 0.01);
-	ctx.fillRect(0, 0, w, h);
+	//ctx.fillStyle = rgba(255, 255, 255, 0.02);
+	//ctx.fillRect(0, 0, w, h);
 	for (var i = 0; i < num_waves; i++) {
 		waves[i].draw();
 	};

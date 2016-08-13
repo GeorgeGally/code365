@@ -21,7 +21,8 @@ var particles = [];
 var radius = 320;
 var c = 0;
 var num_particles = 5880;
-//ctx.translate(0.5, 0.5);
+ctx.lineWidth = 0.2;	
+ctx.strokeStyle = rgba(0, 0.5);
 
 for (var i = 0; i < num_particles; i++) {
 
@@ -36,12 +37,12 @@ for (var i = 0; i < num_particles; i++) {
 
 function draw(){
 
-	ctx.fillStyle = rgb(255);
+	ctx.fillStyle = rgba(255, 0.7);
 	ctx.fillRect(0, 0, w, h);
 	moveParticles();
 	ctx.fillStyle = rgba(0,0,0,1);
 	//ctx.HfillEllipse(w/2, h/2, radius-8, radius-8);
-
+	
 }
 
 
@@ -56,34 +57,34 @@ function addParticle(_x, _y, _colour, _me){
 		me: _me,
 		r: 0,
 		r2: 0,
-		me2: (_me + randomInt(-30,30))%num_particles,
+		me2: (_me + randomInt(-130,130))%122,
 		speedx: random(-2,2)/2,
 		speedy: random(2,20),
 		sz: 0,
-		angle: radians((_me*2))
+		angle: radians((_me*13))
 	}
 
 	particles.push(particle);
 }
 
 function moveParticles(){
+		radius = tween(radius, 200 + mix[0], 5);
 	for (var i = 0; i < particles.length; i++) {
 		p = particles[i];
+		
 		var r = 2+ radius/2;
-		r =  map(volume[(p.me+randomInt(-20,20))%200], 0,200,
-			150, 280);
-		p.r = tween(p.r, randomInt(-40,20) + r, 2);
+
+		r =  map(volume[(p.me%120)], 0,200,
+			190, 260);
+		p.r = tween(p.r, randomInt(-20,10) + r, 2);
 		
 		x2 = p.x + (radius/2 * Math.cos(p.angle));
 		y2 = p.y + (radius/2 * Math.sin(p.angle));
 	
 		p.xx = p.x + p.r * Math.cos(p.angle);
 		p.yy = p.y + p.r * Math.sin(p.angle);
-		// ctx.strokeWeight = 0;
-		ctx.fillStyle = rgb(0);
-		//ctx.fillEllipse(x3, y3, 8, 8);
-		ctx.lineWidth = 0.5;			
-		ctx.strokeStyle = rgb(0);
+	
+		
 		
 		if(i>0) {
 			ctx.line(p.xx, p.yy, particles[(i-1)].xx, particles[(i-1)].yy);

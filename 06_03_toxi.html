@@ -39,7 +39,9 @@ var physics = new VerletPhysics2D();
 physics.addBehavior(new GravityBehavior(new Vec2D(0,0.02)));
 physics.setWorldBounds(new Rect(0, 0, w, h));
 
-var num_particles = 450;
+ctx.lineWidth = 0.4;
+
+var num_particles = 10;
 var p = [];
 var springs = [];
 
@@ -47,7 +49,7 @@ for (var i = 0; i < num_particles; i++) {
   p[i] = new VerletParticle2D(new Vec2D(random(w), random(h)));
   physics.addParticle(p[i]);
   if(i>1) {
-    springs[i] = new VerletSpring2D(p[i], p[i%2], 225, 0.02);
+    springs[i] = new VerletSpring2D(p[i], p[i%2], 225, 0.2);
     physics.addSpring(springs[i]);
   } else if(i==0){
     p[0].x = w/4;
@@ -66,14 +68,20 @@ function draw(){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   physics.update();
   
+  p[0].x = w/2 + Math.sin(frameNumber/100)*w/2;
+  p[0].y = Math.sin(frameNumber/100)*h/2;
+  p[1].x = Math.sin(frameNumber/200)*w/2;
+  ctx.fillEllipse(p[0].x, p[0].y,15,15);
+  ctx.fillEllipse(p[1].x, p[1].y,15,15);
+
   for (var i = 2; i < p.length; i++) {
     var particle = p[i];
     p[i].x = tween(p[i].x, map(audioChannelVolume[(i)%110], 0, 150, 0, w), 18); 
     p[i].y = tween(p[i].y, map(audioChannelVolume[(i*2)%110], 0, 150, 0, h), 18); 
     //ctx.fillStyle = rgba(0,0,0,0.1);
     //ctx.fillEllipse(p[i].x, p[i].y, audioChannelVolume[(i)%80]/2, audioChannelVolume[(i)%80]/2);
-    ctx.fillStyle = rgba(0,0,0,0.1);
-    ctx.fillEllipse(p[i].x, p[i].y,55,55);
+    //ctx.fillStyle = rgba(0,0,0,0.1);
+    //ctx.fillEllipse(p[i].x, p[i].y,55,55);
     ctx.fillStyle = rgba(0,0,0,0.8);
     ctx.fillEllipse(p[i].x, p[i].y,15,15);
     if(i>2) {
@@ -82,10 +90,6 @@ function draw(){
     }
   }
 
-
-  // ctx.fillEllipse(p1.x, p1.y, 40, 40);
-  // ctx.fillEllipse(p2.x, p2.y, 40, 40);
-  //ctx.line(p1.x, p1.y, p2.x, p2.y);
   if (mousePressed) {
     p[0].lock();
     p[0].x = mouseX;
