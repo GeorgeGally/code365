@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ 	
+ <!-- 	<script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ 	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script type="text/javascript" src="js/controlKit.min.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ 
+ </head>
+
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 2;
+var img = new Image();
+var img_w, img_h, img_scale;
+img.src = 'img/people/macborg.jpg';
+var pixelWidth = 80;
+var pixelHeight = 2;
+var prob = 3;
+var result = [];
+var run = false;
+
+img.onload = function() {
+    var img_loaded;
+    img_w = img.width;
+    img_h = img.height;
+    img_scale = w/img_w;
+   	result = ScaleImage(img.width, img.height, w, h, false);
+    reset();
+};
+
+function reset(){
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, result.width, result.height );
+    doGlitch();
+    run = !run;
+}
+
+function doGlitch(){
+	
+	pixelShuffle(pixelWidth, pixelHeight, prob);
+}
+
+
+
+var object = {
+    pixelWidth : pixelWidth,
+    pixelHeight : pixelHeight,  
+    prob : prob,
+    range: [1, 100],
+    xy: [pixelWidth,pixelWidth]
+}
+
+var controlKit = new ControlKit();
+controlKit.addPanel({label: 'Control Panel', align: 'left', fixed: false, position: [w-250, h-280], width: 200})
+    //.addSubGroup({label: 'System Colors'})
+    // .addSlider(object, 'pixelWidth', 'range', { onChange: function(index){ 
+    // 	pixelWidth =  object.pixelWidth;
+    // 	doGlitch(); }},{label: 'pixelWidth'}, {dp: 0})
+    // .addSlider(object, 'pixelHeight', 'range', { onChange: function(index){ 
+    // 	pixelHeight =  object.pixelHeight;
+    // 	doGlitch(); }}, {label: 'pixelHeight'},{dp: 0}
+    // )
+     .addSlider(object, 'prob', 'range', { onChange: function(index){ 
+    	prob =  object.prob;
+    	glitch(); }}, {label: 'Probability'}
+    )
+    // .addPad(object, 'xy', {label: 'PixelSize'},{
+    //     onChange:function(){
+    //     	console.log('drag');
+    // 	pixelWidth =  object.xy[0];
+    // 	pixelHeight =  object.xy[1];
+    // 	doGlitch();
+    // }} )
+    .addPad(object,'xy',{
+                onChange:function(index){
+
+            	pixelWidth = 1 + Math.floor(Math.round(object.xy[0]*object.xy[0]*300));
+            	
+            	pixelHeight = 1 + Math.floor(Math.round(object.xy[1]*object.xy[1]*300));
+            	//console.log(pixelWidth + " : " + pixelHeight)
+            	glitch();
+            	},
+                onFinish:function(){console.log('done');}})
+    .addButton('Go', function(){ reset();  });
+
+
+    //.addColor(object, 'color0')
+    //.addColor(object, 'color1')
+    //.addColor(object, 'color2', {colorMode: 'rgbfv'})
+    //.addSubGroup({label: 'System Colors Compressed'})
+    //.addColor(object, 'color0', {presets: 'selectColorOptions'})
+    //.addSubGroup({label: 'Button Battery'})
+    //
+
+
+// DRAW WAVES CLASS
+
+function draw(){
+	//controlKit.update();
+	//if (run && chance(3)) doGlitch();
+    
+    if (run && chance(prob)) glitch() 
+
+    
+
+}
+
+
+
+ function glitch() {
+    clear();
+    for (var i = 0; i < randomInt(1, 30); i++) {
+        var x = random(w);
+        var y = random(h);
+        var spliceWidth = w - x;
+        var spliceHeight = randomInt(5, 100);
+        ctx.drawImage(img, 0, y, spliceWidth, spliceHeight, x, y, spliceWidth, spliceHeight);
+        ctx.drawImage(img, spliceWidth, y, x, spliceHeight, 0, y, x, spliceHeight);
+    }
+    drawLines();
+
+};
+
+
+
+function clear() {
+    ctx.globalCompositeOperation = 'source-over';
+    if( random( 0, 1 ) > 0.4 ) {
+        ctx.fillStyle = 'hsla(0, 0%, 0%, 0.5)';
+    } else {
+        ctx.fillStyle = randomInt( 0, 1 ) ? 'hsla(0, 100%, 50%, 0.1)' : 'hsla(180, 100%, 50%, 0.1)';
+    }
+    ctx.fillRect( 0, 0, width, height );
+    ctx.globalCompositeOperation = 'lighter';
+}
+
+function drawLines() {
+    for( var i = 0; i < height; i += 2 ) {
+
+        ctx.lineWidth = random( 0, 2 );
+        ctx.strokeStyle = 'hsla( 0, 0%, ' + random( 0, 30 ) + '%, '  +random( 0, 0.2 ) + ')';
+           ctx.line( 0, i + random( 0, 2),  width, i + random( 0, 2 ) );
+    }
+}
+
+
+// function glitch(_glitchAmount){
+                
+//     //var start = new Date().getTime();
+                
+//     // //draw input image to output canvas
+//     // outputBMD = new BitmapData(w, h);
+//     // outputBMD.draw(_inputImage);
+                
+//     // //init inputBMD
+//     // inputBMD = new BitmapData(_iw, _ih);
+//     // inputBMD.draw(_inputImage);
+//      var maxOffset = _glitchAmount * _glitchAmount / 100 * w;
+                
+//                 //randomly offset slices horizontally
+//                 for (i = 0; i < _glitchAmount * 2; i++) {
+
+//                     var startY = randomInt(0, h);
+//                     var chunkHeight = randomInt(1, h / 4);
+//                     chunkHeight = Math.min(chunkHeight, h - startY);
+//                     var offset = randomInt(-maxOffset, maxOffset);
+
+//                     if (offset == 0)
+//                         continue;
+                    
+//                     if (offset < 0) {
+//                         //shift left
+//                         outputBMD.copyPixels(inputBMD, new Rectangle(-offset, startY, _iw + offset, chunkHeight), new Point(0, startY));
+//                         //wrap around
+//                         outputBMD.copyPixels(inputBMD, new Rectangle(0, startY, -offset, chunkHeight), new Point(_iw + offset,startY));
+
+//                     } else {
+//                         //shift right
+//                         outputBMD.copyPixels(inputBMD, new Rectangle(0, startY, _iw, chunkHeight), new Point(offset, startY));
+//                         //wrap around
+//                         outputBMD.copyPixels(inputBMD, new Rectangle(_iw - offset, startY, offset, chunkHeight), new Point(0, startY));
+//                     }
+//                 }
+                
+//                 //do color offset
+//                 var channel = getRandChannel();
+//                 outputBMD.copyChannel(inputBMD, new Rectangle(0, 0, _iw, _ih), new Point(getRandInt(-_glitchAmount * 2, _glitchAmount * 2), getRandInt(-_glitchAmount * 2, _glitchAmount * 2)), channel, channel);
+
+//                 //make brighter
+//                 //convert 1 - 10 -> 1 -> 2
+//                 var b = 1 + _brightnessAmount/10*1;
+//                 var brightMat=[
+//                 b, 0, 0, 0, 0,
+//                 0, b, 0, 0, 0,
+//                 0, 0, b, 0, 0,
+//                 0, 0, 0, 1, 0
+//                 ];
+                
+//                 zeroPoint = new Point();
+//                 brightnessFilter = new ColorMatrixFilter(brightMat);
+//                 outputBMD.applyFilter(outputBMD, outputBMD.rect, zeroPoint, brightnessFilter);
+
+//                 if (_useScanLines){
+//                     //Add Scan Lines
+//                     var line = new Rectangle(0, 0, w, 1);
+//                     for (i = 0; i < _ih; i++) {
+//                         if (i % 2 == 0) {
+//                             line.y = i;
+//                             outputBMD.fillRect(line, 0);
+//                         }
+//                     }
+//                 }
+
+//                 //draw to canvas
+//                 ctx.putImageData(outputBMD.data, 0, 0);
+
+//                 //log time
+//                 // var end = new Date().getTime();
+//                 // $("#debug").text("Completed in  " + Math.round((end - start)/1000)  + " seconds");
+//                 // $("#overlay").toggle();
+//             };
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+ 	<meta charset="utf-8">
+	<title>Soundcloud Viz</title>
+	
+	<script src='http://connect.soundcloud.com/sdk.js'></script>
+	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+	<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.fillRect(0, 0, w, h);
+var particles = [];
+var group = new particleEngine(80);
+
+
+for (var i = 0; i < group.particles.length; i++) {
+    
+    group.particles[i].c = rgb(randomInt(150,255));
+    group.particles[i].speed.y = random(3, 6)/3;
+    group.particles[i].position.x = random(w);
+    group.particles[i].position.y = random(-180, 30);
+    particles[i] = new particleEngine(20);
+    
+    for (var j = 0; j < particles[i].particles.length; j++) {
+
+        var p = particles[i].particles[j];
+        p.speed.y = 2 + random(0.2, 2)/450;
+        p.position.x = group.particles[i].position.x + random(-20,20);
+        p.position.y = random(-10, 10);
+        p.c = group.particles[i].c;
+
+    }
+
+}
+
+// FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+function draw(){
+    // ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = rgba(0, 0, 0, 0.06);
+    ctx.fillRect(0, 0, w, h);
+    //console.log(group.particles[0].position)
+    for (var i = 0; i < group.particles.length; i++) {
+
+        var g = group.particles[i];
+        //
+        g.position.y += g.speed.y;
+        ctx.fillStyle = g.c;
+
+        if (g.position.y > h + 400) { reset(g, i); }
+
+        for (var j = 0; j < particles[i].particles.length; j++) {
+
+            var p = particles[i].particles[j];
+            p.position.y += p.speed.y;
+            ctx.fillEllipse(p.position.x, g.position.y + p.position.y, p.sz, p.sz);
+
+        }
+    }
+}
+
+function reset(j, i){
+    group.particles[i].position.y = random(-50, -20);
+    for (var j = 0; j < particles[i].particles.length; j++) {
+        //particles[i].particles[j].speed.y = random(0.2, 2)/200;
+        particles[i].particles[j].position.x = random(w);
+        particles[i].particles[j].position.y = random(-80, -20);
+    }
+
+}
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

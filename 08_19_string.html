@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+<script language="javascript" src="js/tween.min.js"></script>
+<script type="text/javascript" src="js/controlKit.min.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+window.frameRate = 240;
+var num_balls = 3;
+var balls = new particleEngine(num_balls);
+var max_size = 20;
+var accelerate = 1; 
+var stop = false;
+damping = 0.98;
+
+
+// Spring simulation constants
+var M = 0.8;   // Mass
+var K = 0.2;   // Spring constant
+var D = 0.92;  // Damping
+var R = h/2;   // Rest position
+
+// Spring simulation variables
+var ps = R;    // Position
+var vs = 0.0;  // Velocity
+var as = 0;    // Acceleration
+var f = 0;     // Force
+
+var thirdPoint = new Vector(w/2, h/2);
+
+	resetBalls();
+	var lastclick = 0;
+	var pixelWidth = 10;
+	var object = { 
+    accelerate : accelerate,
+    num_balls : num_balls,
+    max_size: max_size,
+    speed_range: [1, 10],
+    size_range: [1, 200],
+    ball_range: [1, 200],
+    xy: [pixelWidth,pixelWidth]
+}
+
+function pauseMe(){
+	stop = !stop;
+}
+
+function resetBalls(){
+	for (var i = 0; i < balls.particles.length; i++) {
+	var b = balls.particles[i];
+	b.speed = new Vector(random(-2, 2), random(-2, 2));
+	b.sz = randomInt(5, max_size);
+	b.c = "black";
+	b.position.x = random(w);
+	b.position.y = random(h);
+	b.counter = frameCount;
+	b.friend = -1;
+	if (i==1) b.friend = 0;
+	if (i==0) {
+		b.position.x = w/4; 
+		b.position.y = h/2; 
+	}
+	if (i==1) {
+		myTween = new Tween(b.y-100, 100, 3000, 'expoInOut', 'loop');
+		b.position.x = w-w/4; 
+		b.position.y = h/2; 
+	}
+	b.alpha = 0.5;
+	b.sz2 = b.sz;
+
+	}
+
+}
+
+	var controlKit = new ControlKit();
+	controlKit.addPanel({label: 'Control Panel', align: 'left', fixed: false, position: [w-250, h-280], width: 200})
+    //.addSubGroup({label: 'System Colors'})
+     .addSlider(object, 'num_balls', 'ball_range', { label: 'Particles', dp: 0, onChange: function(index){ 
+    	num_balls =  object.num_balls;
+    	//balls.addParticle(w/2, h/2, "#000000", balls.particles.length);
+    	balls = new particleEngine(num_balls);
+    	resetBalls();
+    	 }})
+      .addSlider(object, 'accelerate', 'speed_range', { label: 'Speed', onChange: function(index){ 
+    	accelerate =  object.accelerate;
+    	 }})
+      .addSlider(object, 'max_size', 'size_range', { dp: 0, label: 'Max Size', onChange: function(index){ 
+    	max_size =  object.max_size;
+    	//balls = new particleEngine(num_balls);
+    	resetBalls();
+    	 }})
+    	.addButton('Pause', function(){ pauseMe();  });
+
+function draw(){
+	
+	if (!stop) {
+
+		ctx.background(240);
+		ctx.fillStyle = rgb(0);
+		moveParticles();
+		//mouseLineCollide();
+		updateSpring();
+		ctx.fillEllipse (thirdPoint.x, thirdPoint.y, 20, 20);
+		bb0 = new Vector(balls.particles[0].position.x, balls.particles[0].position.y);
+		bb1 = new Vector(balls.particles[1].position.x, balls.particles[1].position.y);
+		drawArc(bb0, thirdPoint, bb1);
+	}
+}
+
+
+function updateSpring() {
+  // Update the spring position
+//  if(!move) {
+    f = -K * (ps - R);    // f=-ky
+    as = f / M;           // Set the acceleration, f=ma == a=f/m
+    vs = D * (vs + as);   // Set the velocity
+    ps = ps + vs;         // Updated position
+ // }
+  if(Math.abs(vs) < 0.1) {
+    vs = 0.0;
+  }
+  //console.log(ps)
+  thirdPoint.y = ps;
+  // // Test if mouse is over the top bar
+  // if(mouseX > left && mouseX < right && mouseY > ps && mouseY < ps + springHeight) {
+  //   over = true;
+  // } else {
+  //   over = false;
+  // }
+  
+  // Set and constrain the position of top bar
+  // if(move) {
+  //   ps = mouseY - springHeight/2;
+  //   ps = constrain(ps, min, max);
+  // }
+}
+
+
+function moveParticles(){
+	for (var i = 0; i < balls.particles.length; i++) {
+		var b = balls.particles[i];
+
+
+		
+		if(i>1) {
+		hittest(b);
+		b.position.x += b.speed.x * accelerate;
+		b.position.y += b.speed.y * accelerate;
+		}		
+		if (dist(b.position.x, b.position.y, mouseX, mouseY) < b.sz/2) hit(b);
+		if (b.position.x >= w-b.sz/2 || b.position.x <= b.sz/2) b.speed.x *=-1;
+		if (b.position.y >= h-b.sz/2 || b.position.y <= b.sz/2) b.speed.y *=-1;
+		
+		
+		
+		if (b.c == "green" ) {
+			b.sz2 += 0.6;
+			b.alpha -= 0.008;
+			// ctx.fillStyle = rgba(0, b.alpha/2);
+			// ctx.fillEllipse (b.position.x , b.position.y, b.sz2*1.4, b.sz2*1.4);
+			ctx.fillStyle = rgba(0, b.alpha);
+			ctx.fillEllipse (b.position.x , b.position.y, b.sz2, b.sz2);
+		}
+
+		ctx.strokeStyle = b.c;
+		ctx.fillStyle = b.c;
+		ctx.fillEllipse (b.position.x , b.position.y, b.sz, b.sz);
+
+		if (b.friend >= 0 ) {
+			circleLineCollide(b);
+		}
+
+
+		//reset colour
+		// if (b.counter + 140 < frameCount) {
+		// 	turnOff(b);
+		// }
+
+	}
+}
+
+
+function turnOff(b){
+	b.c = "black";
+	b.friend = -1;
+	b.sz2 = b.sz;
+	b.alpha = 0.5;
+}
+
+
+function mouseLineCollide(){
+	var bb = new Vector(balls.particles[0].position.x, balls.particles[0].position.y);
+	var ff = new Vector(balls.particles[1].position.x, balls.particles[1].position.y);
+	var circle = new Vector(mouseX, mouseY);
+		if (lineCircleCollide(bb, ff, circle, 10)) {
+			if (oldMouseY < mouseY) {
+				console.log("down" + mouseSpeedY);
+				ps = h/2 + 30 + (-4 * mouseSpeedY);
+			} else {
+				console.log("up" + mouseSpeedY);
+				ps = h/2 - 30 + (4 * mouseSpeedY);
+			}
+		
+		
+	}
+}
+
+
+function drawArc(startPoint, thirdPoint, endPoint){
+
+    var dy1 = thirdPoint.y - startPoint.y;
+    var dx1 = thirdPoint.x - startPoint.x;
+    var dy2 = endPoint.y - thirdPoint.y;
+    var dx2 = endPoint.x - thirdPoint.x;
+
+    var aSlope = dy1/dx1;
+    var bSlope = dy2/dx2;  
+
+    console.log(dy1);
+    var centerX = (aSlope*bSlope*(startPoint.y - endPoint.y) + bSlope*(startPoint.x + thirdPoint.x)
+        - aSlope*(thirdPoint.x+endPoint.x) )/( 2* (bSlope-aSlope) );
+    var centerY = -1*(centerX - (startPoint.x+thirdPoint.x)/2)/aSlope +  (startPoint.y+thirdPoint.y)/2;
+    
+    // var centerX = (aSlope*bSlope*(y0 - y2) + bSlope*(x0 + x1)
+    //     - aSlope*(x1+x2) )/( 2* (bSlope-aSlope) );
+    // var centerY = -1*(centerX - (x0+x1)/2)/aSlope +  (y0+y1)/2;
+    var r = dist(centerX, centerY, startPoint.x, startPoint.y)
+
+    var angle = Math.atan2(centerX-startPoint.x, centerY-startPoint.y);
+    //console.log(angle)
+    // console.log(angle);
+    if (!angle || angle <0.1 ){
+        ctx.line(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+
+        //ctx.beginPath();
+        //ctx.moveTo(startPoint.x, startPoint.y);
+        //ctx.lineTo(endPoint.x, endPoint.y);
+        // this.finishWave = true;
+    //} else if (!finishWave){
+    	} else {
+
+
+    	if( angle > Math.PI/2) {
+
+	        ctx.beginPath();
+	        ctx.arc(centerX, centerY, r, Math.PI * 1.5-angle, Math.PI * 1.5 + angle, true);
+	        ctx.stroke();
+
+	    } else {
+	        ctx.beginPath();
+	        ctx.arc(centerX, centerY, r, Math.PI * 1.5-angle, Math.PI * 1.5 + angle, false);
+	        ctx.stroke();
+
+	    }
+    // } else {
+
+   
+
+    }
+    // ctx.strokeStyle = "black"
+    //  ctx.line(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+
+//    if (centerY == startPoint.y) ctx.line(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+    // ctx.rect(centerX, centerY, 2, 2);
+    //ctx.rect(startPoint.x, startPoint.y, 20, 20);
+    // ctx.rect(endPoint.x, endPoint.y, 2, 2);
+
+
+}
+
+//lineCircleCollide(a, b, circle, radius, nearest)
+function circleLineCollide(b) {
+
+			var f = balls.particles[b.friend];
+			for (var j = 0; j < balls.particles.length; j++) {
+				if (b.me != j && f.me !=j) {
+					var c = balls.particles[j];
+					var circle = new Vector(c.position.x, c.position.y);
+					var bb = new Vector(b.position.x, b.position.y);
+					var ff = new Vector(f.position.x, f.position.y);
+					if (lineCircleCollide(bb, ff, circle, c.sz)) {
+						//turnOff(b);
+						c.c = "orange";
+						// c.speed.x *=-1;
+						// c.speed.y *=-1;
+						c.counter = frameCount;
+						// c.friend = -1;
+						ps = h/2 - (2 * (c.position.y - c.old.y));
+						//console.log(ps-h/2-30)
+						//c.sz *= 1.2;
+						
+					}
+				}
+			}
+
+}
+
+
+function hit(b){
+	b.c = "orange";
+	b.speed.x *= -1;
+	b.speed.y *= -1;
+	b.counter = frameCount;
+}
+
+
+function hittest(b){
+		
+	for (var j = 0; j < balls.particles.length; j++) {
+		
+		if (j != b.me) {
+			
+			p2 = balls.particles[j];
+			
+			if (hittestBall(b, p2)) {
+
+				b.friend = p2.me;
+				p2.c = "orange";
+				p2.counter = frameCount;
+				hit(b);
+				//hit(p2);
+
+			} 
+		}
+				
+		}
+	}
+
+function hittestBall(p, p2){ 
+	
+	if (dist(p.position.x, p.position.y, p2.position.x, p2.position.y) < p.sz/2) {
+        return true;
+      } 
+    }
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

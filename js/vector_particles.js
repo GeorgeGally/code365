@@ -22,6 +22,7 @@ this.addParticle = function(_x, _y, _colour, _me){
 	
 	var particle = {
 		position: new Vector(_x, _y),
+		old: new Vector(_x, _y),
 		start: new Vector(_x, _y),
 		location: new Vector(_x, _y),
 		orig_position: new Vector(_x, _y),
@@ -43,6 +44,7 @@ this.moveParticles = function(){
 	for (var i = 0; i < this.particles.length; i++) {
 		
 		p = this.particles[i];
+		p.old = p.position;
 		p.position = p.position.add(p.speed);
 		if (p.position.x > w ) p.position.x = 0;
 		if (p.position.y > h) p.position.y = 0;

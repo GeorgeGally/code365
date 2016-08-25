@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script type="text/javascript" src="js/controlKit.min.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var num_particles = 20;
+var accelerate = 1; 
+var pixelWidth = 1;
+
+var object = {
+    // pixelWidth : pixelWidth,
+    // pixelHeight : pixelHeight,  
+    accelerate : accelerate,
+    range: [1, 20],
+    xy: [pixelWidth,pixelWidth]
+}
+
+	var controlKit = new ControlKit();
+	controlKit.addPanel({label: 'Control Panel', align: 'left', fixed: false, position: [w-250, h-280], width: 200})
+     .addSlider(object, 'accelerate', 'range', { onChange: function(index){ 
+    	accelerate =  object.accelerate;
+    	 }}, {label: 'Probability'}
+    )
+    .addPad(object,'xy',{
+                onChange:function(index){
+
+            	pixelWidth = 1 + Math.floor(Math.round(object.xy[0]*object.xy[0]*300));
+            	
+            	pixelHeight = 1 + Math.floor(Math.round(object.xy[1]*object.xy[1]*300));
+            	//console.log(pixelWidth + " : " + pixelHeight)
+       
+            	},
+                onFinish:function(){console.log('done');}})
+    .addButton('Go', function(){ reset();  });
+
+
+
+ctx.strokeStyle = rgba(0,0,0,0.8);
+var particles = [];
+var balls = [];
+
+function setup(){
+	
+	for (var i = 0; i < num_particles; i++) {
+		
+		var c = random(225);
+		var cc = rgba(c,c,c,1);
+		//var cc = rgba(random(100,225), random(225), random(0,55), 0.1);
+		this.addParticle(randomInt(w), 0, cc, i);
+	}
+
+}
+
+
+function draw(){
+
+	ctx.clearRect(0, 0, w, h);
+	moveParticles();
+
+}
+
+function addParticle(_x, _y, _colour, _me){
+		var particle = {
+			x: _x,
+			y: _y,
+			c: _colour,
+			me: _me,
+			w: random(10),
+			stroke_width: 4,
+			speedx: random(-2,2),
+			speedy: random(2,20),
+			dir: 1,
+			hit: false
+		}
+		particles.push(particle);
+}
+
+function addBall(p){
+	var ball = {
+			x: p.x,
+			y: mouseY,
+			speedx: p.speedx,
+			me: p.me
+		}
+	balls.push(ball);
+}
+
+
+function moveParticles(){
+
+		for (var i = 0; i < particles.length; i++) {
+			p = particles[i];
+
+			var s = mapSound(p.me, num_particles);
+			p.x = tween(p.x, p.x + p.dir * map(s, 0, 100, 1, 30), 10);
+			//p.x += p.speedx;
+			//p.w = tween(p.w, map(s, 0, 100, 1, 10), 10);
+			//if (p.x >= w || p.x <= 0) p.speed *=-1;
+			if((p.x >= w || p.x <= 0) || (p.x > mouseX - p.w/2 && p.x < mouseX + p.w/2) || p.hit == true) {
+				p.speedx = p.speedx * - random(0.7,1.3);
+				p.speedx = clamp(p.speedx, -5, 5);
+				p.dir *=-1;
+				ctx.fillStyle = "orange";
+				p.hit = false;
+				addBall(p);
+			} else {
+				ctx.fillStyle = p.c;
+			}
+			p.w = tween(p.w, s/20, 4);
+	
+
+			// DRAW BLOCKS
+			
+			ctx.fillRect(p.x-p.w/2, 0, p.w, h);
+			
+		};
+
+		for (var i = 0; i < balls.length; i++) {
+			b = balls[i];
+			p = particles[b.me];
+			ctx.fillStyle = "orange";
+			ctx.fillEllipse(p.x, b.y, 20, 20);
+		}
+
+	}
+
+function hittest(j){
+	for (var i = 0; i < particles.length; i++) {
+		if (i!=j) {
+		p = particles[i];
+		if(p.x > particles[j] - p.w/2 && p.x < particles[j] + p.w/2) {
+
+			particles[i].hit = true;
+				
+		}
+
+		}
+	}
+}
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

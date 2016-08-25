@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+// var Wave = function(_num_particles, _x, _y) {
+
+	ctx.strokeStyle = rgba(0,0,0,0.8);
+	var particles = [];
+	var radius = 50;
+	var rot = 0;
+	var num_particles = 6;
+	var x = w/2;
+	var y = h/2;
+
+	setup = function(){
+		for (var i = 0; i < num_particles; i++) {
+			// var c = random(225);
+			var c = 0;
+		    var cc = rgba(c, c, c, 1);
+			this.addParticle(x, y, cc, i);
+		}
+	}
+
+	function draw(){
+		ctx.clearRect(0, 0, w, h);
+		moveParticles();
+	}
+
+	addParticle = function(_x, _y, _colour, _me){
+		var particle = {
+			x: _x,
+			y: _y,
+			c: _colour,
+			me: _me,
+			stroke_width: 8,
+			speedx: 0,
+			speedy: random(2,20),
+			sz: radius + _me*26,
+			angle: 0
+		}
+		particles.push(particle);
+	}
+	
+
+	moveParticles = function(){
+
+		for (var i = 0; i < particles.length; i++) {
+			
+			p = particles[i];
+
+			//DISTRIBUTED MAPPED SOUND VALUE  
+			var s = mapSound(p.me, num_particles);
+			p.speedx = tween(p.speedx, map(s, 0, 155, 0, 2), 5);
+			var arc =  p.speedx * Math.PI;
+			
+			p.angle += p.speedx/2;
+			// ctx.translate(p.x, p.y);
+			// ctx.rotate(radians(p.angle));
+
+			// DRAW ARCS
+			ctx.strokeStyle = p.c;
+			ctx.lineWidth = p.stroke_width;
+			ctx.beginPath();
+			ctx.arc(p.x, p.y, p.sz/2, -arc/2, arc/2);
+			ctx.stroke();
+			// ctx.rotate(radians(-p.angle));
+			// ctx.translate(-p.x, -p.y);
+
+		};
+
+	}
+
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

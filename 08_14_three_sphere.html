@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+    <script language="javascript" src="js/three.min.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var grid = createGrid(1, 1, w, h);
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 70, aspect, 0.1, 1000 );
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+
+var dMaterial = new THREE.MeshDepthMaterial({color: '#000'});
+dMaterial.shading = THREE.SmoothShading;
+
+
+var flies = [];
+var balls = new particleEngine(3);
+var radius = 26;
+
+    b = balls.particles[0];
+    b.position.x = 0;
+    b.position.y = 0;
+    b.position.z = -10;
+    b.speed.x = 0;
+    b.sz = 10;
+    var geometry = new THREE.SphereGeometry( radius/1.4, 10, 42, 12 );
+    var main_sphere = new THREE.Mesh( geometry, dMaterial );
+
+    main_sphere.position.x = 0;
+    main_sphere.position.y = 0;
+    main_sphere.position.z = 0;
+    scene.add( main_sphere );
+
+    var sphere = [];
+    flies[0] = new particleEngine(180);
+
+    for (var j = 0; j < flies[0].particles.length; j++) {
+        var main_radius = 1;
+        var geometry = new THREE.SphereGeometry( main_radius, 30, 42, 22 );
+        sphere[j] = new THREE.Mesh( geometry, dMaterial );
+        p = flies[0].particles[j];
+        sphere[j].position.x = p.position.x = 0;
+        sphere[j].position.y = p.position.y = 0;
+        sphere[j].position.z = p.position.z = 0;
+        scene.add( sphere[j] );
+    }
+
+scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+renderer.setClearColor( 0xf7f7f7 );
+
+camera.position.z = 80;
+camera.near = 20;
+camera.far  = 95;
+
+
+// FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+function draw(){
+
+    b = balls.particles[0];
+    scene.rotation.y+=0.01    
+ for (var j = 0; j < flies[0].particles.length; j++) {
+            
+            p = flies[0].particles[j];
+            var mouse = b.position;
+            mouse = mouse.subtract(p.position);
+            mouse.setMag(0.4);
+    //         //console.log(mouse)
+            acceleration = mouse;
+            p.speed = p.speed.add(acceleration);
+            p.position = p.position.add(p.speed);
+            p.speed.limit(5);
+    //         //p.sz = 2;
+    //         p.sz =  map(audioChannelVolume[p.me%80], 0, 150, 0, 10);
+                sphere[j].position.x = p.position.x;
+                sphere[j].position.y = p.position.y;
+
+ }
+
+
+        b = balls.particles[0];
+        b.position.y =  tween(b.position.y, map(audioChannelVolume[b.me*5], 0, 200, -20, 20), 12);
+        b.position.y = clamp(b.position.y, -50, 50);
+        b.position.z =  tween(b.position.z, map(audioChannelVolume[b.me], 0, 100, -20, -10), 14);
+        //main_sphere.position.y = b.position.y;
+        main_sphere.position.z = b.position.z;
+
+
+    renderer.render( scene, camera );
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

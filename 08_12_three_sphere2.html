@@ -20,7 +20,7 @@
    
 <script>
 var ctx = createCanvas("canvas1");
-var particles = new particleEngine(80);
+var particles = new particleEngine(30);
 
 var scene = new THREE.Scene();
 var aspect = window.innerWidth / window.innerHeight;
@@ -29,7 +29,6 @@ var camera = new THREE.PerspectiveCamera( 70, aspect, 0.1, 1000 );
 var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
 renderer.setSize( w, h );
 document.body.appendChild( renderer.domElement );
-
 var sphere = [];
 
 // Velocity
@@ -80,6 +79,8 @@ function draw() {
   
   scene.rotation.x += radians(0.2);
   scene.rotation.y += radians(0.3);
+  scene.rotation.z += radians(0.2);
+
   for (var i = 0; i < particles.particles.length; i++) {
   // sphere[i].vy += gravity;
   // //sphere.position.x += vx;
@@ -91,7 +92,7 @@ function draw() {
   sphere[i].position.y = ((sphere[i].sz + main_radius) * 1.4) * Math.cos(sphere[i].angle.y);
   sphere[i].position.z = ((sphere[i].sz + main_radius) * 1.43) * Math.sin(sphere[i].angle.z);
   sphere[i].position.normalize();
-  sphere[i].position.multiplyScalar( main_radius*7.6 ); //* main_radius*100;
+  sphere[i].position.multiplyScalar( main_radius*7.76 ); //* main_radius*100;
   sphere[i].scale.x = sphere[i].scale.y = sphere[i].scale.z = tween(sphere[i%50].scale.x, map(volume[i], 0, 120, 0.8, 1.2), 5);
   //sphere.position[i].y = h/2 + sphere[i].position.y + (sphere[i].sz/2+radius) * Math.sin(sphere[i].angle);
     //  if (

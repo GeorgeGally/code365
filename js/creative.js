@@ -356,6 +356,15 @@ function posNeg(){
 	return randomInt(0,1) * 2 - 1;
 }
 
+function angle(cx, cy, ex, ey) {
+  var dy = ey - cy;
+  var dx = ex - cx;
+  var theta = Math.atan2(dy, dx); // range (-PI, PI]
+  theta *= 180 / Math.PI; // rads to degs, range (-180, 180]
+  if (theta < 0) theta = 360 + theta; // range [0, 360)
+  return theta;
+}
+
 function bounce(num, min, max) {
 	if (num >= max || num <= min) {
 		return 1 
@@ -397,6 +406,71 @@ function checkIntersection( x1, y1, x2, y2, x3, y3, x4, y4 ) {
 	}
 	
 }
+
+
+function lineCircleCollide(a, b, circle, radius, nearest) {
+    //check to see if start or end points lie within circle 
+    var tmp = {x:0, y:0}
+
+    if (pointCircleCollide(a, circle, radius)) {
+        if (nearest) {
+            nearest.x = a.x
+            nearest.y = a.y
+        }
+        return true
+    } if (pointCircleCollide(b, circle, radius)) {
+        if (nearest) {
+            nearest.x = b.x
+            nearest.y = b.y
+        }
+        return true
+    }
+    
+    var x1 = a.x,
+        y1 = a.y,
+        x2 = b.x,
+        y2 = b.y,
+        cx = circle.x,
+        cy = circle.y
+
+    //vector d
+    var dx = x2 - x1
+    var dy = y2 - y1
+    //vector lc
+    var lcx = cx - x1
+    var lcy = cy - y1
+    
+
+    //project lc onto d, resulting in vector p
+    var dLen2 = dx * dx + dy * dy //len2 of d
+    var px = dx
+    var py = dy
+    if (dLen2 > 0) {
+        var dp = (lcx * dx + lcy * dy) / dLen2
+        px *= dp
+        py *= dp
+    }
+    
+    if (!nearest)
+        nearest = tmp
+    nearest.x = x1 + px
+    nearest.y = y1 + py
+    
+    //len2 of p
+    var pLen2 = px * px + py * py
+    
+    //check collision
+    return pointCircleCollide(nearest, circle, radius)
+            && pLen2 <= dLen2 && (px * dx + py * dy) >= 0
+}
+
+function pointCircleCollide(point, circle, r) {
+    if (r===0) return false
+    var dx = circle.x - point.x
+    var dy = circle.y - point.y
+    return dx * dx + dy * dy <= r * r
+}
+
 
 function cross(_x, _y, _w, _h){
 	if (_w === undefined) _w =20;
@@ -482,6 +556,55 @@ function pixelate(blocksize,blockshape) {
 }
 
 
+
+function pixelShuffle(blockwidth, blockheight, freq) {
+
+	if (freq == undefined) freq = 20;
+	if (blockwidth == undefined) blockwidth = 20;
+	if (blockheight == undefined) blockheight = blockwidth;
+  	var imgData=ctx.getImageData(0,0,w,h); 
+  	//ctx.clearRect(0,0,w,h);
+    //var sourceBuffer8 = new Uint8Array(imgData.data.buffer);
+    //var sourceBuffer8 = new Uint8ClampedArray(imgData.data.buffer);
+    //shuffle(sourceBuffer8, 1);
+    var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+
+    for(var x = 0; x < w; x += blockwidth) {
+        
+        for(var y = 0; y < h; y += blockheight) {
+
+          var pos = (x + y * w);
+          if (chance(freq)) {
+          	pos = (pos + randomInt(-100,100)*4) % (w*h*4);
+          var b = (sourceBuffer32[pos] >> 16) & 0xff;
+          var g = (sourceBuffer32[pos] >> 8) & 0xff;
+          var r = (sourceBuffer32[pos] >> 0) & 0xff;
+          ctx.fillStyle = rgba(r,g,b, 0.9);
+        
+          ctx.fillRect(x, y, blockwidth, blockheight);
+          }
+        };
+
+    }
+
+}
+
+
+
+
+function shuffle(a, ammt) {
+	if (ammt = undefined) ammt = a.length;
+    var j, x, i;
+    for (i = ammt; i; i--) {
+        j = Math.floor(Math.random() * i);
+        x = a[i - 1];
+        a[i - 1] = a[j];
+        a[j] = x;
+    }
+}
+
+
+
 function halftone(blocksize, reverse) {
   if (reverse == undefined) reverse = 1;
   if (reverse == true) reverse = -1;
@@ -561,6 +684,50 @@ function triangulate(grid_w, grid_h, alpha) {
 
 }
 
+
+function ScaleImage(srcwidth, srcheight, targetwidth, targetheight, fLetterBox) {
+
+    var result = { width: 0, height: 0, fScaleToTargetWidth: true };
+
+    if ((srcwidth <= 0) || (srcheight <= 0) || (targetwidth <= 0) || (targetheight <= 0)) {
+        return result;
+    }
+
+    // scale to the target width
+    var scaleX1 = targetwidth;
+    var scaleY1 = (srcheight * targetwidth) / srcwidth;
+
+    // scale to the target height
+    var scaleX2 = (srcwidth * targetheight) / srcheight;
+    var scaleY2 = targetheight;
+
+    // now figure out which one we should use
+    var fScaleOnWidth = (scaleX2 > targetwidth);
+    if (fScaleOnWidth) {
+        fScaleOnWidth = fLetterBox;
+    }
+    else {
+       fScaleOnWidth = !fLetterBox;
+    }
+
+    if (fScaleOnWidth) {
+        result.width = Math.floor(scaleX1);
+        result.height = Math.floor(scaleY1);
+        result.fScaleToTargetWidth = true;
+    }
+    else {
+        result.width = Math.floor(scaleX2);
+        result.height = Math.floor(scaleY2);
+        result.fScaleToTargetWidth = false;
+    }
+    result.targetleft = Math.floor((targetwidth - result.width) / 2);
+    result.targettop = Math.floor((targetheight - result.height) / 2);
+
+    return result;
+}
+
+
+
 var mousePressed = 0;
 document.onmousedown = function() { 
   mousePressed = 1;
@@ -571,11 +738,13 @@ document.onmouseup = function() {
   //window.mouseup();
 }
 
-
+var mouseSpeedX = mouseSpeedX = 0;
 var mouseX = 0, 
 	mouseY = 0, 
 	lastMouseX = 0, 
 	lastMouseY = 0, 
+  oldMouseX = 0, 
+  oldMouseY = 0, 
 	frameRate = 60,
 	frameCount = frameNumber = 0, 
 	lastUpdate = Date.now(),
@@ -591,8 +760,10 @@ function cjsloop() {
 		frameCount++;
 		frameNumber++;
 		lastUpdate = now - elapsedMils % (1000/window.frameRate );
-		lastMouseX = mouseX; 
-		lastMouseY = mouseY; 		
+    mouseSpeedX = mouseX - oldMouseX;
+    mouseSpeedY = mouseX - oldMouseX;
+		lastMouseX = oldMouseX = mouseX; 
+		lastMouseY = oldMouseY = mouseY; 		
 	}
 	
 	

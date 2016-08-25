@@ -32,16 +32,17 @@ var s2 = -1;
 var extra = -6;
 var r = 0;
 var t_size = 150;
-var x1 = 0;
-var x2 = 0;
+var x1 = x2 = x3 = 0;
 
 function draw(){
 	
 	r+=0.01;
 	// var x = Math.sin(r)*220;
 
-	x1 = tween(x1, map(audioChannelVolume[20], 0, 200, -t_size/2, t_size/4), 15);
-	x2 = tween(x2, map(audioChannelVolume[20], 0, 150, -t_size/2, -t_size/2), 55);
+	x1 = tween(x1, map(mix[0], 0, 150, -10, 20), 2);
+	x2 = tween(x2, map(mix[1], 0, 150, 0, 20), 2);
+	x3 = tween(x3, map(mix[2], 0, 150, 0, 20), 2);
+
 
 	ctx.fillStyle = rgb(250);
 	ctx.fillRect(0, 0, w, h);
@@ -57,16 +58,18 @@ function draw(){
 
 	ctx.lineWidth = 4;
 	ctx.lineJoin="round";
-	ctx.strokeTriangle(0, 0, 120, t_size, -120, t_size);
-	ctx.lineJoin="round";
-	ctx.fillTriangle(20, t_size-90, t_size, t_size, t_size/2, t_size);
-	ctx.lineJoin="round";
-	ctx.fillTriangle(x1, t_size-70, t_size-90, t_size, -t_size, t_size);
-	ctx.strokeTriangle(x1, t_size-70, t_size-90, t_size, -t_size, t_size);
 
-	ctx.fillTriangle(20, t_size-90, t_size, t_size, -t_size/2, t_size);
-	ctx.strokeTriangle(20, t_size-90, t_size, t_size, -t_size/2, t_size);
-	ctx.strokeTriangle(20, t_size-90, t_size, t_size, t_size/2, t_size);
+	// t1
+	ctx.strokeTriangle(0, 20 + -1 * x3, 120, t_size, -120, t_size);
+
+	//ctx.fillTriangle(20, t_size-90, t_size, t_size, t_size/2, t_size);
+	
+	ctx.fillTriangle(-30, t_size-70 - x2, t_size-90, t_size, -t_size, t_size);
+	ctx.strokeTriangle(-30, t_size-70 - x2, t_size-90, t_size, -t_size, t_size);
+	
+	ctx.fillTriangle(30, t_size-90 - x1, t_size, t_size, -t_size/2, t_size);
+	ctx.strokeTriangle(30, t_size-90 - x1, t_size, t_size, -t_size/2, t_size);
+	//ctx.strokeTriangle(20, t_size-90, t_size, t_size, t_size/2, t_size);
 	
 
 	ctx.translate(-w/2, -h/2);
