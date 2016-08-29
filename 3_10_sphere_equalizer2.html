@@ -18,7 +18,7 @@
 var ctx = createCanvas("canvas1");
 
 var particles = [];
-var radius = 220;
+var radius = 180;
 var c = 0;
 var num_particles = 180;
 //ctx.translate(0.5, 0.5);
@@ -36,11 +36,11 @@ for (var i = 0; i < num_particles; i++) {
 
 function draw(){
 
-	ctx.fillStyle = rgb(255);
+	ctx.fillStyle = rgb(0);
 	ctx.fillRect(0, 0, w, h);
 	moveParticles();
 	ctx.fillStyle = rgba(0,0,0,1);
-	ctx.HfillEllipse(w/2, h/2, radius-8, radius-8);
+	//ctx.HfillEllipse(w/2, h/2, radius-8, radius-8);
 	
 }
 
@@ -86,7 +86,7 @@ function moveParticles(){
 		// ctx.strokeWeight = 0;
 		ctx.fillStyle = p.c;
 		//ctx.fillEllipse(x3, y3, 8, 8);
-		ctx.lineWidth = 8;			
+		ctx.lineWidth = 2;			
 		ctx.strokeStyle = p.c;
 		ctx.line(x2, y2, x,y);
 		};

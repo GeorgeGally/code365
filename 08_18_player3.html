@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+<script type="text/javascript" src="js/controlKit.min.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var grid = createGrid(32, 1, w, h);
+var button_w = w/grid.length;
+var key_height = 40;
+var num_balls = 32;
+var balls = new particleEngine(num_balls);
+var piano = new particleEngine(32);
+var max_size = 20;
+var accelerate = 1; 
+var stop = false;
+var bpm = 120;
+var lastclick = 0;
+
+
+resetBalls();
+
+
+	var object = { 
+    accelerate : accelerate,
+    num_balls : num_balls,
+    max_size: max_size,
+    bpm: bpm,
+    speed_range: [1, 10],
+    size_range: [1, 200],
+    ball_range: [1, 200],
+    bpm_range: [30, 200],
+}
+
+function pauseMe(){
+	stop = !stop;
+}
+
+function resetBalls(){
+	for (var i = 0; i < balls.particles.length; i++) {
+	var b = balls.particles[i];
+	b.speed = new Vector(posNeg()*random(0.2, 2), posNeg()*random(0.2, 2));
+	b.sz = randomInt(5, max_size);
+	b.c = "#aaa";
+	b.position.x = random(w);
+	b.position.y = random(h);
+	b.counter = frameCount;
+	b.friend = -1;
+	b.alpha = 0.5;
+	b.sz2 = b.sz;
+	}
+
+	for (var i = 0; i < piano.particles.length; i++) {
+
+		var p = piano.particles[i];
+		p.x = grid[i][0];
+		p.sz = key_height;
+		p.c = "#ddd";
+		p.counter = frameCount;
+
+	}
+}
+
+var c = 0;
+var piano_length = grid.length;
+
+function drawButtons(){
+	
+	for (var i = 0; i < grid.length; i++) {
+		
+		var p = piano.particles[i];
+		
+		//PLAYHEAD GOES ONLY TO MOUSE POSITION
+
+		if (mouseX > p.x - button_w/2 && mouseX < p.x + button_w/2) {
+			ctx.fillStyle = "orange";
+			piano_length = i;
+			//console.log(piano_length)
+		} else {
+			
+			// add grey markers
+			if (i%4 == 0 ) {
+				ctx.fillStyle = "#d1d1d1";
+			} else {
+				ctx.fillStyle = p.c;
+			}
+			
+		}
+		
+		// turn on steps
+		if (Math.round(c) == i) {
+
+			if (p.c == "#8dc63f") {
+				ctx.fillStyle = "#f26522";
+			} else {
+				ctx.fillStyle = "#ccc";	
+			}
+		
+		}
+
+	ctx.fillRect(p.x - button_w/2, mouseY - p.sz/2, button_w-1, p.sz);
+
+		}
+	// SPEED OF STEPS
+	c = (c + bpm/320)%piano_length;
+
+	}
+
+
+var controlKit = new ControlKit();
+	controlKit.addPanel({label: 'Control Panel', align: 'left', fixed: false, position: [w-250, h-280], width: 200})
+    //.addSubGroup({label: 'System Colors'})
+    .addSlider(object, 'bpm', 'bpm_range', { dp: 0, label: 'BPM', onChange: function(index){ 
+    	bpm =  object.bpm;
+    	 }})
+
+     .addSlider(object, 'num_balls', 'ball_range', { label: 'Particles', dp: 0, onChange: function(index){ 
+    	num_balls =  object.num_balls;
+    	//balls.addParticle(w/2, h/2, "#000000", balls.particles.length);
+    	balls = new particleEngine(num_balls);
+    	resetBalls();
+    	 }})
+      .addSlider(object, 'accelerate', 'speed_range', { label: 'Speed', onChange: function(index){ 
+    	accelerate =  object.accelerate;
+    	 }})
+      .addSlider(object, 'max_size', 'size_range', { dp: 0, label: 'Max Size', onChange: function(index){ 
+    	max_size =  object.max_size;
+    	resetBalls();
+    	 }})
+    	.addButton('Pause', function(){ pauseMe();  });
+
+
+function draw(){
+	
+	if (!stop) {
+
+		ctx.background(240);
+		ctx.fillStyle = rgb(0);
+		moveParticles();
+		drawButtons()
+	}
+
+	}
+
+
+function moveParticles(){
+
+	for (var i = 0; i < balls.particles.length; i++) {
+		
+		var b = balls.particles[i];
+		hittest(b);
+		if (mouseHittestBall(b)) hit(b);
+		b.position.x += b.speed.x * accelerate;
+		b.position.y += b.speed.y * accelerate;
+		if (dist(b.position.x, b.position.y, mouseX, mouseY) < b.sz/2) hit(b);
+		if (b.position.x >= w-b.sz/2 || b.position.x <= b.sz/2) b.speed.x *=-1;
+		if (b.position.y >= h-b.sz/2 || b.position.y <= b.sz/2) b.speed.y *=-1;	
+		
+		if (b.c == "red" ) {
+			b.sz2 += 0.6;
+			b.alpha -= 0.008;
+			// ctx.fillStyle = rgba(0, b.alpha/2);
+			// ctx.fillEllipse (b.position.x , b.position.y, b.sz2*1.4, b.sz2*1.4);
+			ctx.fillStyle = rgba(0, b.alpha);
+			ctx.fillEllipse (b.position.x , b.position.y, b.sz2, b.sz2);
+		}
+
+		ctx.strokeStyle = b.c;
+		ctx.fillStyle = b.c;
+		ctx.fillEllipse (b.position.x , b.position.y, b.sz, b.sz);
+
+		// DRAW LINE IF CONNECTED
+		if (b.friend >= 0 ) {
+			var f = balls.particles[b.friend];
+			ctx.line(b.position.x , b.position.y, f.position.x , f.position.y);
+			circleLineCollide(b);
+		}
+
+
+		//RESET FRIENDSHIPS
+		if (b.counter + 140 < frameCount) {
+			turnOff(b);
+		}
+
+	}
+	}
+
+
+function turnOff(b){
+	b.c = "black";
+	b.friend = -1;
+	b.sz2 = b.sz;
+	b.alpha = 0.5;
+	}
+
+//lineCircleCollide(a, b, circle, radius, nearest)
+function circleLineCollide(b) {
+
+	var f = balls.particles[b.friend];
+			for (var j = 0; j < balls.particles.length; j++) {
+				if (b.me != j && f.me !=j) {
+					var c = balls.particles[j];
+					var circle = new Vector(c.position.x, c.position.y);
+					var bb = new Vector(b.position.x, b.position.y);
+					var ff = new Vector(f.position.x, f.position.y);
+					if (lineCircleCollide(bb, ff, circle, c.sz)) {
+						turnOff(b);
+						c.c = "#D84D23";
+						c.speed.x *=-1;
+						//c.speed.y *=-1;
+						c.counter = frameCount-100;
+						//c.friend = -1;
+						//c.sz *= 1.2;
+						
+					}
+				}
+		}
+
+	}
+
+
+function hit(b){
+	b.c = "orange";
+	b.speed.x *= -1;
+	b.speed.y *= -1;
+	b.counter = frameCount + 600;
+	}
+
+
+function hittest(b){
+		
+	for (var j = 0; j < balls.particles.length; j++) {
+		
+		if (j != b.me) {
+			
+			p2 = balls.particles[j];
+			
+			if (hittestBall(b, p2)) {
+
+				b.friend = p2.me;
+				p2.c = "orange";
+				p2.counter = frameCount;
+				hit(b);
+				//hit(p2);
+
+			} 
+		}
+				
+		}
+	}
+
+
+function mouseHittestBall(b){ 
+	
+	if (b.position.y + b.sz/2 >= mouseY - key_height/2 &&  b.position.y - b.sz/2<= mouseY + key_height/2) {
+		if (b.position.y >= mouseY - key_height) b.position.y = b.position.y - key_height - b.sz/2;
+		if (b.position.y <= mouseY + key_height) b.position.y = b.position.y + key_height + b.sz/2;
+		for (var i = 0; i < grid.length; i++) {
+			p = piano.particles[i];
+			if (b.position.x > p.x - button_w && b.position.x < p.x) {
+			p.c = "#8dc63f";
+			p.counter = frameCount;
+			}
+			if (p.counter + 140 < frameCount) {
+				p.c = "#ddd";
+			}
+		}
+		
+        return true;
+
+      } 
+	}
+
+
+function hittestBall(p, p2){ 
+	
+	if (dist(p.position.x, p.position.y, p2.position.x, p2.position.y) < p.sz/2) {
+        return true;
+      } 
+	}
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

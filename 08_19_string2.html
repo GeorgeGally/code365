@@ -25,7 +25,9 @@ var balls = new particleEngine(num_balls);
 var max_size = 20;
 var accelerate = 1; 
 var stop = false;
+var springs = [];
 damping = 0.98;
+
 
 
 // Spring simulation constants
@@ -59,6 +61,14 @@ function pauseMe(){
 	stop = !stop;
 }
 
+
+function midpoint(p, p2){
+
+	return new Vector((p.position.x + p2.position.x)/2, (p.position.y + p2.position.y)/2);
+
+}
+
+
 function resetBalls(){
 	for (var i = 0; i < balls.particles.length; i++) {
 	var b = balls.particles[i];
@@ -69,6 +79,8 @@ function resetBalls(){
 	b.position.y = random(h);
 	b.counter = frameCount;
 	b.friend = -1;
+	b.mid = 0;
+
 	if (i==1) b.friend = 0;
 	if (i==0) {
 		b.position.x = w/4; 
@@ -112,11 +124,13 @@ function draw(){
 		ctx.background(240);
 		ctx.fillStyle = rgb(0);
 		moveParticles();
-		//mouseLineCollide();
+		mouseLineCollide();
 		updateSpring();
-		ctx.fillEllipse (thirdPoint.x, thirdPoint.y, 20, 20);
+		
 		bb0 = new Vector(balls.particles[0].position.x, balls.particles[0].position.y);
 		bb1 = new Vector(balls.particles[1].position.x, balls.particles[1].position.y);
+		thirdPoint = ps + midpoint(balls.particles[0], balls.particles[1]);
+		ctx.fillEllipse (midpoint(balls.particles[0], balls.particles[1]).x, midpoint(balls.particles[0], balls.particles[1]).y, 20, 20);
 		drawArc(bb0, thirdPoint, bb1);
 	}
 }
@@ -136,7 +150,7 @@ function updateSpring() {
     vs = 0.0;
   }
   //console.log(ps)
-  thirdPoint.y = ps;
+  //thirdPoint.y = ps;
   // // Test if mouse is over the top bar
   // if(mouseX > left && mouseX < right && mouseY > ps && mouseY < ps + springHeight) {
   //   over = true;
@@ -154,15 +168,15 @@ function updateSpring() {
 
 function moveParticles(){
 	for (var i = 0; i < balls.particles.length; i++) {
+		
 		var b = balls.particles[i];
-
-
 		
 		if(i>1) {
 		hittest(b);
+		}
 		b.position.x += b.speed.x * accelerate;
 		b.position.y += b.speed.y * accelerate;
-		}		
+				
 		if (dist(b.position.x, b.position.y, mouseX, mouseY) < b.sz/2) hit(b);
 		if (b.position.x >= w-b.sz/2 || b.position.x <= b.sz/2) b.speed.x *=-1;
 		if (b.position.y >= h-b.sz/2 || b.position.y <= b.sz/2) b.speed.y *=-1;
@@ -183,6 +197,18 @@ function moveParticles(){
 		ctx.fillEllipse (b.position.x , b.position.y, b.sz, b.sz);
 
 		if (b.friend >= 0 ) {
+			f = balls.particles[b.friend];
+			cx = (b.position.x + f.position.x)/2;
+			cy = (b.position.y+f.position.y)/2;
+			dx = (f.position.x-b.position.x)/2;
+			dy = (f.position.y-b.position.y)/2;
+			b.mid = new Vector(cx-dy, cy+dx);
+			//b.mid.limit(8);
+			//b.mid.setMag(200);
+			b.mid.max(60);
+			//b.mid.min(60);
+			//console.log(b.mid)
+			ctx.line(b.mid.x, b.mid.y, midpoint(b, f).x, midpoint(b, f).y);
 			circleLineCollide(b);
 		}
 
@@ -211,10 +237,10 @@ function mouseLineCollide(){
 		if (lineCircleCollide(bb, ff, circle, 10)) {
 			if (oldMouseY < mouseY) {
 				console.log("down" + mouseSpeedY);
-				ps = h/2 + 30 + (-4 * mouseSpeedY);
+				ps = midpoint(balls.particles[0], balls.particles[1]).y + 30 + (-4 * mouseSpeedY);
 			} else {
-				console.log("up" + mouseSpeedY);
-				ps = h/2 - 30 + (4 * mouseSpeedY);
+				console.log("up" + midpoint(balls.particles[0], balls.particles[1]).y);
+				ps = midpoint(balls.particles[0], balls.particles[1]).y - 30 + (4 * mouseSpeedY);
 			}
 		
 		
@@ -222,7 +248,9 @@ function mouseLineCollide(){
 }
 
 
-function drawArc(startPoint, thirdPoint, endPoint){
+
+
+ function drawArc(startPoint, thirdPoint, endPoint){
 
     var dy1 = thirdPoint.y - startPoint.y;
     var dx1 = thirdPoint.x - startPoint.x;
@@ -232,27 +260,18 @@ function drawArc(startPoint, thirdPoint, endPoint){
     var aSlope = dy1/dx1;
     var bSlope = dy2/dx2;  
 
-    console.log(dy1);
+    //console.log(dy1);
     var centerX = (aSlope*bSlope*(startPoint.y - endPoint.y) + bSlope*(startPoint.x + thirdPoint.x)
         - aSlope*(thirdPoint.x+endPoint.x) )/( 2* (bSlope-aSlope) );
     var centerY = -1*(centerX - (startPoint.x+thirdPoint.x)/2)/aSlope +  (startPoint.y+thirdPoint.y)/2;
-    
-    // var centerX = (aSlope*bSlope*(y0 - y2) + bSlope*(x0 + x1)
-    //     - aSlope*(x1+x2) )/( 2* (bSlope-aSlope) );
-    // var centerY = -1*(centerX - (x0+x1)/2)/aSlope +  (y0+y1)/2;
+   
     var r = dist(centerX, centerY, startPoint.x, startPoint.y)
 
     var angle = Math.atan2(centerX-startPoint.x, centerY-startPoint.y);
-    //console.log(angle)
-    // console.log(angle);
+
     if (!angle || angle <0.1 ){
         ctx.line(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
 
-        //ctx.beginPath();
-        //ctx.moveTo(startPoint.x, startPoint.y);
-        //ctx.lineTo(endPoint.x, endPoint.y);
-        // this.finishWave = true;
-    //} else if (!finishWave){
     	} else {
 
 
@@ -268,21 +287,13 @@ function drawArc(startPoint, thirdPoint, endPoint){
 	        ctx.stroke();
 
 	    }
-    // } else {
-
-   
 
     }
-    // ctx.strokeStyle = "black"
-    //  ctx.line(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
-
-//    if (centerY == startPoint.y) ctx.line(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
-    // ctx.rect(centerX, centerY, 2, 2);
-    //ctx.rect(startPoint.x, startPoint.y, 20, 20);
-    // ctx.rect(endPoint.x, endPoint.y, 2, 2);
-
 
 }
+
+
+
 
 //lineCircleCollide(a, b, circle, radius, nearest)
 function circleLineCollide(b) {
@@ -297,12 +308,15 @@ function circleLineCollide(b) {
 					if (lineCircleCollide(bb, ff, circle, c.sz)) {
 						//turnOff(b);
 						c.c = "orange";
+						console.log("hit")
 						// c.speed.x *=-1;
 						// c.speed.y *=-1;
 						c.counter = frameCount;
-						// c.friend = -1;
-						ps = h/2 - (2 * (c.position.y - c.old.y));
-						//console.log(ps-h/2-30)
+						//ps = midpoint(f, b).y - (2 * (c.position.y - c.old.y));
+						var d = dist(midpoint(f, b).x,midpoint(f, b).y, b.mid.x, b.mid.y);
+						//ps = h/2 - (2 * (c.position.y - c.old.y));
+						ps = d;
+						console.log(ps)
 						//c.sz *= 1.2;
 						
 					}

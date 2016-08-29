@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script src="js/_maxiLib.js"></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+<script type="text/javascript" src="js/controlKit.min.js"></script>
+<script type="text/javascript" src="js/Tone.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var grid = createGrid(32, 1, w, h);
+var button_w = w/grid.length;
+var key_height = 40;
+var num_balls = 6;
+var balls = new particleEngine(num_balls);
+var piano = new particleEngine(32);
+var max_size = 20;
+var accelerate = 1; 
+var stop = false;
+var bpm = 120;
+var lastclick = 0;
+var c = 0;
+var piano_length = grid.length;
+var synth = [];
+
+// MAX SETUP
+// var maximJs;
+// var maxiAudio = new maximJs.maxiAudio();
+// var clock = new maximJs.maxiClock();
+// 	clock.setTicksPerBeat(4);
+// 	clock.setTempo(bpm);
+// var filter = new maximJs.maxiFilter();
+// var envelope = new maximJs.maxiEnv();
+// var phaser = new maximJs.maxiOsc();
+
+	// filters
+ //    var filter1 =  new maximJs.maxiFilter();
+ //    var filter2 = new maximJs.maxiFilter();
+ //    var filter3 = new maximJs.maxiFilter();
+
+ //    // oscillators
+ //    var oscillators = [];
+	// var osc01 = new maximJs.maxiOsc(),
+	//     osc02 = new maximJs.maxiOsc(),
+	//     osc03 = new maximJs.maxiOsc(),
+	//     smp01 = new maximJs.maxiSample(),
+	//     smp02 = new maximJs.maxiSample(),
+	//     smp03 = new maximJs.maxiSample(),
+	//     smp04 = new maximJs.maxiSample(),
+	//     env01 = new maximJs.maxiEnv();
+var master_vol = 0.4;
+var cutoff, res = 0;
+var freq = 100;
+
+//var chords = [0,0,7,2,5,5,0,0];
+var chords = [];
+	chords.push([16.35, 32.70, 65.41, 130.8, 261.6, 523.3, 1047, 2093, 4186]); //c_chord
+	chords.push([24.50, 49.00, 98.00, 196.0, 392.0, 784.0, 1568, 3136, 6272]); //g_chord
+	chords.push([25.96, 51.91, 103.8, 207.7, 415.3, 830.6, 1661, 3322, 6645]); //a_minor_chord
+	chords.push([21.83, 43.65, 87.31, 174.6, 349.2, 698.5, 1397, 2794, 5588]); //f_chord
+var counter = 0;
+//changeFreq(counter);
+var newnote = 0;
+
+// var leadLineTrigger=[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+// var leadLinePitch=[69,67,65,64,67,66,64,62,65,64,62,57,55,60,57];
+
+var active_chord = chords[randomInt(chords.length-1)];
+var octave = 4;
+var freq = active_chord[2 + randomInt(active_chord.length-3)];
+
+// maxiAudio.init();
+var attack = 0.91;
+var decay = 0.01;
+var sustain = 0.01;
+var release = 0.1;
+
+resetBalls();
+var counter = 0;
+
+
+
+for (var i = 0; i < balls.particles.length; i++) {
+
+	//synth[i] = addSynth();
+	console.log(balls.particles[i].me);
+}
+
+console.log(balls.particles.length)
+console.log(synth.length)
+// AUDIO LOOP
+
+var newSynth = new Tone.FMSynth({
+	"oscillator" : {
+	"type" : "square"
+	},
+	"envelope" : {
+					"attack" : attack,
+					"decay" : decay,
+					"sustain" : sustain,
+					"release" : release,
+				}
+		}).toMaster();
+
+// function addSynth(){
+
+// 	var newSynth = new Tone.FMSynth({
+// 				"oscillator" : {
+// 					"type" : "sine"
+// 				},
+// 				"envelope" : {
+// 					"attack" : attack,
+// 					"decay" : decay,
+// 					"sustain" : sustain,
+// 					"release" : release,
+// 				}
+// 		}).toMaster();
+// 	return newSynth;
+
+// }
+
+function getChord(){
+		//counter++;
+	
+		if(c %2 === 0 && chance(2)){
+		        	// active_chord = chords[randomInt(chords.length-1)];
+		        	active_chord = chords[randomInt(4)%(chords.length)];
+		        }
+
+		        if(c%8 == 0 && chance(10)){
+		            octave = (octave + 1)%8;
+		            console.log("octave: " + octave)
+		        }
+
+		 freq = active_chord[octave]
+}
+		//if (!stop) {
+			
+			//freq = active_chord[octave];
+			
+			//var LFO = 200+((phaser.sinewave(0.2)*0.5+0.5)*5000);
+			//var signal = filter2.lores(osc01.sinewave(filter1.lopass(freq,0.03)),(LFO),10)*0.7;
+	  		//note = osc01.sinewave(filter1.lopass(freq,0.2));
+	  //   	var synths = filter2.lores(note, Math.abs(LFO),4)*0.05;
+	    	// var oscs;
+	    	// for (var i = 0; i < oscillators.length; i++) {
+	    	// 	o = oscillators[i];
+	    	// 	var note = o.sinewave(0.2);
+	    	// 	oscs += note;
+	    	// }
+	    	//var oscs = osc01.phasor(0.5, 0.01, 0.05);
+	    	// var oscs = osc02.sinewave(0.2);
+	    	// master_output =  note;
+	    	//master_output =  oscs;
+			//master_output =  synths + oscs;
+			//this.output = master_output * master_vol;
+		//}
+	//}
+
+var object = { 
+    accelerate : accelerate,
+    num_balls : num_balls,
+    max_size: max_size,
+    bpm: bpm,
+    attack: attack,
+    release: release, 
+    sustain: sustain, 
+    decay: decay, 
+    master_vol: master_vol,
+    filter_range: [0, 1],
+    speed_range: [1, 10],
+    size_range: [1, 200],
+    ball_range: [1, 200],
+    bpm_range: [30, 200],
+    vol_range: [0, 0.6],
+	}
+
+
+function pauseMe(){
+	stop = !stop;
+	}
+
+function resetBalls(){
+	synth = [];
+	for (var i = 0; i < balls.particles.length; i++) {
+	var b = balls.particles[i];
+	b.speed = new Vector(posNeg()*random(0.2, 2), posNeg()*random(0.2, 2));
+	b.sz = randomInt(5, max_size);
+	b.c = "#aaa";
+	b.position.x = random(w);
+	b.position.y = random(h);
+	b.counter = frameCount;
+	b.friend = -1;
+	b.alpha = 0.5;
+	b.sz2 = b.sz;
+	//synth[i] = addSynth();
+	}
+
+	for (var i = 0; i < piano.particles.length; i++) {
+
+		var p = piano.particles[i];
+		p.x = grid[i][0];
+		p.sz = key_height;
+		p.c = "#ddd";
+		p.counter = frameCount;
+
+	}
+	}
+
+
+
+function drawButtons(){
+	
+	for (var i = 0; i < grid.length; i++) {
+		
+		var p = piano.particles[i];
+		
+		//PLAYHEAD GOES ONLY TO MOUSE POSITION
+
+		if (mouseX > p.x - button_w/2 && mouseX < p.x + button_w/2) {
+			ctx.fillStyle = "orange";
+			piano_length = i;
+			//console.log(piano_length)
+		} else {
+			
+			// add grey markers
+			if (i%4 == 0 ) {
+				ctx.fillStyle = "#d1d1d1";
+			} else {
+				ctx.fillStyle = p.c;
+			}
+			
+		}
+		
+		// turn on steps
+		if (Math.round(c) == i) {
+
+			if (p.c == "#8dc63f") {
+				ctx.fillStyle = "#f26522";
+			} else {
+				ctx.fillStyle = "#ccc";	
+			}
+		
+		}
+
+	ctx.fillRect(p.x - button_w/2, mouseY - p.sz/2, button_w-1, p.sz);
+
+		}
+	// SPEED OF STEPS
+	c = (c + bpm/320)%piano_length;
+
+	}
+
+function changeSynths(){
+	//for (var i = 0; i < synth.length; i++) {
+		// synth[i].set({ "envelope" : { "attack" : attack }});
+		// synth[i].set({ "envelope" : { "release" : release }});
+		// synth[i].set({ "envelope" : { "sustain" : sustain }});
+		// synth[i].set({ "envelope" : { "decay" : decay }});
+		newSynth.set({ "envelope" : { "attack" : attack }});
+		newSynth.set({ "envelope" : { "release" : release }});
+		newSynth.set({ "envelope" : { "sustain" : sustain }});
+		newSynth.set({ "envelope" : { "decay" : decay }});
+		newSynth.set("volume", master_vol);
+		console.log(master_vol)
+		// synth[i].envelope.attack = attack;
+		// synth[i].envelope.release = release;
+		// synth[i].envelope.sustain = sustain;
+		// synth[i].envelope.decay = decay;
+	//}
+}
+
+var controlKit = new ControlKit();
+	controlKit.addPanel({label: 'Control Panel', align: 'left', fixed: false, position: [w-250, h-380], width: 200})
+    .addSubGroup({label: 'Sound'})
+    .addSlider(object, 'master_vol', 'vol_range', { dp: 2, label: 'Volume', onChange: function(index){ 
+    	master_vol =  object.master_vol;
+    	changeSynths();
+    	 }})
+    .addSlider(object, 'attack', 'filter_range', { dp: 2, label: 'Attack', onChange: function(index){ 
+    	attack =  object.attack;
+    	changeSynths();
+    	 }})
+    .addSlider(object, 'release', 'filter_range', { dp: 2, label: 'Release', onChange: function(index){ 
+    	master_vol =  object.master_vol;
+    	changeSynths();
+    	 }})
+    .addSlider(object, 'sustain', 'filter_range', { dp: 2, label: 'Sustain', onChange: function(index){ 
+    	master_vol =  object.master_vol;
+    	changeSynths();
+    	 }})
+    .addSlider(object, 'decay', 'filter_range', { dp: 2, label: 'Decay', onChange: function(index){ 
+    	master_vol =  object.master_vol;
+    	changeSynths();
+    	 }})
+    .addSubGroup({label: 'Movement'})
+    .addSlider(object, 'bpm', 'bpm_range', { dp: 0, label: 'BPM', onChange: function(index){ 
+    	bpm =  object.bpm;
+    	clock.setTempo(bpm);
+    	 }})
+
+     .addSlider(object, 'num_balls', 'ball_range', { label: 'Particles', dp: 0, onChange: function(index){ 
+    	num_balls =  object.num_balls;
+    	//balls.addParticle(w/2, h/2, "#000000", balls.particles.length);
+    	balls = new particleEngine(num_balls);
+    	resetBalls();
+    	 }})
+      .addSlider(object, 'accelerate', 'speed_range', { label: 'Speed', onChange: function(index){ 
+    	accelerate =  object.accelerate;
+    	 }})
+      .addSlider(object, 'max_size', 'size_range', { dp: 0, label: 'Max Size', onChange: function(index){ 
+    	max_size =  object.max_size;
+    	resetBalls();
+    	 }})
+    	.addButton('Pause', function(){ pauseMe();  });
+
+
+function draw(){
+	
+	if (!stop) {
+		getChord();
+		ctx.background(240);
+		ctx.fillStyle = rgb(0);
+		moveParticles();
+		drawButtons()
+	}
+
+	}
+
+
+function moveParticles(){
+
+	for (var i = 0; i < balls.particles.length; i++) {
+		//synth[i].triggerRelease();
+		var b = balls.particles[i];
+		hittest(b);
+
+		// SEE IF BALL HITS SEQUENCER
+		if (mouseHittestBall(b)) hit(b);
+		b.position.x += b.speed.x * accelerate;
+		b.position.y += b.speed.y * accelerate;
+		if (dist(b.position.x, b.position.y, mouseX, mouseY) < b.sz/2) hit(b);
+		if (b.position.x >= w-b.sz/2 || b.position.x <= b.sz/2) b.speed.x *=-1;
+		if (b.position.y >= h-b.sz/2 || b.position.y <= b.sz/2) b.speed.y *=-1;	
+		
+		if (b.c == "red" ) {
+			b.sz2 += 0.6;
+			b.alpha -= 0.008;
+			// ctx.fillStyle = rgba(0, b.alpha/2);
+			// ctx.fillEllipse (b.position.x , b.position.y, b.sz2*1.4, b.sz2*1.4);
+			ctx.fillStyle = rgba(0, b.alpha);
+			ctx.fillEllipse (b.position.x , b.position.y, b.sz2, b.sz2);
+		}
+
+		ctx.strokeStyle = b.c;
+		ctx.fillStyle = b.c;
+		ctx.fillEllipse (b.position.x , b.position.y, b.sz, b.sz);
+
+		// DRAW LINE IF CONNECTED
+		if (b.friend >= 0 ) {
+			var f = balls.particles[b.friend];
+			ctx.line(b.position.x , b.position.y, f.position.x , f.position.y);
+			circleLineCollide(b);
+		}
+
+
+		//RESET FRIENDSHIPS
+		if (b.counter + 140 < frameCount) {
+			turnOff(b);
+		}
+
+	}
+	}
+
+
+function turnOff(b){
+	b.c = "#999";
+	b.friend = -1;
+	b.sz2 = b.sz;
+	b.alpha = 0.5;
+	//synth[b.me].triggerRelease();
+	//oscillators.slice(0,1);
+
+	}
+
+//lineCircleCollide(a, b, circle, radius, nearest)
+function circleLineCollide(b) {
+
+	var f = balls.particles[b.friend];
+			for (var j = 0; j < balls.particles.length; j++) {
+				if (b.me != j && f.me !=j) {
+					var c = balls.particles[j];
+					var circle = new Vector(c.position.x, c.position.y);
+					var bb = new Vector(b.position.x, b.position.y);
+					var ff = new Vector(f.position.x, f.position.y);
+					if (lineCircleCollide(bb, ff, circle, c.sz)) {
+						turnOff(b);
+						c.c = "#D84D23";
+						c.speed.x *=-1;
+						//c.speed.y *=-1;
+						c.counter = frameCount-100;
+						//oscillators[oscillators.length] = new maximJs.maxiOsc();
+						// synth[c.me].triggerAttackRelease(freq, "1n");
+						newSynth.triggerAttackRelease(freq, "1n");
+						//c.friend = -1;
+						//c.sz *= 1.2;
+						
+					}
+				}
+		}
+
+	}
+
+
+function hit(b){
+	b.c = "orange";
+	b.speed.x *= -1;
+	b.speed.y *= -1;
+	b.counter = frameCount + 600;
+	}
+
+
+function hittest(b){
+		
+	for (var j = 0; j < balls.particles.length; j++) {
+		
+		if (j != b.me) {
+			
+			p2 = balls.particles[j];
+			
+			if (hittestBall(b, p2)) {
+
+				b.friend = p2.me;
+				p2.c = "orange";
+				p2.counter = frameCount;
+				hit(b);
+				//hit(p2);
+
+			} 
+		}
+				
+		}
+	}
+
+
+function mouseHittestBall(b){ 
+	
+	if (b.position.y + b.sz/2 >= mouseY - key_height/2 &&  b.position.y - b.sz/2<= mouseY + key_height/2) {
+		if (b.position.y >= mouseY - key_height) b.position.y = b.position.y - key_height - b.sz/2;
+		if (b.position.y <= mouseY + key_height) b.position.y = b.position.y + key_height + b.sz/2;
+		for (var i = 0; i < grid.length; i++) {
+			p = piano.particles[i];
+			if (b.position.x > p.x - button_w && b.position.x < p.x) {
+				p.c = "#8dc63f";
+				p.counter = frameCount;
+				newSynth.triggerAttackRelease(freq, "1n");
+				// synth[b.me].triggerAttackRelease(freq, "1n");
+			}
+
+			if (p.counter + 140 < frameCount) {
+				p.c = "#ddd";
+				//synth[b.me].triggerRelease();
+			}
+		}
+		
+        return true;
+
+      } 
+	}
+
+
+function hittestBall(p, p2){ 
+	
+	if (dist(p.position.x, p.position.y, p2.position.x, p2.position.y) < p.sz/2) {
+        return true;
+      } 
+	}
+
+
+function changeFreq(counter) {
+  	var chord_count = Math.abs(counter%(chords.length-1));
+  	console.log(chord_count);
+  	freq = chords[chord_count];
+  	console.log("change chord: " + freq);
+	}
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

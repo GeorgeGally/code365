@@ -62,28 +62,33 @@ function pauseMe(){
 function resetBalls(){
 	for (var i = 0; i < balls.particles.length; i++) {
 	var b = balls.particles[i];
-	b.speed = new Vector(random(-2, 2), random(-2, 2));
-	b.sz = randomInt(5, max_size);
-	b.c = "black";
+	setBall(b)
 	b.position.x = random(w);
 	b.position.y = random(h);
-	b.counter = frameCount;
-	b.friend = -1;
+	b.c = "black";
+	
 	if (i==1) b.friend = 0;
 	if (i==0) {
 		b.position.x = w/4; 
 		b.position.y = h/2; 
 	}
 	if (i==1) {
-		myTween = new Tween(b.y-100, 100, 3000, 'expoInOut', 'loop');
 		b.position.x = w-w/4; 
 		b.position.y = h/2; 
 	}
-	b.alpha = 0.5;
-	b.sz2 = b.sz;
+	
 
 	}
 
+}
+
+function setBall(b) {
+	b.speed = new Vector(random(-2, 2), random(-2, 2));
+	b.sz = randomInt(5, max_size);
+	b.friend = -1;
+	b.counter = frameCount;
+	b.alpha = 0.5;
+	b.sz2 = b.sz;
 }
 
 	var controlKit = new ControlKit();
@@ -110,18 +115,29 @@ function draw(){
 	if (!stop) {
 
 		ctx.background(240);
-		ctx.fillStyle = rgb(0);
+		
 		moveParticles();
 		//mouseLineCollide();
 		updateSpring();
+		ctx.fillStyle = rgb(0);
 		ctx.fillEllipse (thirdPoint.x, thirdPoint.y, 20, 20);
 		bb0 = new Vector(balls.particles[0].position.x, balls.particles[0].position.y);
 		bb1 = new Vector(balls.particles[1].position.x, balls.particles[1].position.y);
 		drawArc(bb0, thirdPoint, bb1);
+
+		if (mousePressed == 1) {
+			
+		}
 	}
 }
 
-
+document.onmouseup = function() { 
+	console.log("addParticle")
+	balls.addParticle(mouseX, mouseY, hsl(randomInt(20,300), 100, 30), balls.particles.length);
+	b = balls.particles[balls.particles.length-1];
+	setBall(b);
+	//b.c = hsl(randomInt(50,100), 100, 0.5)
+}
 
 
 function updateSpring() {
@@ -245,6 +261,7 @@ function drawArc(startPoint, thirdPoint, endPoint){
     var angle = Math.atan2(centerX-startPoint.x, centerY-startPoint.y);
     //console.log(angle)
     // console.log(angle);
+    ctx.strokeStyle = rgb(0);
     if (!angle || angle <0.1 ){
         ctx.line(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
 
@@ -296,12 +313,12 @@ function circleLineCollide(b) {
 					var ff = new Vector(f.position.x, f.position.y);
 					if (lineCircleCollide(bb, ff, circle, c.sz)) {
 						//turnOff(b);
-						c.c = "orange";
+						//c.c = "orange";
 						// c.speed.x *=-1;
 						// c.speed.y *=-1;
 						c.counter = frameCount;
 						// c.friend = -1;
-						ps = h/2 - (2 * (c.position.y - c.old.y));
+						ps = h/2 - (0.1 * (c.position.y - c.old.y));
 						//console.log(ps-h/2-30)
 						//c.sz *= 1.2;
 						
@@ -313,7 +330,7 @@ function circleLineCollide(b) {
 
 
 function hit(b){
-	b.c = "orange";
+	//b.c = "orange";
 	b.speed.x *= -1;
 	b.speed.y *= -1;
 	b.counter = frameCount;
@@ -331,7 +348,7 @@ function hittest(b){
 			if (hittestBall(b, p2)) {
 
 				b.friend = p2.me;
-				p2.c = "orange";
+				//p2.c = "orange";
 				p2.counter = frameCount;
 				hit(b);
 				//hit(p2);
