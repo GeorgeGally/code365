@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script language="javascript" src="js/creative.js"></script>
+  <script language="javascript" src="js/canvas.js"></script>
+  <script language="javascript" src="js/three.min.js"></script>
+  <script language="javascript" src="js/_maxiLib.js"></script>
+  <script language="javascript" src="js/vector.js"></script>
+  <script type="text/javascript" src="js/d3.js"></script>
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background: #fff">
+   
+<script>
+
+// GLOBALS
+var ctx = createCanvas("canvas1");
+ctx.font="13px Monospace";
+
+var txt = "";
+var maxWidth = w-20;
+var lineHeight = 10;
+var x = 20;
+var y = 20;
+
+
+function draw(){
+  ctx.background(0);
+  //txt += randomInt(9);
+  for (var i = 0; i < randomInt(10, 320); i++) {
+    txt += String.fromCharCode(randomInt(57,110));
+    if (chance(5)) txt+=" ";
+  }
+  
+  
+  ctx.fillStyle = "white";
+  wrapText(txt, x, y, maxWidth, lineHeight);
+
+}
+
+
+ function wrapText(text, x, y, maxWidth, lineHeight) {
+        var words = text.split(' ');
+        var line = '';
+
+        for(var n = 0; n < words.length; n++) {
+          var testLine = line + words[n] + ' ';
+          var metrics = ctx.measureText(testLine);
+          var testWidth = metrics.width;
+          var testHeight = metrics.height;
+          //console.log(metrics);
+          if (testWidth > maxWidth && n > 0) {
+            ctx.fillText(line, x, y);
+            line = words[n] + ' ';
+            y += lineHeight;
+            if (y%(lineHeight*10) == 0) y += lineHeight;;
+          }
+          else {
+            line = testLine;
+          }
+          if (y > h-20) {
+            txt = "";
+            //console.log("reset");
+          }
+        }
+        ctx.fillText(line, x, y);
+}
+      
+
+
+</script>
+</body>
+</html>

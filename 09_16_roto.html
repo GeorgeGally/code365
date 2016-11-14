@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+ 	<meta charset="utf-8">
+	<title>Soundcloud Viz</title>
+	
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+	<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var r = 0.0;
+var spiral_length = 1100;
+var dir = 1;
+
+ctx.background(255);
+
+function draw(){
+  
+    ctx.colour(255,0.5);
+    ctx.square(0, 0, width, height);
+    ctx.colour(0,0.8);
+    if (chance(1500)) dir *=-1;
+    
+    r+=0.0004*dir;
+
+    // if (chance(500)) {
+    //     spiral_length = randomInt(100,500);
+    // }
+;
+    ctx.save();
+    ctx.translate(width/2, height/2);
+    
+   for (var i = 0; i < spiral_length; ++i) {
+    
+    ctx.rotate(r);
+    var s = clamp(mapSound(i,300)/8, 1, 8);
+    ctx.circle(i, 0, s, s);
+     
+   }
+
+   ctx.restore();
+
+}
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

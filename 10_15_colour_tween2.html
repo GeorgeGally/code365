@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+
+
+<body>
+
+    <script>
+
+
+var ctx = createCanvas("canvas1");
+var midpoint = 100;
+var air_url = 'https://api.openaq.org/v1/latest?city=';
+var token = 'ZBvYXlkHc4IC1vGoTkRfPIyzYl0utxYN';
+
+var start_h = h1 = 10;
+var start_s = s1 = 80;
+var start_l = l1 = 30;
+
+var h2 = 240;
+var s2 = 80;
+var l2 = 80;
+
+var h3 = h1/h2;
+var s3 = s1/s2;
+var l3 = l1/l2;
+var city = "Shanghai";
+
+var radius = 300;
+var num_lights = 60;
+var lights =[];
+
+var spacing = num_lights/360;
+var c = 0;
+
+for (var i = 0; i < num_lights; i++) {
+  var x = w/2 + Math.sin(i)*radius/2;
+  var y = h/2 + Math.cos(i)*radius/2;
+  lights[i] = new Vector(x, y);
+}
+
+load(air_url+city, air_response);
+
+function value_point(percentage){
+// add 30% of h2
+ h3 = Math.round(h1 + (h2 * percentage/100));
+ s3 = Math.round(s1 + (s2 * percentage/100));
+ l3 = Math.round(l1 + (l2 * percentage/100));
+ console.log(h3);
+}
+
+
+function draw(){
+  ctx.background(250, 0.1);
+  h1 = tween(h1, h3, 150);
+  s1 = tween(s1, s3, 50);
+  l1 = tween(l1, l3, 50);
+  c+= 0.1;
+  for (var i = 0; i < num_lights; i++) {
+    ctx.fillStyle = hsla(Math.round(h1), s1,l1, 0.1);
+    var x = w/2 + Math.sin(i+c)*radius/2;
+    var y = h/2 + Math.cos(i+c)*radius/2;
+    ctx.fillEllipse(x, y, 20, 20);
+  }
+  //console.log(hue);
+  // if (Math.round(hue) == h2 && Math.round(s) == s2 && Math.round(l) == l2) {
+  //   console.log("backwards");
+  //   h2 = start_h;
+  //   s2 = start_s;
+  //   l2 = start_l;
+  //   start_h = h1;
+  //   start_s = s1;
+  //   start_l = l1;
+  // }
+  ctx.fillStyle = rgb(0);
+  ctx.fillEllipse(w/2, h/2, radius-2, radius-2);
+}
+
+function loadJSON(file, callback) {
+
+    var xobj = new XMLHttpRequest();
+    xobj.overrideMimeType("application/json");
+    xobj.open('GET', file, true); // Replace 'my_data' with the path to your file
+    xobj.onreadystatechange = function () {
+          if (xobj.readyState == 4 && xobj.status == "200") {
+            // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+            callback(xobj.responseText);
+          }
+    };
+    xobj.send(null);
+ }
+
+ function load(url, response) {
+    loadJSON(url, response);
+  }
+
+  function air_response(response){
+    var output = JSON.parse(response);
+    //console.log(output);
+    //console.log(output.results[0].measurements[0].value);
+
+    var pollution = output.results[0].measurements[0].value;
+    var pollution_percentage = Math.round(pollution/200*100);
+    value_point(pollution_percentage);
+    console.log("pollution_percentage: " + pollution_percentage);
+    //document.getElementById('city_value').innerHTML = city;
+  }
+
+</script>
+
+</body>
+
+</html>

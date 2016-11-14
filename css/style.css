@@ -19,6 +19,17 @@ time, mark, audio, video {
   vertical-align: baseline;
 }
 
+@font-face {
+  font-family: 'SquareFont';
+  src: url('SquareFont.eot');
+  src: url('../fonts/SquareFont.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/SquareFont.woff') format('woff'),
+    url('../fonts/SquareFont.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
 html {
   line-height: 1;
 }
@@ -70,6 +81,17 @@ canvas {
   z-index: 0;
 }
 
+#canvas2 {
+  position: absolute;
+  top: 0;
+  left: -10000px;
+  bottom: 0;
+  right: 0;
+  background-size: cover;
+  z-index: 0;
+}
+
+
 .collection {
   position: fixed;
   top: 0;
@@ -97,6 +119,13 @@ canvas {
 .collection .next {
   text-align: right;
   float: right;
+}
+
+#selekta {
+  position: absolute;
+  top: 30px;
+  left: 50px;
+  z-index: 999;
 }
 
 #warning {

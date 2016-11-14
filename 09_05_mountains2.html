@@ -1,0 +1,339 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>maxiLib.js template</title>
+	<script src="js/_maxiLib.js"></script>
+	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/d3.js"></script>
+	<style>
+body {
+	background: #e7e7e7;
+	font-family: helvetica, arial;
+	font-size: 16px;
+	color: #333;
+	overflow: hidden;
+	}
+.intro {
+	z-index: 99;
+	position: absolute;
+	bottom: 60px;
+	left: 60px;
+	padding: 20px;
+    width: 600px;
+    background-color:rgba(255, 255, 255, 0.5);
+}
+</style>
+
+</head>
+<body>
+<!--   <div class="intro">
+  <b>Schmiede to The Mountains</b> <br><br>
+
+  Location data from walk from the Schmiede building to the historic high point above Hallein.<br>
+
+  </div> -->
+</body>
+<script>
+
+var block_size = 10;
+var max_dist;
+var notes = [];
+var dist = [];
+var ctx = createCanvas("canvas1");
+var particles = [];
+var grid_w = 1;
+var grid_h = 1;
+var num_particles = grid_w * grid_h;
+
+
+var url = "data/hallein.csv";
+
+d3.csv(url, function(data) {
+
+	var minXDataPoint = d3.min(data, function(d) { return d['Latitude'];});
+  	var maxXDataPoint = d3.max(data, function(d) { return d['Latitude'];});
+  	var minYDataPoint = d3.min(data, function(d) { return d['Longitude'];});
+  	var maxYDataPoint = d3.max(data, function(d) { return d['Longitude'];});
+
+  	var minAltitude = d3.min(data, function(d) { return d['Altitude'];});
+  	var maxAltitude = d3.max(data, function(d) { return d['Altitude'];});
+
+  	var xScale = d3.scale.linear()
+        .domain([minXDataPoint, maxXDataPoint])
+        .range([50, w-150]);
+
+	var yScale = d3.scale.linear()
+        .domain([minYDataPoint, maxYDataPoint])
+        .range([50, h-200]);
+
+  	// ctx.fillEllipse( xScale(minXDataPoint), yScale(minYDataPoint), 20, 20);
+  	// ctx.fillEllipse( xScale(maxXDataPoint), yScale(maxYDataPoint), 20, 20);
+
+	var spacing = w/data.length;
+
+  	max_dist = getDistanceFromLatLonInKm(minXDataPoint, minYDataPoint, maxXDataPoint, maxYDataPoint);
+
+  	console.log(xScale(maxXDataPoint));
+ 
+
+	var clock = new maximJs.maxiClock();
+	clock.setTicksPerBeat(32);
+	clock.setTempo(2620);
+
+	var master_output;
+	var master_vol = 1.0;
+
+	var trigger = 0;
+	var counter = 0;
+	var count = 0;
+
+	var start_time = Date.now(); // set starttime
+
+	// standard pop progression
+	var chords = [];
+	chords.push([16.35, 32.70, 65.41, 130.8, 261.6, 523.3, 1047, 2093, 4186]); //c_chord
+	chords.push([24.50, 49.00, 98.00, 196.0, 392.0, 784.0, 1568, 3136, 6272]); //g_chord
+	chords.push([25.96, 51.91, 103.8, 207.7, 415.3, 830.6, 1661, 3322, 6645]); //a_minor_chord
+	chords.push([21.83, 43.65, 87.31, 174.6, 349.2, 698.5, 1397, 2794, 5588]); //f_chord
+	
+	//choose chord
+	var active_chord = chords[randomInt(chords.length-1)][octave];
+	var octave = 3;
+	var freq = active_chord;
+	
+	var maxiAudio = new maximJs.maxiAudio();
+		maxiAudio.init();
+		maxiAudio.setBufferSize(2048);
+		maxiAudio.outputIsArray(true, 2);
+
+	// filters
+    var filter1 =  new maximJs.maxiFilter();
+    var filter2 = new maximJs.maxiFilter();
+    var filter3 = new maximJs.maxiFilter();
+
+    // oscillators
+	var osc01 = new maximJs.maxiOsc(),
+	    osc02 = new maximJs.maxiOsc(),
+	    osc03 = new maximJs.maxiOsc(),
+	    env01 = new maximJs.maxiEnv();
+	
+	var phaser = new maximJs.maxiOsc();
+	var playHead = 0;
+
+    var pause = false;
+	
+
+
+	
+	// compute distances
+  	
+  	dist[0] = 0;
+  	for (var i = 1; i < data.length; i++) {
+  		var c = data[i];
+  		var d = data[i-1];
+  		dist[i] = Math.abs(getDistanceFromLatLonInKm(c['Latitude'], c['Longitude'], d['Latitude'], d['Longitude']));
+  	}
+  	//console.log(dist);
+  	// map to notes to distances
+	for (var i = 0; i < data.length; i++) {
+		var d = data[i];
+	
+    	var index = Math.floor(map(dist[i], 0, max_dist, 0, chords.length));
+    	notes[i] = chords[index];
+
+}
+
+
+
+
+    for (var i = 0; i < data.length; i++) {	
+	var x = xScale(data[i]['Latitude']);
+	var y = yScale(data[i]['Longitude']);
+	if (i > 0) {
+		start_x = xScale(data[i-1]['Latitude']);
+		start_y = yScale(data[i-1]['Longitude']);
+	} else {
+		start_x = x;
+		start_y = y;
+	}
+
+	
+    var m = (map(dist[i], 0, 1, 0, 200));
+    var cc = hsl(m, 76, 50);
+    //console.log(m)
+	addParticle(x, y, start_x, start_y, cc, i);
+}
+	
+	counter = data.length-1;
+	
+	
+
+	function addParticle(_x, _y, _start_x, _start_y, _colour, _me){
+			
+		var particle = {
+			x: _start_x,
+			y: _start_y,
+			start_x: _start_x,
+			start_y: _start_y,
+			target_x: _x,
+			target_y: _y,
+			c: _colour,
+			me: _me,
+			move: true,
+			r: 0,
+			subparticles: [],
+			me2: (_me + randomInt(-30,30))%num_particles,
+			speedx: random(-2,2)/2,
+			speedy: random(2,20),
+			sz: block_size - 4,
+
+		}
+		
+		particles.push(particle);
+
+	}
+
+
+function moveParticles(i){
+		
+	p = particles[i];
+
+	if (Math.ceil(p.x/block_size) + 2 > Math.ceil(p.target_x/block_size) &&  Math.ceil(p.x/block_size) -2 < Math.ceil(p.target_x/block_size) 
+			&& Math.ceil(p.y/block_size) + 2  > Math.ceil(p.target_y/block_size)  && Math.ceil(p.y/block_size) - 2  < Math.ceil(p.target_y/block_size) 
+			&& p.move == true) {
+				// next
+		p.move = false;
+		octave = Math.round(map(p.x, 0, w, 0, chords[0].length-3));
+		chord = Math.round(map(p.y, 0, w, 0, chords.length));
+		//console.log(p.y + " chord: " + chord);
+		active_chord = chords[chord][octave];
+				
+				
+		}
+
+		//p.x = xScale(data[p.me]['Latitude']);
+		//p.y = yScale(data[p.me]['Longitude']);
+
+		
+		//ctx.fillStyle = p.c;
+		
+		if(i%50 == 0) 
+		{
+			ctx.fillStyle = rgb(255, 0, 0)
+			ctx.fillEllipse( p.x, p.y, 15, 15);
+		} else if(i == particles.length-1) 
+		{
+			ctx.fillStyle = rgb(0, 205, 0)
+			ctx.fillEllipse( p.x, p.y, 15, 15);
+		}
+		//ctx.strokeEllipse( roundUp(p.x), roundUp(p.y), p.sz, p.sz);
+		var alt = h - map(data[p.me].Altitude, minAltitude, maxAltitude, 0, h);
+		//console.log(spacing*p.me);
+		if (p.me-1 > 0){
+			ctx.strokeStyle = rgb(255,0,0);
+			ctx.line(p.x, p.y, particles[p.me-1].x, particles[p.me-1].y);
+			var old = h - map(data[p.me-1].Altitude, minAltitude, maxAltitude, 0, h);
+			//var old = w-spacing*(p.me-1)
+		} else {
+			var old = 0;
+		}
+		ctx.strokeStyle = rgb(255);
+		ctx.line(w-spacing*p.me, old, w-spacing*p.me + spacing, alt);
+	}
+
+
+
+	function drawGrid(){
+	ctx.fillStyle = rgba(255, 0.7);
+	ctx.strokeStyle = rgba(255, 0.7);
+	ctx.lineWidth = 0.4;
+	for (var y = 0; y < h; y+= block_size*8) {
+	for (var x = 0; x < w; x+= block_size*8) {
+		ctx.fillStyle = rgba(0, 30, 190, 0.4);
+		//ctx.fillRect(x, y, block_size, block_size);
+		cross(x, y, 1, 10, 10);
+	};
+	;}
+}
+
+drawGrid();
+ctx.background(0);
+ctx.lineWidth = 2;
+
+
+
+maxiAudio.play = function() {
+
+		    clock.ticker();
+
+		    // get notes
+		    if(clock.tick){
+		   		
+		        // console.log(active_chord);
+		        freq = active_chord;
+		        trigger = 1;
+		        moveParticles(counter);
+		        //ctx.fillStyle = rgba(255,255,255, 0.005);
+				//ctx.fillRect(0, 0, w, h);
+				
+				
+				//drawParticles(counter);
+
+		       	counter--;
+		       	clock.setTempo(Math.round(30 + dist[counter]*50));
+
+		    }
+
+
+		 //    // play synth
+				var LFO = 200+((phaser.sinewave(0.2)*0.5+0.5)*5000);
+		 //    var signal = filter2.lores(osc01.sinewave(filter1.lopass(freq,0.03)),(LFO),10)*0.7;
+
+	  //       //note = osc01.sinewave(filter1.hipass(freq,0.5));
+	  //   	// var synths = filter2.lores(note, Math.abs(LFO),4)*0.05;
+	 		if (active_chord != undefined) var synths = filter2.lores(osc01.sawn(active_chord), Math.abs(LFO),4);
+	 		//master_output =   synths;
+
+			//this.output = master_output * master_vol;
+			// trigger = 0;
+
+		
+	};
+	
+});
+	
+
+// function draw(){
+// 	
+// 	pixelShuffle(pixelWidth, pixelHeight, prob);
+// }
+
+/////// UTILS
+
+
+function roundUp(v){
+	return Math.round(v/block_size)*block_size
+}
+
+function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+  var R = 6371; // Radius of the earth in km
+  var dLat = deg2rad(lat2-lat1);  // deg2rad below
+  var dLon = deg2rad(lon2-lon1); 
+  var a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+    ; 
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  var d = R * c; // Distance in km
+  return d;
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180)
+}
+
+</script>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+
+
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var fov = 240;
+
+var ball = [];
+
+// This is the size.
+var size = 100;
+
+var grid_w = 3;
+var grid_h = 2;
+var numBalls = grid_w * grid_h;
+
+var grid = createGrid(grid_w, grid_h);
+console.log(grid);
+
+for (var i = 0; i < numBalls; i++) {
+    ball[i] = new Ball(grid[i][0],grid[i][1]);
+}
+
+function Ball(_x, _y){
+    var count = 0;
+    var style = 0;
+    // The below code creates a sphere of points
+    var dim = 20; // This is the number of rings
+    // Each ring has as many points as there are rings
+    // This is the spacing for each ring
+    var spacing = ((Math.PI * 2) / dim);
+    // This is the total number of points
+    var numPoints = dim * dim;
+    this.counter=0;
+    this.x = _x;
+    this.y = _y;
+    // console.log(this.x)
+    // console.log(this.y)
+    this.point = [];
+    this.point3d = [];
+    this.angleX = 0;
+    this.angleY = 0;
+    this.x3d = 0;
+    this.y3d = 0;
+    this.z3d = 0;
+    this.firstx2d=0;
+    this.firsty2d=0;
+    this.firstScale=0;
+    this.lastScale = 0;
+    this.lastx2d = 0;
+    this.lasty2d = 0;
+    reset();
+
+function reset(){
+        dim = randomInt(10,80);
+        spacing = ((Math.PI * 2) / dim);
+        numPoints = dim * dim;
+}
+
+this.draw = function() {
+
+this.counter+=0.01;
+// We're doing the geometery in the draw loop because we want to interact with it.
+//size = 50 + Math.abs(Math.sin(count)*150);
+
+if (chance(200)) {
+    reset();
+}
+
+if (chance(200)) {
+    style = randomInt(2);
+    console.log("style: " + style);
+}
+
+var mouseX1=mouseX/200;
+var mouseY1=mouseY/200;
+
+this.points = [];
+    // Now we build the geom
+
+    // This is a sphere just like before
+for (var i = 0; i < dim; i++) {
+
+// Calculate the depth spacing
+//    var z = size * Math.sin((spacing * i * Math.sin(mouseX*0.01)));
+
+    // Calculate the depth spacing
+    var z = size * Math.cos(spacing /2 * i);
+
+// Calculate the size of the current ring
+    var s = size * Math.sin(spacing / 2 * i);
+
+// For each ring
+  var bass = getBass();
+  var mids = getMids();
+  var highs = getHighs();
+
+    for (var j = 0; j < dim; j++ ) {
+
+        // Create a circle at the current size, at the current depth
+        if (style != 2) {
+            var point = [Math.cos(spacing * j) * s, Math.sin(spacing * j) * s, z];
+            //console.log(point);
+        } else {
+
+            var b = j%bass.length;
+            var m = j%mids.length;
+            var h = j%highs.length;
+            //var point = [Math.cos(spacing*mouseX1*j)*Math.sin(spacing*j*mouseY1)*s,Math.sin(spacing*mouseX1*j)*Math.sin(spacing*j*mouseY1)*s,z];
+            var point = [Math.cos(spacing*bass[b]*j)*Math.sin(spacing*j*mids[m])*s,Math.sin(spacing*mids[m]*j)*Math.sin(spacing*j*highs[h])*s,z];
+
+        }
+
+        // Add the points
+        this.points.push(point);
+
+    }
+}
+
+
+
+    this.angleX+=((mouseX/width)-0.5)/4;
+    this.angleY+=((mouseY/height)-0.5)/4;
+
+// Here we run through each ring and work out where it should be drawn
+
+    for (var i = 0; i < numPoints; i+=dim) {
+
+        for (var j = 0; j <dim; j++ ) {
+
+        this.point3d = this.points[Math.floor(i+j)];
+        this.z3d = this.point3d[2];
+
+// This is the speed of the z
+// It moves the points forwards in space
+// We don't need it for the pure rotate
+        // z3d -= 1.0;
+
+// Check that the points aren't disappearing into space and if so push them back
+// This also stops them stretching
+// When they get too close
+        if (this.z3d < -fov) this.z3d += 0;
+
+        this.point3d[2] = this.z3d;
+
+        // Calculate the rotation
+
+        this.point3d = rotateX(this.point3d,this.angleX);
+        this.point3d = rotateY(this.point3d,this.angleY);
+
+         // Get the point in position
+
+        this.x3d = this.point3d[0];
+        this.y3d = this.point3d[1];
+        this.z3d = this.point3d[2];
+
+        // Convert the Z value to a scale factor
+        // This will give the appearance of depth
+        this.scale = (fov / (fov + this.z3d));
+
+        // Store the X value with the scaling
+        // FOV is taken into account
+        // (just pushing it over to the left a bit too)
+        var x2d = (this.x3d * this.scale) + this.x;
+
+        // Store the Y value with the scaling
+        // FOV is taken into account
+
+        var y2d = (this.y3d * this.scale) + this.y;
+
+        // // If our main loop is going to join all the points together in a line, we need to store the first points and use them at the end.
+
+        if (j===0){
+
+            this.firstx2d=x2d;
+            this.firsty2d=y2d;
+            this.firstScale=this.scale;
+
+            this.lastx2d=x2d;
+            this.lasty2d=y2d;
+            this.lastScale=this.scale;
+
+        }
+
+
+// Draw the point
+
+// Set the size based on scaling
+
+        if (style == 0 || style == 2) {
+            ctx.lineWidth = this.scale;
+            ctx.strokeStyle = rgb(255);
+            ctx.line(this.lastx2d + this.lastScale, this.lasty2d, x2d + this.scale, y2d);
+        }
+
+        if (style == 1) {
+            ctx.fillStyle = rgb(255);
+
+            // hack to speed up
+            if (2*this.scale > 3) {
+                ctx.fillEllipse(this.lastx2d + this.lastScale, this.lasty2d, 2*this.scale, 2*this.scale);
+            } else {
+               ctx.fillRect(this.lastx2d + this.lastScale, this.lasty2d, 2*this.scale, 2*this.scale);
+            }
+
+
+        }
+        // Store the last point so we can join it to the next one.
+
+        this.lastx2d=x2d;
+        this.lasty2d=y2d;
+        this.lastScale=this.scale;
+
+        // if it's the end of the current ring, join it to the first
+
+        if (j==dim-1) {
+
+        if (style == 0 || style == 3) {
+        ctx.lineWidth = this.scale;
+        ctx.strokeStyle = rgb(255);
+        ctx.line(this.lastx2d + this.lastScale, this.lasty2d, this.firstx2d + this.firstScale, this.firsty2d);
+        }
+        if (style == 1 || style == 3) {
+        ctx.fillStyle = rgb(255);
+        ctx.fillEllipse(this.lastx2d + this.lastScale, this.lasty2d, 2*scale, 2*scale);
+        ctx.fillRect(this.firstx2d + this.firstScale, this.firsty2d, this.scale, this.scale);
+        }
+        }
+
+     }
+    }
+}
+
+}
+
+
+function draw() {
+    ctx.background(0);
+
+    for (var i = 0; i < ball.length; i++) {
+      ball[i].draw();
+    }
+
+}
+
+function rotateX(point3d,angleX) {
+
+        var x = point3d[0];
+        var z = point3d[2];
+
+        var cosRY = Math.cos(angleX);
+        var sinRY = Math.sin(angleX);
+
+        var tempz = z;
+        var tempx = x;
+
+        x = (tempx*cosRY)+(tempz*sinRY);
+        z = (tempx*-sinRY)+(tempz*cosRY);
+
+        point3d[0] = x;
+        point3d[2] = z;
+        return point3d;
+
+}
+
+function rotateY(point3d,angleY) {
+
+        var y = point3d[1];
+        var z = point3d[2];
+
+        var cosRX = Math.cos(angleY);
+        var sinRX = Math.sin(angleY);
+
+        var tempz = z;
+        var tempy = y;
+
+        y = (tempy*cosRX)+(tempz*sinRX);
+        z = (tempy*-sinRX)+(tempz*cosRX);
+
+        point3d[1] = y;
+        point3d[2] = z;
+        return point3d;
+
+}
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+
+</html>

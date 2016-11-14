@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script language="javascript" src="js/creative.js"></script>
+  <script language="javascript" src="js/canvas.js"></script>
+  <script language="javascript" src="js/three.min.js"></script>
+  <script language="javascript" src="js/_maxiLib.js"></script>
+  <script language="javascript" src="js/vector.js"></script>
+  <script type="text/javascript" src="js/d3.js"></script>
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background: #fff">
+   
+<script>
+
+// GLOBALS
+var ctx = createCanvas("canvas1");
+ctx.font="20px Courier";
+
+var txt = "";
+var y = 20;
+var maxWidth = w-20;
+var lineHeight = 25;
+var x = 20;
+var y = 60;
+
+
+function draw(){
+  ctx.background(0);
+  txt += randomInt(9);
+  if (chance(6)) txt+=" ";
+  ctx.fillStyle = "white";
+  wrapText(txt, x, y, maxWidth, lineHeight);
+
+//   if (ctx.measureText(txt).width > w-20) 
+//     {y+= 20;
+//   //txt = "";
+// }
+  //ctx.fillText(txt,10,y);
+  //console.log(ctx.measureText(txt))
+}
+
+
+ function wrapText(text, x, y, maxWidth, lineHeight) {
+        var words = text.split(' ');
+        var line = '';
+
+        for(var n = 0; n < words.length; n++) {
+          var testLine = line + words[n] + ' ';
+          var metrics = ctx.measureText(testLine);
+          var testWidth = metrics.width;
+          if (testWidth > maxWidth && n > 0) {
+            ctx.fillText(line, x, y);
+            line = words[n] + ' ';
+            y += lineHeight;
+          }
+          else {
+            line = testLine;
+          }
+        }
+        ctx.fillText(line, x, y);
+}
+      
+
+
+</script>
+</body>
+</html>

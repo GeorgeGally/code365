@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/url.js"></script>
+<script language="javascript" src="js/physics2.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/three.min.js"></script>
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+
+<script>
+var ctx = createCanvas("canvas1");
+var r = 0;
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+var num_particles = 1;
+var plane = [];
+var spacing = radians(1 /num_particles);
+var radius = 2;
+var sz = 12;
+var d=0, t=0;
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+
+document.body.appendChild( renderer.domElement );
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+scene.fog = new THREE.FogExp2( 0xffffff, 0.001 );
+
+
+var pos = [];
+console.log(spacing);
+
+for (var i = 0; i < num_particles; i++) {
+addParticle();
+}
+
+function addParticle(){
+  var i = plane.length;
+  var geometry = new THREE.PlaneGeometry( 2, 22, 22, 2 );
+  geometry.dynamic = true;
+  p = new THREE.Mesh( geometry, dMaterial );
+  pos[i] = new Vector(p.position.x, p.position.y,p.position.z);
+  //setPos(i);
+
+  p.position.x = pos[i].x;
+  p.position.y = pos[i].y;
+  p.position.z = pos[i].z;
+  p.scale.x = p.scale.y = p.scale.z = 4;
+  //p.position.normalize();
+  //plane[i].position.multiplyScalar(1);
+  // p.s = 1;
+  // p.s2 = 1;
+
+  //plane.unshift(p);
+  //scene.add( plane[0] );
+  plane.push(p);
+  scene.add(p);
+// var tt = [];
+// var start_z = [];
+// var start_y = [];
+// for (j=0;j<plane[i].geometry.vertices.length;j++) {
+//   start_z[j] = plane[i].geometry.vertices[j].z;
+//   start_y[j] = plane[i].geometry.vertices[j].y;
+//   tt[j] = 0;
+// }
+
+}
+
+function removeParticle(){
+  scene.remove( plane[0] );
+  plane.slice(0,1);
+}
+
+renderer.setClearColor( 0x000000 );
+camera.position.z = 100;
+camera.near = 10;
+camera.far  = 125;
+
+var show = 10;
+var twirlx = 0;
+var twirly = 0;
+var twirlz = 1;
+var rotx = false;
+var roty = true;
+var rotz = false;
+var backwards = -1;
+
+function setPos(i) {
+  if (twirlx == 0) {
+    pos[i].x = i;
+  } else if (twirlx == 1) {
+    pos[i].x = Math.sin(r*i) * (i);
+  } else {
+    pos[i].x = Math.cos(r*i) * (i);
+  }
+
+  if (twirly == 0) {
+    pos[i].y = i;
+  } else if (twirly == 1) {
+    pos[i].y = Math.cos(r*(i)) * (i);
+  } else {
+    pos[i].y = Math.sin(r*(i)) * (i);
+  }
+
+  if (twirlz == 0) {
+    pos[i].z = i;
+  } else if (twirly == 0) {
+    pos[i].z = Math.cos(r*i) * (-40);
+  } else {
+    pos[i].z = Math.sin(r*i) * (-50);
+  }
+}
+
+
+
+function draw() {
+
+  if (frameCount%20==0) {
+
+
+    if (sz <= 0.3 || sz > 20)
+    {
+      backwards *=-1;
+    }
+
+    if (backwards == 1) {
+      removeParticle();
+    } else {
+      addParticle();
+    }
+
+    sz = sz + backwards * 0.1;
+
+  }
+  if (chance(500)) twirlx = randomInt(3);
+  if (chance(500)) twirly = randomInt(3);
+  if (chance(500)) twirlz = randomInt(3);
+  t+=.0001
+  d+=.01;
+
+  //if (show < num_particles) show+=0.1;
+
+  for (var i = 0; i < plane.length; i++) {
+
+  setPos(i)
+
+  plane[i].position.x = tween(plane[i].position.x, pos[i].x, 30);
+  plane[i].position.y = tween(plane[i].position.y, pos[i].y, 30);
+  plane[i].position.z = tween(plane[i].position.z, pos[i].z, 30);
+  plane[i].scale.x = plane[i].scale.y = plane[i].scale.z = tween(plane[i].scale.x, sz, 10);
+
+
+  r+=0.00001;
+
+  if (rotx) plane[i].rotation.x = tween(plane[i].rotation.x, plane[i].rotation.x + 0.2);
+  if (roty) plane[i].rotation.y = tween(plane[i].rotation.y, plane[i].rotation.y + 0.1);
+  if (rotz) plane[i].rotation.z = tween(plane[i].rotation.z, plane[i].rotation.z + 0.1);
+
+  //plane[i].position.y = plane[i].s2;
+  // }
+  // for (j=0;j<plane[i].geometry.vertices.length;j++){
+  // plane[i].geometry.vertices[j].z+= random(-0.1,0.1);
+  // //plane[i].geometry.vertices[0].y = random(0,40);
+  // }
+  // plane[i].geometry.verticesNeedUpdate=true;
+   }
+   if (chance(400)) rotx = !rotx;
+   if (chance(400)) roty = !roty;
+   if (chance(400)) rotz = !rotz;
+   if (rotx) scene.rotation.x = tween(scene.rotation.x, scene.rotation.x +0.0002);
+   if (roty) scene.rotation.y = tween(scene.rotation.y, scene.rotation.y +0.0001);
+   if (rotz) scene.rotation.z = tween(scene.rotation.z, scene.rotation.z +0.0001);
+  renderer.render( scene, camera );
+
+};
+
+
+</script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<meta charset="utf-8">
+	<title>test</title>
+
+	<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+	<script language="javascript" src="js/microphone.js"></script>
+	<script language="javascript" src="js/sound.js"></script>
+	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/vector.js"></script>
+	<script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background:#000;">
+
+<script type="text/javascript">
+
+	var screen = createCanvas("canvas1");
+	var fft_size = 512;
+	var third = Math.floor(fft_size/3);
+
+	getMic(fft_size);
+
+	var dots = new particleEngine(fft_size);
+	var bottom = h-h/4;
+	console.log(third);
+	var grid = createGrid(third, 1, w, h);
+
+	for (var i = 0; i < dots.particles.length; i++) {
+		dots.particles[i].position.x = Math.floor(grid[i%third][0]);
+		console.log(i + ": "+dots.particles[i].position.x);
+		dots.particles[i].position.y = bottom;
+	}
+
+screen.lineWidth = 4;
+screen.strokeStyle = rgb(0);
+
+function draw() {
+
+	screen.background(245);
+
+	for (var i = 0; i < dots.particles.length; i+=1) {
+		var d = dots.particles[i];
+		var s = map(mic.getSprectrum(i), 0, 0.02, 0, 400);
+		if(s>0) d.position.y = tween(d.position.y, bottom - s, 10);
+	}
+	//console.log(map(mic.getSprectrum(330), 0, 0.02, 0, 400));
+	//console.log(dots.particles[330].position.x);
+	// HIGHS
+	screen.fillStyle = rgba(0, 200, 0, 0.4);
+	drawWave(0, third);
+	// // // MIDS
+	screen.fillStyle = rgba(0, 0, 200, 0.4);
+	drawWave(third+1, 2 * third);
+	// BASS
+	screen.fillStyle = rgba(200, 0, 0, 0.4);
+	drawWave(2*third+1, dots.particles.length-1);
+
+};
+
+function drawWave(start, end){
+	//console.log(start +" : "+ end);
+	screen.beginPath();
+	screen.moveTo(0, bottom);
+	screen.lineTo(0, dots.particles[start].position.y);
+
+	for (var i = start+1; i < end; i+=1) {
+    screen.quadraticCurveTo(dots.particles[i-1].position.x, dots.particles[i-1].position.y, dots.particles[i].position.x, dots.particles[i].position.y);
+	}
+
+	screen.lineTo(w, dots.particles[end].position.y);
+	screen.lineTo(w, bottom);
+	// screen.lineTo(0, bottom);
+	//screen.lineTo(0, dots.particles[start].position.y);
+	screen.closePath();
+	screen.fill();
+	// screen.fillStyle = "black";
+	// screen.fillEllipse(w, dots.particles[end].position.y, 10,10);
+	// screen.fillEllipse(0, dots.particles[start].position.y, 10,10);
+	// screen.fillEllipse(w, bottom, 10,10);
+	// screen.fillEllipse(0, bottom, 10,10);
+	// screen.fillEllipse(w, bottom, 10,10);
+	//screen.stroke();
+}
+
+
+//playSound();
+
+</script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+ </body>
+</html>

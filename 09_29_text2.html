@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script language="javascript" src="js/creative.js"></script>
+  <script language="javascript" src="js/canvas.js"></script>
+  <script language="javascript" src="js/three.min.js"></script>
+  <script language="javascript" src="js/_maxiLib.js"></script>
+  <script language="javascript" src="js/vector.js"></script>
+  <script type="text/javascript" src="js/d3.js"></script>
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background: #fff">
+   
+<script>
+
+// GLOBALS
+var ctx = createCanvas("canvas1");
+
+var letters = [];
+
+var letterOrder = " .`-_':,;^=+/\"|)\\<>)iv%xclrs{*}I?!][1taeo7zjLunT#JCwfy325Fp6mqSghVd4EgXPGZbYkOA&8U$@KHDBWNMR0Q";
+var letterOrder = " \:-+*XW";
+//var letterOrder = " .-:=+*%#@";
+for (var i = 0; i < 256; i++) {
+    var index = map(i, 0, 256, 0, letterOrder.length);
+    letters[i] = letterOrder.charAt(index);
+  }
+
+
+ctx.font="11px Monospace";
+var img = new Image();
+img.src = 'img/Dalai_Lama.jpg';
+img.src = 'img/people/macborg.jpg';
+
+var particles = [];
+var txt = "";
+var maxWidth = w-20;
+var lineHeight = 10;
+var x = 0;
+var y = 0;
+var imgData;
+var sourceBuffer32;
+
+function setup(){
+ctx.drawImage(img, 0,0,w,h);
+imgData=ctx.getImageData(0,0,w,h); 
+sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+//console.log(sourceBuffer32);
+}
+
+function draw(){
+  
+  ctx.background(0);
+  //ctx.drawImage(img, 0,0,w,h);
+
+  if (sourceBuffer32.length> 0) {
+  
+    for (var i = 0; i < randomInt(1, 520); i++) {
+      txt += String.fromCharCode(randomInt(97,110));
+      if (chance(5)) txt+="*";
+      if (chance(4)) txt+=" ";
+    }
+    
+  //ctx.fillStyle = "white";
+  wrapText(txt, x, y, maxWidth, lineHeight);
+
+  drawParticles();
+}
+}
+
+
+function drawParticles(){
+
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    var xx = p.x; 
+    var col = sampleImage(p.x, p.y);
+    if (p.highlight) {
+        
+    ctx.fillStyle = rgb(col.x, col.y, col.z);
+    //ctx.fillStyle = "red";
+    //    //ctx.fillStyle = p.c;
+    var ww = ctx.measureText(p.txt).width;
+    ctx.fillRect(p.x, p.y - 9, ww, 11);
+    //     ctx.fillStyle = "black";
+    }
+
+    for (var j = 0; j < p.txt.length; j++) {
+      var t = letters[col.x];
+      if (p.highlight) {
+      
+       //ctx.fillStyle = "white";
+       // //ctx.fillStyle = p.c;
+       // var ww = ctx.measureText(p.txt).width;
+       // //ctx.fillStyle = sampleImage(p.x, p.y);
+       //  ctx.fillRect(p.x, p.y - 10, xx, 12);
+        ctx.fillStyle = "black";
+      } else {
+        //var col = sampleImage(xx, p.y);
+        
+        ctx.fillStyle = rgb(col.x);
+        //ctx.fillStyle = "white";
+      }
+      ctx.fillText(letters[col.x], xx, p.y);
+      xx += ctx.measureText(t).width;
+      
+    }
+    
+    
+  }
+
+}
+
+
+function addParticle(_x, _y, txt, highlight){
+
+  var col = sampleImage(_x, _y);
+  
+  var particle = {
+    x: _x,
+    y: _y,
+    c: col,
+    txt: txt,
+    highlight: highlight
+  }
+
+  particles.push(particle);
+}
+
+function sampleImage(_x, _y){
+
+          var pos = Math.round(_x + _y * width);
+          var b = (sourceBuffer32[pos] >> 16) & 0xff;
+          var g = (sourceBuffer32[pos] >> 8) & 0xff;
+          var r = (sourceBuffer32[pos] >> 0) & 0xff;
+          return new Vector(r,g,b);
+
+
+}
+
+var lines = 0;
+var old_width = 0;
+var xx = 20;
+
+function wrapText(text, x, y, maxWidth, lineHeight) {
+        
+        var words = text.split(' ');
+        var line = '';
+        
+        for(var n = 0; n < words.length; n++) {
+
+          var testLine = line + words[n] + ' ';
+          var metrics = ctx.measureText(testLine);
+          var testWidth = metrics.width;
+          var testHeight = metrics.height;
+          xx = x + testWidth;
+   
+          if (testWidth > maxWidth && n > 0) {
+            // ctx.fillText(line, x, y);
+            line = words[n] + ' ';
+            y += lineHeight;
+            lines++;
+            xx = 20;
+            old_width = 0;
+            //if (lines%10 == 0) y += lineHeight;
+          
+          } else {
+            xx = old_width;
+            line = testLine;
+            old_width = testWidth;
+          }
+          
+         
+          if (n > particles.length) addParticle(xx, y, words[n], chance(10)? 1 : 0);
+
+          if (y > h-20) {
+            txt = "";
+            lines = 0;
+            particles = [];
+            //console.log("reset");
+          }
+
+
+          
+
+        }
+
+        //ctx.fillText(line, x, y);
+}
+      
+
+
+</script>
+</body>
+</html>

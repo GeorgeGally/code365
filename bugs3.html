@@ -4,9 +4,9 @@
 <head>
 	<meta charset="utf-8">
 	<title>test</title>
-	<link rel="stylesheet" href="css/normalize.css" type="text/css" media="screen" />
-	<!-- <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
-	<link rel="stylesheet" href="css/custom.css" type="text/css" media="screen" /> -->
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
 	<script language="javascript" src="js/creative.js"></script>
 </head>
 
@@ -20,11 +20,13 @@
 	var imgData;
 	var maxParticles = 1000;
 	c = canvas.getContext('2d');
-	c.font = "300px helvetica";
+	c.font = "400px helvetica";
 	c.fillStyle="blue";
 	c.textAlign = "center";
 	c.textBaseline = "middle";
-	var words = ['you are not alone', 'horse', 'kitty', 'hunter'];
+	// var words = ['HAAH', 'I am free', 'horse', 'kitty', 'hunter'];
+	// var words = ["I'm not afraid"];
+	var words = ["+"];
 	brightSpark();
 
 	function draw(){
@@ -56,7 +58,7 @@
 	}
 
 	function brightSpark(){
-		var w = randomInteger(0,3);
+		var w = randomInt(0,words.length-1);
 		c.fillText(words[w], window.innerWidth/2, window.innerHeight/2);
 		draw();
 		imgData = c.getImageData(0, 0, window.innerWidth, window.innerHeight).data;
@@ -68,7 +70,7 @@
 				var fBrightness;
 				fBrightness = (0.3*imgData[pt] + 0.59*imgData[pt+1] + 0.11*imgData[pt+2]);
 			
-				if(fBrightness > 20) {
+				if(fBrightness > 10) {
 			 		addParticle(x,y);
 			 	}
 			

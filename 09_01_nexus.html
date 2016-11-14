@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Beatboy</title>
+
+<script language="javascript" src="js/nexusUI.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<style type="text/css">
+	body {
+		
+		font-family: Helvetica, Arial;
+		overflow: hidden;
+	}
+	#header {
+		font-size: 18px; 
+		width: 96%; height: 21%;
+		background: #222;
+		padding: 2%;
+		color: #fff;
+	}
+</style>
+ </head>
+ <body>
+ <div id= "header">Beatboy</div>
+ 
+ 	<canvas nx="matrix" id="beatmatrix" style="display: inline-block; width: 100%; height: 80%"></canvas>
+<script>
+nx.onload = function() {
+	beatmatrix.row = 4;
+	beatmatrix.col = 16;
+	beatmatrix.matrix = [ 	
+						[1,0,1,0],
+						[0,0,0,0],
+						[1,1,0,0],
+						[0,0,0,0],
+						[1,0,1,0],
+						[0,0,0,0],
+						[1,1,0,0],
+						[0,0,0,0],
+						[1,0,1,0],
+						[0,0,0,0],
+						[1,1,0,0],
+						[0,0,0,0],
+						[1,0,1,0],
+						[0,0,0,0],
+						[1,1,0,0],
+						[0,0,0,0],
+					];
+	beatmatrix.sequence(120);
+	beatmatrix.init();
+	nx.colorize("#00CCFF"); // sets accent (default)
+	//nx.colorize("border", "#222222");
+	nx.colorize("fill", "#222");
+		
+	beatmatrix.colors.accent = "#00CCFF";
+
+
+
+beatmatrix.draw();
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+  <script language="javascript" src="js/creative.js"></script>
+  <script language="javascript" src="js/canvas.js"></script>
+  <script language="javascript" src="js/vector.js"></script>
+  <script language="javascript" src="js/vector_particles.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var grid_w = 250;
+var grid_h = 10;
+var grid = createGrid(grid_w, grid_h);
+
+var blocks = new particleEngine(grid.length-1);
+var speed = random(1+i/2);
+for (var i = 0; i < blocks.particles.length; i++) {
+  var b = blocks.particles[i];
+  b.position = new Vector(grid[i].x, grid[i].y);
+  b.c =  (i%2 == 0) ? rgb(0): rgb(255);
+  b.w = w/grid_w;
+  b.h = h/grid_h;
+  if ((i*b.w)%w == 0) speed = random(1);
+  b.speed = new Vector(speed, 0);
+}
+
+function draw(){
+  ctx.background(250);
+  blocks.draw();
+  for (var i = 0; i < blocks.particles.length; i++) {
+    var b = blocks.particles[i];
+    ctx.fillStyle = b.c;
+    ctx.fillRect(b.position.x, b.position.y, b.w, b.h);
+  }
+}
+
+
+</script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+
+</html>

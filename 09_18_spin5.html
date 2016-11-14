@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script language="javascript" src="js/creative.js"></script>
+  <script language="javascript" src="js/canvas.js"></script>
+  <script language="javascript" src="js/url.js"></script>
+  <script language="javascript" src="js/physics2.js"></script>
+  <script language="javascript" src="js/vector.js"></script>
+  <script language="javascript" src="js/three.min.js"></script>
+  <script src="js/_maxiLib.js"></script>
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body style="background: #fff">
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var r = 0;
+var show = 10;
+var particles = [];
+var num_particles = 50;
+var plane = [];
+var spacing = radians(180 /num_particles);
+var radius = 10;
+var d=0, t=0;
+
+// setup 3D environment 
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+var geometry = new THREE.SphereGeometry( 2, 28, 18, 2 );
+geometry.dynamic = true;
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+renderer.setClearColor( 0xf3f3f3 );
+camera.position.z = 100;
+camera.near = 60;
+camera.far  = 155;
+
+
+// setup audio
+var changeThis = 3;
+var audio = new maximJs.maxiAudio();
+audio.setBufferSize(8192);
+//audio.outputIsArray(true, 2); //stereo
+audio.init();
+
+var osc = new maximJs.maxiOsc();
+var osc2 = new maximJs.maxiOsc();
+var osc3 = new maximJs.maxiOsc();
+
+var filter = new maximJs.maxiFilter();
+var drawOutput = new Array(1024);
+
+var spacing = ((Math.PI * 2) / 512);//1024 because it is the size of the buffer
+var size = width / 4;//size fo the circle
+var bufferFreq = 44100 / 512;
+var vol = 0.8;
+
+audio.play = function () {
+
+    var wave = osc.sinewave(bufferFreq*osc2.sinewave(bufferFreq * changeThis)*10);
+    var wave2 = osc.sinewave(bufferFreq/2 * 5);
+
+    //wave = filter.lopass(wave * vol, 0.3);
+    this.output = wave + wave2;
+    
+    drawOutput[frameCount % num_particles] = wave * 10.5;
+
+};
+
+
+
+
+for (var i = 0; i < num_particles; i++) {
+addParticle(i);
+}
+
+renderer.setClearColor( 0xf3f3f3 );
+camera.position.z = 100;
+camera.near = 60;
+camera.far  = 155;
+
+var show = 10;
+
+function draw() {
+  
+
+  if (chance(300)) {
+    renderer.setClearColor( 0xf3f3f3 );
+    bufferFreq = 44100 / 512;
+  } else if (chance(300)) {
+    renderer.setClearColor( 0xdddddd );
+    bufferFreq = 44100 / 1024;
+  } else if (chance(300)) {
+    renderer.setClearColor( 0xbbbbbb );
+    bufferFreq = 44100 / 256;
+  }
+
+  drawParticles();
+  scene.rotation.z+= 0.01;
+  renderer.render( scene, camera );
+
+};
+
+
+function addParticle(i){
+  plane[i] = new THREE.Mesh( geometry, dMaterial );
+  scene.add( plane[i] );
+  plane[i].position.x = Math.cos(i*spacing) * radius;
+  plane[i].position.y = Math.sin(i*spacing) * radius;
+  plane[i].position.z = 0;
+  plane[i].start = new Vector(plane[i].position.x, plane[i].position.y,plane[i].position.z);
+  plane[i].scale.x = plane[i].scale.y = plane[i].scale.y = 1;
+  plane[i].s = 1;
+  plane[i].s2 = 1;
+}
+
+
+function drawParticles(){
+  if (show < num_particles) show+=0.1;
+  
+  for (var i = 0; i < num_particles; i++) {
+
+    plane[i].position.x = Math.cos(r*i) * (i);
+    plane[i].position.y = Math.sin(r*i) * (i);
+
+    if(drawOutput[i]) plane[i].s = tween(plane[i].s, drawOutput[i], 3);
+    if (chance(200)) {
+      var scale = random(0.6, 2);
+      plane[i].s = scale;
+    }
+
+   plane[i].scale.x = plane[i].scale.y = plane[i].scale.z = plane[i].s;
+
+    r+=0.000005;
+    //plane[i].position.y = plane[i].s2;
+    // }
+    // for (j=0;j<plane[i].geometry.vertices.length;j++){
+    // plane[i].geometry.vertices[j].z = drawOutput[i]/5;
+    // //plane[i].geometry.vertices[0].y = random(0,40);
+    // }
+    // plane[i].geometry.verticesNeedUpdate=true;
+    //  }
+  }
+   if ((r < 2.9 && r > 0.5) || r> 0.6) {
+  scene.rotation.x += 0.02;
+  scene.rotation.y += 0.01;
+  //bufferFreq *= 0.999;
+  changeThis = random(2);
+  }
+
+  if (chance(200)) {
+    changeThis = random(5);
+  }
+
+
+}
+
+</script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

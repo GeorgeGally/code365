@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+ 	<meta charset="utf-8">
+	<title>Soundcloud Viz</title>
+	
+	<script src='http://connect.soundcloud.com/sdk.js'></script>
+	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+	<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+var num = 15;
+var particles = [];
+var spheres = new particleEngine(10);
+var spacing = 360/spheres.particles.length;
+var time = 0;
+var radius = 30;
+
+function setup(){
+    for (var i = 0; i < num; i++) {
+        particles[i] = new particleEngine(5);
+        for (var j = 0; j < particles[i].particles.length; j++) {
+            var p = particles[i].particles[j];
+            p.time = j;
+        }
+    }
+}
+
+
+
+function draw(){
+    //ctx.clearRect(0, 0,w,h);
+    ctx.background(240, 0.2)
+    ctx.save();
+  	ctx.translate(w/2, h/2);
+    
+     
+
+    for (var i = 0; i < particles.length; i++) {
+    	ctx.rotate(radians(time));
+
+       
+        ctx.translate(80+i, 0);
+
+        for (var j = 0; j < spheres.particles.length; j++) {
+            ctx.fillStyle = "black";
+            var x = Math.sin(spacing * j + frameCount/20)*radius;
+            var y = Math.cos(spacing * j + frameCount/20)*radius;
+            ctx.HfillEllipse(x, y, 4, 4);
+        }
+
+        // ctx.fillStyle = "black";
+        // var x = Math.sin(i + frameCount/100)*50+i*(particles.length/360);
+        // var y = Math.cos(i + frameCount/100)*50+i*(particles.length/360);
+        // ctx.HfillEllipse(x, y, 6, 6);
+        //ctx.HfillEllipse( 10+i*2, 0, i*1.3+1,i*1.3+1);
+        //ctx.HstrokeEllipse( 10+i*2, 0, i*1.3+1,i*1.3+1);
+        var total_rot = 0;
+        for (var j = 0; j < particles[i].particles.length; j++) {
+            var p = particles[i].particles[j];
+            
+            // ctx.rotate(radians(p.time));
+            // total_rot += p.time;
+            // p.position.x = Math.sin((j + frameCount)/100) * 150;
+            // p.position.y = Math.cos((j + frameCount)/100) * 150;
+            // ctx.fillStyle = "black";
+            // ctx.fillRect(p.position.x, p.position.y, 2, 2);
+            
+            // p.time+=0.0005;
+            //  ctx.rotate(radians(-total_rot));
+        }
+        ctx.translate(-1*(10+i), 0);
+        //ctx.rotate(radians(-time));
+        time+=0.005;
+    }
+    
+    ctx.restore();
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

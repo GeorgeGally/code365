@@ -118,7 +118,7 @@ this.setup();
 
 var waves = [];
 var grid_w = 1;
-var grid_h = 20;
+var grid_h = 30;
 var num_waves = grid_w * grid_h;
 var spacing_x = w/grid_w;
 var spacing_y = h/grid_h;
@@ -141,6 +141,7 @@ function draw(){
 		waves[i].draw();
 	};
 	//pixelate(10);
+	mirror();
 }
 
 

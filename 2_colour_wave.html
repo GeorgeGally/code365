@@ -5,34 +5,29 @@
  <title>Sound Maps</title>
  <script language="javascript" src="js/creative.js"></script>
 	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	 <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
  </head>
  <body>
- <canvas id="canvas1" style="z-index: 1; position: absolute; left: 0; top: 0" width="650" height="190" ></canvas>
- <canvas id="canvas2" style="z-index: 2; position: absolute; left: 0; top: 0" width="650" height="190" ></canvas>
-<script>
-var canvas = document.getElementById('canvas1');
-var ctx = canvas.getContext('2d');
-var canvas2 = document.getElementById('canvas2');
-var ctx2 = canvas2.getContext('2d');
 
+<script>
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
 // var context = new (window.AudioContext || window.webkitAudioContext)();
 var initialFreq = 3000;
 var initialVol = 0.5;
-var oscillator = context.createOscillator();
+var oscillator = ctx.createOscillator();
 oscillator.frequency.value = initialFreq; // value in hertz
 oscillator.type = 'triangle'; // sine, triangle, sawtooth, square
 oscillator.start();
-var gainNode = context.createGain();
+var gainNode = ctx.createGain();
 var maxFreq = 800;
 var maxVol = 0.4;
 gainNode.gain.value = initialVol;
 oscillator.connect(gainNode);
-gainNode.connect(context.destination);
+gainNode.connect(ctx.destination);
 
-canvas.width = canvas2.width = window.innerWidth;
-canvas.height = canvas2.height = window.innerHeight;
-var width = w = canvas.width;
-var height = h = canvas.height;
+
 var i = 0;
 ctx.globalAlpha=0.4;
 

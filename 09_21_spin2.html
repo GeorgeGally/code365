@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script language="javascript" src="js/creative.js"></script>
+  <script language="javascript" src="js/canvas.js"></script>
+  <script language="javascript" src="js/three.min.js"></script>
+  <script language="javascript" src="js/_maxiLib.js"></script>
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body style="background: #fff">
+   
+<script>
+
+// GLOBALS
+var ctx = createCanvas("canvas1");
+var r = 0;
+var show = 10;
+var particles = [];
+var num_particles = 1000;
+var sphere = [];
+var spacing = 0.01;
+var radius = 1;
+var d=0, t=0;
+
+
+// setup 3D environment 
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+var geometry = new THREE.SphereGeometry( 1, 28, 18, 4 );
+geometry.dynamic = true;
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+// scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+renderer.setClearColor( 0xf3f3f3 );
+camera.position.z = 100;
+camera.near = 60;
+camera.far  = 155;
+
+// setup audio
+var changeThis = 3;
+var audio = new maximJs.maxiAudio();
+audio.setBufferSize(512);
+//audio.outputIsArray(true, 2); //stereo
+audio.init();
+
+var osc = new maximJs.maxiOsc();
+var osc2 = new maximJs.maxiOsc();
+var osc3 = new maximJs.maxiOsc();
+
+var filter = new maximJs.maxiFilter();
+var drawOutput = new Array(num_particles);
+var counter = 0;
+
+var spacing = ((Math.PI * 2) / 1024);//1024 because it is the size of the buffer
+var bufferFreq = 44100 / num_particles;
+var vol = 0.8;
+
+
+var clock = new maximJs.maxiClock();
+clock.setTicksPerBeat(4);
+clock.setTempo(200);
+var freq1 = 100;
+var freq2 = 62;
+
+audio.play = function () {
+    
+    if(clock.tick){
+      freq1 = bufferFreq * 1 + osc2.sinewave(bufferFreq * changeThis) * osc3.sinewave(0.185);
+      //freq1 = bufferFreq*osc2.sinewave(bufferFreq * changeThis)*10;
+      freq2 = (bufferFreq/20 * changeThis);
+    }
+
+    var wave = osc.sinewave(freq1)*10;
+    //var wave = osc.sinewave(freq1)*150;
+    var wave2 = osc.sinewave(freq2)*15;
+
+    //wave = filter.lopass(wave * vol, 0.3);
+    this.output = (wave + wave2)*vol;
+
+    drawOutput[frameCount % num_particles] = (Math.round(wave + wave2)/20)*3;
+
+};
+
+
+
+
+for (var i = 0; i < num_particles; i++) {
+addParticle(i);
+}
+
+renderer.setClearColor( 0xf3f3f3 );
+camera.position.z = 80;
+camera.near = 60;
+camera.far  = 155;
+
+var show = 10;
+
+function draw() {
+  
+  drawParticles();
+
+  //scene.rotation.z+= 0.01;
+  renderer.render( scene, camera );
+
+};
+
+
+function changeColour(){
+
+   if (chance(300)) {
+    renderer.setClearColor( 0xf3f3f3 );
+    bufferFreq = 44100 / 512;
+  } else if (chance(300)) {
+    renderer.setClearColor( 0xdddddd );
+    bufferFreq = 44100 / 1024;
+  } else if (chance(300)) {
+    renderer.setClearColor( 0x000000 );
+    bufferFreq = 44100 / 256;
+  }
+
+}
+
+function Particle(){
+  this.sphere = new THREE.Mesh( geometry, dMaterial );
+  scene.add( this.sphere );
+  this.sphere[i].position.x = Math.cos(i*spacing) * radius;
+  this.sphere[i].position.y = Math.sin(i*spacing) * radius;
+  this.sphere[i].position.z = 0;
+  this.sphere[i].scale.x = this.sphere[i].scale.y = this.sphere[i].scale.y = 1;
+  this.sphere[i].s = 1;
+}
+
+
+function addParticle(i){
+
+  sphere[i] = new THREE.Mesh( geometry, dMaterial );
+  scene.add( sphere[i] );
+  sphere[i].position.x = Math.cos(i*spacing) * radius;
+  sphere[i].position.y = Math.sin(i*spacing) * radius;
+  sphere[i].position.z = -i/2;
+  sphere[i].scale.x = sphere[i].scale.y = sphere[i].scale.y = 1;
+  sphere[i].s = 1;
+
+}
+
+
+function drawParticles(){
+
+   if (show < num_particles) show+=0.1;
+  
+    for (var i = 0; i < num_particles; i++) {
+
+      sphere[i].position.x = Math.cos(r*i) * (i);
+      sphere[i].position.y = Math.sin(r*i) * (i);
+      sphere[i].position.z = Math.sin(frameCount/1000) * (-i);
+      
+      if(drawOutput[i]) sphere[i].s = tween(sphere[i].s, drawOutput[i], 25);
+      
+      // if (chance(500)) {
+      //   var scale = random(0.6, 2);
+      //   sphere[i].s = scale;
+      //   changeThis = random(5);
+      // }
+
+      //sphere[i].scale.x = sphere[i].scale.y = sphere[i].scale.z = sphere[i].s;
+
+      r+=0.000001;
+
+      }
+
+      if ((r < 2.9 && r > 0.5) || r> 0.6) {
+        scene.rotation.x += 0.02;
+        scene.rotation.y += 0.01;
+        changeThis = random(2);
+        changeColour();
+      }
+
+      if (chance(200)) {
+          changeColour();
+        changeThis = random(5);
+      }
+
+
+}
+
+</script>
+</body>
+</html>

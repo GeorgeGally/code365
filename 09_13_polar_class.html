@@ -1,0 +1,152 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    
+<!--     <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script src="js/_maxiLib.js"></script>
+	
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+
+
+<script type="text/javascript">
+var ctx = createCanvas("canvas1");
+var num = 120;
+var particles = [];
+
+
+function Particle(pos){
+    this.pos = pos; 
+    this.speed = new Vector(random(0.2, 2),random(0.2, 2));
+}
+
+
+/// SETUP
+
+function setup(){
+    for (var i = 0; i < num; i++) {
+        particles[i] = new Particle(new Vector(random(w),random(h)));
+    }
+}
+
+
+function drawParticles(){
+    ctx.lineWidth = 1;
+    for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+        p.pos = p.pos.add(p.speed);
+        //p.pos.x = p.pos.x % w;
+        //p.pos.y = p.pos.y % h;
+        if (p.pos.x >= w || p.pos.x <= 0) p.speed.x *=-1;
+        if (p.pos.y >= h || p.pos.y <= 0) p.speed.y *=-1;
+        ctx.fillEllipse(p.pos.x, p.pos.y, 6, 6);
+        // check if someone is close 
+        for (var j = i; j < particles.length; j++) {
+
+            if (i!=j) {
+                p2 = particles[j];
+                if (dist(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y) < 50) {
+                    ctx.strokeStyle = "black";
+                    ctx.line(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y);
+                }
+            }
+        }
+    }
+}
+
+
+var changeThis = 3;
+
+var audio = new maximJs.maxiAudio();
+audio.setBufferSize(8192);
+//audio.outputIsArray(true, 2); //stereo
+audio.init();
+//maximJs.maxiAudio.init();
+
+var osc = new maximJs.maxiOsc();
+var osc2 = new maximJs.maxiOsc();
+var osc3 = new maximJs.maxiOsc();
+
+// var samp = new maximJs.maxiSample();
+var filter = new maximJs.maxiFilter();
+// var output;
+var drawOutput = new Array(1024);
+var counter = 0;
+
+
+var spacing = ((Math.PI * 2) / 512);//1024 because it is the size of the buffer
+var size = width / 4;//size fo the circle
+
+//bufferFreq: to be used as frequency
+//so that "the whole buffer fills the screen once per draw method"
+//"frequency at which you know that an entire waveform fits inside the buffer" (?)
+//try only with a sinewave to see better
+//on its own will draw a circle
+var bufferFreq = 44100 / 1024;// 43.06640625
+
+
+
+
+audio.play = function () {
+    // create wave for fft
+    //var wave = (osc.sawn(150) - osc2.sawn(150.1));
+    
+    //var wave = samp.play();
+    var wave = osc.sinewave(bufferFreq * 1 + osc2.sinewave(bufferFreq * changeThis) * osc3.sinewave(0.185) * 50);
+
+    //var wave = osc.sinewave(0.024);
+    // var wave = osc.sinewave(bufferFreq*osc2.sinewave(bufferFreq*1)*10);
+
+    //var wave = osc.sinewave(bufferFreq * 5);
+    // process wave
+    counter++;
+    
+    //used to scale the output and the drawouput reciprocally
+    var vol = 0.8;
+    wave = filter.lopass(wave * vol, 0.3);
+    this.output = wave;
+    
+    drawOutput[counter % 1024] = wave;
+
+};
+
+
+function draw() {
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.lineWidth = 3;
+    for (var i = 0; i < 1024; i++) {
+
+  
+        ctx.strokeStyle = hsl(Math.round(127*i/1024), 80, 60);
+
+        ctx.beginPath();
+
+        ctx.moveTo((width / 2) + (Math.cos(i * spacing) * size * drawOutput[i]), (height / 2) + (Math.sin(i * spacing) * size * drawOutput[i]));
+
+        // ctx.lineTo((width / 2) + (Math.cos(i * spacing) * drawOutput[i]), (height / 2) + (Math.sin(i * spacing) * drawOutput[i]));
+        ctx.lineTo(w/2, h/2);
+
+        ctx.stroke();
+        ctx.closePath();
+    }
+    drawParticles();
+
+}
+
+
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

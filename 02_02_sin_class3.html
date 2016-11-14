@@ -78,25 +78,25 @@ var Wave = function(_gapsize) {
 			var r = radius;
 			p.sz = tween(p.sz, map(radius,0, 100, 6, 18), 2);
 			//p.x = w/2 + (200) * Math.cos(p.angle);
-			p.y = h/2 + (100) * Math.sin(p.angle);
+			p.y = h/2 + 100 * Math.sin(p.angle);
 			ctx.fillStyle = rgba(0,0,0,1);
-			ctx.fillEllipse(p.x, p.y-this.gapsize, p.sz, p.sz);
+			ctx.fillEllipse(p.x, p.y-this.gapsize*i/10, p.sz, p.sz);
 
 			var s = map(audioChannelVolume[Math.floor(me)],0,20, 0, 20);
 			
-			ctx.line(p.x, p.y, p.x, p.y-2*this.gapsize);
+			ctx.line(p.x, p.y, p.x, p.y-2*this.gapsize*i/10);
 			ctx.fillStyle = rgba(0,0,0,1);
-			ctx.fillEllipse(p.x, p.y-2*this.gapsize, p.sz, p.sz);
+			ctx.fillEllipse(p.x, p.y-2*this.gapsize*i/10, p.sz, p.sz);
 
 			ctx.fillStyle = rgba(0,0,0,1);
 			ctx.fillEllipse(p.x, p.y, p.sz, p.sz);
 
 			ctx.fillStyle = rgba(0,0,0,1);
-			ctx.fillEllipse(p.x, p.y+this.gapsize, p.sz, p.sz);
+			ctx.fillEllipse(p.x, p.y+this.gapsize*i/10, p.sz, p.sz);
 
-			ctx.line(p.x, p.y, p.x, p.y+2*this.gapsize);
+			ctx.line(p.x, p.y, p.x, p.y+2*this.gapsize*i/10);
 			ctx.fillStyle = rgba(0,0,0,1);
-			ctx.fillEllipse(p.x, p.y+2*this.gapsize, p.sz, p.sz);
+			ctx.fillEllipse(p.x, p.y+2*this.gapsize*i/10, p.sz, p.sz);
 
 		};
 
@@ -119,7 +119,7 @@ var wave1 = new Wave(g);
 
 function draw(){
 
-	g = 10+Math.sin((frameCount/50)%100)*200;
+	g = 10+Math.sin((frameCount/50)%100)*40;
 	wave1.gapsize = tween(wave1.gapsize, g, 5);
 	wave1.draw();
 

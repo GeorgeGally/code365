@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+<script src="js/_maxiLib.js"></script>
+<script type="text/javascript" src="js/controlKit.min.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var hh = 50;
+var freqs = [440, 20, 200, 1440, 440, 440, 220, 1440];
+
+var lines = new particleEngine(2200);
+var grid = createGrid(1, 1200, w/8, h);
+for (var i = 0; i < lines.particles.length; i++) {
+	var p = lines.particles[i];
+	p.position.x =  w/2-w/8;
+    p.position.y = random(h);
+    p.dir = posNeg();
+    p.c = rgb(0);
+	//if (chance(10)) p.c = rgb(255);
+	p.h = random(2);
+}
+
+
+var counter = 0;
+function draw(){
+    
+    ctx.background(0);
+    freqs[0] = Math.sin(frameCount/100)*200;
+    freqs[1] = Math.sin(frameCount/400)*200;
+    freqs[2] = Math.sin(200 + frameCount/400)*100;
+    freqs[3] = Math.cos(0.03 + frameCount/100)*400;
+    freqs[4] = random(-200,200);
+    //var s = map(audioChannelVolume[20], 0, 100, 0, h);
+    s = map(Math.abs(freqs[0] + freqs[1] + freqs[2] + freqs[3]+ freqs[4]), 0, 700, 0, h);
+    //console.log( s)
+	hh = tween(hh, s, 3);	
+	ctx.fillStyle = rgba(255,1);
+	
+	if (!chance(20)){
+		ctx.fillRect(w/2-w/8, h-hh, w/4, h);
+	}
+
+	if (chance(200) || counter >= frameCount ){
+	if (counter < frameCount ) counter = frameCount + 10;
+	ctx.background(255);
+	ctx.fillStyle = rgb(0);
+	ctx.fillRect(w/2-w/8, h, w/4, h-hh);
+	}
+
+	if (chance(500)){
+	for (var i = 0; i < lines.particles.length; i++) {
+
+		var p = lines.particles[i];
+		//var s = mapSound(p.me, 1200);
+		
+		p.position.y += tween(p.position.y, p.position.y+s, 10);;
+		if (p.position.y > h) {p.position.y = 0};
+		if (p.position.y < 0) p.position.y = h;
+		p.w = tween(p.w, s/40, 2);
+		
+		//var y = map(p.position.y, 0, h, 0, hh)
+			ctx.fillStyle = p.c;
+			ctx.fillRect(p.position.x, p.position.y, w/4, p.h);
+
+	}
+	}
+
+}
+
+
+
+var maximJs;
+    
+var maxiAudio = new maximJs.maxiAudio();
+var myWave = new maximJs.maxiOsc();
+var myWave2 = new maximJs.maxiOsc();
+
+maxiAudio.init();
+    
+maxiAudio.play = function() {
+     // this.output = 0; //output to this page (it won't make any sound like this)
+      this.output = myWave.sinewave(freqs[0]) * 0.15; // a sine wave of 440 multiplied by .125 to reduce volume
+      this.output = myWave2.sinewave(freqs[1]) * 0.5;
+      this.output = myWave.sinewave(freqs[2]*myWave2.sinewave(0.20)) * 0.25;
+      this.output = myWave.saw(freqs[3])* 0.25;
+      this.output = myWave.square(freqs[4]) * 0.25;
+      this.output = myWave.pulse(freqs[5],0.5) * 0.25;
+      this.output = myWave.triangle(freqs[6]) * 0.25; 
+    	this.output = myWave.sawn(freqs[7]) * 0.25;
+    };
+
+
+var object = {
+
+	freq0: freqs[0],
+	freq1: freqs[1],
+	freq2: freqs[2],
+	freq3: freqs[3],
+	freq4: freqs[4],
+	freq5: freqs[5],
+	freq6: freqs[6],
+	freq7: freqs[7],
+    freq_range: [1, 2000]
+
+}
+
+
+var controlKit = new ControlKit();
+controlKit.addPanel({label: 'Control Panel', align: 'left', fixed: false, position: [w-250, h-280], width: 200})
+    .addSlider(object, 'freq0', 'freq_range', { label: 'Freq1', dp: 0, onChange: function(index){ 
+        freqs[0] =  object.freq0;
+         }})
+    .addSlider(object, 'freq1', 'freq_range', { label: 'Freq2', dp: 0, onChange: function(index){ 
+        freqs[1] =  object.freq1;
+         }})
+
+.addSlider(object, 'freq2', 'freq_range', { label: 'Freq3', dp: 0, onChange: function(index){ 
+        freqs[2] =  object.freq2;
+         }})
+
+.addSlider(object, 'freq3', 'freq_range', { label: 'Freq4', dp: 0, onChange: function(index){ 
+        freqs[3] =  object.freq3;
+         }})
+
+.addSlider(object, 'freq4', 'freq_range', { label: 'Freq5', dp: 0, onChange: function(index){ 
+        freqs[4] =  object.freq4;
+         }})
+
+.addSlider(object, 'freq5', 'freq_range', { label: 'Freq6', dp: 0, onChange: function(index){ 
+        freqs[5] =  object.freq5;
+         }})
+
+.addSlider(object, 'freq6', 'freq_range', { label: 'Freq6', dp: 0, onChange: function(index){ 
+        freqs[6] =  object.freq6;
+         }})
+
+.addSlider(object, 'freq7', 'freq_range', { label: 'Freq8', dp: 0, onChange: function(index){ 
+        freqs[7] =  object.freq7;
+         }})
+
+
+
+</script>
+
+</body>
+</html>

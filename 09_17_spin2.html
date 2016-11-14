@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/url.js"></script>
+<script language="javascript" src="js/physics2.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/three.min.js"></script>
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+   
+<script>
+var ctx = createCanvas("canvas1");
+var r = 0;
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+var num_particles = 60;
+var plane = [];
+var spacing = radians(360 /num_particles);
+var radius = 10;
+
+var d=0, t=0;
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+
+document.body.appendChild( renderer.domElement );
+
+var geometry = new THREE.SphereGeometry( 2, 18, 18, 2 );
+geometry.dynamic = true;
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+
+
+console.log(spacing);
+
+for (var i = 0; i < num_particles; i++) {
+  plane[i] = new THREE.Mesh( geometry, dMaterial );
+  scene.add( plane[i] );
+  //plane[i].rotation.z += (i * Math.PI);
+  // plane[i].position.x = random(-15,15);
+  plane[i].position.x = Math.cos(i*spacing) * radius;
+  plane[i].position.y = Math.sin(i*spacing) * radius;
+  plane[i].position.z = -200;
+  plane[i].start = new Vector(plane[i].position.x, plane[i].position.y,plane[i].position.z);
+  //plane[i].position.normalize();
+  //plane[i].position.multiplyScalar(1);
+  plane[i].s = 1;
+  plane[i].s2 = 1;
+
+var tt = [];
+var start_z = [];
+var start_y = [];
+for (j=0;j<plane[i].geometry.vertices.length;j++) {
+  start_z[j] = plane[i].geometry.vertices[j].z;
+  start_y[j] = plane[i].geometry.vertices[j].y;
+  tt[j] = 0;
+}
+
+
+}
+
+renderer.setClearColor( 0x000000 );
+camera.position.z = 100;
+camera.near = 60;
+camera.far  = 155;
+
+var show = 10;
+
+function draw() {
+  
+  //
+  t+=.0001
+  d+=.01;
+  
+  if (show < num_particles) show+=0.1;
+  
+  for (var i = 0; i < num_particles; i++) {
+
+  plane[i].position.x = Math.cos(r*i) * (i);
+  plane[i].position.y = Math.sin(r*i) * (i);
+  plane[i].position.z = 0;
+
+  //if (r> 3) {
+  scene.rotation.x += 0.0002;
+  scene.rotation.y += 0.0001;
+  //}
+  // plane[i].scale.x = plane[i].s;
+  // plane[i].scale.y = plane[i].s;
+  // plane[i].scale.z = plane[i].s;
+  //plane[i].position.x = plane[i].position.x + r%10;
+  //plane[i].position.y = plane[i].position.y + (i*r)%10;
+  //plane[i].position.z = plane[i].start.z + plane[i].s2;
+  //plane[i].rotation.x += r;
+  r+=0.00001;
+  //plane[i].position.y = plane[i].s2;
+  // }
+  // for (j=0;j<plane[i].geometry.vertices.length;j++){
+  // plane[i].geometry.vertices[j].z+= random(-0.1,0.1);
+  // //plane[i].geometry.vertices[0].y = random(0,40);
+  // }
+  // plane[i].geometry.verticesNeedUpdate=true;
+   }
+  //
+  // scene.rotation.z+= 0.01;
+  //scene.rotation.x+= 0.01;
+  //scene.rotation.y += 0.01;
+  //scene.rotation.y = tween(scene.rotation.y, scene.rotation.y + map(audioChannelVolume[10],0,140, -0.4, 0.4), 90);
+  //console.log(r)
+  renderer.render( scene, camera );
+
+};
+
+
+</script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

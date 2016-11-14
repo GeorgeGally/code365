@@ -107,8 +107,10 @@ var reverb = 0.2, delay = 0.1;
 var reverbFilter = new Tone.JCReverb(reverb).connect(Tone.Master);
 var delayFilter  = new Tone.FeedbackDelay(delay); 
 
-//var hitSynth = new Tone.Synth().toMaster();
-var hitSynth = new Tone.PolySynth(4, Tone.MonoSynth).toMaster();
+var hitSynth = new Tone.Synth().toMaster();
+//var hitSynth = new Tone.PolySynth(4, Tone.MonoSynth).toMaster();
+
+var synths = [];
 
 // var merge = new Tone.Merge();
 // //a little reverb
@@ -185,12 +187,12 @@ var presets = {
 // var newSynth = new Tone.AMSynth({oscillator:{type:"sawtooth3"},envelope:{attack:attack,decay:decay,sustain:sustain,release:release}}).chain(delayFilter, reverbFilter);
 
 
-var newSynth = new Tone.FMSynth(presets).chain(delayFilter, reverbFilter);
+var newSynth = new Tone.Synth(presets).chain(delayFilter, reverbFilter);
 
 //var filter = new Tone.Filter(200, "highpass").toMaster();
 
 // TRANSPORT TIMELINE //
-Tone.Transport.bpm.rampTo(bpm, "8n");
+Tone.Transport.bpm.rampTo(bpm, "16n");
 Tone.Transport.scheduleRepeat(function(time){
 
 	transport_position = (transport_position + 1)%piano_length;
@@ -206,7 +208,7 @@ Tone.Transport.start();
 
 function pauseMe(){
 	stop = !stop;
-	}
+}
 
 
 
@@ -247,12 +249,13 @@ function drawButtons(){
 		}
 		
 		
-		// turn on steps
-		if (Math.round(transport_position) == i) {
+	// turn on steps
+	if (Math.round(transport_position) == i) {
 
-			// IF TRANSPORT IS ON PLAY NOTE
-			if (p.on) {
-				newSynth.triggerAttackRelease(freq, "16n");
+		// IF TRANSPORT IS ON PLAY NOTE
+		if (p.on) {
+				
+				//newSynth.triggerAttackRelease(freq, "8n");
 				// kick.start();
 				//console.log("transport_position: " + transport_position)
 				ctx.fillStyle = "#f26522";
@@ -368,7 +371,6 @@ function circleLineCollide(b) {
 						c.speed.x *=-1;
 						c.speed.y *=-1;
 						c.counter = frameCount-100;
-	
 						
 					}
 				}
@@ -622,7 +624,7 @@ var controlKit = new ControlKit();
     	.addButton('Pause', function(){ pauseMe();  });
 
 
-changeSynths();
+//changeSynths();
 
 </script>
 <!--  <script language="javascript" src="js/soundcloud.js"></script> -->

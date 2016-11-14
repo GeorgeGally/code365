@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>test</title>
+<!-- 	<script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/vector.js"></script>
+	<script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+	
+</head>
+
+<body style="background:#000;">
+<script type="text/javascript">
+
+	var ctx = createCanvas("canvas1");
+	var maxParticles = 5000;
+	var particles = new particleEngine(1);
+	particles.particles[0].position.x = w/2;
+	var ball = [];
+	var bugs = [];
+	ball.position = new Vector(w/2, h/2);
+	ball.speed = new Vector(random(-2,2), random(-2,2));
+
+	function draw(){
+		ctx.background(0,0,0,0.002);
+		ctx.save();
+		ball.position.x += ball.speed.x;
+		ball.position.y += ball.speed.y;
+
+		if (bounce(ball.position.x, 0, w)) ball.speed.x*=-1;
+		if (bounce(ball.position.y, 0, h)) ball.speed.y*=-1;
+		
+		ctx.fillStyle = "white";
+		ctx.fillEllipse(ball.position.x, ball.position.y, 10, 10);
+		addParticle(ball.position.x, ball.position.y);
+			
+			ctx.globalCompositeOperation = 'multiply';
+					
+			//ctx.fillStyle = "red";
+		for (var i = 0; i < bugs.length; i++) {
+			var b = bugs[i];
+			ctx.globalAlpha = b.alpha;
+			ctx.fillStyle=b.c;	
+			b.x += b.speed.x;
+			b.y += b.speed.y;
+			p.size *= p.reduce;
+			p.alpha+=0.0019999;
+			if (bounce(b.x, 0, w) || bounce(b.y, 0, h) || p.alpha>=1 || p.size<0.005) {
+				bugs.splice(i,1);
+			}
+
+			ctx.fillEllipse(b.x, b.y, b.size, b.size);
+
+		}
+		ctx.restore();
+		
+}
+
+
+function addParticle(_x, _y){
+	var c = random(0,255);
+	var speed = new Vector(random(-1,1),random(-1,1));
+		var particle = {
+		orig_x: _x, 
+		orig_y: _y,
+		x: _x+random(-4,4), 
+		y: _y+random(-4,4),
+		c: rgb(c),
+		size: 3,
+		reduce: random(0.3, 0.8), 
+		alpha: 0.05,
+		speed: speed
+	};
+	bugs.push(particle);
+}
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+ </body>
+</html>

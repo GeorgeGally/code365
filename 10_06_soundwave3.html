@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<meta charset="utf-8">
+	<title>test</title>
+	<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/vector.js"></script>
+	<script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background:#000;">
+
+<script type="text/javascript">
+
+	var screen = createCanvas("canvas1");
+
+	// Create the Audio Context
+	var context = new AudioContext();
+	var analyser = context.createAnalyser();
+	var osc = context.createOscillator();
+
+	function playSound() {
+
+    osc.frequency.value = 400;
+    osc.type = 'sine';
+
+    oscGain = context.createGain();
+    oscGain.gain.value = 0.2;
+
+    osc.start(context.currentTime);
+    //osc.stop(context.currentTime + 3);
+
+    osc.connect(oscGain);
+    oscGain.connect(analyser); /*Connect oscillator to analyser node*/
+    analyser.connect(context.destination);
+}
+
+
+
+analyser.fftSize = 1024;
+
+var bufferLength = analyser.frequencyBinCount;
+/*an unsigned long value half that of the FFT size. This generally equates to the number of data values you will have to play with for the visualization*/
+
+var dataArray = new Uint8Array(bufferLength);
+var dots = new particleEngine(bufferLength);
+var third = Math.floor(dots.particles.length/3);
+console.log(third);
+var grid = createGrid(third, 1, w+20, h);
+
+for (var i = 0; i < dots.particles.length; i++) {
+	dots.particles[i].position.x = grid[i%third][0];
+	dots.particles[i].position.y = grid[i%third][1];
+}
+
+screen.lineWidth = 4;
+screen.strokeStyle = rgb(0);
+
+function draw() {
+	osc.frequency.value = Math.abs(Math.sin((frameCount%200)/1000)*1000);
+	screen.background(245);
+  analyser.getByteTimeDomainData(dataArray);
+
+	for (var i = 0; i < dots.particles.length; i+=1) {
+		var d = dots.particles[i];
+		d.position.y = h - dataArray[i];
+	}
+
+	// BASS
+	screen.fillStyle = rgba(0, 200, 0, 0.4);
+	drawWave(0, third);
+	// MIDS
+	screen.fillStyle = rgba(0, 0, 200, 0.4);
+	drawWave(third, 2*third);
+	// HIGHS
+	screen.fillStyle = rgba(200, 0, 0, 0.4);
+	drawWave(2*third, dots.particles.length-1);
+
+
+};
+
+function drawWave(start, end){
+	screen.beginPath();
+	screen.moveTo(0, dots.particles[start].position.y);
+	screen.lineTo(dots.particles[start+1].position.x, dots.particles[start+1].position.y);
+
+	for (var i = start+2; i < end-1; i+=2) {
+
+    screen.quadraticCurveTo(dots.particles[i-1].position.x, dots.particles[i-1].position.y, dots.particles[i].position.x, dots.particles[i].position.y);
+
+	}
+
+	screen.lineTo(w, dots.particles[dots.particles.length-1].position.y);
+	screen.lineTo(w, h);
+	screen.lineTo(0, h);
+	screen.lineTo(0, dots.particles[start].position.y);
+	screen.closePath();
+	screen.fill();
+	screen.stroke();
+}
+
+
+playSound();
+
+</script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+ </body>
+</html>

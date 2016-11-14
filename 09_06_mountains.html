@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>mountains</title>
+
+	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/d3.js"></script>
+	<script language="javascript" src="js/vector.js"></script>
+	<script language="javascript" src="js/vector_particles.js"></script>
+	<style>
+body {
+	background: #e7e7e7;
+	font-family: helvetica, arial;
+	font-size: 16px;
+	color: #333;
+	overflow: hidden;
+	}
+.intro {
+	z-index: 99;
+	position: absolute;
+	bottom: 60px;
+	left: 60px;
+	padding: 20px;
+    width: 600px;
+    background-color:rgba(255, 255, 255, 0.5);
+}
+</style>
+
+</head>
+<body>
+
+</body>
+<script>
+
+var block_size = 10;
+var max_dist;
+var movement;
+var dist = [];
+var ctx = createCanvas("canvas1");
+var particles = [];
+var counter = 0;
+var loaded = false;
+var spacing = 0;
+var colours = ["blue", "green", "orange", "red"];
+
+var url = "data/hallein.csv";
+
+d3.csv(url, function(data) {
+
+	var minXDataPoint = d3.min(data, function(d) { return d['Latitude'];});
+  	var maxXDataPoint = d3.max(data, function(d) { return d['Latitude'];});
+  	var minYDataPoint = d3.min(data, function(d) { return d['Longitude'];});
+  	var maxYDataPoint = d3.max(data, function(d) { return d['Longitude'];});
+
+  	var minAltitude = d3.min(data, function(d) { return d['Altitude'];});
+  	var maxAltitude = d3.max(data, function(d) { return d['Altitude'];});
+
+  	var xScale = d3.scale.linear()
+        .domain([minXDataPoint, maxXDataPoint])
+        .range([50, w-150]);
+
+	var yScale = d3.scale.linear()
+        .domain([minYDataPoint, maxYDataPoint])
+        .range([50, h-200]);
+
+    var colour_scale = d3.scale.linear()
+        .domain([minAltitude, maxAltitude])
+        .range([0, colours.length]);
+
+	spacing = w/data.length;
+
+  	max_dist = getDistanceFromLatLonInKm(minXDataPoint, minYDataPoint, maxXDataPoint, maxYDataPoint);
+
+ 	movement = new particleEngine(data.length);
+ 	
+	// compute distances
+  	
+  	dist[0] = 0;
+  	
+  	for (var i = 1; i < data.length; i++) {
+
+  		var p = movement.particles[i];
+  		var c = data[i];
+  		var d = data[i-1];
+  		
+  		p.dist = Math.abs(getDistanceFromLatLonInKm(c['Latitude'], c['Longitude'], d['Latitude'], d['Longitude']));
+
+		p.position.x = xScale(data[i]['Latitude']);
+		p.position.y = yScale(data[i]['Longitude']);
+
+		p.alt = map(data[i]['Altitude'], minAltitude, maxAltitude, 0, h);
+		
+		p.c= colours[colour_scale(data[i]['Altitude'])];
+		p.sz = map(p.alt, 0, h, 200, 5);
+
+		if (i > 0) {
+			p.start.x = xScale(data[i-1]['Latitude']);
+			p.start.y = yScale(data[i-1]['Longitude']);
+		} else {
+			p.start.x = x;
+			p.start.y = y;
+		}
+
+	}
+	
+	counter = data.length-1;
+	loaded = true;
+	console.log(movement)
+})	
+
+
+
+function moveParticles(p){
+
+	ctx.lineWidth = 4;
+
+	var alt = h - p.alt;
+		
+	if (p.me-1 > 0){
+		ctx.strokeStyle = rgb(255,0,0);
+		ctx.line(p.position.x, p.position.y, movement.particles[p.me-1].x, movement.particles[p.me-1].y);
+		var old = h - movement.particles[p.me-1].alt;
+
+	} else {
+		var old = 0;
+	}
+
+	ctx.strokeStyle = rgb(255);
+	ctx.line(w-spacing*p.me, old, w-spacing*p.me + spacing, alt);
+
+	ctx.lineWidth = 0.3;
+	if (p.me%10 == 0) {
+		ctx.fillStyle = "white";
+		//console.log(p.position.y);
+		ctx.HstrokeEllipse( p.position.x, p.position.y, p.sz, p.sz);
+		ctx.fillEllipse( p.position.x, p.position.y, 4, 4);
+		// ctx.fillEllipse( p.position.x, p.position.y, p.sz, p.sz);
+	}			
+
+}
+
+
+
+
+ctx.background(0);
+
+
+function draw(){
+	if (loaded && movement.particles.length> 1) {
+		
+		moveParticles(movement.particles[counter]);
+		if (frameCount%2 == 0 && counter > 0) counter--;
+		//
+	}
+	//pixelShuffle(pixelWidth, pixelHeight, prob);
+}
+
+/////// UTILS
+
+
+function roundUp(v){
+	return Math.round(v/block_size)*block_size
+}
+
+function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+  var R = 6371; // Radius of the earth in km
+  var dLat = deg2rad(lat2-lat1);  // deg2rad below
+  var dLon = deg2rad(lon2-lon1); 
+  var a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+    ; 
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  var d = R * c; // Distance in km
+  return d;
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180)
+}
+
+</script>
+</html>

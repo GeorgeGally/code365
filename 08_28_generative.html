@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+    <script type="text/javascript" src="js/controlKit.min.js"></script>
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 0.2;
+var particles = 2;
+var radius = 20;
+var mag = 0.4;
+var limits = 4;
+
+var object = {
+    radius : radius,
+    mag : mag,
+    limits : limits,
+    particles : particles,
+    range: [1, 200],
+    mag_range: [0.01, 0.5],
+    limit_range: [1, 20]
+}
+
+
+var flies = [];
+var balls = new particleEngine(particles);
+
+for (var i = 0; i < balls.particles.length; i++) {
+    
+    p = balls.particles[i];
+    addParticle(p);
+}
+
+
+function addParticle(b){
+    b.position.x = b.x = w/2 + Math.sin(random(1)) * 15;
+    b.position.y = b.y = h/2 + Math.cos(random(1)) * 15;
+    b.speed.x = random(0.1,2);
+    b.speed.y = random(2,20);
+    b.angle = radians(i*360/balls.particles.length);
+    c = randomInt(0,100);
+    b.c = rgba(c, c, c, random(0.1, 0.8));
+    b.sz = 20;
+
+    flies[b.me] = new particleEngine(555);
+    for (var j = 0; j < flies[b.me].particles.length; j++) {
+        p = flies[b.me].particles[j];
+        p.position.x = b.position.x + random(-255, 255);
+        p.position.y = b.position.y + random(-255, 255);
+        p.me = (p.me + randomInt(100))%80;
+        c = randomInt(0,100);
+        p.c = rgba(c, c, c, random(0.1, 0.8));
+    }
+}
+
+
+function pushParticles(i){
+    balls.addParticle(w/2, h/2, "black", particles);
+    b = balls.particles[particles];
+    addParticle(b);
+    particles++;
+}
+
+//////////////////////////////////////////////////////////////////
+/////////////////////// CONTROL /////////////////////////////////
+/////////////////////////////////////////////////////////////////
+
+
+
+var controlKit = new ControlKit();
+controlKit.addPanel({label: 'Control Panel', align: 'left', fixed: false, position: [w-250, h-280], width: 200})
+  //.addSubGroup({label: 'System Colors'})
+    .addSlider(object, 'radius', 'range', { label: 'Radius', dp: 0, onChange: function(index){ 
+        radius =  object.radius;
+         }})
+    .addSlider(object, 'particles', 'range', { label: 'Particles', dp: 0, onChange: function(index){ 
+        
+        if(object.particles > particles) {
+            var num = object.particles - particles;
+            for (var i = 0; i < num; i++) {
+               pushParticles(i);
+            }
+         } else {
+            balls.particles.slice(0, object.particles);
+         }
+        //particles =  object.particles;
+     }})
+     .addSlider(object, 'mag', 'mag_range', { label: 'Mag', dp: 2, onChange: function(index){ 
+        mag =  object.mag;
+        }})
+     .addSlider(object, 'limits', 'limit_range', { label: 'Limit', dp: 0, onChange: function(index){ 
+        limits =  object.limits;
+        }})
+
+
+// FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+function draw(){
+
+    // addToRadius
+    if (frameCount%20 == 0) {
+        radius = Math.min(radius+15, 300);
+        object.radius = radius;
+        controlKit.update();
+        //console.log(radius)
+    }
+
+    // addParticles
+    if (chance(400)) {
+        pushParticles(particles);
+        //console.log(radius)
+    }
+    
+    if (chance(400)) radius = 0; 
+    if (chance(400)) mag = random(0.5); 
+    if (chance(400)) limits = randomInt(1,8); 
+
+    ctx.fillStyle = rgba(255, 255, 255, 0.1);
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "black";
+    //if (chance(50)) radius =  tween(radius, map(audioChannelVolume[b.me%80], 0, 150, 60, 90),2);
+
+    for (var i = 0; i < balls.particles.length; i++) {
+        
+        b = balls.particles[i];
+        //b.angle += radians(b.speed.x);
+        if (i%2 == 0) {
+            b.angle -= radians(audioChannelVolume[i*5]/200); 
+        }  else {
+           b.angle += radians(audioChannelVolume[i*5]/200);  
+        }
+        
+        b.x = w/2 +  (b.sz/2+radius) * Math.cos(b.angle);
+        b.y = h/2 +  + (b.sz/2+radius) * Math.sin(b.angle);
+
+        for (var j = 0; j < flies[i].particles.length; j++) {
+            
+            var mouse = new Vector(b.x+b.sz/2, b.y+b.sz/2);
+            p = flies[i].particles[j];
+            mouse = mouse.subtract(p.position);
+             mouse.setMag(mag);
+            //console.log(mouse)
+            acceleration = mouse;
+            p.speed = p.speed.add(acceleration);
+            p.position = p.position.add(p.speed);
+            p.speed.limit(limits);
+            //p.sz = 1;
+            p.sz =  map(audioChannelVolume[p.me%80], 0, 120, 0.4, 1.6);
+            ctx.fillRect(p.position.x, p.position.y, p.sz, p.sz);
+
+        }
+
+    } 
+    if(chance(400)) glitch();
+    mirror();
+}
+
+
+function glitch(){
+    var slice_ht = randomInt(10,100);
+    var verticalSlices = height / slice_ht;
+    var maxHorizOffset = random(100);
+    bakeImg = degrade(canvas1);
+    for (var i = 0; i < h; i+=1)  {
+    var horizOffset = randomInt(-Math.abs(maxHorizOffset), maxHorizOffset);
+    ctx.drawImage(bakeImg, 
+    0, i * verticalSlices, 
+    bakeImg.width, i * verticalSlices + verticalSlices, horizOffset, 
+    i * verticalSlices, bakeImg.width, i * verticalSlices + verticalSlices);
+    }
+}
+function degrade(canvas) {
+    //ctx.drawImage(img, 0, 0, img.width, img.height);
+    var bakeImg = new Image;
+    var compressor = random(0.1,1);
+    var dataURL = canvas.toDataURL("image/webp",compressor);    
+    bakeImg.src = dataURL;
+    return bakeImg;
+}
+
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+ <script src="JS/maptastic.min.js"></script>
+ <script>
+           // Maptastic("canvas1");
+        </script>
+</body>
+</html>

@@ -23,7 +23,7 @@ ctx.lineWidth = 2;
 var particles = [];
 var flies = [];
 var radius = 320;
-var num_particles = 4;
+var num_particles = 8;
 ctx.translate(0.5, 0.5);
 var margin = 110;
 var theta = 0.0;
@@ -37,8 +37,8 @@ for (var i = 0; i < num_particles; i++) {
 	flies[i] = new particleEngine(400);
 	for (var j = 0; j < flies[i].particles.length; j++) {
 		b = flies[i].particles[j];
-		b.speed.x = random(-0.2, 2);
-		b.speed.y = random(-0.2, 2);
+		b.speed.x = posNeg()*random(0.2, 7);
+		b.speed.y = posNeg()*random(0.2, 7);
     b.position.x = 0;
     b.position.y = 0;
 	}
@@ -47,13 +47,14 @@ for (var i = 0; i < num_particles; i++) {
 
 function draw(){
 
-	ctx.fillStyle = rgba(255, 255, 255, 0.2);
+	ctx.fillStyle = rgba(255, 255, 255, 0.8);
 	ctx.fillRect(0, 0, w, h);
 	theta +=  map(audioChannelVolume[randomInt(40)], 0, 150, 1, 5)/10;
 	//theta += 0.05;
 	
 
 	moveParticles();
+  mirror();
 
 }
 
@@ -69,35 +70,31 @@ function moveParticles(){
   xx[3] = map(Math.sin(theta),-1,1,2*margin,width-margin*2)-w/2;
   xx[2] = map(Math.sin(theta),-1,1,width-2*margin,margin*2)-w/2;
 
+  xx[4] = map(Math.sin(theta),-1,1,2*margin,width-margin*2)-w/2;
+  xx[5] = map(Math.sin(theta),-1,1,width-2*margin,margin*2)-w/2;
+
+  xx[6] = map(Math.sin(theta),-1,1,2*margin,width-margin*3)-w/2;
+  xx[7] = map(Math.sin(theta),-1,1,width-2*margin,margin*3)-w/2;
+
    	var sz = map(audioChannelVolume[30], 0, 100, 15, 50); 
 
    	yy[0] = xx[0];
    	yy[1] = xx[1];
    	yy[2] = xx[3];
    	yy[3] = xx[2];
+    yy[4] = xx[5];
+    yy[5] = xx[4];
+    yy[6] = xx[0];
+    yy[7] = xx[1];
     ctx.lineWidth = 2;
    	ctx.strokeStyle = "black";
    	ctx.fillStyle = "black";
-   	
-   	//ctx.line(xx[1],yy[1],xx[0],yy[0]);
-  	// ctx.fillEllipse(xx[0],yy[0],sz,sz);
-  	// ctx.fillEllipse(xx[1],yy[1],sz,sz);
 
-    //ctx.line(xx[3],yy[3],xx[2],yy[2]);
-    // ctx.fillEllipse(xx[2],yy[2],sz,sz);
-    // ctx.fillEllipse(xx[3],yy[3],sz,sz);
-
-    // ctx.fillStyle = "white";
-    // ctx.fillEllipse(xx[0],yy[0],sz/2,sz/2);
-    // ctx.fillEllipse(xx[1],yy[1],sz/2,sz/2);
-    // ctx.fillEllipse(xx[2],yy[2],sz/2,sz/2);
-    // ctx.fillEllipse(xx[3],yy[3],sz/2,sz/2);
 
 	for (var i = 0; i < num_particles; i++) {
 
 		 
-        b.angle += radians(map(audioChannelVolume[b.me%60], 0, 100, -1, 1)); 
-    // xx[i] +=  (b.sz/2+radius) * Math.cos(b.angle);
+
     // yy[i] +=  (b.sz/2+radius) * Math.sin(b.angle);
 
         for (var j = 0; j < flies[i].particles.length; j++) {
@@ -106,22 +103,22 @@ function moveParticles(){
             b = flies[i].particles[j];
          
 
+            b.angle += radians(map(mapSound(b.me,num_particles) , 0, 100, -1, 1)); 
+            b.position.x += Math.sin(b.angle)*2;
+            b.position.y += Math.cos(b.angle)*2;
+
             mouse = mouse.subtract(b.position);
-            mouse.setMag(random(1));
+            mouse.setMag(random(5));
             //console.log(mouse)
             acceleration = mouse;
             b.speed = b.speed.add(acceleration);
             b.position = b.position.add(b.speed);
-            b.speed.limit(5);
+            b.speed.limit(6);
             //p.sz = 2;
             b.sz =  map(audioChannelVolume[b.me%80], 0, 150, 0.1, 2);
-            ctx.strokeStyle = b.c;
-            ctx.fillStyle = b.c;
-            ctx.strokeStyle = rgba(0, 0, 0, 0.2);
-            ctx.fillStyle ="black";
-            //ctx.line(b.position.x, b.position.y, x, y);
+            ctx.fillStyle = "black";
             ctx.fillRect(b.position.x, b.position.y, b.sz, b.sz);
-            ctx.lineWidth = 0.2;
+            //ctx.lineWidth = 0.2;
             //ctx.fillEllipse(b.position.x, b.position.y, 20, 20);
             if (i%2 == 1) {
 

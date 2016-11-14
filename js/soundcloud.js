@@ -14,6 +14,7 @@ var mix = [];
 var audioChannelVolume = [];
 var volume = [];
 
+var genres = ["slomo", "deeptechno", "ebm", "disco", "deepdisco", "indiedisco", "slomodisco", "slomohouse", "downtempotechno", "downtempo", "deepness", "pixies", "lowmotion", "plastikman", "minimalhouse", "acidhouse", "cosmic", "cosmicdisco", "ambient"];
 
 
 var audioCtxCheck = window.AudioContext || window.webkitAudioContext;
@@ -40,7 +41,7 @@ else {
     var sampleAudioStream = function() {
 
       analyser.getByteFrequencyData(self.streamData);
-      
+
       mix = getMixFromFFT(self.streamData);
 
       audioChannelVolume = volume = getVolume(self.streamData);
@@ -93,7 +94,7 @@ else {
     var audioSource;
       this.init = function(options) {
           audioSource = options.audioSource;
-          var container = document.getElementById(options.containerId);        
+          var container = document.getElementById(options.containerId);
       };
   };
 
@@ -113,14 +114,14 @@ else {
      */
 
     this.loadStream = function(genres, successCallback, errorCallback) {
-      
+
       if (SC != undefined) {
 
         SC.initialize({
             client_id: client_id
         });
         // SC.get('/resolve', { url: track_url }, function(sound) {
-        
+
         // load a specific track
         if (genres.charAt(0) == "!") {
 
@@ -129,22 +130,22 @@ else {
             console.log("track: " + genres);
 
            SC.get('/tracks/', {genres: genres} , function(tracks) {
-            
+
             console.log("tracks: " + tracks);
-            
+
             if (tracks.errors) {
-            
+
               self.errorMessage = "";
-            
+
               for (var i = 0; i < tracks.errors.length; i++) {
                 self.errorMessage += tracks.errors[i].error_message + '<br>';
               }
-            
+
               self.errorMessage += 'Make sure the URL has the correct format: https://soundcloud.com/user/title-of-the-track';
               errorCallback();
-          
+
             } else {
-            
+
             // randomTrack = Math.floor(Math.random()*(tracks.length-1));
             // console.log("Returned tracks: " + tracks.length);
             // console.log("Play track: " + randomTrack);
@@ -154,7 +155,7 @@ else {
             successCallback();
 
             }
-            
+
         }); // END GENRE CALL
 
         // load tags
@@ -162,22 +163,22 @@ else {
 
           console.log(genres);
           var call = {genres: genres }
-          
+
 
         SC.get('/tracks', { genres: genres, limit: 100 }, function(tracks) {
-          
+
           if (tracks.errors) {
-            
+
             self.errorMessage = "";
             for (var i = 0; i < tracks.errors.length; i++) {
               self.errorMessage += tracks.errors[i].error_message + '<br>';
             }
-            
+
             self.errorMessage += 'Make sure the URL has the correct format: https://soundcloud.com/user/title-of-the-track';
             errorCallback();
-          
+
           } else {
-            
+
             randomTrack = Math.floor(Math.random()*(tracks.length-1));
             console.log("Returned tracks: " + tracks.length);
             console.log("Play track: " + randomTrack);
@@ -195,7 +196,7 @@ else {
                 //     successCallback();
                 // }else{
                 //     self.sound = sound;
-                //     self.streamUrl = function(){ 
+                //     self.streamUrl = function(){
                 //        return sound.stream_url + '?client_id=' + client_id; };
                 //        successCallback();
                 // }
@@ -237,19 +238,28 @@ else {
 
   };
 
-function mapSound(_me, _total){ 
+function mapSound(_me, _total){
 
   // HACK TO BECAUSE HIGHER VALUES NEVER HAVE DATA
-  var new_me = Math.floor(_me / _total * 110); 
+  var new_me = Math.floor(_me / _total * 110);
   //console.log(_total + " _me: "+ _me + " new_me: "+ new_me);
   //var new_me = Math.floor(map(_me, 0, _total, 0, 256));
   return audioChannelVolume[new_me];
 }
 
+
+function bassFFT(){
+
+  var split =  audioChannelVolume.length - Math.round(audioChannelVolume.length/6);
+  var bass = audioChannelVolume.slice(0, split);
+  return bass;
+
+}
+
 function getBass(){
 
   var b = 0;
-  var split =  audioChannelVolume.length2 - Math.round(audioChannelVolume.length/6);
+  var split =  audioChannelVolume.length - Math.round(audioChannelVolume.length/6);
   for (var i = split; i < audioChannelVolume.length; i++) {
     b += audioChannelVolume[i];
     //console.log(audioChannelVolume[i])
@@ -257,11 +267,29 @@ function getBass(){
   return (Math.round(b/(audioChannelVolume.length-1)));
 }
 
+
+function getMids(){
+
+  var b = 0;
+  var split =  audioChannelVolume.length - Math.round(audioChannelVolume.length/3);
+  for (var i = audioChannelVolume.length/3; i < 2*Math.round(audioChannelVolume.length/3); i++) {
+    b += audioChannelVolume[i];
+  }
+  return (Math.round(b/(audioChannelVolume.length-1)));
+
+}
+
+
+function highsFFT(){
+  var split =  audioChannelVolume.length - Math.round(audioChannelVolume.length/3);
+  var highs = audioChannelVolume.slice(audioChannelVolume.length/3, audioChannelVolume.length);
+}
+
 function getHighs(){
 
   var b = 0;
   var split =  audioChannelVolume.length - Math.round(audioChannelVolume.length/3);
-  for (var i = 0; i < audioChannelVolume.length; i++) {
+  for (var i = Math.round(2*audioChannelVolume.length/3); i < audioChannelVolume.length; i++) {
     b += audioChannelVolume[i];
     //console.log(audioChannelVolume[i])
   }
@@ -290,11 +318,13 @@ var loader = new SoundcloudLoader(player);
     loadAndUpdate(genres);
   }
   else {
-    var genres = "disco";
+    //var genres = "disco";
+    var genres = genres[randomInt(genres.length-1)];
+    location.hash = "#"+genres;
     //var trackUrl = 'https://soundcloud.com/' + 'justin-van-der-volgen/alexander-robotnick-undicidisco-justin-van-der-volgen-edit?in=h-track/sets/alexande-robotnick-florian';
-    loadAndUpdate(genres);      
+    loadAndUpdate(genres);
   }
-} 
+}
 
 function createAudioElement(audio_name){
   var music = document.createElement('audio');
@@ -350,7 +380,7 @@ var ui = function(loader) {
 
 function createPlayerUI() {
 
-  var audioplayer = document.createElement('div'); 
+  var audioplayer = document.createElement('div');
   audioplayer.setAttribute("id", "audioplayer");
   audioplayer.setAttribute("class", "wrapper");
 
@@ -369,7 +399,7 @@ function createPlayerUI() {
   artistInfo = document.createElement('div');
   artistInfo.setAttribute("id", "artistInfo");
   audioplayer.appendChild(artistInfo);
-  
+
   playButton = document.createElement('div');
   playButton.setAttribute("id", "playButton");
   playButton.setAttribute("class", "pause");
@@ -395,14 +425,14 @@ function createPlayerUI() {
   playButton.addEventListener("click", playAudio);
   timelineWidth = timeline.offsetWidth - playhead.offsetWidth;
 }
- 
+
 function playAudio() {
   if (music.paused) {
     console.log("play");
     music.play();
     playButton.className = "";
     playButton.className = "pause";
-  } else { 
+  } else {
     console.log("pause");
     music.pause();
     playButton.className = "";
@@ -416,7 +446,7 @@ function timeUpdate() {
   playhead.style.marginLeft = playPercent + "%";
   playtime.innerHTML = convertTime(Math.floor(music.currentTime)) + "/" + convertTime(Math.floor(duration));
 }
- 
+
 // Gets audio file duration
 music.addEventListener("canplaythrough", function () {
   duration = music.duration;
@@ -429,12 +459,12 @@ timeline.addEventListener("click", function (event) {
   moveplayhead(event);
   music.currentTime = duration * clickPercent(event);
 }, false);
- 
+
 // returns click as decimal (.77) of the total timelineWidth
 function clickPercent(e) {
   return (e.pageX - timeline.offsetLeft) / timelineWidth;
 }
- 
+
 function moveplayhead(e) {
     var newMargLeft = e.pageX - timeline.offsetLeft;
     if (newMargLeft >= 0 && newMargLeft <= timelineWidth) {
@@ -464,24 +494,24 @@ var MY_FFT_SIZE = 256
 var SAMPLE_RATE = 44100;
 var FFT_FREQ_RES = (SAMPLE_RATE/2)/(MY_FFT_SIZE/2);
 
-var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064, 
-            "C#2" : 69.2957, "D2" : 73.4162, "D#2" : 77.7817, "E2" : 82.4069, 
-            "F2" : 87.3071, "F#2" : 92.4986, "G2" : 97.9989, "G#2" : 103.826, 
-            "A2" : 110, "A#2" : 116.542, "B2" : 123.471, "C3" : 130.813, 
-            "C#3" : 138.591, "D3" : 146.832, "D#3" : 155.563, "E3" : 164.814, 
-            "F3" : 174.614, "F#3" : 184.997, "G3" : 195.998, "G#3" : 207.652, 
-            "A3" : 220, "A#3" : 233.082, "B3" : 246.942, "C4" : 261.626, 
-            "C#4" : 277.183, "D4" : 293.665, "D#4" : 311.127, "E4" : 329.628, 
-            "F4" : 349.228, "F#4" : 369.994, "G4" : 391.995, "G#4" : 415.305, 
-            "A4" : 440, "A#4" : 466.164, "B4" : 493.883, "C5" : 523.251, 
-            "C#5" : 554.365, "D5" : 587.330, "D#5" : 622.254, "E5" : 659.255, 
-            "F5" : 698.456, "F#5" : 739.989, "G5" : 783.991, "G#5" : 830.609, 
-            "A5" : 880, "A#5" : 932.328, "B5" : 987.767, "C6" : 1046.5, 
-            "C#6" : 1108.73, "D6" : 1174.66, "D#6" : 1244.51, "E6" : 1318.51, 
-            "F6" : 1396.91, "F#6" : 1479.98, "G6" : 1567.98, "G#6" : 1661.22, 
-            "A6" : 1760, "A#6" : 1864.66, "B6" : 1975.53, "C7" : 2093, 
-            "C#7" : 2217.46, "D7" : 2349.32, "D#7" : 2489.02, "E7" : 2637.02, 
-            "F7" : 2793.83, "F#7" : 2959.96, "G7" : 3135.96, "G#7" : 3322.44, 
+var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
+            "C#2" : 69.2957, "D2" : 73.4162, "D#2" : 77.7817, "E2" : 82.4069,
+            "F2" : 87.3071, "F#2" : 92.4986, "G2" : 97.9989, "G#2" : 103.826,
+            "A2" : 110, "A#2" : 116.542, "B2" : 123.471, "C3" : 130.813,
+            "C#3" : 138.591, "D3" : 146.832, "D#3" : 155.563, "E3" : 164.814,
+            "F3" : 174.614, "F#3" : 184.997, "G3" : 195.998, "G#3" : 207.652,
+            "A3" : 220, "A#3" : 233.082, "B3" : 246.942, "C4" : 261.626,
+            "C#4" : 277.183, "D4" : 293.665, "D#4" : 311.127, "E4" : 329.628,
+            "F4" : 349.228, "F#4" : 369.994, "G4" : 391.995, "G#4" : 415.305,
+            "A4" : 440, "A#4" : 466.164, "B4" : 493.883, "C5" : 523.251,
+            "C#5" : 554.365, "D5" : 587.330, "D#5" : 622.254, "E5" : 659.255,
+            "F5" : 698.456, "F#5" : 739.989, "G5" : 783.991, "G#5" : 830.609,
+            "A5" : 880, "A#5" : 932.328, "B5" : 987.767, "C6" : 1046.5,
+            "C#6" : 1108.73, "D6" : 1174.66, "D#6" : 1244.51, "E6" : 1318.51,
+            "F6" : 1396.91, "F#6" : 1479.98, "G6" : 1567.98, "G#6" : 1661.22,
+            "A6" : 1760, "A#6" : 1864.66, "B6" : 1975.53, "C7" : 2093,
+            "C#7" : 2217.46, "D7" : 2349.32, "D#7" : 2489.02, "E7" : 2637.02,
+            "F7" : 2793.83, "F#7" : 2959.96, "G7" : 3135.96, "G#7" : 3322.44,
             "A7" : 3520, "A#7" : 3729.31, "B7" : 3951.07, "C8" : 4186.01};
 
 
@@ -491,14 +521,14 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-// computeFreqFromFFT function. Input: none. Output: frequency of the sound 
-// picked up by the microphone, computed via FFT. Automatically grabs the 
+// computeFreqFromFFT function. Input: none. Output: frequency of the sound
+// picked up by the microphone, computed via FFT. Automatically grabs the
 // current microphone data from the timeData global variable and uses the FFT
 // defined in DSP.JS. Interpolates the FFT power spectrum to more accurately
 // guess the actual value of the peak frequency of the signal.
 
     function computeFreqFromFFT(spectrum) {
-        
+
         // Get index of maximum in spectrum array
         var i = 0, m = spectrum[0], maxIndex = 0;
 
@@ -516,12 +546,12 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
 
 
 // -----------------------------------------------------------------------------
-// jainsMethodInterpolate function. Input: array of spectrum power values 
+// jainsMethodInterpolate function. Input: array of spectrum power values
 // returned from FFT; index of bin in spectrum array with max power value.
 // Output: a fractional bin number indicating the interpolated location of
-// the actual signal peak frequency. Uses neighbouring indices to the index of 
-// greatest magnitude to create a more accurate estimate of the frequency. 
-// Simply multiply the returned fractional bin index by the FFT spectrum 
+// the actual signal peak frequency. Uses neighbouring indices to the index of
+// greatest magnitude to create a more accurate estimate of the frequency.
+// Simply multiply the returned fractional bin index by the FFT spectrum
 // frequency resolution to get the estimate of the actual peak frequency.
 
     function jainsMethodInterpolate(spctrm, maxIndex) {
@@ -529,7 +559,7 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
         var m1 = Math.abs(spctrm[maxIndex - 1]);
         var m2 = Math.abs(spctrm[maxIndex]);
         var m3 = Math.abs(spctrm[maxIndex + 1]);
-        
+
         if (m1 > m3) {
             a = m2 / m1;
             d = a / (1 + a);
@@ -544,7 +574,7 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
 
 
 // -----------------------------------------------------------------------------
-// getMixFromFFT function. Computes the current frequency with 
+// getMixFromFFT function. Computes the current frequency with
 // computeFreqFromFFT, then returns bass, mids and his
 // sub bass : 0 > 100hz
 // mid bass : 80 > 500hz
@@ -575,7 +605,7 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
             if (band < 500) {
                 bass_freq += spectrum[i];
                 bass_count++;
-            } 
+            }
             if (band > 400 && band < 6000) {
                 mids_freq += spectrum[i];
                 mids_count++;
@@ -584,9 +614,9 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
                 highs_freq += spectrum[i];
                 highs_count++;
             }
-            
+
         }
-        
+
         var bass = bass_freq/bass_count;
         var mids = mids_freq/mids_count;
         var highs = highs_freq/highs_count;
@@ -599,7 +629,7 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
 
 
     // -----------------------------------------------------------------------------
-// getNoteFromFFT function. Computes the current frequency with 
+// getNoteFromFFT function. Computes the current frequency with
 // computeFreqFromFFT, then determines the current note by feeding the current
 // frequency to matchNote
 
@@ -610,9 +640,9 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
     }
 
 // -----------------------------------------------------------------------------
-// getNoteCentsFromFFT function. Computes the current frequency with 
+// getNoteCentsFromFFT function. Computes the current frequency with
 // computeFreqFromFFT, then determines the current note by feeding the current
-// frequency to matchNote, and finally computes the cents offset from the 
+// frequency to matchNote, and finally computes the cents offset from the
 // current note
 
     function getNoteCentsFromFFT(spectrum) {
@@ -626,7 +656,7 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
 
 
     // -----------------------------------------------------------------------------
-// matchNote function. Input: frequency, in Hertz. Output: closest note 
+// matchNote function. Input: frequency, in Hertz. Output: closest note
 // value to that frequency. This function iterates over the JSON lookup table
 // to find the nearest note to the input frequency and returns the note as a
 // string.
@@ -636,14 +666,14 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
         var closestFreq = 58.2705;
         for (var key in notes) { // Iterates through note look-up table
                 // If the current note in the table is closer to the given
-                // frequency than the current "closest" note, replace the 
+                // frequency than the current "closest" note, replace the
                 // "closest" note.
-            if (Math.abs(notes[key] - freq) <= Math.abs(notes[closest] - 
+            if (Math.abs(notes[key] - freq) <= Math.abs(notes[closest] -
                     freq)) {
                 closest = key;
                 closestFreq = notes[key];
             }
-            // Stop searching once the current note in the table is of higher 
+            // Stop searching once the current note in the table is of higher
             // frequency than the given frequency.
             if (notes[key] > freq) {
                 break;
@@ -651,7 +681,7 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
         }
 
         return [closest, closestFreq];
-    }  
+    }
 
 
     // -----------------------------------------------------------------------------

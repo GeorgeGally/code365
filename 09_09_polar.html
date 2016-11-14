@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+</head>
+<body>
+<script type="text/javascript">
+
+var ctx = createCanvas("canvas1");
+var magnify = 300;
+var rotation = 0;
+var radius = 0;
+var elements = 256;//number of points and lines that will be calculated at once
+		
+function draw() {
+
+	ctx.background(250);
+	radius = tween(radius, (w/2 - mouseX)/width * 6, 20);
+	rotation = tween(rotation, (h/2 - mouseY)/height * 6, 20);
+    var spacing = TWO_PI/elements;//how far apart each node will be
+    ctx.save();
+    ctx.translate(width/2, height/2);
+        
+    ctx.lineWeight = 2;
+        for(var i = 0; i < elements; i++){
+            ctx.lineStyle = hsl(i/255, 80, 60);
+            //pushMatrix();//rotate, draw, pop back. cosine and sine would avoidhaving to store the coordinates;
+            var rot = spacing*i*rotation;
+            var trans = Math.sin(spacing*i*radius) * magnify;
+            ctx.rotate(rot);
+            ctx.translate(trans,0);
+            ctx.HstrokeEllipse(0,0,2*i, 2*i);
+            // ellipse(0,0,10, 10);
+            //popMatrix();
+            ctx.rotate(-rot);
+            ctx.translate(-trans,0);
+        }
+        ctx.restore();
+	}
+	</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

@@ -21,13 +21,14 @@ ctx.lineWidth = 1;
 var particles = [];
 var radius = 220;
 var c = 0;
-var num_particles = 124;
+var num_particles = 200;
 
 for (var i = 0; i < num_particles; i++) {
 
     var m = map(i, 0, num_particles, 0, 360);
     var cc = hsl(m, 96, 60);
-	addParticle(i+ i * w/num_particles, h/2, cc, i);
+    var x = map(50, w-50, 0, i);
+	addParticle(50 + i * (w-50)/num_particles, h/2, cc, i);
 
 }
 
@@ -38,6 +39,7 @@ function draw(){
 	ctx.fillRect(0, 0, w, h);
 	moveParticles();
 	ctx.fillStyle = rgba(0,0,0,1);
+	pixelate(10, 3);
 	//ctx.HfillEllipse(w/2, h/2, radius-8, radius-8);
 	
 }
@@ -73,7 +75,7 @@ function moveParticles(){
 		//p.h =  map(mapSound(p.me2, num_particles+20), 0,250, 5 + radius/2, radius/2 + 390);
 		
 		ctx.fillStyle = p.c;
-		ctx.fillRect(p.x, p.y, p.w, p.h);
+		ctx.fillRect(p.x, h - 100, p.w, -p.h);
 		
 		};
 

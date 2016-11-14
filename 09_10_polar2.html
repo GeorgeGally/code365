@@ -1,0 +1,97 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    
+<!--     <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script src="js/_maxiLib.js"></script>
+	
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+
+
+<script type="text/javascript">
+var ctx = createCanvas("canvas1");
+var changeThis = 4;
+
+var maxiAudio = new maximJs.maxiAudio();
+maxiAudio.setBufferSize(4096);
+maxiAudio.init();
+//maximJs.maxiAudio.init();
+
+var osc = new maximJs.maxiOsc();
+var osc2 = new maximJs.maxiOsc();
+var osc3 = new maximJs.maxiOsc();
+var samp = new maximJs.maxiSample();
+var output;
+var drawOutput = new Array(1024);
+var counter = 0;
+
+
+var spacing = ((Math.PI * 2) / 512);//1024 because it is the size of the buffer
+var size = width / 5;//size fo the circle
+
+//bufferFreq: to be used as frequency
+//so that "the whole buffer fills the screen once per draw method"
+//"frequency at which you know that an entire waveform fits inside the buffer" (?)
+//try only with a sinewave to see better
+//on its own will draw a circle
+var bufferFreq = 44100 / 1024;// 43.06640625
+
+ctx.lineWidth = 0.5;
+
+
+maxiAudio.play = function () {
+    // create wave for fft
+    //var wave = (osc.sawn(150) - osc2.sawn(150.1));
+    
+    var wave = samp.play();
+    var wave = osc.sinewave(bufferFreq * 1 + osc2.sinewave(bufferFreq * changeThis) * osc3.sinewave(0.025) * 1000);
+    
+    // var wave = osc.sinewave(bufferFreq*osc2.sinewave(bufferFreq*1)*10);
+
+    // var wave = osc.sinewave(bufferFreq * 5);
+    // process wave
+    counter++;
+    
+    //used to scale the output and the drawouput reciprocally
+    var scaleOut = 0.001;
+    
+    output = wave * scaleOut;
+    
+    drawOutput[counter % 1024] = output / scaleOut;
+
+};
+
+
+function draw() {
+
+    ctx.clearRect(0, 0, width, height);
+
+    for (var i = 0; i < 1024; i++) {
+        ctx.beginPath();
+
+        ctx.moveTo((width / 2) + (Math.cos(i * spacing) * size * drawOutput[i]), (height / 2) + (Math.sin(i * spacing) * size * drawOutput[i]));
+
+        ctx.lineTo((width / 2) + (Math.cos(i * spacing) * drawOutput[i]), (height / 2) + (Math.sin(i * spacing) * drawOutput[i]));
+
+        ctx.stroke();
+        ctx.closePath();
+    }
+    //console.log(count/44100);
+}
+
+
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

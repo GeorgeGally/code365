@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+ 	<meta charset="utf-8">
+	<title>Soundcloud Viz</title>
+	
+	<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+	<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var r = 0.0;
+
+function draw(){
+  ctx.background(245);
+  ctx.fillStyle = rgba(0, 0.5);
+  r+=0.004;
+  ctx.save();
+   ctx.translate(width/2, height/2);
+   for (var i = 0; i < 200; ++i) {
+    
+    ctx.rotate(r);
+    ctx.fillEllipse(i, 0, 8, 8);
+     
+   }
+   ctx.restore();
+
+}
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

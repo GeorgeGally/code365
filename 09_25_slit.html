@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ 	
+<!--  	<script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ 	<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ 
+ </head>
+
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 2;
+var img = new Image();
+var img_w, img_h, slice_w;
+img.src = 'img/people/macborg.jpg';
+
+
+var particles = [];
+var grid_w = 80;
+var grid_h = 1;
+var num_particles = grid_w * grid_h;
+var tileSize;
+var tileHeight;
+
+img.onload = function() {
+    var img_loaded;
+    console.log(img.width)
+    console.log(img.height)
+    result = ScaleImage(img.width, img.height, w, h, true);
+    img_w = img.width;
+    img_h = img.height;
+    console.log(img_w)
+    console.log(img_h)
+    slice_w = img_w/grid_w;
+    tileSize = img_w/grid_w;
+    tileHeight = img_h/grid_h;
+    var grid = createGrid(grid_w, grid_h, img_w, img_h);
+
+	for (var i = 0; i < num_particles; i++) {
+		addParticle(grid[i][0], grid[i][1], i);
+	}
+
+};
+
+
+
+function addParticle(_x, _y, _me){
+	//console.log(_x)
+		var particle = {
+			x: _x,
+			y: _y,
+			start_x: _x,
+			start_y: _y,
+			img: new Image(img, (p.start_x + counter)%(img_w-slice_w), 0, slice_w, img_h, slice_w + p.x, 0, slice_w, img_h)
+		}
+		particles.push(particle);
+}
+	
+var counter = 0;
+function moveParticles(){
+		
+        //ctx.drawImage( img, 0,0,img_w,img_h);
+		counter = (counter + tileSize/100);
+		
+        for (var i = 0; i < particles.length; i+=1) {
+			p = particles[i];
+			ctx.save();
+			//if (i%5 != 0) {
+			p.x = i*tileSize + Math.sin((i + counter)/10)*tileSize;
+
+			ctx.save();
+            //ctx.globalAlpha = 1.2 + Math.sin(frameCount/(20+i*4));
+			ctx.drawImage(img, p.x, 0, tileSize, tileHeight,
+              i * tileSize, 0 * tileHeight, tileSize-1, tileHeight);
+            
+		
+			ctx.restore();
+            //ctx.globalAlpha = 1;
+			
+		};
+
+}
+
+
+
+
+
+
+// DRAW WAVES CLASS
+
+function draw(){
+	ctx.clearRect(0, 0, w, h);
+	moveParticles();
+}
+
+
+
+    function ScaleImage(srcwidth, srcheight, targetwidth, targetheight, fLetterBox) {
+
+    var result = { width: 0, height: 0, fScaleToTargetWidth: true };
+
+    if ((srcwidth <= 0) || (srcheight <= 0) || (targetwidth <= 0) || (targetheight <= 0)) {
+        return result;
+    }
+
+    // scale to the target width
+    var scaleX1 = targetwidth;
+    var scaleY1 = (srcheight * targetwidth) / srcwidth;
+
+    // scale to the target height
+    var scaleX2 = (srcwidth * targetheight) / srcheight;
+    var scaleY2 = targetheight;
+
+    // now figure out which one we should use
+    var fScaleOnWidth = (scaleX2 > targetwidth);
+    if (fScaleOnWidth) {
+        fScaleOnWidth = fLetterBox;
+    }
+    else {
+       fScaleOnWidth = !fLetterBox;
+    }
+
+    if (fScaleOnWidth) {
+        result.width = Math.floor(scaleX1);
+        result.height = Math.floor(scaleY1);
+        result.fScaleToTargetWidth = true;
+    }
+    else {
+        result.width = Math.floor(scaleX2);
+        result.height = Math.floor(scaleY2);
+        result.fScaleToTargetWidth = false;
+    }
+    result.targetleft = Math.floor((targetwidth - result.width) / 2);
+    result.targettop = Math.floor((targetheight - result.height) / 2);
+
+    return result;
+}
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

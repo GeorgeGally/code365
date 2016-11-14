@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script language="javascript" src="js/creative.js"></script>
+  <script language="javascript" src="js/canvas.js"></script>
+  <script language="javascript" src="js/three.min.js"></script>
+  <script language="javascript" src="js/_maxiLib.js"></script>
+  <script language="javascript" src="js/vector.js"></script>
+  <script type="text/javascript" src="js/d3.js"></script>
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background: #fff">
+   
+<script>
+
+// GLOBALS
+var ctx = createCanvas("canvas1");
+
+var blocksize = 13;
+ctx.font="13px Monospace";
+var img = new Image();
+img.src = 'img/people/stevie-nicks2.jpg';
+
+var particles = [];
+var txt = "";
+var maxWidth = w-20;
+var lineHeight = 10;
+var x = 20;
+var y = 20;
+var imgData;
+
+function draw(){
+  ctx.background(0);
+  //ctx.drawImage(img, 0,0,w,h);
+  imgData=ctx.getImageData(0,0,w,h); 
+  
+  
+
+  for (var i = 0; i < randomInt(10, 320); i++) {
+    txt += String.fromCharCode(randomInt(57,110));
+    if (chance(5)) txt+=" ";
+  }
+  
+  
+  //ctx.fillStyle = "white";
+  wrapText(txt, x, y, maxWidth, lineHeight);
+
+}
+
+
+
+function addParticle(_x, _y, txt){
+  var particle = {
+    x: _x,
+    y: _y,
+    c: _colour,
+    speedx: 0,
+    speedy: random(-5,5),
+    sz: 8
+  }
+
+  particles.push(particle);
+}
+
+function sampleImage(x, y){
+  //ctx.background(0);
+  var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+
+          var pos = Math.round(x + y * width);
+          var b = (sourceBuffer32[pos] >> 16) & 0xff;
+          var g = (sourceBuffer32[pos] >> 8) & 0xff;
+          var r = (sourceBuffer32[pos] >> 0) & 0xff;
+          ctx.fillStyle = rgb(r,g,b);
+
+}
+
+
+ function wrapText(text, x, y, maxWidth, lineHeight) {
+        var words = text.split(' ');
+        var line = '';
+        var xx = 0;
+        var old_width = 0;
+        for(var n = 0; n < words.length; n++) {
+
+          var testLine = line + words[n] + ' ';
+          var metrics = ctx.measureText(testLine);
+          var testWidth = metrics.width;
+          var testHeight = metrics.height;
+          xx = old_width;
+
+          if (chance(20)) {
+            ctx.fillStyle = "white";
+            ctx.fillRect(xx, y - 10, xx + ctx.measureText(words[n]).width, 10)
+          }
+          //sampleImage(x, y);
+          //console.log(metrics);
+          if (testWidth > maxWidth && n > 0) {
+            ctx.fillText(line, x, y);
+            line = words[n] + ' ';
+            y += lineHeight;
+            if (y%(lineHeight*10) == 0) y += lineHeight;;
+          }
+          else {
+            line = testLine;
+          }
+          if (y > h-20) {
+            txt = "";
+            //console.log("reset");
+          }
+          old_width = testWidth;
+        }
+        ctx.fillText(line, x, y);
+}
+      
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Earth Plays the Blues | by George Gally | Radarboy</title>
+
+<link rel="stylesheet" href="css/map_style.css" type="text/css" media="screen" />
+<script src="js/html2canvas.js"></script>
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/jquery-1.10.1.min.js"></script>
+<script src="js/chance.js"></script>
+<script src="js/Tone.js"></script>
+<script type="text/javascript" src="js/share.js"></script> 
+<script>
+
+var reverb = new Tone.JCReverb(0.8).connect(Tone.Master);
+var pingPong = new Tone.PingPongDelay("2n", 0.8).toMaster();
+var delay = new Tone.FeedbackDelay(0.9); 
+
+// var synth = new Tone.PolySynth(6, Tone.MonoSynth).toMaster();
+// var synth = new Tone.PolySynth(3, Tone.MonoSynth).toMaster();
+//var synth = new Tone.SimpleAM().toMaster();
+// var synth = new Tone.PolySynth(3, Tone.DuoSynth).toMaster();
+var synth = new Tone.PolySynth(8, Tone.SimpleAM).chain(pingPong, reverb)
+
+synth.set("detune", -1200);
+
+var map;
+var lat;
+var lng;
+var cancel = true;
+
+var scale = ["D1", "E1", "G1", "A1", "B1","D2", "E2", "G2", "A2", "B2","D3", "E3", "G3", "A3", "B3","D4", "E4", "G4", "A4", "B4"];
+
+var pixelBright = [];
+var notes = [];
+var map_levels = 256;
+
+// map to levels of brightness
+for (var i = 0; i < map_levels; i++) {
+    var index = Math.floor(map(i, 0, map_levels, 0, scale.length));
+    notes[i] = scale[index];
+}
+
+
+
+
+
+function initialize() {
+  
+  console.log("initialize");
+
+  var mapProp = {
+    center: randomLocation(),
+    zoom:12,
+    disableDefaultUI: true,
+    mapTypeId:google.maps.MapTypeId.SATELLITE
+  };
+  
+  map=new google.maps.Map(document.getElementById("map"),mapProp);
+
+  resizeMapDiv();
+
+  google.maps.event.addListener(map, 'tilesloaded', function(){
+      cancel = false;
+      getImage();
+      getCenter();
+  });
+  
+  google.maps.event.addDomListener(map, 'drag', function(){
+      cancel = true;
+      $("#c").fadeOut();  
+  });
+  
+  google.maps.event.addDomListener(map, 'zoom', function(){
+      cancel = true;
+    $("#c").fadeOut();  
+  });
+
+  google.maps.event.addDomListener(map, 'click', 
+    function(){
+      cancel = true;
+    $("#c").fadeOut();  
+  });
+  
+}
+
+
+</script>
+
+<body>
+
+<div>
+<div id="map"></div>
+
+<canvas id="c"></canvas>
+<canvas id="c2"></canvas>
+
+<div id="loading_holder">
+  <div id="loading">Image Crunching...</div>
+</div>
+
+<div id="city"></div>
+
+</div>
+
+
+<div class="back-header">
+
+
+
+</div>
+
+<div class="content">
+  <h2>Earth Plays the Blues</h2>
+The earth as a song. RGB values are mapped to chords, and brightness effects the note's length and duration, to create a haunting and emotive soundscape. <br><br>
+
+I've been doing quite a lot of experiements in manipulating maps. After quite a bit of trial and error I finally settled for the following process (and yes, 'settled' being the operative word): <br><br>I wait for all the map tiles to be loaded in (trick here is to use 'tilesloaded' map event), then take a snapshop of the div using the <a href="http://html2canvas.hertzen.com/">html2canvas</a> library. It's a bit slow as the images need to be saved to the server, but it works. I then pass that snapshot as an image into the canvas, analyize the pixels and then am able to manipulate them as I like. Still a bit buggy when titles don't load properly. So be it.<br><br>
+Music is generated using the amazing <a href="https://github.com/Tonejs/Tone.js">Tone.js</a>.<br>
+
+<br><br><br><br>Handmade by: <a href="index.html">Radarboy</a> 
+
+</div>
+
+<div id="header">
+    <div id="btnShare"></div>
+  </div>
+
+
+<script type="text/javascript">
+
+  var canvas = document.getElementById('c');
+  var canvas2 = document.getElementById('c');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  canvas.overlay=this;
+  var width = w = window.innerWidth;
+  var height = h = window.innerHeight;
+  var m = document.getElementById("map");
+  m.width=window.innerWidth;
+  m.height=window.innerHeight;
+  var blocksize = 10;
+  var particle_array = [];
+  var maxParticles = 15000;
+  ctx = canvas.getContext('2d');
+  ctx2 = canvas.getContext('2d');
+  var url = 'proxy.php?';
+  ctx.background(220)
+;
+  // function setup(){
+  //   initialize(); 
+  // }
+
+resizeMapDiv = function () {
+
+    $("#map").height($(window).height());
+    $("#map").width($(window).width());
+    $("#c").height($(window).height());
+    $("#c").width($(window).width());
+    $("#c2").height($(window).height());
+    $("#c2").width($(window).width());
+    google.maps.event.trigger(map, 'resize');
+
+}
+
+
+function getImage(){
+
+  $('#loading_holder').fadeIn();
+  var transform=$(".gm-style>div:first>div").css("transform")
+  var comp=transform.split(",") //split up the transform matrix
+  var mapleft=parseFloat(comp[4]) //get left value
+  var maptop=parseFloat(comp[5])  //get top value
+  
+  $(".gm-style>div:first>div").css({ //get the map container. not sure if stable
+    "transform":"none",
+    "left":mapleft,
+    "top":maptop,
+  })
+  
+  var screenshot = {};
+  //latlng = map.getCenter().toUrlValue();
+
+  html2canvas($('#map'), {
+    
+    //"logging": true,
+    "proxy":"scripts/proxy.php",
+    // useCORS: true,
+    onrendered: function(canvas) {
+
+      var img = new Image();
+      img.src = canvas.toDataURL("image/png");
+      
+      img.onload = function() {
+          
+          img.onload = null;
+          $("#c").fadeIn(); 
+          ctx.drawImage(img, 0, 0, window.innerWidth,window.innerHeight);
+          $(".gm-style>div:first>div").css({ left:0, top:0, "transform":transform });
+          if (cancel == false) { getParticles(img); }
+
+      };
+
+    }
+
+  });
+
+}
+
+function getColours(){
+
+  var col = [];
+  var bright = [];
+  var j = 0;
+  numOfAreas = 1;
+  numOfValues = 1; 
+   
+  var imgData=ctx.getImageData(0,0,w,h); 
+   
+  for(var y = 0; y < h; y += blocksize) {
+
+    for(var x = 0; x < w; x += blocksize) {
+               
+      var pos = (x + y * w);
+      var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+      var b = (sourceBuffer32[pos] >> 16) & 0xff;
+      var g = (sourceBuffer32[pos] >> 8) & 0xff;
+      var r = (sourceBuffer32[pos] >> 0) & 0xff; 
+      var hsl = rgbToHsl(r,g,b);
+      bright[j] = brightness(r,g,b);
+      col[j] =  [r,g,b];
+      j++;
+
+    }
+    
+  }
+
+  var cc = [col, bright];
+  return cc;
+
+}
+
+
+var song = [];
+var col = [];
+var pos = [];
+
+
+function getParticles(image){
+    
+    $('#loading_holder').fadeOut();
+    ctx.font="15px Courier";
+    col = getColours();
+    //ctx.globalCompositeOperation = "multiply";
+    triangulate(blocksize,blocksize, 0.99);
+    pixelate(blocksize);
+    // 
+    // ctx.fillStyle=rgb(0,0,0);
+    // ctx.fillRect(0,0,w,h);
+    
+    var j = 0;
+    synth.triggerAttackRelease("C4", "8n");
+    
+    for(var y = 0; y < h; y += blocksize) {
+  
+      for(var x = 0; x < w; x += blocksize){
+
+          x2 = x;
+          y2 = y;
+          var block_colour = rgba(col[0][j][0],col[0][j][1],col[0][j][2], 0.40);
+          ctx.fillStyle = block_colour;
+          //ctx.fillRect(x,y, blocksize, blocksize);
+          song[j] = notes[col[0][j][0]];
+          pos[j] = [x,y];
+
+          j++;
+
+        }
+    }
+
+    ctx.globalCompositeOperation = "normal";
+    //console.log(song);
+    playSong();
+
+  }
+
+
+function nearestCity(lat, lng){
+
+  var url = 'http://api.geonames.org/findNearbyPlaceNameJSON?lat=' + lat + '&lng=' + lng + '&radius=300&maxRows=1&username=radarboy';
+   $.ajax({
+      url: url,  
+      success:function(data) {
+        //var place = jQuery.parseJSON(data);
+        for (key in data.geonames) {
+          var place = data.geonames[key];
+          console.log(place.name);
+          
+          if (place.name == undefined || place.name == null) {
+            $("#city").text("Now playing: Middle of nowhere");          
+          } else {  
+            $("#city").text("Now playing: " + place.name + ", " + place.countryName);
+          }
+
+        }
+      }
+   });
+  
+}
+
+
+function getCenter(){
+    if (map!=undefined) {
+      var c = map.getCenter();
+      //nearestCity(47.6792249,13.0400361);
+      //nearestCity(c.lat(), c.lng());
+    }
+}
+
+function addMarker(location, map, city) {
+   // var mapLabel = new MapLabel({
+   //      text: city,
+   //      position: location,
+   //      map: map,
+   //      fontSize: 35,
+   //      align: 'right'
+   //  });
+
+  // var marker = new google.maps.Marker({
+  //   position: location,
+  //   label: city,
+  //   map: map
+  // });
+
+}
+
+
+
+function playSong(){
+
+  //console.log("play song");
+  var timerLength = 1000;
+  var timer_counter = 0;
+  timer();
+
+  function timer() {
+
+      var r = notes[col[0][timer_counter][0]];
+      var g = notes[col[0][timer_counter][1]];
+      var b = notes[col[0][timer_counter][2]];
+      synth.triggerAttackRelease([r, g, b], col[1][timer_counter]/30);
+
+    if (timer_counter >= song.length-1) {
+        
+        timer_counter = 0;
+        cancel = true;
+        $("#c").fadeOut();
+        //map.setCenter(randomLocation());
+
+    }
+
+    ctx2.fillStyle = rgba(0, 0, 0, 0.3);
+    ctx2.fillRect(pos[timer_counter][0],pos[timer_counter][1], blocksize, blocksize);
+    timer_counter ++;
+    setTimeout(function(){ 
+    timer(); }, 
+    (100-col[1][timer_counter])*30);
+    
+  }
+
+}
+
+
+function randomLocation(){
+    lat = randomInt(-90,90);
+    lng = randomInt(-180,180);
+    return new google.maps.LatLng(47.6792249,13.0400361);
+    //return new google.maps.LatLng(lat, lng);
+}
+
+
+$('#btnShare').share();
+
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDEKAnXP_v0EOZxJ5bv0K4UNqYFRM1JAj0&callback=initialize"
+    async defer></script>
+
+
+ </body>
+</html>

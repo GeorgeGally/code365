@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+<script type="text/javascript" src="js/controlKit.min.js"></script>
+<script type="text/javascript" src="js/Tone.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var num_balls = 40;
+var steps = 32;
+var accelerate = 1;
+var max_size = 20;
+
+// particles
+var segments = new particleEngine(steps);
+var bass_segments = new particleEngine(steps/2);
+var balls = new particleEngine(num_balls);
+
+var particles = [];
+var spikes = [];
+var num_spikes = 16;
+
+var radius = 150;
+var segment_radius = 1.4 * radius;
+
+var dragging = false, stop = false;
+
+var oldX, oldY = 0;
+var startAngle = 0;
+
+
+var segmentLineWidth = 16;
+
+var lastclick = 0;
+var prob = 5;
+var pixelWidth = 10;
+
+// SETUP SOUND
+
+var bpm = 30;
+var transport_position = 0;
+var actual = 0;
+
+var osc_speed = 1800;
+var osc = [];
+var threshold = -30;
+var ratio = 6;
+var attack = 0.9;
+var decay = 0.8;
+var sustain = 0.8;
+var release = 0.9;
+
+var master_output;
+var master_vol = 1.0;
+
+
+//FILTERS
+
+var filter_freq = 0;
+var lowBump = new Tone.Filter(100, "lowshelf");
+var distortion = new Tone.Distortion(0.2);
+var delay = new Tone.FeedbackDelay ("8n", 0.1);
+var freeverb = new Tone.Freeverb();
+freeverb.dampening.value = 1000;
+var highpass = new Tone.Filter(800, "highpass").toMaster();
+var lowpass = new Tone.Filter(100, "lowpass").toMaster();
+var pingPong = new Tone.PingPongDelay("4n", 0.2);
+var chorus = new Tone.Chorus(4, 1.5, 0.5);
+var stereo = new Tone.StereoEffect();
+
+// NOTES
+
+var notes = [];
+var notes2 = [];
+//notes = ["C3","D3","E3","F3","G4","A4","B4","C3","D3","E3","A3","G4","A4","B4"];
+notes = ["C2","D2","E2","F2","G2","A2","B2","C3","D3","E3","A3","G3","A3","B3"];
+//notes = [138,138,134,130,128,134,132,128,124,130,138,124,104,110,120,114];
+//notes = ["F4","G#3","C#4","C#3","F#4"];
+//notes = ["D3","E4","G3","C4","D3","E4","G3","C4"];
+//notes = ["D4","E4","G4","C4","D4","E4","G4","C4"];
+notes2 = ["C1","D1","E1","F2","G2","A2","B2","C1","D1","E1","A1","G2","A2","B2"];
+//notes2 = [69,69,67,65,64,67,66,64,62,65,64,62,57,55,60,57];
+//notes2 = ["F1","G#1","C#2","C#2","F#1"];
+notes2 = ["D1","E1","G1","C1","D2","E2","G2","C2"];
+
+segments = setupSegments(segments, segment_radius, 0); 
+bass_segments = setupSegments(bass_segments, segment_radius+23, 1); 
+resetBalls();
+
+
+
+// SYNTHS /////
+
+var bump_synth = new Tone.MembraneSynth().toMaster();
+bump_synth.volume.value = -15;
+
+// var bump_synth2 = new Tone.MembraneSynth().toMaster();
+// bump_synth2.volume.value = -5;
+
+var synth1 = new Tone.AMSynth({
+	"oscillator" : {
+	"type" : "sine"
+	},
+	"envelope" : {
+					"attack" : 0.9,
+					"decay" : 0.9,
+					"sustain" : 0.9,
+					"release" : 0.8
+				}
+		}).connect(highpass);
+//var synth1 = new Tone.MonoSynth().connect(highpass);
+//var synth1 = new Tone.PolySynth(2, Tone.SimpleSynth).connect(highpass);
+
+//var synth1 = new Tone.PolySynth(4, mono).connect(freeverb);;
+
+
+var synth2 = new Tone.AMSynth({
+	"oscillator" : {
+	"type" : "sine"
+	},
+	"envelope" : {
+					"attack" : attack,
+					"decay" : decay,
+					"sustain" : sustain,
+					"release" : release,
+				},
+// "modulationEnvelope":{
+// 	"attack":1,
+// 	"decay":1,
+// 	"sustain":1,
+// 	"release":1
+//}
+		}).connect(lowpass);
+
+synth1.volume.value = 19;
+synth2.volume.value = 26;
+synth1.harmonicity = 0.5;
+
+var masterCompressor = new Tone.Compressor({
+	"threshold" : -20,
+	"ratio" : 6,
+	"attack" : 0.5,
+	"release" : 0.3
+});
+
+
+// MASTER OUTPUT
+
+//Tone.Master.chain(lowpass);
+Tone.Master.chain(freeverb, lowBump, chorus, masterCompressor);
+
+
+
+
+
+
+//////////////////////////////// TRANSPORT TIMELINE //////////////////////////////
+
+
+Tone.Transport.bpm.rampTo(bpm, steps+"n");
+
+Tone.Transport.scheduleRepeat(function(time){
+
+	if (!stop) {
+	//synth1.triggerRelease();
+	transport_position = (transport_position + 1)%steps;
+	//synth1.triggerRelease();
+	var s = segments.particles[transport_position];
+	
+	//bump_synth.triggerRelease();
+
+	if (s.on  && s.ratio == 0) {
+		if (s.accent) {
+		var v = 1;
+		} else {
+		var v = 0.8;
+		}
+
+		//synth1.triggerAttackRelease(1800 + transport_position*3, "64n");
+		//bump_synth2.triggerAttackRelease(s.note, "4n");
+		synth1.triggerAttackRelease(s.note, "4n");
+	}
+
+		var b = bass_segments.particles[Math.floor(transport_position/2)];
+		
+
+		if (b.on && b.ratio == 1 && (transport_position/2 == b.me )){
+			
+			if (b.accent) {
+				var v = 0.9;
+			} else {
+				var v = 0.7;
+			}
+			//synth2.triggerRelease();
+			//synth2.triggerAttackRelease(b.note, "2n");
+			// synth2.triggerAttackRelease(30 + transport_position*2, "1n");
+			synth2.triggerAttackRelease(b.note, "1n");
+
+			//synth2.triggerRelease();
+		}
+		//Synth.triggerAttackRelease();
+		//hitSynth.triggerAttackRelease(freq, "16n");
+
+	} else {
+		synth1.triggerRelease();
+		synth2.triggerRelease();
+	}
+}, steps + "n");
+
+Tone.Transport.start();
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+function draw(){
+
+	//highpass.frequency.value = map(filter_freq, 0, w, 0, 2000);
+	lowpass.frequency.value = 100 + filter_freq*10;
+	//chorus.depth = map(filter_freq, 0, w/2, 0, 10)
+	//stereo.wet = map(filter_freq, 0, w/2, 0, 1)
+	//lowBump.frequency.value = mouseY;
+	ctx.clearRect(0, 0, w, h);
+	// if (bass_segments.particles[Math.floor(transport_position/2)].on) {
+	// 	ctx.clearRect(0, 0, w, h);
+	// } else {
+	// 	ctx.fillStyle = "black";
+	// 	ctx.fillRect(0, 0, w, h);
+	// }
+	if (!stop) drawBalls();
+	arcSegments(steps ,220);
+	startStop();
+	//mirror();
+	//glitch();
+	//pixelate(25,25, 0);	
+}
+
+
+
+function drawBalls(){
+	filter_freq = 0;
+	for (var i = 0; i < balls.particles.length; i++) {
+		//synth[i].triggerRelease();
+		var b = balls.particles[i];
+		selfHittest(b);
+
+		// SEE IF BALL HITS SEQUENCER
+		sequencerHittestBall(segments, segment_radius, b);
+		sequencerHittestBall(bass_segments, segment_radius+23, b);
+		
+		b.position.x += b.speed.x * accelerate;
+		b.position.y += b.speed.y * accelerate;
+		
+		if (dist(b.position.x, b.position.y, mouseX, mouseY) < b.sz/2) 
+			{
+				b.on = true;
+				hit(b);
+
+			}
+
+		if (b.position.x >= w-b.sz/2 || b.position.x <= b.sz/2) b.speed.x *=-1;
+		if (b.position.y >= h-b.sz/2 || b.position.y <= b.sz/2) b.speed.y *=-1;	
+
+		if (b.counter < frameCount && b.on) {
+			// b.c = rgba(200, 0.4);
+			// b.c = "#72d0f4";
+			//b.c = "#ddd";
+			//b.on = false;
+			turnOff(b);
+			bump_synth.triggerAttackRelease("C8", "128n");
+		}
+
+		ctx.fillStyle = b.c;
+		ctx.fillEllipse (b.position.x , b.position.y, b.sz, b.sz);
+
+		// DRAW LINE IF CONNECTED
+		if (b.friend >= 0 ) {
+			var f = balls.particles[b.friend];
+			ctx.lineWidth = 0.5;
+			ctx.strokeStyle = "#72d0f4";
+			b.filter = dist(b.position.x , b.position.y, f.position.x , f.position.y);
+			ctx.line(b.position.x , b.position.y, f.position.x , f.position.y);
+			circleLineCollide(b);
+		} else {
+			b.filter = 0;
+		}
+
+		if (b.filter > filter_freq) filter_freq = b.filter;
+		//RESET FRIENDSHIPS
+		// if (b.counter + 140 < frameCount) {
+		// 	turnOff(b);
+		// }
+
+	}
+	}
+
+
+function turnOff(b){
+	b.friend = -1;
+	b.c = "#ddd";
+	b.on = false;
+	b.filter = 0;
+	//innerLineLength = 0;
+	//outerLineLength = 0;
+	}
+
+function resetBalls(){
+
+	for (var i = 0; i < balls.particles.length; i++) {
+
+		var b = balls.particles[i];
+		b.speed = new Vector(posNeg()*random(1, 6), posNeg()*random(1, 6));
+		// b.sz = randomInt(5, max_size);
+		b.sz = 6;
+		b.c = "#8dc63f";
+		b.on = false;
+		b.filter = 0;
+		turnOff(b);
+		if (i%3 == 0) {
+		b.position.x = w/2 + random(-50,50);
+		b.position.y = h/2 + random(-50,50);
+		} else {
+			if (chance(2)) {
+			b.position.x = w - random(10, 150);
+			b.position.y = h - random(10, 150);
+			} else {
+			b.position.x = random(10, 150);
+			b.position.y = random(10, 150);	
+			}
+			
+		}
+		b.counter = 0;
+		b.friend = -1;
+		b.alpha = 0.5;
+		b.sz2 = b.sz;
+		//synth[i] = addSynth();
+
+	}
+}
+
+
+function circleLineCollide(b) {
+
+	var f = balls.particles[b.friend];
+			for (var j = 0; j < balls.particles.length; j++) {
+				if (b.me != j && f.me !=j) {
+					var c = balls.particles[j];
+					var circle = new Vector(c.position.x, c.position.y);
+					var bb = new Vector(b.position.x, b.position.y);
+					var ff = new Vector(f.position.x, f.position.y);
+					if (lineCircleCollide(bb, ff, circle, c.sz)) {
+						turnOff(b);
+						//c.c = "#8dc63f";
+						bump_synth.triggerAttackRelease("C6", "128n");
+						c.speed.x *=-1;
+						c.speed.y *=-1;
+						c.sz+=0.1;
+						c.counter = frameCount-100;
+						
+					}
+				}
+		}
+
+	}
+
+
+function sequencerHittestBall(segments, segment_radius, b){ 
+	
+	// console.log(segment_radius)
+	var a = (Math.round(angle(w/2, h/2, b.position.x, b.position.y)))%360;
+
+	for (var i = 0; i < segments.particles.length; i++) {
+		
+	var s = segments.particles[i];
+
+	//if (s.ratio == 1) a = (a + 325)%360;
+	//if (s.me == 0 && s.ratio == 1) console.log(s.startAngle + ": " + a);
+
+	if (b.position.x > w/2) { 
+		sz = b.sz/2;
+	} else {
+		sz = -b.sz/2;
+	}
+	if (b.position.y > h/2) { 
+		sz2 = b.sz/2;
+	} else {
+		sz2 = -b.sz/2;
+	}
+	if (s.ratio == 1) {
+		var d = dist(w/2, h/2, b.position.x, b.position.y - sz2);
+	} else {
+		var d = dist(w/2, h/2, b.position.x + sz, b.position.y + sz2);	
+	}
+	
+	//if (s.ratio == 0) console.log(s.radius)
+	if (
+		(s.ratio == 0 && d >= segment_radius - segmentLineWidth/2 && d <= segment_radius + segmentLineWidth/2 && a >= s.startAngle && a <= s.endAngle )
+		||
+	    (s.ratio == 1 && d <= s.radius + segmentLineWidth/2 + sz2 && d >= s.radius - segmentLineWidth/2 - sz2 && a >= s.startAngle && a <= s.endAngle )
+	    	
+	    	) {
+
+
+
+		if (s.on && b.on && !s.accent) {
+			
+			s.on = true;
+			b.on = false;
+			b.counter = frameCount;
+			s.accent = true;
+			hit(b);
+
+		} else if (s.on && b.on && s.accent) {
+			s.on = false;
+			b.on = false;
+			s.accent = false;
+			b.counter = frameCount;
+			hit(b);
+
+		} else if (s.on && !b.on  && !s.accent) {
+			
+			s.on = false;
+			b.on = false;
+			s.accent = true;
+			hit(b);
+
+		} else if (s.on && !b.on  && s.accent) {
+			
+			s.on = false;
+			b.on = false;
+			s.accent = false;
+			hit(b);
+
+		} else if (!s.on) {
+
+			//if (b.on) {
+				s.on = true;
+				b.on = false;
+			//}
+			//s.on = true;
+			hit(b);
+		// } else if (transport_position == t.key && !b.on) {
+		
+		}
+
+    	} 
+	}
+
+}
+
+
+function selfHittest(b){
+		
+	for (var j = 0; j < balls.particles.length; j++) {
+		
+		if (j != b.me) {
+			
+			p2 = balls.particles[j];
+			var d = dist(b.position.x, b.position.y, p2.position.x, p2.position.y);
+			
+			if (d <= (b.sz + p2.sz)/2) {
+
+				//closed_hats.trigger();
+				b.friend = p2.me;
+				p2.c = "#72d0f4";
+				p2.on = true;
+				hit(p2);
+				b.c = "#72d0f4";
+				b.on = true;
+				hit(b);
+				// bump_synth.triggerAttackRelease("C6", "128n");
+
+			} 
+		}
+				
+	}
+}
+
+
+function hit(b){
+
+	b.speed.x *= -1;
+	b.speed.y *= -1;
+	b.counter = frameCount + 50;
+	b.position.x += (b.speed.x);
+	b.position.y += (b.speed.y);
+
+}
+
+
+
+function moveDial(p){
+	
+	if (!dragging && dist(p.x, p.y, mouseX, mouseY) > p.sz/2 - 2 && dist(p.x, p.y, mouseX, mouseY) < p.sz/2 +4 ) {
+				p.over = true;
+			} else {
+				p.over = false;
+			}
+			
+			if (p.over || p.drag) {
+				ctx.strokeStyle = "#7da7d9";
+			} else {
+				ctx.strokeStyle = p.c;
+			}
+
+			if (p.over && mousePressed && !dragging) {
+				p.drag = true;
+				oldX = mouseX;
+				oldY = mouseY;
+				dragging = true;
+			}
+
+			if (p.drag && dragging) {
+				if (mouseX < oldX) {
+					p.s = tween(p.s, p.s + dist(oldX, oldY, mouseX, mouseY)/10, 20);
+				} else {
+					p.s = tween(p.s, p.s - dist(oldX, oldY, mouseX, mouseY)/10, 20);	
+				}
+			
+			p.s	= clamp(p.s, 1, 180);
+
+			}
+
+			if (!mousePressed) {
+				p.drag = false;
+				dragging = false;
+			}
+			return p;
+}
+
+
+
+
+	
+
+function arcSegments(num ,r){
+	ctx.lineWidth = 20;
+	drawSegments(segments);
+	drawSegments(bass_segments);
+
+}
+
+
+
+function setupSegments(segments, radius, ratio) { 
+	
+	var segmentWidth = 360 / segments.particles.length;
+	var endAngle = segmentWidth;
+
+    for(var i = 0; i < segments.particles.length; i++){ 
+
+    	var s = segments.particles[i];
+    	s.accent = false;
+    	if (ratio == 1) {
+    		s.on = 1;
+    	} else {
+    		s.on = 0;
+    	}
+    	s.on = 0;
+    	s.play = false;
+    	s.radius = radius;
+    	s.ratio = ratio;
+    	if (ratio == 0) {
+    		s.note = notes[i%notes.length];
+    	} else {
+    		s.note = notes2[i%notes2.length];
+    	}
+    	
+    	s.startAngle = startAngle;
+    	s.endAngle = endAngle;
+    	s.c = "#72d0f4";
+    	// increase per segment        
+    	startAngle += segmentWidth;
+    	if (startAngle == 360) startAngle = 0;
+    	endAngle += segmentWidth;
+
+    }
+    return segments;
+}
+
+	
+function drawSegments(segments) {   
+          
+    for(var i = 0; i < segments.particles.length; i++){ 
+    	
+    	var s = segments.particles[i];
+    	s = switchSegments(s);
+
+
+    	//if (!stop) { 
+
+	    	if ((s.ratio == 0 && transport_position == i) ||
+	    		(s.ratio == 1 && (transport_position/2 == i || Math.floor(transport_position/2) == i) )) {
+	    		
+	    		if (s.on) {
+	    			//console.log(s.note);
+	    			ctx.strokeStyle = "#ef662f";
+	    		} else {
+	    			ctx.strokeStyle = "#8ec549";;
+	    		}
+	    		
+	    		
+	    	} else {
+
+	    		ctx.strokeStyle = s.c;	
+
+	    	}
+
+	    	//if (i == 0) ctx.strokeStyle = "black";
+    	
+    	//}
+    	
+    	ctx.beginPath();
+    	ctx.arc(w/2, h/2, s.radius, (s.startAngle * Math.PI / 180), ((s.endAngle-1) * Math.PI / 180), false);
+    	ctx.lineWidth = segmentLineWidth;
+    	ctx.stroke();
+
+    }
+}
+
+
+function switchSegments(p){
+	
+	var a = angle(w/2, h/2, mouseX, mouseY);
+	var d = dist(w/2, h/2, mouseX, mouseY);
+
+	if (d > segment_radius - segmentLineWidth/2  && d < segment_radius + segmentLineWidth/2 && a > p.
+	startAngle && a < p.endAngle) {
+		p.over = true;
+		p.c = "red";
+		p.c = hsl(10 + 18*40, 80, 50);
+	
+	} else {
+	
+		p.over = false;
+		p.c = "#eee";
+	
+	}		
+
+	if (p.over && mousePressed && !dragging && p.on && lastclick < frameCount) {
+		
+		p.on = false;
+		console.log("click");
+		lastclick = frameCount;
+
+	} else if (p.over && mousePressed && !dragging && !p.on && lastclick < frameCount) {
+		
+		lastclick = frameCount;
+		p.on = true;
+
+	} 
+
+	if (p.on) {
+		if(p.accent) {
+			p.c = "#00afec";
+		} else {
+			p.c = "#72d0f4";
+		}
+		
+
+	} 
+
+	if (p.over && !p.on) {
+		
+		p.c = "red";
+	
+	}
+
+	if (p.over && mousePressed) {
+		
+		p.c = "#ef662f";
+	
+	}
+	return p;
+
+}
+
+function moveSpikes(){
+	for (var i = 0; i < spikes.length; i++) {
+		var p = spikes[i];
+		//var me = (p.me)%256; 
+		//p.angle += radians(p.speedx); 
+		// var r = 8 + tween(radius, map(mapSound(p.me, num_particles), 0,100, 0, 20), 8);
+		// var r = 2+ radius/2;
+		// r =  map(mapSound(p.me, num_particles), 0, 150, radius, radius + 180);
+		// p.r = tween(100, r, 15);
+		// if (r < p.r2) { p.r2 = tween(p.r2, r, 25);
+		// } else {
+		// 	p.r2 = tween(p.r2, r, 5);
+		// }
+		x2 = p.x + (p.r2 * Math.cos(p.angle));
+		y2 = p.y + (p.r2 * Math.sin(p.angle));
+
+		x = p.x + Math.floor((radius + p.r) * Math.cos(p.angle));
+		y = p.y + Math.floor((radius + p.r) * Math.sin(p.angle));
+
+		ctx.lineWidth = 2;			
+		ctx.strokeStyle = p.c;
+		ctx.line(x2, y2, x,y);
+		ctx.fillEllipse(x, y, 10, 10);
+		};
+
+}
+
+function addSpikes(_x, _y, _colour, _me){
+		var spike = {
+		x: w/2,
+		y: h/2,
+		c: _colour,
+		me: _me,
+		r: 140,
+		r2: 240,
+		me2: (_me + randomInt(-30,30))%num_spikes,
+		speedx: random(-2,2)/2,
+		speedy: random(2,20),
+		sz: 0,
+		angle: radians(Math.round(map(_me, 0, num_spikes, 0, 360)),1)
+	}
+
+	spikes.push(spike);
+	}
+
+
+function startStop(){
+
+		if (dist(w - 50, h - 50, mouseX, mouseY) < radius/4 +4 ) {
+			ctx.fillStyle = "red";
+		} else {
+			ctx.fillStyle = "00afec";
+		}
+		if (mousePressed && lastclick < frameCount - 10) {
+			stop = !stop;
+			lastclick = frameCount;
+		}
+		ctx.fillEllipse(w - 50, h - 50, radius/4, radius/4);
+
+}
+
+// function spikeRollover(p){
+
+// var object = {
+//     // pixelWidth : pixelWidth,
+//     // pixelHeight : pixelHeight,  
+//     prob : prob,
+//     range: [1, 100],
+//     xy: [pixelWidth,pixelWidth]
+// }
+
+// var controlKit = new ControlKit();
+// 	controlKit.addPanel({label: 'Control Panel', align: 'left', fixed: false, position: [w-250, h-280], width: 200})
+//      .addSlider(object, 'prob', 'range', { onChange: function(index){ 
+//     	prob =  object.prob;
+//     	glitch(); }}, {label: 'Probability'}
+//     )
+//     .addPad(object,'xy',{
+//                 onChange:function(index){
+
+//             	pixelWidth = 1 + Math.floor(Math.round(object.xy[0]*object.xy[0]*300));
+            	
+//             	pixelHeight = 1 + Math.floor(Math.round(object.xy[1]*object.xy[1]*300));
+//             	//console.log(pixelWidth + " : " + pixelHeight)
+//             	glitch();
+//             	},
+//                 onFinish:function(){console.log('done');}})
+//     .addButton('Go', function(){ reset();  });
+// // }
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

@@ -15,11 +15,14 @@
 	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+  <script language="javascript" src="js/soundcloud.js"></script>  
 <script>
+//(function() {
 // was getting annoyed with the same track playing, so changed soundcloud function to play random track
 //var ctx = createCanvas("canvas1");
 var type = /(canvas|webgl)/.test(url.type) ? url.type : 'svg';
+var variance = 0.2;
+
         var two = new Two({
           type: Two.Types[type],
           fullscreen: true
@@ -37,15 +40,17 @@ var type = /(canvas|webgl)/.test(url.type) ? url.type : 'svg';
         var points = [];
         var i = 0;
 
-        for (i = 0; i < Two.Resolution; i++) {
+        for (i = 0; i < 50; i++) {
 
-          var pct = i / Two.Resolution;
+          var pct = i / 50;
           var theta = pct * Math.PI * 2;
 
           var ax = radius * Math.cos(theta);
           var ay = radius * Math.sin(theta);
 
-          var variance = Math.random() * 0.5 + 0.5;
+          variance = Math.random() * 0.5 + 0.5;
+         
+          //var variance = mix[0];
           var bx = variance * ax;
           var by = variance * ay;
 
@@ -59,7 +64,7 @@ var type = /(canvas|webgl)/.test(url.type) ? url.type : 'svg';
           particle.shape.noStroke().fill = '#fff';
           particle.position = particle.shape.translation;
 
-          foreground.add(particle.shape)
+          //foreground.add(particle.shape)
           points.push(particle.position);
 
         }
@@ -73,16 +78,17 @@ var type = /(canvas|webgl)/.test(url.type) ? url.type : 'svg';
 
         background.add(outer);
 
-        var inner = new Two.Path(points, true, true);
-        inner.noStroke();
-        inner.fill = getRandomColor().toString();
-        inner.scale = 1.25;
+        //var inner = new Two.Path(points, true, true);
+        //inner.noStroke();
+        //inner.fill = getRandomColor().toString();
+        //inner.scale = 1.25;
 
-        background.add(inner);
+        //background.add(inner);
 
-        _.extend(two.renderer.domElement.style, {
-          background: 'url(' + generateGrid() + ') center center'
-        });
+        // _.extend(two.renderer.domElement.style, {
+        //   background: 'url(' + generateGrid() + ') center center'
+        // }
+        //);
 
         resizeMe();
 
@@ -100,6 +106,7 @@ var type = /(canvas|webgl)/.test(url.type) ? url.type : 'svg';
 
         function getRandomColor() {
         	var color = rgba(randomInt(255),randomInt(255),randomInt(255),randomInt(255))
+          var color = rgb(0);
           // var color = {
           //   r: Math.floor(Math.random() * 255),
           //   g: Math.floor(Math.random() * 255),
@@ -137,7 +144,7 @@ var type = /(canvas|webgl)/.test(url.type) ? url.type : 'svg';
           background.noStroke().fill = '#efefef';
 
           var c = two.makeCircle(two.width / 2, two.height / 2, 0.5);
-          c.noStroke().fill = '#999';
+          c.noStroke().fill = '#000';
 
           two.update();
 
@@ -145,8 +152,13 @@ var type = /(canvas|webgl)/.test(url.type) ? url.type : 'svg';
 
         }
 
+        function draw(){
+          variance = map(audioChannelVolume[i], 0, 100, 0, 0.5);
+          //console.log(variance)
+}
+//})();
 </script>
- <script language="javascript" src="js/soundcloud.js"></script>
- <script>document.write('<script src="http://' + (location.host || '${1:localhost}').split(':')[0] + ':${2:35729}/livereload.js?snipver=1"></' + 'script>')</script>
+
+
 </body>
 </html>

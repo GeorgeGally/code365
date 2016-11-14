@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+
+
+<body>
+
+    <script>
+
+
+var ctx = createCanvas("canvas1");
+// var _hsl1 = rgbToHsl(hexToRgb('#F0CA35'));
+// var _hsl2 = rgbToHsl(hexToRgb('#C02425'));
+
+var c1 = hexToRgb('#F0CA35');
+var c2 = hexToRgb('#C02425');
+
+// var _hsl1 = rgbToHsl(c1.r,c1.g,c1.b);
+// var _hsl2 = rgbToHsl(c2.r,c2.g,c2.b);
+//
+// var r = 191;
+// var g = 233;
+// var b = 255;
+// var _hsl1 = rgbToHsl(r, g, b);
+//console.log(_hsl1);
+
+// var start_h = h1 = _hsl1[0] * 360;
+// var start_s = s1 = _hsl1[1] * 100;
+// var start_l = l1 = _hsl1[2] * 100;
+
+// var r2 = 255;
+// var g2 = 110;
+// var b2 = 127;
+// var _hsl2 = rgbToHsl(r2, g2, b2);
+// console.log(_hsl2);
+//
+// var h2 = h3 = _hsl2[0] * 360;
+// var s2 = s3 = _hsl2[1] * 100;
+// var l2 = l3 = _hsl2[2] * 100;
+
+var c3 = getColour(c1, c2, 50);
+console.log(c1);
+console.log(c2);
+console.log(c3);
+// h3 = _hsl3[0] * 360;
+// s3 = _hsl3[1] * 100;
+// l3 = _hsl3[2] * 100;
+// console.log(_hsl3);
+
+function getColour(c1, c2, percentage) {
+
+  if (c1.r > c2.r ) {
+	 var r = (c2.r + Math.abs(c2.r - c1.r) * percentage/100);
+  } else {
+   var r = (c1.r + Math.abs(c1.r - c2.r) * percentage/100);
+  }
+
+  if (c1.g > c2.g ) {
+	 var g = (c2.g + Math.abs(c2.g - c1.g) * percentage/100);
+  } else {
+   var g = (c1.g + Math.abs(c1.g - c2.g) * percentage/100);
+  }
+
+  if (c1.b > c2.b ) {
+	 var b = (c2.b + Math.abs(c2.b - c1.b) * percentage/100);
+  } else {
+   var b = (c1.b + Math.abs(c1.b - c2.b) * percentage/100);
+  }
+
+	 return {r:r, g:g, b:b};
+
+}
+
+// function value_point(percentage){
+// // add 30% of h2
+//  h3 = Math.round(h1 + (h2 * percentage/100));
+//  s3 = Math.round(s1 + (s2 * percentage/100));
+//  l3 = Math.round(l1 + (l2 * percentage/100));
+//  console.log(h3);
+// }
+var r = c1.r;
+var g = c1.g;
+var b = c1.b;
+
+function draw(){
+
+  r = tween(c1.r, r, 150);
+  g = tween(c1.g, g, 150);
+  b = tween(c1.b, b, 150);
+
+  //console.log(r);
+  // if (Math.round(hue) == h2 && Math.round(s) == s2 && Math.round(l) == l2) {
+  //   console.log("backwards");
+  //   h2 = start_h;
+  //   s2 = start_s;
+  //   l2 = start_l;
+  //   start_h = hue;
+  //   start_s = s;
+  //   start_l = l;
+  // }
+  //ctx.fillStyle = hsl(Math.round(h1), s1,l1);
+  // ctx.fillStyle = rgb(r,g, b);
+  ctx.fillStyle = rgb(c3.r,c3.g, c3.b);
+  //ctx.fillStyle = hsl(start_h, start_s, start_l);
+  ctx.centreFillRect(w/2, h/2, 300, 300);
+}
+
+
+
+
+
+</script>
+
+</body>
+
+</html>

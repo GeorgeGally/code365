@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+    
+   <!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+    <script language="javascript" src="js/three.min.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var griw_w = 1;
+var griw_h = 1;
+var grid = createGrid(griw_w, griw_h, w, h);
+var flies = [];
+var balls = new particleEngine(griw_w*griw_h);
+var orbs = [];
+var small_orbs = [];
+
+// setup 3D environment 
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 70, aspect, 0.1, 1000 );
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+var geometry = new THREE.SphereGeometry( 8, 28, 18, 4 );
+var geometry2 = new THREE.SphereGeometry( 1, 28, 18, 4 );
+geometry.dynamic = true;
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+// scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+renderer.setClearColor( 0xf3f3f3 );
+camera.position.z = 100;
+camera.near = 60;
+camera.far  = 155;
+
+
+
+for (var i = 0; i < balls.particles.length; i++) {
+    b = balls.particles[i];
+
+    var s = new THREE.Mesh( geometry, dMaterial );
+    scene.add( s );
+    orbs.push(s);
+    b.position.x = grid[i][0];
+    b.position.y = grid[i][1];
+    b.speed.x = random(2, 40);
+    b.speed.y = random(2, 40);
+    b.sz = 20;
+
+    flies[i] = new particleEngine(20);
+    for (var j = 0; j < flies[i].particles.length; j++) {
+        p = flies[i].particles[j];
+        var s = new THREE.Mesh( geometry2, dMaterial );
+        small_orbs.push(s);
+        scene.add( s );
+        p.position.x = b.position.x;
+        p.position.y = b.position.y;
+        p.speed.x = random(2, 40);
+        p.speed.y = random(2, 40);
+        p.slow = new Vector()
+        p.slow.x = random(2, 40);
+        p.slow.y = random(2, 40);
+    }
+}
+
+// FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+function draw(){
+
+    // ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = rgba(255, 255, 255, 0.8);
+    ctx.fillRect(0, 0, w, h);
+    //particle.draw();
+    //console.log();
+    for (var i = 0; i < balls.particles.length; i++) {
+
+        b = balls.particles[i];
+        // b.position.y =  tween(b.position.y, grid[i][1] + map(audioChannelVolume[b.me*2], 0, 100, -40, 40), 8);
+        b.position.x =  tween(b.position.x, grid[i][0] + random(-w/2, w/2), 12);
+        //b.position.x =  tween(b.position.x, grid[i][0] + mouseX - w/2, 8);
+        //b.position.y =  tween(b.position.y, grid[i][1] + random(-140, 140), 8);
+        b.position.y =  tween(b.position.y, grid[i][0] + random(-h/2, h/2), 8);
+        b.position.z =  tween(b.position.z, b.position.x, 18);
+        ctx.fillStyle = "black";
+        //ctx.fillEllipse(b.position.x, b.position.y, b.sz, b.sz);
+        orbs[i].position.x = map(b.position.x, 0, w, -10, 10);
+        orbs[i].position.y = map(b.position.y, 0, h, -10, 10);
+        orbs[i].position.z = map(b.position.z, 0, w, -120, 120);
+
+        for (var j = 0; j < flies[i].particles.length; j++) {
+            
+            p = flies[i].particles[j];
+            ctx.fillStyle = "black";
+            var mouse = b.position;
+            //console.log(mouse)
+            mouse = mouse.subtract(p.position);
+            mouse.setMag(random(1));
+            //console.log(mouse)
+            acceleration = mouse;
+            p.speed = p.speed.add(acceleration);
+            p.position = p.position.add(p.speed);
+            p.speed.limit(5);
+            //console.log(p.dist)
+            // ctx.line(p.position.x, p.position.y, mouseX, mouseY);
+            //ctx.fillEllipse(p.position.x, p.position.y, p.sz, p.sz);
+
+           // small_orbs[j].position.x = map(p.position.x, -10, 10, -10, 10);
+           // small_orbs[j].position.y = map(p.position.y, -10, 10, -40, 40);
+            small_orbs[j].position.x = tween(small_orbs[j].position.x, map(p.position.x, grid[i][0]-140, grid[i][0] + 140, -20, 20), p.slow.x);
+            small_orbs[j].position.y = tween(small_orbs[j].position.y, map(p.position.y, grid[i][1]-140, grid[i][1] +140, -20, 0), p.slow.y);;
+            //small_orbs[j].position.z = map(p.position.z, 0, w, -50, 50);
+            small_orbs[j].position.z = orbs[i].position.z + Math.sin(frameCount/100)*40;
+        }
+
+    } 
+    renderer.render( scene, camera );
+
+}
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

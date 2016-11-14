@@ -67,7 +67,7 @@ for (var i = 0; i < num_particles; i++) {
 
 function draw(){
   
-  ctx.fillStyle = rgba(225, 225, 225, 0.1);
+  ctx.fillStyle = rgba(225, 225, 225, 0.6);
   ctx.fillRect(0,0,w,h);
   //ctx.clearRect(0, 0, canvas.width, canvas.height);
   physics.update();
@@ -106,7 +106,7 @@ function draw(){
     p[0].y = mouseY;
     p[0].unlock();
   }
-
+  mirror();
 }
 
 

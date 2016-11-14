@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script src="js/_maxiLib.js"></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+<script type="text/javascript" src="js/controlKit.min.js"></script>
+<script type="text/javascript" src="js/Tone.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+frameRate = 220;
+var steps = 32;
+var timelines = 5;
+var key_height = 20;
+var bpm = 127;
+
+
+// DRUM SETUP
+
+// DRUM PATTERNS
+//[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+var BD = [1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0, 1,0,0,0,0,0,1,0,0,0,1,0,0,1,0,0];
+var SD = [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0, 0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0];
+var CP = [1,1,1,0,1,0,0,0,0,0,0,0,1,0,0,0, 0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0];
+var CB = [1,0,1,0,1,0,1,1,0,1,0,1,1,0,1,0, 1,0,1,0,1,0,1,1,0,1,0,1,0,0,0,0];
+
+var CH = [1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1, 1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1];
+
+// var drums = [
+// 	1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0, 1,0,0,0,0,0,1,0,0,0,1,0,0,1,0,0,
+// 	0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0, 0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,
+// 	0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0, 0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,
+// 	1,0,1,0,1,0,1,1,0,1,0,1,1,0,1,0, 1,0,1,0,1,0,1,1,0,1,0,1,0,0,0,0,
+// 	1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1, 1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1;
+// ];
+
+var kickloaded = 0;
+
+var drumCompress = new Tone.Compressor({
+		"threshold" : -30,
+		"ratio" : 6,
+		"attack" : 0.3,
+		"release" : 0.1
+	}).toMaster();
+
+
+var distortion = new Tone.Distortion({
+		"distortion" : 0.4,
+		"wet" : 0.4
+	});
+
+//BD
+// var kick = new Tone.Sampler({
+// 	"url" : "sounds/kick.wav",
+// 		"volume" : -10,
+// 		"envelope" : {
+// 			"attack" : 0.001,
+// 			"decay" : 0.2,
+// 			"sustain" : 0
+// 		}
+
+// },function(){
+// 	kickloaded = 1;
+// 	console.log("kickloaded")}
+// 	).chain(distortion, drumCompress);
+
+// var kick = new Tone.Player("sounds/kick.wav", function(){
+// 	//repitch the sample down a half step
+// 	//sampler.triggerAttack(-1);
+// 	kickloaded = 1;
+// }).toMaster();
+
+var kick = new Tone.Player("sounds/BD0000.WAV").toMaster();
+kick.retrigger = false;
+
+
+//SNARE
+// var snare = new Tone.Sampler({
+// 	"url" : "sounds/snare.wav",
+// 		"volume" : -10,
+// 		"envelope" : {
+// 			"attack" : 0.01,
+// 			"decay" : 0.05,
+// 			"sustain" : 0
+// 		}
+// 	}).chain(distortion, drumCompress);
+var snare = new Tone.Player("sounds/SD0010.WAV").toMaster();
+//snare.retrigger = false;
+
+var clap = new Tone.Player({
+	url: "sounds/CP.WAV", loopEnd: "32n"}).toMaster();
+clap.retrigger = false;
+
+//hats
+// var hats = new Tone.Sampler({
+// 	"url" : "sounds/hats.wav",
+// 		"volume" : -10,
+// 		"envelope" : {
+// 			"attack" : 0.001,
+// 			"decay" : 0.02,
+// 			"sustain" : 0.01,
+// 			"release" : 0.01
+// 		}
+// 	}).chain(distortion, drumCompress);
+var hats = new Tone.Player("sounds/CH.WAV").toMaster();
+hats.retrigger = false;
+
+
+var cowbell = new Tone.Player("sounds/CB.WAV").toMaster();
+
+
+// var kickloop = new Tone.Sequence(function(time, note){
+// 	//console.log(note);
+// }, BD, steps);
+
+// var snareloop = new Tone.Sequence(function(time, note){
+// 	//console.log(note);
+// }, SD, steps);
+
+// var hatsloop = new Tone.Sequence(function(time, note){
+// 	//console.log(note);
+// }, CH, steps);
+
+// var cpsloop = new Tone.Sequence(function(time, note){
+// 	//console.log(note);
+// }, CP, steps);
+
+// var cbsloop = new Tone.Sequence(function(time, note){
+// 	//console.log(note);
+// }, CB, steps);
+
+/////////////////////////////////////////////////////////////////
+
+
+var num_balls = 6;
+var max_size = 20;
+var accelerate = 1;
+var balls = new particleEngine(num_balls);
+
+var grid = createGrid(steps, timelines, w, key_height*timelines);
+var timeline = new particleEngine(steps * timelines);
+var transport_position = -1;
+
+// SETUP PARTICLES
+resetTimeline();
+resetBalls();
+
+
+
+//////////////////////////////// TRANSPORT TIMELINE //////////////////////////////
+
+Tone.Transport.bpm.rampTo(bpm, steps+"n");
+
+Tone.Transport.scheduleRepeat(function(time){
+
+	transport_position = (transport_position + 1)%steps;
+	
+	//if (BD[transport_position]) kick.start();
+	//if (SD[transport_position]) snare.start();
+	
+	//if (CH[transport_position]) hats.start();
+	//if (CB[transport_position]) cbs.start();
+	// if (kickloop.at(transport_position).value) {
+	// 	//console.log("1");
+	// 	kick.start();
+	// }
+	// if (snareloop.at(transport_position).value) {
+	// 	snare.start();
+	// 	cps.start();
+	// }
+	// if (hatsloop.at(transport_position).value) {
+	// 	hats.start();
+	// }
+	// if (cpsloop.at(transport_position).value) {
+	// 	cps.start();
+	// }
+	// if (cbsloop.at(transport_position).value) {
+	// 	cbs.start();
+	// }
+	//freq = notes[newnote][transport_position%notes[newnote].length];
+	//console.log(kickloop.at(transport_position).value)
+	//console.log("fire")
+}, steps + "n");
+
+//Tone.Buffer.onload = function(){
+	console.log("start")
+	Tone.Transport.start();
+//}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+function draw(){
+	if (frameCount>100) {
+	ctx.background(240);
+	drawBalls();
+	drawTimeline();
+}
+}
+
+
+function drawTimeline(){
+
+	for (var i = 0; i < timeline.particles.length; i++) {
+
+		var p = timeline.particles[i];
+		if (p.on == true) {
+			
+			ctx.fillStyle = p.c;
+			if (transport_position == p.key) {
+				playNotes(i);
+				ctx.fillStyle = "#f26522";
+			}
+			
+		} else {
+
+			// DRAW MIDDLE POINT
+			if (i%(steps/4) == 0) {
+				ctx.fillStyle = rgba(180, 0.2);	
+			} else {
+				ctx.fillStyle = rgba(200, 0.1);	
+			}
+			
+		}
+		
+		if (mouseHittestBlock(p)){
+			
+		}
+
+		ctx.fillRect(p.position.x - p.w/2, p.position.y - p.sz/2, p.w-2, p.h-2);
+
+		// if (p.on == true) {
+		// 	ctx.fillStyle = p.c;
+		// } else {
+		// 	ctx.fillStyle = rgb(220);
+		// }
+
+		
+
+	}
+}
+
+
+function playNotes(i){
+
+			// SETUP DRUM PATTERN
+		if (i< 32) {
+			kick.start();
+		} 
+		if (i>= 32 && i< 64) {
+			//snare.start();
+		}
+		if (i>= 64 && i< 96) {
+			clap.start();
+		}
+		if (i>= 96 && i< 128) {
+			//cowbell.start();
+		}
+		if (i>= 128 && i< 160) {
+			//hats.start();
+		}
+
+}
+
+function resetTimeline(){
+
+	for (var i = 0; i < timeline.particles.length; i++) {
+
+		var p = timeline.particles[i];
+
+
+		p.position.x = grid[i][0];
+		p.position.y = h - grid[i][1] - 50;
+		p.h = key_height;
+		p.key = i%steps;
+		p.on = true;
+
+		// SETUP DRUM PATTERN
+		if (i< 32) {
+			if (BD[i] == 0) p.on= false;
+		} 
+		if (i>= 32 && i< 64) {
+			if (SD[i%32] == 0) p.on= false;
+		}
+		if (i>= 64 && i< 96) {
+			if (CP[i%32] == 0) p.on= false;
+		}
+		if (i>= 96 && i< 128) {
+			if (CB[i%32] == 0) p.on= false;
+		}
+		if (i>= 128 && i< 160) {
+			if (CH[i%32] == 0) p.on= false;
+		}
+
+		// p.c = rgb(randomInt(255));
+		p.c = "#8dc63f";
+		p.w = w/steps;
+		p.counter = frameCount;
+
+	}
+}
+
+
+function drawBalls(){
+
+	for (var i = 0; i < balls.particles.length; i++) {
+		//synth[i].triggerRelease();
+		var b = balls.particles[i];
+		selfHittest(b);
+
+		// SEE IF BALL HITS SEQUENCER
+		sequencerHittestBall(b);
+		b.position.x += b.speed.x * accelerate;
+		b.position.y += b.speed.y * accelerate;
+		
+		if (dist(b.position.x, b.position.y, mouseX, mouseY) < b.sz/2) hit(b);
+
+		if (b.position.x >= w-b.sz/2 || b.position.x <= b.sz/2) b.speed.x *=-1;
+		if (b.position.y >= h-b.sz/2 || b.position.y <= b.sz/2) b.speed.y *=-1;	
+		
+		if (b.c == "red" ) {
+			b.sz2 += 0.6;
+			b.alpha -= 0.008;
+			// ctx.fillStyle = rgba(0, b.alpha/2);
+			// ctx.fillEllipse (b.position.x , b.position.y, b.sz2*1.4, b.sz2*1.4);
+			ctx.fillStyle = rgba(0, b.alpha);
+			ctx.fillEllipse (b.position.x , b.position.y, b.sz2, b.sz2);
+		}
+
+		ctx.strokeStyle = b.c;
+		ctx.fillStyle = b.c;
+		ctx.fillEllipse (b.position.x , b.position.y, b.sz, b.sz);
+
+		// DRAW LINE IF CONNECTED
+		if (b.friend >= 0 ) {
+			var f = balls.particles[b.friend];
+			ctx.line(b.position.x , b.position.y, f.position.x , f.position.y);
+			//circleLineCollide(b);
+		}
+
+
+		//RESET FRIENDSHIPS
+		if (b.counter + 140 < frameCount) {
+			//turnOff(b);
+		}
+
+	}
+	}
+
+
+function resetBalls(){
+	for (var i = 0; i < balls.particles.length; i++) {
+	var b = balls.particles[i];
+	b.speed = new Vector(posNeg()*random(0.2, 2), posNeg()*random(0.2, 2));
+	b.sz = randomInt(5, max_size);
+	b.c = "#aaa";
+	b.position.x = random(w);
+	b.position.y = random(h/2);
+	b.counter = frameCount;
+	b.friend = -1;
+	b.alpha = 0.5;
+	b.sz2 = b.sz;
+	//synth[i] = addSynth();
+	}
+}
+
+function hit(b){
+	b.c = "orange";
+	b.speed.x *= -1;
+	b.speed.y *= -1;
+	b.counter = frameCount + 600;
+}
+
+
+function sequencerHittestBall(b){ 
+	
+	for (var i = 0; i < timeline.particles.length; i++) {
+		var t = timeline.particles[i];
+	
+	if (b.position.x + b.sz/2 >= t.position.x - t.w/2 &&  b.position.x - b.sz/2<= t.position.x + t.w/2 &&
+		b.position.y + b.sz/2 >= t.position.y - t.h/2 &&  b.position.y - b.sz/2<= t.position.y + t.h/2 &&
+	 t.on) {
+
+		if (b.position.y >= t.y - t.h) b.position.y = b.position.y - key_height - b.sz/2;
+		if (b.position.y <= t.y + t.h) b.position.y = b.position.y + key_height + b.sz/2;
+		
+		t.on = false;
+
+		hit(b);
+
+      } 
+	}
+}
+
+
+function selfHittest(b){
+		
+	for (var j = 0; j < balls.particles.length; j++) {
+		
+		if (j != b.me) {
+			
+			p2 = balls.particles[j];
+			
+			if (dist(b.position.x, b.position.y, p2.position.x, p2.position.y) < p.sz/2) {
+
+				b.friend = p2.me;
+				p2.c = "orange";
+				p2.counter = frameCount;
+				hit(b);
+				//hit(p2);
+
+			} 
+		}
+				
+		}
+}
+
+
+// COMBINE WITH HITTEST TO AVOID REPEATITION
+
+function mouseHittestBlock(t){ 
+	
+	//for (var i = 0; i < timeline.particles.length; i++) {
+		//var t = timeline.particles[i];
+
+	if (mouseX + 1 >= t.position.x - t.w/2 &&  mouseX - 1<= t.position.x + t.w/2 &&
+		mouseY + 1 >= t.position.y - t.h/2 &&  mouseY - 1<= t.position.y + t.h/2) {
+
+		if(mouseReleased && frameCount > t.counter +20) {
+			t.on = !t.on;
+			t.counter = frameCount;
+			ctx.fillStyle = "orange";
+		} else {
+			ctx.fillStyle = "yellow";	
+		}
+		
+        return true;
+
+     // } 
+}
+}
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script language="javascript" src="js/creative.js"></script>
+  <script language="javascript" src="js/canvas.js"></script>
+  <script language="javascript" src="js/three.min.js"></script>
+  <script language="javascript" src="js/_maxiLib.js"></script>
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background: #fff">
+   
+<script>
+
+// GLOBALS
+var ctx = createCanvas("canvas1");
+var r = 0;
+var show = 10;
+var particles = [];
+var num_particles = 1000;
+var sphere = [];
+var spacing = 0.01;
+var radius = 1;
+var d=0, t=0;
+
+
+// setup 3D environment 
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 100, aspect, 0.1, 1000 );
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+var geometry = new THREE.SphereGeometry( 1, 28, 18, 4 );
+geometry.dynamic = true;
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+// scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+renderer.setClearColor( 0xf3f3f3 );
+camera.position.z = 100;
+camera.near = 60;
+camera.far  = 155;
+
+// setup audio
+var changeThis = 3;
+var audio = new maximJs.maxiAudio();
+audio.setBufferSize(2048);
+//audio.outputIsArray(true, 2); //stereo
+audio.init();
+
+var osc = new maximJs.maxiOsc();
+var osc2 = new maximJs.maxiOsc();
+var osc3 = new maximJs.maxiOsc();
+var osc4 = new maximJs.maxiOsc();
+
+var filter = new maximJs.maxiFilter();
+var drawOutput = new Array(num_particles);
+var counter = 0;
+
+var spacing = ((Math.PI * 2) / 1024);//1024 because it is the size of the buffer
+var bufferFreq = 44100 / num_particles;
+var vol = 0.1;
+
+
+var clock = new maximJs.maxiClock();
+clock.setTicksPerBeat(4);
+clock.setTempo(120);
+var freq1 = 100;
+var freq2 = 0.122;
+
+var modfreq = 100; 
+
+var soundArray = [100, 200, 500, 300, 100, 400, 200, 1000];
+var chord = 0;
+var notes = [];
+    notes.push([65.41, 130.8, 261.6, 523.3, 1047, 2093, 4186]); //c_chord
+    notes.push([98.00, 196.0, 392.0, 784.0, 1568, 3136, 6272]); //g_chord
+    notes.push([103.8, 207.7, 415.3, 830.6, 1661, 3322, 6645]); //a_minor_chord
+    notes.push([87.31, 174.6, 349.2, 698.5, 1397, 2794, 5588]); //f_chord
+
+
+audio.play = function () {
+    
+    if(clock.tick){
+      counter++;
+      //modfreq = soundArray[randomInt(counter%soundArray.length)];
+      modfreq = notes[randomInt(counter%notes.length)][randomInt(counter%notes[0].length)];
+
+      //freq1 = bufferFreq * 10 + osc2.sinewave(bufferFreq * changeThis) * osc3.sinewave((frameCount%144)/100);
+      //freq1 = 300 + Math.round(10 + osc2.sinewave(bufferFreq * changeThis)*200);
+      //modfreq = modfreq + (freq1+0.1)%720;
+      freq2 = 300 + Math.floor(100 + osc2.sinewave(bufferFreq * changeThis/1000)*400);
+      //console.log(modfreq) 
+    }
+    freq1 = tween(freq1, modfreq, 125);
+    //var wave1 = osc.sawn(modfreq);
+    var wave1 = osc.sinewave(freq1);
+    //var wave = osc.sinewave(freq1)*150;
+    var wave2 = osc4.sawn(modfreq + freq2);
+
+    //wave = filter.lopass(wave * vol, 0.3);
+    this.output = (wave1 + wave2)*vol;
+    //this.output = (wave1)*vol;
+
+    //drawOutput[frameCount % num_particles] = (Math.round(wave + wave2)/20)*3;
+
+    clock.ticker();
+
+};
+
+
+
+
+for (var i = 0; i < num_particles; i++) {
+addParticle(i);
+}
+
+renderer.setClearColor( 0xf3f3f3 );
+camera.position.z = 80;
+camera.near = 60;
+camera.far  = 155;
+
+var show = 10;
+
+function draw() {
+  
+  drawParticles();
+
+  //scene.rotation.z+= 0.01;
+  renderer.render( scene, camera );
+
+};
+
+
+function changeColour(){
+
+   if (chance(300)) {
+    renderer.setClearColor( 0xf3f3f3 );
+    bufferFreq = 44100 / 512;
+  } else if (chance(300)) {
+    renderer.setClearColor( 0xdddddd );
+    bufferFreq = 44100 / 1024;
+  } else if (chance(300)) {
+    renderer.setClearColor( 0x000000 );
+    bufferFreq = 44100 / 256;
+  }
+
+}
+
+function Particle(){
+  this.sphere = new THREE.Mesh( geometry, dMaterial );
+  scene.add( this.sphere );
+  this.sphere[i].position.x = Math.cos(i*spacing) * radius;
+  this.sphere[i].position.y = Math.sin(i*spacing) * radius;
+  this.sphere[i].position.z = 0;
+  this.sphere[i].scale.x = this.sphere[i].scale.y = this.sphere[i].scale.y = 1;
+  this.sphere[i].s = 1;
+}
+
+
+function addParticle(i){
+
+  sphere[i] = new THREE.Mesh( geometry, dMaterial );
+  scene.add( sphere[i] );
+  sphere[i].position.x = Math.cos(i*spacing) * radius;
+  sphere[i].position.y = Math.sin(i*spacing) * radius;
+  sphere[i].position.z = -i/2;
+  sphere[i].scale.x = sphere[i].scale.y = sphere[i].scale.y = 1;
+  sphere[i].s = 1;
+
+}
+
+var scale = 5;
+
+function drawParticles(){
+
+   if (show < num_particles) show+=0.1;
+    
+    if (chance(800)) {
+        scale = random(0.6, 20);
+        changeThis = random(5);
+      }
+
+    for (var i = 0; i < num_particles; i++) {
+
+      sphere[i].position.x = Math.cos(r*i) * (i);
+      sphere[i].position.y = Math.sin(r*i) * (i);
+      sphere[i].position.z = Math.sin(frameCount/1000) * (-i);
+      
+      //if(drawOutput[i]) sphere[i].s = tween(sphere[i].s, drawOutput[i], 25);
+      sphere[i].s = tween(sphere[i].s, scale, 25);
+      //sphere[i].s = scale;
+      sphere[i].scale.x = sphere[i].scale.y = sphere[i].scale.z = sphere[i].s;
+
+      // r+=0.0000005;
+      // r+= (freq1+freq2)/5000000000;
+      r+= (freq1)/2000000000;
+
+      }
+
+      if ((r < 3.9 && r > 1.5) || r> 6) {
+        scene.rotation.x += 0.02;
+        scene.rotation.y += 0.01;
+        changeThis = random(2);
+        changeColour();
+      }
+
+      if (chance(200)) {
+          changeColour();
+        changeThis = random(5);
+      }
+
+
+}
+
+</script>
+</body>
+</html>

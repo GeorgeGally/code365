@@ -63,9 +63,9 @@ var Wave = function(_num_particles, _x, _y, _me) {
 			p = particles[i];
 			p.x += p.speedx;
 			if (p.x >= w || p.x <= 0) p.speedx*=-1;
-			ctx.lineWidth = 0.5;
+			ctx.lineWidth = 0.2;
 			var s = mapSound(p.me, num_particles*num_waves);
-			ctx.strokeStyle = rgb(s/10);
+			ctx.strokeStyle = rgba(0, 0.1);
 			ctx.line(p.x, h/2, w, p.y + s/20*p.speedy);
 		};
 
@@ -87,7 +87,7 @@ var spacing_y = h/grid_h;
 console.log(spacing_x)
 console.log(spacing_y)
 var grid = makeGrid(grid_w, grid_h);
-var num_particles = 4;
+var num_particles = 50;
 
 for (var i = 0; i < num_waves; i++) {	
 	waves[i] = new Wave(num_particles, grid[i][0]*spacing_x+spacing_x/2,grid[i][1]*spacing_y + spacing_y/2, i);
@@ -103,8 +103,8 @@ function draw(){
 	ctx.clearRect(0, 0, w, h);
 	for (var i = 0; i < num_waves; i++) {
 		waves[i].draw();
-		ctx.strokeStyle = rgb(0);
-		ctx.lineWidth = 1;
+		// ctx.strokeStyle = rgb(0);
+		// ctx.lineWidth = 1;
 		if (i>0) {
 		if (grid[i][0] > grid[i-1][0]) {
 		// ctx.line(grid[i][0]*spacing_x+spacing_x/2,grid[i][1]*spacing_y + spacing_y/2, grid[i-1][0]*spacing_x+spacing_x/2,grid[i-1][1]*spacing_y + spacing_y/2);
@@ -114,6 +114,7 @@ function draw(){
 		}
 	}
 	};
+	mirror();
 	// for (var i = 0; i < grid.length; i++) {
 	// 	ctx.fillRect(grid[i][0]*spacing_x, grid[i][1]*spacing_y, 10,10);
 	// };

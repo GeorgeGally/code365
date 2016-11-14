@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src="js/_maxiLib.js"></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+<script type="text/javascript" src="js/controlKit.min.js"></script>
+<script type="text/javascript" src="js/Tone.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var num_balls = 20;
+var steps = 64;
+var accelerate = 1;
+var max_size = 20;
+
+// particles
+var segments = new particleEngine(steps);
+var bass_segments = new particleEngine(steps/2);
+var balls = new particleEngine(num_balls);
+
+var particles = [];
+var spikes = [];
+var num_spikes = 16;
+
+var radius = 150;
+var segment_radius = 1.4 * radius;
+var dragging = false, stop = false;
+
+var oldX, oldY = 0;
+var startAngle = 0;
+
+
+var segmentLineWidth = 20;
+
+var lastclick = 0;
+var prob = 5;
+var pixelWidth = 10;
+
+// SETUP SOUND
+
+var bpm = 360;
+var transport_position = 0;
+var actual = 0;
+
+var osc_speed = 1800;
+var osc = [];
+var threshold = -30;
+var ratio = 6;
+var attack = 0.9;
+var decay = 0.8;
+var sustain = 0.5;
+var release = 0.8;
+
+var master_output;
+var master_vol = 1.0;
+
+
+var maximJs;   
+var maxiAudio = new maximJs.maxiAudio();
+var myWave = new maximJs.maxiOsc(); 
+var myWave2 = new maximJs.maxiOsc();
+var clock = new maximJs.maxiClock();
+
+var osc1 = new maximJs.maxiOsc(); 
+var osc2 = new maximJs.maxiOsc(); 
+var osc3 = new maximJs.maxiOsc(); 
+var mod = new maximJs.maxiOsc();
+
+var sound = new maximJs.maxiOsc();
+var bass = new maximJs.maxiOsc();
+
+var filter = new maximJs.maxiFilter();
+var filter2 = new maximJs.maxiFilter();
+
+var envelope = new maximJs.maxiEnv();
+
+var delay = new maximJs.maxiDelayline();
+var mtof = new maximJs.convert();
+
+var trigger, trigger2, newnote = 0;
+
+var pitch = [57,57,59,60];//the bassline for the arpeggio
+var bassout,leadout, delayout;
+
+clock.setTicksPerBeat(4);
+clock.setTempo(bpm);   
+maxiAudio.init();
+
+var bump_synth = new Tone.MembraneSynth().toMaster();
+bump_synth.volume.value = -4;
+
+var synth2 = new Tone.FMSynth({
+	"oscillator" : {
+	"type" : "square"
+	},
+	"envelope" : {
+					"attack" : attack,
+					"decay" : decay,
+					"sustain" : sustain,
+					"release" : release,
+				}
+		}).toMaster();
+
+//var filter = new Tone.Filter(200, "highpass");
+//Tone.Master.chain(filter);
+//FILTERS
+
+var filter_freq = 0;
+// var lowBump = new Tone.Filter(400, "lowshelf");
+// var distortion = new Tone.Distortion(0.2);
+// var delay = new Tone.FeedbackDelay ("8n", 0.1);
+// var freeverb = new Tone.Freeverb();
+// freeverb.dampening.value = 1000;
+// var filter = new Tone.Filter(200, "highpass");
+
+
+// SYNTHS
+
+var currentPitch = 0;//the final pitch variables
+var currentChord = 0;
+
+var notes = [];
+var notes2 = [];
+//notes = ["C3","D3","E3","F3","G4","A4","B4","C3","D3","E3","A3","G4","A4","B4"];
+//notes = ["C2","D2","E2","F2","G2","A2","B2","C3","D3","E3","A3","G3","A3","B3"];
+// notes = [138,138,134,130,128,134,132,128,124,130,138,124,104,110,120,114];
+notes = [276,276,268,260,256,268,264,256,248,260,276,248,208,220,240,228];
+//notes = ["F4","G#3","C#4","C#3","F#4"];
+//notes = ["D4","E4","G4","C4","D4","E4","G4","C4"];
+//notes2 = ["C1","D1","E1","F2","G2","A2","B2","C3","D3","E3","A3","G3","A3","B3"];
+notes2 = [69,69,67,65,64,67,66,64,62,65,64,62,57,55,60,57];
+//notes2 = ["F2","G#2","C#2","C#2","F#2"];
+
+//notes2 = ["D1","E1","G1","C1","D2","E2","G2","C2"];
+//var myArray = [100, 200, 500, 300, 100, 400, 200, 1000];
+
+segments = setupSegments(segments, segment_radius, 0); 
+bass_segments = setupSegments(bass_segments, segment_radius+23, 1); 
+resetBalls();
+
+
+
+
+//////////////////////////////// TRANSPORT TIMELINE //////////////////////////////
+
+var highs = 0;
+var lows = 0;
+
+maxiAudio.play = function() {
+	clock.ticker();
+	
+	if (!stop) {
+
+	if(clock.tick){
+	//bump_synth.triggerRelease();
+	transport_position = (transport_position + 1)%steps;
+	currentChord++;
+	}
+	
+
+	var s = segments.particles[transport_position];
+	
+
+	if (s.on  && s.ratio == 0) {
+		if (s.accent) {
+		var v = 1;
+		} else {
+		var v = 0.8;
+		}
+		// highs = s.note;
+		highs = transport_position * 10;
+		// var wave2 = myWave.sinewave(s.note) * 100;
+		//synth1.triggerAttack(s.note, "64n", v);
+		//bump_synth.triggerAttackRelease(highs*4, 0.1);
+	} else {
+		highs = highs - 0.0001;
+		if (highs<0) highs = 0;
+	}
+
+		var b = bass_segments.particles[Math.floor(transport_position/2)];
+		
+
+		if (b.on && b.ratio == 1 && (transport_position/2 == b.me )){
+			
+			if (b.accent) {
+				var v = 0.5;
+			} else {
+				var v = 0.3;
+			}
+			lows = b.note;
+			//synth2.triggerAttack(b.note, "64n", v);
+			//lows = 220 + transport_position * 2;
+			//osc.play();
+			// osc1 = myWave.sinewave(b.note) * 100;
+			//currentPitch= pitch[(transport_position%4)]+b.note;//write the frequency val into currentPitch
+	//var wave = osc1.sinewave(fundamental + modulator.sinewave(modfreq)*modindex);
+	//this.output = master_output * wave;
+	
+		} else {
+		lows = lows - 0.008;
+		if (lows<0) lows = 0;
+	}
+		//Synth.triggerAttackRelease();
+		//hitSynth.triggerAttackRelease(freq, "16n");
+		// var wave = myWave.triangle(s.note*osc1.sinewave(filter_freq/1000)) * 100;
+		//var wave = myWave.triangle(s.note*osc1.pulse(filter_freq, 0.2)) * 10;
+		
+		
+		//osc1 = myWave.pulse(highs/filter_freq, 0.001) * 10;
+		var f = map(filter_freq, 0, w/2, 1, 5);
+		osc1 = myWave.triangle(highs) * 10;	
+		//osc1 = myWave.pulse(highs/filter_freq, 0.001) * 10;
+		// osc2 = filter2.lores(myWave2.triangle(lows/2),9250,2) * f;
+		osc2 = filter2.lores(myWave2.triangle(lows/2),950,2) * 10;
+		// bassout=filter2.lores(envelope.adsr(bass.saw(currentPitch*0.5)+sound.pulse(currentPitch*0.5,mod.phasor(1)),1,0.9995, 0.25, 0.9995, 1, transport_position),9250,2);//new, simple ADSR.
+		//bassout=filter2.lores(bass.saw(currentPitch*0.5),9250,2);
+		this.output = osc1;
+
+	} else {
+		//synth1.triggerRelease();
+		//synth2.triggerRelease();
+	}
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+function draw(){
+
+	//filter.frequency.value = 100 + filter_freq*10;
+	//lowBump.frequency.value = mouseY;
+	ctx.clearRect(0, 0, w, h);
+	
+	if (!stop) drawBalls();
+	arcSegments(steps ,220);
+	startStop();
+	//mirror();
+	//glitch();
+	//pixelate(25,25, 0);	
+}
+
+
+
+function drawBalls(){
+	filter_freq = 0;
+	for (var i = 0; i < balls.particles.length; i++) {
+		//synth[i].triggerRelease();
+		var b = balls.particles[i];
+		selfHittest(b);
+
+		// SEE IF BALL HITS SEQUENCER
+		sequencerHittestBall(segments, segment_radius, b);
+		sequencerHittestBall(bass_segments, segment_radius+23, b);
+		
+		b.position.x += b.speed.x * accelerate;
+		b.position.y += b.speed.y * accelerate;
+		
+		if (dist(b.position.x, b.position.y, mouseX, mouseY) < b.sz/2) 
+			{
+				b.on = !b.on;
+				hit(b);
+
+			}
+
+		if (b.position.x >= w-b.sz/2 || b.position.x <= b.sz/2) b.speed.x *=-1;
+		if (b.position.y >= h-b.sz/2 || b.position.y <= b.sz/2) b.speed.y *=-1;	
+
+		if (b.counter < frameCount) {
+			// b.c = rgba(200, 0.4);
+			// b.c = "#72d0f4";
+			//b.c = "#ddd";
+			//b.on = false;
+			turnOff(b);
+		}
+
+		ctx.fillStyle = b.c;
+		ctx.fillEllipse (b.position.x , b.position.y, b.sz, b.sz);
+
+		// DRAW LINE IF CONNECTED
+		if (b.friend >= 0 ) {
+			var f = balls.particles[b.friend];
+			ctx.lineWidth = 0.5;
+			ctx.strokeStyle = "#000";
+			b.filter = dist(b.position.x , b.position.y, f.position.x , f.position.y);
+			ctx.line(b.position.x , b.position.y, f.position.x , f.position.y);
+			circleLineCollide(b);
+		} else {
+			b.filter = 0;
+		}
+
+		if (b.filter > filter_freq) filter_freq = b.filter;
+		//RESET FRIENDSHIPS
+		// if (b.counter + 140 < frameCount) {
+		// 	turnOff(b);
+		// }
+
+	}
+	}
+
+
+function turnOff(b){
+	b.friend = -1;
+	b.c = "#ddd";
+	b.on = false;
+	b.filter = 0;
+	//innerLineLength = 0;
+	//outerLineLength = 0;
+	}
+
+function resetBalls(){
+
+	for (var i = 0; i < balls.particles.length; i++) {
+
+		var b = balls.particles[i];
+		b.speed = new Vector(posNeg()*random(1, 6), posNeg()*random(1, 6));
+		// b.sz = randomInt(5, max_size);
+		b.sz = 10;
+		b.c = "#8dc63f";
+		b.on = false;
+		b.filter = 0;
+
+		if (i%4 == 0) {
+		b.position.x = w/2 + random(-50,50);
+		b.position.y = h/2 + random(-50,50);
+		} else {
+			if (chance(2)) {
+			b.position.x = w - random(10, 150);
+			b.position.y = h - random(10, 150);
+			} else {
+			b.position.x = random(10, 150);
+			b.position.y = random(10, 150);	
+			}
+			
+		}
+		b.counter = 0;
+		b.friend = -1;
+		b.alpha = 0.5;
+		b.sz2 = b.sz;
+		//synth[i] = addSynth();
+
+	}
+}
+
+
+function circleLineCollide(b) {
+
+	var f = balls.particles[b.friend];
+			for (var j = 0; j < balls.particles.length; j++) {
+				if (b.me != j && f.me !=j) {
+					var c = balls.particles[j];
+					var circle = new Vector(c.position.x, c.position.y);
+					var bb = new Vector(b.position.x, b.position.y);
+					var ff = new Vector(f.position.x, f.position.y);
+					if (lineCircleCollide(bb, ff, circle, c.sz)) {
+						turnOff(b);
+						c.c = "#000";
+						c.speed.x *=-1;
+						c.speed.y *=-1;
+						c.counter = frameCount-100;
+						
+					}
+				}
+		}
+
+	}
+
+
+function sequencerHittestBall(segments, segment_radius, b){ 
+	
+	// console.log(segment_radius)
+	var a = (Math.round(angle(w/2, h/2, b.position.x, b.position.y)))%360;
+
+	for (var i = 0; i < segments.particles.length; i++) {
+		
+	var s = segments.particles[i];
+
+	//if (s.ratio == 1) a = (a + 325)%360;
+	//if (s.me == 0 && s.ratio == 1) console.log(s.startAngle + ": " + a);
+
+	if (b.position.x > w/2) { 
+		sz = b.sz/2;
+	} else {
+		sz = -b.sz/2;
+	}
+	if (b.position.y > h/2) { 
+		sz2 = b.sz/2;
+	} else {
+		sz2 = -b.sz/2;
+	}
+	if (s.ratio == 1) {
+		var d = dist(w/2, h/2, b.position.x, b.position.y - sz2);
+	} else {
+		var d = dist(w/2, h/2, b.position.x + sz, b.position.y + sz2);	
+	}
+	
+	//if (s.ratio == 0) console.log(s.radius)
+	if (
+		(s.ratio == 0 && d >= segment_radius - segmentLineWidth/2 && d <= segment_radius + segmentLineWidth/2 && a >= s.startAngle && a <= s.endAngle )
+		||
+	    (s.ratio == 1 && d <= s.radius + segmentLineWidth/2 + sz2 && d >= s.radius - segmentLineWidth/2 - sz2 && a >= s.startAngle && a <= s.endAngle )
+	    	
+	    	) {
+
+
+
+		if (s.on && b.on && !s.accent) {
+			
+			s.on = true;
+			b.on = false;
+			b.counter = frameCount;
+			s.accent = true;
+			hit(b);
+
+		} else if (s.on && b.on && s.accent) {
+			s.on = false;
+			b.on = false;
+			s.accent = false;
+			b.counter = frameCount;
+			hit(b);
+
+		} else if (s.on && !b.on  && !s.accent) {
+			
+			s.on = false;
+			b.on = false;
+			s.accent = true;
+			hit(b);
+
+		} else if (s.on && !b.on  && s.accent) {
+			
+			s.on = false;
+			b.on = false;
+			s.accent = false;
+			hit(b);
+
+		} else if (!s.on) {
+
+			//if (b.on) {
+				s.on = true;
+				b.on = false;
+			//}
+			//s.on = true;
+			hit(b);
+		// } else if (transport_position == t.key && !b.on) {
+		
+		}
+
+    	} 
+	}
+
+}
+
+
+function selfHittest(b){
+		
+	for (var j = 0; j < balls.particles.length; j++) {
+		
+		if (j != b.me) {
+			
+			p2 = balls.particles[j];
+			var d = dist(b.position.x, b.position.y, p2.position.x, p2.position.y);
+			
+			if (d <= (b.sz + p2.sz)/2) {
+
+				//closed_hats.trigger();
+				b.friend = p2.me;
+				p2.c = "#000";
+				p2.on = true;
+				hit(p2);
+				b.c = "#000";
+				b.on = true;
+				hit(b);
+				//bump_synth.triggerAttackRelease("E5", "64n");
+
+			} 
+		}
+				
+	}
+}
+
+
+function hit(b){
+
+	b.speed.x *= -1;
+	b.speed.y *= -1;
+	b.counter = frameCount + 50;
+	b.position.x += (b.speed.x);
+	b.position.y += (b.speed.y);
+
+}
+
+
+
+function moveDial(p){
+	
+	if (!dragging && dist(p.x, p.y, mouseX, mouseY) > p.sz/2 - 2 && dist(p.x, p.y, mouseX, mouseY) < p.sz/2 +4 ) {
+				p.over = true;
+			} else {
+				p.over = false;
+			}
+			
+			if (p.over || p.drag) {
+				ctx.strokeStyle = "#000";
+			} else {
+				ctx.strokeStyle = p.c;
+			}
+
+			if (p.over && mousePressed && !dragging) {
+				p.drag = true;
+				oldX = mouseX;
+				oldY = mouseY;
+				dragging = true;
+			}
+
+			if (p.drag && dragging) {
+				if (mouseX < oldX) {
+					p.s = tween(p.s, p.s + dist(oldX, oldY, mouseX, mouseY)/10, 20);
+				} else {
+					p.s = tween(p.s, p.s - dist(oldX, oldY, mouseX, mouseY)/10, 20);	
+				}
+			
+			p.s	= clamp(p.s, 1, 180);
+
+			}
+
+			if (!mousePressed) {
+				p.drag = false;
+				dragging = false;
+			}
+			return p;
+}
+
+
+
+
+	
+
+function arcSegments(num ,r){
+	ctx.lineWidth = 20;
+	drawSegments(segments);
+	drawSegments(bass_segments);
+
+}
+
+
+
+function setupSegments(segments, radius, ratio) { 
+	
+	var segmentWidth = 360 / segments.particles.length;
+	var endAngle = segmentWidth;
+
+    for(var i = 0; i < segments.particles.length; i++){ 
+
+    	var s = segments.particles[i];
+    	s.accent = false;
+    	s.on = false;
+    	s.play = false;
+    	s.radius = radius;
+    	s.ratio = ratio;
+    	if (ratio == 0) {
+    		s.note = notes[i%notes.length];
+    		//s.note = myArray[i%myArray.length];
+    	} else {
+    		//s.note = myArray[i%myArray.length];
+    		s.note = notes2[i%notes2.length];
+    	}
+    	
+    	s.startAngle = startAngle;
+    	s.endAngle = endAngle;
+    	s.c = "#72d0f4";
+    	// increase per segment        
+    	startAngle += segmentWidth;
+    	if (startAngle == 360) startAngle = 0;
+    	endAngle += segmentWidth;
+
+    }
+    return segments;
+}
+
+	
+function drawSegments(segments) {   
+          
+    for(var i = 0; i < segments.particles.length; i++){ 
+    	
+    	var s = segments.particles[i];
+    	s = switchSegments(s);
+
+
+    	//if (!stop) { 
+
+	    	if ((s.ratio == 0 && transport_position == i) ||
+	    		(s.ratio == 1 && (transport_position/2 == i || Math.floor(transport_position/2) == i) )) {
+	    		
+	    		if (s.on) {
+	    			//console.log(s.note);
+	    			ctx.strokeStyle = "#72d0f4";
+	    		} else {
+	    			ctx.strokeStyle = "#8ec549";;
+	    		}
+	    		
+	    		
+	    	} else {
+
+	    		ctx.strokeStyle = s.c;	
+
+	    	}
+
+	    	//if (i == 0) ctx.strokeStyle = "black";
+    	
+    	//}
+    	
+    	ctx.beginPath();
+    	ctx.arc(w/2, h/2, s.radius, (s.startAngle * Math.PI / 180), ((s.endAngle-1) * Math.PI / 180), false);
+    	ctx.lineWidth = segmentLineWidth;
+    	ctx.stroke();
+
+    }
+}
+
+
+function switchSegments(p){
+	
+	var a = angle(w/2, h/2, mouseX, mouseY);
+	var d = dist(w/2, h/2, mouseX, mouseY);
+
+	if (d > segment_radius - segmentLineWidth/2  && d < segment_radius + segmentLineWidth/2 && a > p.
+	startAngle && a < p.endAngle) {
+		p.over = true;
+		p.c = "red";
+		p.c = hsl(10 + 18*40, 80, 50);
+	
+	} else {
+	
+		p.over = false;
+		p.c = "#eee";
+	
+	}		
+
+	if (p.over && mousePressed && !dragging && p.on && lastclick < frameCount) {
+		
+		p.on = false;
+		console.log("click");
+		lastclick = frameCount;
+
+	} else if (p.over && mousePressed && !dragging && !p.on && lastclick < frameCount) {
+		
+		lastclick = frameCount;
+		p.on = true;
+
+	} 
+
+	if (p.on) {
+		if(p.accent) {
+			p.c = "#000";
+		} else {
+			p.c = "#000";
+		}
+		
+
+	} 
+
+	if (p.over && !p.on) {
+		
+		p.c = "red";
+	
+	}
+
+	if (p.over && mousePressed) {
+		
+		p.c = "#ef662f";
+	
+	}
+	return p;
+
+}
+
+function moveSpikes(){
+	for (var i = 0; i < spikes.length; i++) {
+		var p = spikes[i];
+		//var me = (p.me)%256; 
+		//p.angle += radians(p.speedx); 
+		// var r = 8 + tween(radius, map(mapSound(p.me, num_particles), 0,100, 0, 20), 8);
+		// var r = 2+ radius/2;
+		// r =  map(mapSound(p.me, num_particles), 0, 150, radius, radius + 180);
+		// p.r = tween(100, r, 15);
+		// if (r < p.r2) { p.r2 = tween(p.r2, r, 25);
+		// } else {
+		// 	p.r2 = tween(p.r2, r, 5);
+		// }
+		x2 = p.x + (p.r2 * Math.cos(p.angle));
+		y2 = p.y + (p.r2 * Math.sin(p.angle));
+
+		x = p.x + Math.floor((radius + p.r) * Math.cos(p.angle));
+		y = p.y + Math.floor((radius + p.r) * Math.sin(p.angle));
+
+		ctx.lineWidth = 2;			
+		ctx.strokeStyle = p.c;
+		ctx.line(x2, y2, x,y);
+		ctx.fillEllipse(x, y, 10, 10);
+		};
+
+}
+
+function addSpikes(_x, _y, _colour, _me){
+		var spike = {
+		x: w/2,
+		y: h/2,
+		c: _colour,
+		me: _me,
+		r: 140,
+		r2: 240,
+		me2: (_me + randomInt(-30,30))%num_spikes,
+		speedx: random(-2,2)/2,
+		speedy: random(2,20),
+		sz: 0,
+		angle: radians(Math.round(map(_me, 0, num_spikes, 0, 360)),1)
+	}
+
+	spikes.push(spike);
+	}
+
+
+function startStop(){
+
+		if (dist(w - 50, h - 50, mouseX, mouseY) < radius/4 +4 ) {
+			ctx.fillStyle = "red";
+		} else {
+			ctx.fillStyle = "00afec";
+		}
+		if (mousePressed && lastclick < frameCount - 10) {
+			stop = !stop;
+			lastclick = frameCount;
+		}
+		ctx.fillEllipse(w - 50, h - 50, radius/4, radius/4);
+
+}
+
+// function spikeRollover(p){
+
+// var object = {
+//     // pixelWidth : pixelWidth,
+//     // pixelHeight : pixelHeight,  
+//     prob : prob,
+//     range: [1, 100],
+//     xy: [pixelWidth,pixelWidth]
+// }
+
+// var controlKit = new ControlKit();
+// 	controlKit.addPanel({label: 'Control Panel', align: 'left', fixed: false, position: [w-250, h-280], width: 200})
+//      .addSlider(object, 'prob', 'range', { onChange: function(index){ 
+//     	prob =  object.prob;
+//     	glitch(); }}, {label: 'Probability'}
+//     )
+//     .addPad(object,'xy',{
+//                 onChange:function(index){
+
+//             	pixelWidth = 1 + Math.floor(Math.round(object.xy[0]*object.xy[0]*300));
+            	
+//             	pixelHeight = 1 + Math.floor(Math.round(object.xy[1]*object.xy[1]*300));
+//             	//console.log(pixelWidth + " : " + pixelHeight)
+//             	glitch();
+//             	},
+//                 onFinish:function(){console.log('done');}})
+//     .addButton('Go', function(){ reset();  });
+// // }
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

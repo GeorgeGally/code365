@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>test</title>
+<!-- 	<script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/vector.js"></script>
+	<script language="javascript" src="js/vector_particles.js"></script>
+
+
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background:#000;">
+<script type="text/javascript">
+
+	var screen = createCanvas("canvas1");
+
+	// Create the Audio Context
+
+var context = new AudioContext();
+var analyser = context.createAnalyser();
+
+
+function playSound() {
+
+    var osc = context.createOscillator();
+    osc.frequency.value = 200;
+    osc.type = 'sine';
+
+    oscGain = context.createGain();
+    oscGain.gain.value = 0.2;
+
+    osc.start(context.currentTime);
+    //osc.stop(context.currentTime + 3);
+
+    osc.connect(oscGain);
+    oscGain.connect(analyser); /*Connect oscillator to analyser node*/
+    analyser.connect(context.destination);
+}
+
+
+
+analyser.fftSize = 4096;
+
+var bufferLength = analyser.frequencyBinCount;
+/*an unsigned long value half that of the FFT size. This generally equates to the number of data values you will have to play with for the visualization*/
+
+var dataArray = new Uint8Array(bufferLength);
+
+screen.clearRect(0, 0, w, h);
+
+function draw() {
+
+  analyser.getByteTimeDomainData(dataArray);
+
+  // screen.fillStyle = 'rgb(230, 20, 210)';
+	screen.fillStyle = rgb(240);
+  screen.fillRect(0, 0, w, h);
+  screen.lineWidth = 2;
+  screen.strokeStyle = rgb(0);
+
+  var sliceWidth = w / bufferLength;
+  var x = 0;
+	var oldx = oldy = 0;
+	var firsttime = false;
+  for(var i = 0; i < bufferLength; i++) {
+
+        var v = dataArray[i] / 128.0;
+        var y = v * h/2;
+
+			if (dataArray[i] < 0) {console.log(dataArray[i]); }
+				if (dataArray[i] < 0 && dataArray[i+1] >= 0) {
+					firsttime = true;
+				}
+				//if(firsttime === true)
+				screen.line(x,y, oldx, oldy);
+
+        x += sliceWidth;
+				oldx = x;
+				oldy = y;
+      };
+
+
+};
+
+playSound();
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+ </body>
+</html>

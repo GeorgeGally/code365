@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    
+<!--     <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script src="js/_maxiLib.js"></script>
+	<script src="http://doc.gold.ac.uk/~mus02mg/mtofarray.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+
+
+<script type="text/javascript">
+var ctx = createCanvas("canvas1");
+var changeThis = 4;
+
+
+    var maximJs;
+    var maxiAudio = new maximJs.maxiAudio();
+    maxiAudio.setBufferSize(4096);
+    maxiAudio.init();
+
+    var fft = new maximJs.maxiFFT();
+
+    var osc = new maximJs.maxiOsc();
+    var osc2 = new maximJs.maxiOsc();
+    var samp = new maximJs.maxiSample();
+
+    var constQ = new Array(128);
+
+    var fftSize = 1024;
+    var octThresh = 0;
+
+    var count = 0;
+
+    var barsBottom = 600;
+    var barsLeft = 0;
+    var output;
+
+
+    var mtofArray;
+
+    var spacing = ((Math.PI * 2) / 512);
+    var spacing2 = ((Math.PI * 2) / 128);
+    var size = width / 50;
+    var binFreq = 44100 / fftSize;
+    
+    fft.setup(fftSize, 512, 256);
+    
+    //maximJs.maxiTools.loadSample("1085.mp3", samp);
+
+
+
+    maxiAudio.play = function() {
+        // create wave for fft
+        var wave = (osc.sawn(150) - osc2.sawn(150.1));
+//          var wave = samp.play(); 
+        //      var wave = osc.noise();
+        // process wave
+        if (fft.process(wave)) {
+            fft.magsToDB();
+
+        }
+        // count++; // increment counter
+
+        output = wave;
+
+    };
+
+
+    ctx.lineWidth = 0.2; 
+
+    function draw() {
+
+
+        //This is a 128 bin spread spectrum;
+
+        var j = 0;
+        var numAvgs = 0;
+
+        for (var i = 0; i < fftSize / 2; i++) {
+
+            constQ[j] += fft.getMagnitudeDB(i);
+            numAvgs++;
+            if (i * binFreq > mtofArray[j]) {
+                constQ[j] /= numAvgs;
+                j++;
+                constQ[j] = 0;
+                numAvgs = 0;
+            }
+        }
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, width, height);
+        for (var i = 0; i < 128; i++) {
+            ctx.beginPath();
+            ctx.strokeStyle = "#FFFFFF";
+//            if (constQ[i] > 5) {
+            ctx.arc(width/2,height/2,i*3,0,Math.PI*2);
+            ctx.lineWidth = constQ[i]*0.05;
+            ctx.stroke();
+//            }
+            ctx.closePath();
+        }
+    }
+
+</script>
+
+</html>
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

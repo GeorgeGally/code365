@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var lines = new particleEngine(1200);
+var grid = createGrid(2, 600, w, h);
+for (var i = 0; i < lines.particles.length; i++) {
+	var p = lines.particles[i];
+	p.position.x =  grid[i][0];
+    p.position.y = random(h);
+    p.dir = posNeg();
+    p.c = rgb(random(225));
+	if (chance(10)) p.c = rgb(255);
+	p.h = 1;
+}
+
+
+// DRAW WAVES CLASS
+
+function draw(){
+
+	ctx.clearRect(0, 0, w, h);
+	//console.log(
+	for (var i = 0; i < lines.particles.length; i++) {
+		var p = lines.particles[i];
+		//var s = random(-10,10);
+		var s = mapSound(p.me, 1200);
+		//console.log(s)
+		//p.y = tween(p.position.y, p.position.y + p.dir * map(s, 0, 100, 0, 5),20);
+		p.position.y += tween(p.position.y, p.position.y+s, 10);;
+		if (p.position.y > h) {p.position.y = 0};
+		if (p.position.y < 0) p.position.y = h;
+		p.w = tween(p.w, s/40, 2);
+			// DRAW BLOCKS
+		ctx.fillStyle = p.c;
+		ctx.fillRect(p.position.x-w/4, p.position.y, w/2, p.h);
+	}
+}
+
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

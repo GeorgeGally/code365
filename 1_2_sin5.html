@@ -17,7 +17,7 @@
 
 var ctx = createCanvas("canvas1");
 ctx.strokeStyle = rgba(0,0,0,0.8);
-ctx.lineWidth = 2;
+ctx.lineWidth = 0.5;
 var particles = [];
 var radius = 220;
 var c = 0;
@@ -61,7 +61,7 @@ function addParticle(_x, _y, _colour, _me){
 }
 
 function moveParticles(){
-	var angle = audioChannelVolume[50];
+	var angle = audioChannelVolume[20];
 	console.log(angle);
 	for (var i = 0; i < particles.length; i++) {
 		
@@ -71,7 +71,7 @@ function moveParticles(){
 		radius = audioChannelVolume[p.me];
 		
 		var r = radius;
-		p.sz = tween(p.sz, map(radius,0, 100, 4, 12), 2);
+		p.sz = tween(p.sz, map(radius,0, 100, 2, 6), 2);
 		//p.x = w/2 + (200) * Math.cos(p.angle);
 		p.y = h/2 + (100) * Math.sin(p.angle);
 		ctx.fillStyle = rgba(0,0,0,1);
@@ -79,7 +79,7 @@ function moveParticles(){
 
 		var s = map(audioChannelVolume[Math.floor(me)],0,20, 0, 20);
 		
-		ctx.line(p.x, p.y, p.x, p.y-2*gapsize);
+		//ctx.line(p.x, p.y, p.x, p.y-2*gapsize);
 		ctx.fillStyle = rgba(0,0,0,1);
 		ctx.fillEllipse(p.x, p.y-2*gapsize, p.sz, p.sz);
 
@@ -95,7 +95,7 @@ function moveParticles(){
 		ctx.fillStyle = rgba(0,0,0,1);
 		ctx.fillEllipse(p.x, p.y+gapsize, p.sz, p.sz);
 
-		ctx.line(p.x, p.y, p.x, p.y+2*gapsize);
+		//ctx.line(p.x, p.y, p.x, p.y+2*gapsize);
 		ctx.fillStyle = rgba(0,0,0,1);
 		ctx.fillEllipse(p.x, p.y+2*gapsize, p.sz, p.sz);
 

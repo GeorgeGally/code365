@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>test</title>
+<!-- 	<script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/vector.js"></script>
+	<script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background:#000;">
+<script type="text/javascript">
+
+	var screen = createCanvas("canvas1");
+
+	// Create the Audio Context
+	var context = new AudioContext();
+	var analyser = context.createAnalyser();
+
+
+function playSound() {
+
+    var osc = context.createOscillator();
+    osc.frequency.value = 400;
+    osc.type = 'sine';
+
+    oscGain = context.createGain();
+    oscGain.gain.value = 0.2;
+
+    osc.start(context.currentTime);
+    //osc.stop(context.currentTime + 3);
+
+    osc.connect(oscGain);
+    oscGain.connect(analyser); /*Connect oscillator to analyser node*/
+    analyser.connect(context.destination);
+}
+
+
+
+analyser.fftSize = 1024;
+
+var bufferLength = analyser.frequencyBinCount;
+/*an unsigned long value half that of the FFT size. This generally equates to the number of data values you will have to play with for the visualization*/
+
+var dataArray = new Uint8Array(bufferLength);
+var dots = new particleEngine(bufferLength);
+var grid = createGrid(bufferLength, 1, w+20, h);
+
+for (var i = 0; i < dots.particles.length; i++) {
+	dots.particles[i].position.x = grid[i][0];
+	dots.particles[i].position.y = grid[i][1];
+}
+
+screen.lineWidth = 4;
+screen.strokeStyle = rgb(0);
+
+
+function draw() {
+
+	screen.background(245);
+  analyser.getByteTimeDomainData(dataArray);
+	for (var i = 0; i < dots.particles.length; i+=1) {
+		var d = dots.particles[i];
+		d.position.y = h - dataArray[i];
+
+	}
+	screen.fillStyle = "red";
+	screen.beginPath();
+	screen.moveTo(0, dots.particles[0].position.y);
+	screen.lineTo(dots.particles[1].position.x, dots.particles[1].position.y)
+	for (var i = 2; i < dots.particles.length-1; i+=2) {
+
+		// screen.fillStyle = "black";
+		// screen.fillEllipse(dots.particles[i-1].position.x, dots.particles[i-1].position.y, 5, 5);
+		// screen.fillStyle = "red";
+		// screen.fillEllipse(dots.particles[i].position.x, dots.particles[i].position.y, 5, 5);
+		// screen.fillStyle = "green";
+		// screen.fillEllipse(dots.particles[i+1].position.x, dots.particles[i+1].position.y, 5, 5);
+		//console.log(d.position.x);
+
+    //screen.moveTo(dots.particles[i-2].position.x, dots.particles[i-2].position.y);
+    screen.quadraticCurveTo(dots.particles[i-1].position.x, dots.particles[i-1].position.y, dots.particles[i].position.x, dots.particles[i].position.y);
+
+
+	}
+
+	screen.lineTo(w, dots.particles[dots.particles.length-1].position.y);
+
+	screen.lineTo(w, h);
+	screen.lineTo(0, h);
+	screen.lineTo(0, dots.particles[0].position.y);
+	screen.closePath();
+	screen.fill();
+	//screen.stroke();
+
+// 	screen.fillStyle = "blue";
+// 	screen.beginPath();
+// screen.moveTo(w, h);
+// screen.lineTo(w + 100, h+100);
+// screen.lineTo(w - 100, h-100);
+// screen.moveTo(w, h);
+// screen.closePath();
+// screen.fill();
+// screen.stroke();
+  // var sliceWidth = w / bufferLength;
+  // var x = 0;
+	// var oldx = oldy = 0;
+	// var pts = [];
+	// var ht = 128;
+
+//   for(var i = 0; i < bufferLength; i+=1) {
+// //console.log(dataArray[i]);
+//         var v = dataArray[i] / ht;
+//         var y = v * h/2;
+//         x += sliceWidth;
+// 				var p = {
+// 					x: x,
+// 					y: y
+// 				}
+// 				pts.push(p)
+// 				oldx = x;
+// 				oldy = y;
+//       };
+
+			// screen.beginPath();
+			// screen.moveTo(pts[0].x, pts[0].y);
+			//
+			// for (var i = 1; i < pts.length - 2; i++) {
+			// 	var c = (pts[i].x + pts[i + 1].x) / 2;
+			// 	var d = (pts[i].y + pts[i + 1].y) / 2;
+			//
+			// 	//screen.quadraticCurveTo(pts[i].x, pts[i].y, c, d);
+			// }
+
+			// For the last 2 points
+			// screen.quadraticCurveTo(
+			// 	pts[i].x,
+			// 	pts[i].y,
+			// 	pts[i + 1].x,
+			// 	pts[i + 1].y
+			// );
+			// screen.stroke();
+
+			//drawSmoothLine(screen, pts);
+
+
+};
+
+
+
+
+var drawSmoothLine = function(surf, ctrl_points){
+    var l = ctrl_points.length;
+    switch (l){
+    case 0:
+    case 1: //no control points
+        break;
+    case 2: //line
+        surf.beginPath();
+        surf.moveTo(ctrl_points[0].x, ctrl_points[0].y);
+        surf.lineTo(ctrl_points[1].x, ctrl_points[1].y);
+        surf.stroke();
+        break;
+    case 3: //lets use the second point as the two middle control points
+        surf.beginPath();
+        surf.moveTo(ctrl_points[0].x, ctrl_points[0].y);
+        surf.bezierCurveTo(ctrl_points[1].x, ctrl_points[1].y, ctrl_points[1].x, ctrl_points[1].y, ctrl_points[2].x, ctrl_points[2].y);
+        surf.stroke();
+        break;
+    default: //lets draw a bezier with the first 4 points, and for the rest lets create a control point to keep the line smooth
+        surf.beginPath();
+
+        surf.moveTo(ctrl_points[0].x, ctrl_points[0].y);
+        var pnt_a = ctrl_points[1], pnt_b = ctrl_points[2], pnt_end = ctrl_points[3];
+        surf.bezierCurveTo(pnt_a.x, pnt_a.y, pnt_b.x, pnt_b.y, pnt_end.x, pnt_end.y);
+        ctrl_points = ctrl_points.slice(0);
+        l = ctrl_points.length;
+        pnt_b = ctrl_points[2];
+        var i = 5
+        for (; i < l; i += 2){
+            pnt_a = {x: pnt_end.x + (pnt_end.x - pnt_b.x), y: pnt_end.y + (pnt_end.y - pnt_b.y)};
+            pnt_b = ctrl_points[i - 1];
+            pnt_end = ctrl_points[i];
+            surf.bezierCurveTo(pnt_a.x, pnt_a.y, pnt_b.x, pnt_b.y, pnt_end.x, pnt_end.y);
+        }
+        if (i == l){ //a last lonely point, lets use the calculated pnt_a as pnt_b
+            pnt_a = {x: pnt_end.x + (pnt_end.x - pnt_b.x), y: pnt_end.y + (pnt_end.y - pnt_b.y)};
+            pnt_b = pnt_a;
+            pnt_end = ctrl_points[l - 1];
+            surf.bezierCurveTo(pnt_a.x, pnt_a.y, pnt_b.x, pnt_b.y, pnt_end.x, pnt_end.y);
+        }
+        surf.stroke();
+        break;
+    }
+};
+
+playSound();
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+ </body>
+</html>

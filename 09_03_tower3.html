@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+<script language="javascript" src="js/video.js"></script>
+<script src="js/_maxiLib.js"></script>
+<script type="text/javascript" src="js/controlKit.min.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/video.css" type="text/css" media="screen" />
+ </head>
+ <body>
+   
+<script>
+
+var ctx = createCanvas("canvas1");
+var hh = 50;
+var freqs = [440, 20, 20, 144, 440, 440, 220, 144];
+
+var topLeft = [w,h];
+var bottomRight = [0,0];
+var target_topLeft = [w,h];
+var target_bottomRight = [0,0];
+
+var scan_resolution = 60;
+
+//var mediaDevices = navigator.mediaDevices;
+//console.log(mediaDevices)
+
+var lines = new particleEngine(2200);
+var grid = createGrid(1, 1200, w/8, h);
+
+for (var i = 0; i < lines.particles.length; i++) {
+	var p = lines.particles[i];
+	p.position.x =  w/2-w/8;
+    p.position.y = random(h);
+    p.dir = posNeg();
+    p.speed.y = posNeg()*random(2);
+    p.c = rgb(205,0,0);
+	//if (chance(10)) p.c = rgb(255);
+	p.h = random(4);
+}
+
+var vh = h
+var counter = 0;
+var data, background_data;
+
+function draw(){
+    
+    ctx.drawImage(video, 0,0,w,h);
+	data = ctx.getImageData(0, 0, width, height);
+
+    ctx.background(0);
+    freqs[0] = Math.sin(frameCount/100)*10;
+    freqs[1] = Math.sin(frameCount/400)*10;
+    freqs[2] = Math.sin(200 + frameCount/400)*10;
+    freqs[3] = Math.cos(0.03 + frameCount/100)*10;
+    freqs[4] = random(-100,100);
+    //var s = map(audioChannelVolume[20], 0, 100, 0, h);
+    s = map(Math.abs(freqs[0] + freqs[1] + freqs[2] + freqs[3]+ freqs[4]), 0, 700, 200, h*1.5);
+    //console.log( s)
+	hh = tween(hh, freqs[0]*100, 10);	
+
+	ctx.fillStyle = hsl(Math.floor(hh/50)*20,50,50);
+	ctx.centreFillRect(w/2, h/2, hh*2, hh*2);
+	// ctx.fillStyle = rgb(0);
+	// ctx.centreFillRect(w/2, h/2, hh*1.5, hh*1.5);
+	// ctx.fillStyle = hsl(Math.floor(hh/50)*20,50,50);
+	// ctx.centreFillRect(w/2, h/2, hh, hh);
+
+
+
+	ctx.fillStyle = rgb(0);
+	
+	if (!chance(20)){
+		ctx.fillRect(w/2-w/8, 200, w/4, h);
+	}
+
+
+	// tower
+
+	if (chance(200) || counter >= frameCount ){
+		
+		if (counter < frameCount ) {
+			counter = frameCount + 440;
+			vh = 200;
+			ctx.fillStyle = rgb(0);
+			ctx.fillRect(w/2-w/8, h/2, w/4, h);
+		}
+		
+		vh+=2;
+		ctx.background(0);
+		ctx.fillStyle = rgb(255);
+		ctx.fillRect(w/2-w/8, h-vh, w/4, vh);
+		drawLines()
+	} 
+
+
+	if (background_data) getPixels(data);
+
+
+	//if (chance(500)){
+
+	//}
+
+}
+
+
+function drawLines(){
+
+	ctx.fillStyle = "black";
+
+	for (var i = 0; i < lines.particles.length; i++) {
+
+		var p = lines.particles[i];
+		//var s = mapSound(p.me, 1200);
+		
+		p.position.y += tween(p.position.y, p.position.y+p.speed.y, 20);
+		if (p.position.y > h) {p.position.y = 0};
+		if (p.position.y < 0) p.position.y = h;
+		//p.w = tween(p.w, s/40, 2);
+		
+		//var y = map(p.position.y, 0, h, 0, hh)
+			// ctx.fillStyle = p.c;
+
+			ctx.fillRect(p.position.x, p.position.y, w/4, p.h);
+
+	}
+}
+
+//GET CHANGES FROM BACKGROUND
+
+function getPixels(img){
+
+topLeft = [w,h];
+bottomRight = [0,0];
+
+var presenceSum = 0;
+var sourceBuffer32 = new Uint32Array(img.data.buffer);
+var pixels = new Uint32Array(w*h/scan_resolution);
+   	
+   	for(var x = 0; x < w; x += scan_resolution) {
+        
+        for(var y = 0; y < h; y += scan_resolution){
+
+          	var pos = (x + y * w);
+          	var b = (sourceBuffer32[pos] >> 16) & 0xff;
+          	var g = (sourceBuffer32[pos] >> 8) & 0xff;
+          	var r = (sourceBuffer32[pos] >> 0) & 0xff;
+
+          	var old_b = (sourceBuffer32[pos] >> 16) & 0xff;
+          	var old_g = (sourceBuffer32[pos] >> 8) & 0xff;
+          	var old_r = (sourceBuffer32[pos] >> 0) & 0xff;
+
+        	var diffR = Math.abs(r - old_r);
+			var diffG = Math.abs(b - old_g);
+			var diffB = Math.abs(b - old_b);
+
+			presenceSum = diffR + diffG + diffB;
+			//console.log(presenceSum)
+			if (presenceSum > 20) {
+
+				if (x < topLeft[0]) topLeft[0] = x;
+				if (y < topLeft[1]) topLeft[1] = y;
+				if (x > bottomRight[0]) bottomRight[0] = x;
+				if (y > bottomRight[1]) bottomRight[1] = y;
+
+          	// ctx.fillStyle = rgb(r,g,b);
+          	ctx.fillStyle = "red";
+          	//ctx.fillRect(x, y, scan_resolution, scan_resolution);
+			}
+		}
+		}
+		ctx.fillStyle = rgba(255,0,0,0.3);
+		target_topLeft[0] = tween(target_topLeft[0], topLeft[0],20);
+		target_topLeft[1] = tween(target_topLeft[1], topLeft[1],20);
+		target_bottomRight[0] = tween(target_bottomRight[0], bottomRight[0],20);
+		target_bottomRight[1] = tween(target_bottomRight[1], bottomRight[1],20);
+		ctx.fillRect(target_topLeft[0], target_topLeft[1], target_bottomRight[0]-target_topLeft[0], target_bottomRight[1]-target_topLeft[1]);
+	
+}
+
+
+
+
+
+////// AUDIO
+
+var maximJs;
+    
+var maxiAudio = new maximJs.maxiAudio();
+maxiAudio.setBufferSize(4096);
+
+var myWave = new maximJs.maxiOsc();
+var myWave2 = new maximJs.maxiOsc();
+var phaser = new maximJs.maxiOsc();
+var filter1 =  new maximJs.maxiFilter();
+var filter2 =  new maximJs.maxiFilter();
+
+var lowpass_res = 0.05;
+var hipass_res = 0.18;
+
+maxiAudio.init();
+    
+maxiAudio.play = function() {
+    
+    // this.output = 0; //output to this page (it won't make any sound like this)
+    var s1 = myWave.sinewave(freqs[0]) * 0.15; // a sine wave of 440 multiplied by .125 to reduce volume
+    var s2 = myWave2.sinewave(freqs[1]) * 0.5;
+    var s3 = myWave.sinewave(freqs[2]*myWave2.sinewave(0.20)) * 0.25;
+    var s4 = myWave.sawn(freqs[3])* 0.25;
+    var s5 = myWave.square(target_topLeft[0]) * 0.25;
+    var s6 = myWave.pulse(target_topLeft[1],0.5) * 0.25;
+    var s7 = myWave.triangle(target_bottomRight[0]) * 0.25; 
+    var s8 = myWave.sinewave(target_bottomRight[1]) * 0.25;
+    var total_synths = s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8;
+    var synths = filter1.lopass(total_synths, lowpass_res);
+    var synths = filter2.hipass(synths, hipass_res);
+    //var LFO = (phaser.sinewave(0.2)*0.5+0.5);
+    this.output = synths;
+    
+};
+
+
+var object = {
+
+	freq0: freqs[0],
+	freq1: freqs[1],
+	freq2: freqs[2],
+	freq3: freqs[3],
+	freq4: freqs[4],
+	freq5: freqs[5],
+	freq6: freqs[6],
+	freq7: freqs[7],
+	lowpass_res: lowpass_res,
+	hipass_res: hipass_res,
+    freq_range: [1, 2000],
+    res_range: [0, 1]
+
+}
+
+
+var controlKit = new ControlKit();
+controlKit.addPanel({label: 'Control Panel', align: 'left', fixed: false, position: [w-250, 80], width: 200})
+    .addSlider(object, 'freq0', 'freq_range', { label: 'Freq1', dp: 0, onChange: function(index){ 
+        freqs[0] =  object.freq0;
+         }})
+    .addSlider(object, 'freq1', 'freq_range', { label: 'Freq2', dp: 0, onChange: function(index){ 
+        freqs[1] =  object.freq1;
+         }})
+
+.addSlider(object, 'freq2', 'freq_range', { label: 'Freq3', dp: 0, onChange: function(index){ 
+        freqs[2] =  object.freq2;
+         }})
+
+.addSlider(object, 'freq3', 'freq_range', { label: 'Freq4', dp: 0, onChange: function(index){ 
+        freqs[3] =  object.freq3;
+         }})
+
+.addSlider(object, 'freq4', 'freq_range', { label: 'Freq5', dp: 0, onChange: function(index){ 
+        freqs[4] =  object.freq4;
+         }})
+
+.addSlider(object, 'freq5', 'freq_range', { label: 'Freq6', dp: 0, onChange: function(index){ 
+        freqs[5] =  object.freq5;
+         }})
+
+.addSlider(object, 'freq6', 'freq_range', { label: 'Freq6', dp: 0, onChange: function(index){ 
+        freqs[6] =  object.freq6;
+         }})
+
+.addSlider(object, 'freq7', 'freq_range', { label: 'Freq8', dp: 0, onChange: function(index){ 
+        freqs[7] =  object.freq7;
+         }})
+.addSlider(object, 'lowpass_res', 'res_range', { label: 'Lowpass Res', dp: 2, onChange: function(index){ 
+        lowpass_res =  object.lowpass_res;
+         }})
+.addSlider(object, 'hipass_res', 'res_range', { label: 'Hipass Res', dp: 2, onChange: function(index){ 
+        hipass_res =  object.hipass_res;
+         }})
+
+window.addEventListener('keydown', keyPress, false);
+
+var background_pixels;
+
+function keyPress(){
+  
+  var keyCode = event.keyCode;
+
+  	if (keyCode == 32) {
+  		console.log('Background saved');
+  		background_data = ctx.getImageData(0, 0, width, height);
+	}
+
+};
+
+
+</script>
+
+</body>
+</html>

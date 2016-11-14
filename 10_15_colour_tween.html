@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+
+
+<body>
+
+    <script>
+
+
+var ctx = createCanvas("canvas1");
+var r = 191;
+var g = 233;
+var b = 255;
+var _hsl = rgbToHsl(r, g, b);
+console.log(_hsl);
+
+var start_h = hue = _hsl[0] * 360;
+var start_s = s = _hsl[1] * 100;
+var start_l = l = _hsl[2] * 100;
+
+var r2 = 255;
+var g2 = 110;
+var b2 = 127;
+var _hsl2 = rgbToHsl(r2, g2, b2);
+
+var h2 = _hsl2[0] * 360;
+var s2 = _hsl2[1] * 100;
+var l2 = _hsl2[2] * 100;
+
+function draw(){
+
+  hue = tween(hue, h2, 150);
+  s = tween(s, s2, 50);
+  l = tween(l, l2, 50);
+
+  //console.log(hue);
+  // if (Math.round(hue) == h2 && Math.round(s) == s2 && Math.round(l) == l2) {
+  //   console.log("backwards");
+  //   h2 = start_h;
+  //   s2 = start_s;
+  //   l2 = start_l;
+  //   start_h = hue;
+  //   start_s = s;
+  //   start_l = l;
+  // }
+  ctx.fillStyle = hsl(Math.round(hue), s,l);
+  //ctx.fillStyle = hsl(start_h, start_s, start_l);
+  ctx.centreFillRect(w/2, h/2, 300, 300);
+}
+
+
+</script>
+
+</body>
+
+</html>

@@ -22,10 +22,10 @@
 <script>
 
 var ctx = createCanvas("canvas1");
-var grid = createGrid(3, 1, w, h);
+var grid = createGrid(40, 1, w, h);
 //console.log(grid)
 var flies = [];
-var balls = new particleEngine(3);
+var balls = new particleEngine(40);
 
 for (var i = 0; i < balls.particles.length; i++) {
     b = balls.particles[i];
@@ -34,7 +34,7 @@ for (var i = 0; i < balls.particles.length; i++) {
     b.speed.x = 0;
     b.sz = 20;
 
-    flies[i] = new particleEngine(30);
+    flies[i] = new particleEngine(40);
     for (var j = 0; j < flies[i].particles.length; j++) {
         p = flies[i].particles[j];
         p.position.x = b.position.x;
@@ -46,7 +46,7 @@ for (var i = 0; i < balls.particles.length; i++) {
 function draw(){
 
     // ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = rgba(255, 255, 255, 0.9);
+    ctx.fillStyle = rgba(255, 255, 255, 0.3);
     ctx.fillRect(0, 0, w, h);
     //particle.draw();
     //console.log();
@@ -59,7 +59,8 @@ function draw(){
         for (var j = 0; j < flies[i].particles.length; j++) {
             
             p = flies[i].particles[j];
-            ctx.fillStyle = hsl(map(audioChannelVolume[p.me%100], 0, 150, 0, 100),map(audioChannelVolume[p.me%100], 0, 150, 0, 100), 40);
+            // ctx.fillStyle = hsl(map(audioChannelVolume[p.me%100], 0, 150, 0, 100),map(audioChannelVolume[p.me%100], 0, 150, 0, 100), 40);
+            ctx.fillStyle = rgba(0,0.5);
             var mouse = b.position;
             //console.log(mouse)
             mouse = mouse.subtract(p.position);
@@ -70,7 +71,7 @@ function draw(){
             p.position = p.position.add(p.speed);
             p.speed.limit(5);
             //p.sz = 2;
-            p.sz =  map(audioChannelVolume[p.me*5], 0, 150, 0, 10);
+            p.sz =  map(audioChannelVolume[p.me*5], 0, 150, 0.2, 5);
             //console.log(p.dist)
             // ctx.line(p.position.x, p.position.y, mouseX, mouseY);
             ctx.fillEllipse(p.position.x, p.position.y, p.sz, p.sz);
@@ -85,7 +86,7 @@ function draw(){
         b.sz =  tween(b.sz, map(audioChannelVolume[b.me], 0, 100, 5, 15),2);
         //ctx.fillStyle = hsl(map(audioChannelVolume[p.me*5], 0, 150, 30, 70),map(audioChannelVolume[p.me%100], 0, 150, 0, 100), 15);
         ctx.fillStyle = "black";
-        ctx.fillEllipse(b.position.x, b.position.y, b.sz, b.sz);
+        //ctx.fillEllipse(b.position.x, b.position.y, b.sz, b.sz);
 
     }
 
