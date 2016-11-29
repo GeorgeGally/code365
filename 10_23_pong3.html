@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/video.js"></script>
+
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+rbvj = function(){
+
+  ctx.background(0, 0.01);
+
+  ctx.lineWidth = 1 ;
+  var max_particles = 1500;
+  var particles = [];
+
+
+
+  draw = function() {
+    samplesize = 20;
+    sensitivity = 50;
+    motionDetection();
+    ctx.background(0, 1);
+    ctx.strokeStyle = rgba(255, 0.7);
+    for (var j = 0; j < motion_array.length; j++) {
+
+      var m = motion_array[j];
+      var c = m.z;
+
+      addParticle(m.x,m.y,c);
+
+
+
+
+  }
+  drawParticles();
+
+}
+
+function drawParticles(){
+  for (var i = 0; i < particles.length; i++) {
+    p = particles[i];
+    p.x += p.speedx;
+    p.y += p.speedy;
+    p.sz *= 0.98;
+    p.speedy += 0.2;
+    ctx.fillStyle = "red";
+    if (p.connected) ctx.fillEllipse(p.x,p.y,10, 10);
+    if (p.y > h || p.sz < 0.8) {
+      particles.splice(i,1);
+    }
+
+      for (var j = i; j < particles.length; j++) {
+        pp = particles[j];
+        //console.log(p.connect);
+        if (!p.connected && !pp.connected && dist(p.x, p.y, pp.x, pp.y) < 80  && p.connect && pp.connect ) {
+          ctx.line(p.x, p.y, pp.x, pp.y);
+          p.connected = 1;
+          pp.connected = 1;
+        } else if (dist(p.x, p.y, pp.x, pp.y) > 280){
+          p.connected = 0;
+          pp.connected = 0;
+        }
+        if (p.connected && pp.connected) ctx.line(p.x, p.y, pp.x, pp.y);
+      }
+  };
+}
+
+function addParticle(_x,_y, c){
+  var particle = {
+    x: _x,
+    y: _y,
+    speedy: random(-1,2),
+    speedx: random(-1,-1),
+    sz: random(1,2),
+    col: rgb(c.x),
+    connect: chance(4),
+    connected: 0
+  }
+  particles.push(particle);
+  if(particles.length > max_particles) {
+        particles.splice(0,1);
+      }
+}
+
+}
+rbvj();
+
+
+</script>
+<script language="javascript" src="js/motion_detection.js"></script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+
+</html>

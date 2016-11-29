@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/video.js"></script>
+
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var block_size = 16;
+var frameRate = 60;
+var number_of_balls = 255;
+var balls = [];
+sensitivity = 40;
+
+for (var i = 0; i < number_of_balls; i++) {
+  addBall(i, randomInt(w), randomInt(h));
+}
+
+function setup(){
+    ctx.background(0);
+}
+//console.log(balls);
+
+// think of an function like a machine
+function addBall(i, _x, _y ){
+
+  // we create a ball object - an object has properties
+  var ball = {
+    x:  _x,
+    y: _y,
+    speed_x: random(-6, 6),
+    speed_y: random(-6, 6),
+    c: rgba(0, random(40,225), 0, random(0.5, 1)),
+    size: 20,
+    me: i
+  }
+
+  balls.push(ball);
+}
+
+var motion = [];
+
+ctx.lineStyle = "green";
+function draw(){
+  update();
+  // ctx.background(250,0,0, 0.05);
+  ctx.background(0, 0.8);
+
+  //ctx.drawImage(video, 0,0, w, h);
+
+  // ctx.fillStyle = "#00aeef";
+  // ctx.fillStyle = "red";
+  ctx.fillStyle = rgba(0, random(255),0, random(0.6, 1));
+  for (var i = 0; i < motion.length; i++) {
+    m = motion[i];
+    ctx.fillEllipse(m.x, m.y, block_size, block_size);
+    hitTest(m);
+  }
+
+
+
+
+drawBalls();
+
+  //pixelate(10);
+} // end draw
+
+
+function update(){
+  motion = motionDetection(block_size);
+  // for (var i = 0; i < motion.length; i++) {
+  //   m = motion[i];
+  //
+  // }
+  moveBalls();
+
+}
+
+function moveBalls(){
+
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    for (var j = 0; j < motion.length; j++) {
+      m = motion[j];
+      if (b.x > m.x - b.size/2 && b.x< m.x && b.y > m.y - b.size/2 && b.y< m.y ) {
+        b.speed_x*=-1;
+        b.speed_y*=-1;
+      }
+    }
+
+    for (var j = 0; j < balls.length; j++) {
+        m = balls[j];
+        if (m.me != b.me) {
+          if (b.x > m.x - b.size/2 && b.x< m.x && b.y > m.y - b.size/2 && b.y< m.y ) {
+        b.speed_x*=-1;
+        b.speed_y*=-1;
+      }
+
+      if (dist(m.x, m.y, b.x, b.y) < 60) {
+        console.log("yes");
+        ctx.line(m.x, m.y, b.x, b.y);
+      }
+    }
+    }
+
+
+
+    b.x += b.speed_x;
+    b.y += b.speed_y;
+
+    // we adjust the hit area because shere is drawn from the centre
+    if (b.x > width - b.size/2  || b.x < b.size/2  ) {
+      b.speed_x = b.speed_x *-1;
+    }
+
+    if (b.y > height - b.size/2 || b.y < b.size/2 ) {
+      b.speed_y = b.speed_y *-1;
+    }
+
+
+  } // end for loop
+}
+
+function drawBalls(){
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    ctx.fillStyle = b.c;
+    var x = Math.round(b.x/block_size)*block_size;
+    var y = Math.round(b.y/block_size)*block_size;
+    // ctx.fillRect(x, y, block_size, block_size);
+    ctx.fillEllipse(b.x, b.y, block_size, block_size);
+
+
+  } // end for loop
+}
+
+
+function hitTest(p){
+
+	for (var i = 0; i < balls.length; i++) {
+		if (i != p.me) {
+
+			p2 = balls[i];
+
+			if (hittestBall(p, p2)) {
+				p.speedx *= -1;
+				p.speedy *= -1;
+				p2.speedx *= -1;
+				p2.speedy *= -1;
+			}
+		}
+
+		}
+	}
+
+function hittestBall(p, p2){
+
+      if(p.x > p2.x - p2.sz  && p.x <  p2.x + p2.sz  && p.y > p2.y - p2.sz  && p.y < p2.y + p2.sz) {
+        return true;
+      }
+    }
+
+</script>
+<script language="javascript" src="js/motion_detection.js"></script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+
+</html>

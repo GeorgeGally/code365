@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<!-- <script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/video.js"></script> -->
+
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var block_size = 20;
+var rect_size = 60;
+var frameRate = 60;
+
+var maxballs = 500;
+var balls = [];
+var motion = [];
+var gridx = w/120;
+var gridy = h/100;
+var number_of_balls = gridx * gridy;
+var grid = createGrid(gridx, gridy);
+var grid2 = createGrid(gridx * 2, gridy * 2);
+
+for (var i = 0; i < number_of_balls; i++) {
+  addBall(grid[i].x , grid[i].y);
+}
+
+ctx.background(0);
+
+// think of an function like a machine
+function addBall(_x, _y){
+  var sz = ave(random(40, 200),gridx*2);
+  // we create a ball object - an object has properties
+  var ball = {
+    x:  _x,
+    y: _y,
+    speed_x: ave(random(-2, 2),gridx*2),
+    speed_y: random(-2, 2),
+    c: rgba(random(255), 0, 0, 1-sz/200),
+    size: sz
+  }
+
+  balls.push(ball);
+  if (balls.length > maxballs) removeBall();
+
+}
+
+function removeBall(){
+  balls.splice(0,1);
+  //console.log(balls.length);
+}
+
+for (var i = 0; i < number_of_balls; i++) {
+  addBall(grid[i].x, grid[i].y);
+}
+
+function update(){
+
+
+  for (var i = 0; i < balls.length; i++) {
+
+    b = balls[i];
+
+
+    // we adjust the hit area because shere is drawn from the centre
+    if (b.x > width - b.size/2  || b.x < b.size/2  ) {
+      b.speed_x = b.speed_x *-1;
+    }
+
+    if ((b.y > height - b.size/2 && b.speed_y > 0) || (b.y < b.size/2  && b.speed_y < 0)) {
+      b.speed_y = b.speed_y *-1;
+    }
+    // if (b.y > height/2 - b.size/2 && b.speed_y > 0) {
+    //   b.speed_y = Math.abs(b.speed_y)*-1;
+    //   b.y += b.speed_y;
+    // } else if (b.y > height) {
+    //   b.y = 0;
+    // }
+    //
+    // if (b.y < height/2 + b.size/2 && b.speed_y < 0) {
+    //   b.speed_y = Math.abs(b.speed_y);
+    //   b.y += b.speed_y;
+    // } else if (b.y < 0) {
+    //   b.y = height;
+    // }
+
+
+
+    //b.x += b.speed_x;
+    b.y += b.speed_y;
+
+
+  } // end for loop
+
+}
+
+
+function draw(){
+
+  ctx.background(0);
+  update();
+  ctx.lineWidth = 0.5;
+  ctx.strokeStyle = rgba(220, 0, 0, 0.2);
+
+  for (var i = 0; i < grid2.length; i++) {
+    ctx.line(0, grid2[i].y, w, grid2[i].y);
+    ctx.line(grid2[i].x - 90, 0, grid2[i].x - 90, h);
+  }
+  ctx.lineWidth = 4;
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    ctx.strokeStyle = b.c;
+    ctx.fillStyle = b.c;
+    if (b.speed_y < 0) {
+      ctx.eqTriangle(b.x, b.y, b.size);
+    } else {
+      ctx.eqDownTriangle(b.x, b.y, b.size);
+
+    }
+
+  } // end for loop
+
+  //pixelate(10);
+} // end draw
+
+
+
+
+</script>
+<!-- <script language="javascript" src="js/motion_detection.js"></script> -->
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+
+</html>

@@ -10,13 +10,12 @@
 	<script language="javascript" src="js/video.js"></script>
 	<script language="javascript" src="js/vector.js"></script>
 	<script language="javascript" src="js/vector_particles.js"></script>
-
 	<script language="javascript" src="js/background_subtraction.js"></script>
 
 	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
-	
+
 </head>
 
 <body style="background:#000;">
@@ -44,24 +43,24 @@
 
 		// if (bounce(ball.position.x, 0, w)) ball.speed.x*=-1;
 		// if (bounce(ball.position.y, 0, h)) ball.speed.y*=-1;
-		
+
 		//ctx.fillStyle = "black";
 		//console.log(motion_array.length)
 		for (var j = 0; j < motion_array.length; j++) {
-      
+
       		var m = motion_array[j];
 
 				addParticle(m.x, m.y);
 
 			}
-			
+
 			//ctx.globalCompositeOperation = 'multiply';
-					
+
 			//ctx.fillStyle = "red";
 		for (var i = 0; i < bugs.length; i++) {
 			var b = bugs[i];
 			ctx.globalAlpha = b.alpha;
-			ctx.fillStyle = rgba(b.c, b.alpha);	
+			ctx.fillStyle = rgba(b.c, b.alpha);
 			b.x += b.speed.x;
 			b.y += b.speed.y;
 			b.size -= b.reduce;
@@ -74,7 +73,7 @@
 
 		}
 		ctx.restore();
-		
+
 }
 
 
@@ -82,13 +81,13 @@ function addParticle(_x, _y){
 	var c = random(0,255);
 	var speed = new Vector(random(-1,1),random(-1,1));
 		var particle = {
-		orig_x: _x, 
+		orig_x: _x,
 		orig_y: _y,
-		x: _x+random(-18,18), 
+		x: _x+random(-18,18),
 		y: _y+random(-18,18),
 		c: c,
 		size: 3,
-		reduce: random(0.0001, 0.01), 
+		reduce: random(0.0001, 0.01),
 		alpha: 2,
 		speed: speed
 	};

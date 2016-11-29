@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+
+
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var block_size = 50;
+var frameRate = 60;
+var number_of_balls = 10;
+var balls = [];
+
+
+for (var i = 0; i < number_of_balls; i++) {
+  addBall(i, randomInt(w), randomInt(h));
+}
+
+function setup(){
+    ctx.background(0);
+}
+
+function addBall(i, _x, _y ){
+
+  var ball = {
+    x:  _x,
+    y: _y,
+    z: random(-100,100),
+    speed_x: random(-5, 5),
+    speed_y: random(-3, 3),
+    c: rgba(random(40,225), 0, 0, random(0.5, 1)),
+    size: block_size,
+    me: i,
+    start: 0
+  }
+
+  balls.push(ball);
+}
+
+var motion = [];
+
+function draw(){
+  update();
+  //ctx.background(0, 0.1);
+  drawBalls();
+
+//pixelate(20);
+} // end draw
+
+
+function update(){
+
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+
+    for (var j = 0; j < balls.length; j++) {
+      pp = balls[j];
+      if (dist(b.x, b.y, pp.x, pp.y) < pp.size/2) {
+        // pp.speed_x *=-1;
+        // pp.speed_y *=-1;
+      }
+    }
+
+    b = ballHit(b)
+    b = wallHit(b);
+
+    b.x += b.speed_x;
+    b.y += b.speed_y;
+
+  }
+}
+
+
+function ballHit(b){
+  for (var j = b.me; j < balls.length; j++) {
+    m = balls[j];
+    if (b.me !=  m.me && b.x > m.x - b.size/2 && b.x< m.x && b.y > m.y - b.size/2 && b.y< m.y ) {
+      b.start = frameCount;
+      b.speed_x*=-1;
+      b.speed_y*=-1;
+      ctx.fillStyle = rgba(0, 0,0, 0.1);
+      ctx.fillEllipse(m.x, m.y, block_size * 5, block_size * 5);
+    }
+  }
+
+  return b;
+}
+
+
+function wallHit(b){
+  if (b.x > width - b.size/2  || b.x < b.size/2  ) {
+    b.speed_x = b.speed_x *-1;
+  }
+
+  if (b.y > height - b.size/2 || b.y < b.size/2 ) {
+    b.speed_y = b.speed_y *-1;
+  }
+
+  return b;
+}
+
+function drawBalls(){
+
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    ctx.fillStyle = b.c;
+    b.x += b.speed_x;
+    b.y += b.speed_y;
+    b.size = Math.sin(frameCount/(10+ b.me*10))*300;
+    // var x = Math.round(b.x/(block_size/5))*(block_size/5);
+    // var y = Math.round(b.y/(block_size/5))*(block_size/5);
+    ctx.fillEllipse(b.x, b.y, b.size, b.size);
+    ctx.lineStyle = rgb(0);
+    ctx.strokeEllipse(b.x, b.y, b.size, b.size);
+  }
+}
+
+
+
+</script>
+</body>
+
+</html>

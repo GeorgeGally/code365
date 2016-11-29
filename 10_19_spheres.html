@@ -1,53 +1,162 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <meta charset="utf-8">
-<script src='http://connect.soundcloud.com/sdk.js'></script>
-<script language="javascript" src="js/creative.js"></script>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
 <script language="javascript" src="js/canvas.js"></script>
-
+<script language="javascript" src="js/url.js"></script>
+<script language="javascript" src="js/physics2.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/three.min.js"></script>
 <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
 <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
 <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
-
-</head>
-
-
-
-<body>
+ </head>
+ <body style="background: #fff">
 
 <script>
-
 var ctx = createCanvas("canvas1");
-var fov = 240;
+var r = 0;
 
-var ball = [];
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+var num_particles = 30;
+var plane = [];
+var spacing = radians(1 /num_particles);
+var radius = 2;
+var sz = 5;
+var d=0, t=0;
 
-// This is the size.
-var size = 100;
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
 
-var grid_w = 3;
-var grid_h = 2;
-var numBalls = grid_w * grid_h;
+document.body.appendChild( renderer.domElement );
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+scene.fog = new THREE.FogExp2( 0xffffff, 0.001 );
 
-var grid = createGrid(grid_w, grid_h);
-console.log(grid);
 
-for (var i = 0; i < numBalls; i++) {
-    ball[i] = new Ball(grid[i][0],grid[i][1]);
+var pos = [];
+// console.log(spacing);
+
+// for (var i = 0; i < num_particles; i++) {
+// addParticle();
+// }
+
+function addParticle(){
+  var i = plane.length;
+  var geometry = new THREE.SphereGeometry( 2, 18, 18, 2 );
+  geometry.dynamic = true;
+  p = new THREE.Mesh( geometry, dMaterial );
+  pos[i] = new Vector(p.position.x, p.position.y,p.position.z);
+  //setPos(i);
+
+  p.position.x = pos[i].x;
+  p.position.y = pos[i].y;
+  p.position.z = pos[i].z;
+
+  plane.push(p);
+  scene.add(p);
+
+
+}
+renderer.setClearColor( 0x000000 );
+camera.position.z = 100;
+camera.near = 60;
+camera.far  = 155;
+
+var show = 10;
+var twirlx = false;
+var twirly = false;
+var twirlz = false;
+var rotx = false;
+var roty = false;
+var rotz = false;
+
+function setPos(i) {
+  if (twirlx == 1) {
+    pos[i].x = i;
+  } else if (twirlx == 2) {
+    pos[i].x = Math.sin(r*i) * (i);
+  } else {
+    pos[i].x = Math.cos(r*i) * (i);
+  }
+
+  if (twirly == 1) {
+    pos[i].y = i;
+  } else if (twirly == 2) {
+    pos[i].y = Math.cos(r*(i+1)) * (i);
+  } else {
+    pos[i].y = Math.sin(r*(i+1)) * (i);
+  }
+
+  if (twirlz) {
+    pos[i].z = Math.cos(r*i) * (-40);
+  } else {
+    pos[i].z = Math.sin(r*i) * (-50);
+  }
+}
+//var pos = new Vector();
+
+function draw() {
+
+  // if (frameCount%40==0) {
+  //   addParticle();
+  //
+  //   if (sz> 0.3) sz -=0.05;
+  //   //console.log(plane.length);
+  // }
+  // if (chance(400)) twirlx = randomInt(3);
+  // if (chance(400)) twirly = randomInt(3);
+  // if (chance(400)) twirlz = !twirlz;
+  // t+=.0001
+  // d+=.01;
+  ball.draw();
+  // if (show < num_particles) show+=0.1;
+  //
+  // for (var i = 0; i < plane.length; i++) {
+  //
+  // setPos(i)
+  //
+  //
+  // plane[i].position.x = tween(plane[i].position.x, pos[i].x, 30);
+  // plane[i].position.y = tween(plane[i].position.y, pos[i].y, 30);
+  // plane[i].position.z = tween(plane[i].position.z, pos[i].z, 30);
+  // plane[i].scale.x = plane[i].scale.y = plane[i].scale.z = sz;
+  //
+  //
+  // r+=0.00001;
+  //
+  //  }
+  //  if (chance(400)) rotx = !rotx;
+  //  if (chance(400)) roty = !roty;
+  //  if (chance(400)) rotz = !rotz;
+  //  if (rotx) scene.rotation.x += 0.0002;
+  //  if (roty) scene.rotation.x += 0.0001;
+  //  if (rotz) scene.rotation.z += 0.0001;
+  renderer.render( scene, camera );
+
+};
+
+var ball = new Ball(0,0);
+var dim = 0;
+var numPoints = 0;
+function reset(){
+    dim = randomInt(10,80);
+    spacing = ((Math.PI * 2) / dim);
+    numPoints = dim * dim;
+    for (var i = 0; i < numPoints; i++) {
+      addParticle();
+    }
 }
 
+
+
 function Ball(_x, _y){
-    var count = 0;
-    var style = 0;
-    // The below code creates a sphere of points
-    var dim = 20; // This is the number of rings
-    // Each ring has as many points as there are rings
-    // This is the spacing for each ring
-    var spacing = ((Math.PI * 2) / dim);
-    // This is the total number of points
-    var numPoints = dim * dim;
+
     this.counter=0;
     this.x = _x;
     this.y = _y;
@@ -66,13 +175,6 @@ function Ball(_x, _y){
     this.lastScale = 0;
     this.lastx2d = 0;
     this.lasty2d = 0;
-    reset();
-
-function reset(){
-        dim = randomInt(10,80);
-        spacing = ((Math.PI * 2) / dim);
-        numPoints = dim * dim;
-}
 
 this.draw = function() {
 
@@ -80,17 +182,11 @@ this.counter+=0.01;
 // We're doing the geometery in the draw loop because we want to interact with it.
 //size = 50 + Math.abs(Math.sin(count)*150);
 
-if (chance(200)) {
-    reset();
-}
 
-if (chance(200)) {
-    style = randomInt(2);
-    console.log("style: " + style);
-}
 
 var mouseX1=mouseX/200;
 var mouseY1=mouseY/200;
+
 
 this.points = [];
     // Now we build the geom
@@ -108,26 +204,15 @@ for (var i = 0; i < dim; i++) {
     var s = size * Math.sin(spacing / 2 * i);
 
 // For each ring
-  var bass = getBass();
-  var mids = getMids();
-  var highs = getHighs();
 
     for (var j = 0; j < dim; j++ ) {
 
         // Create a circle at the current size, at the current depth
-        if (style != 2) {
+        //if (style != 2) {
             var point = [Math.cos(spacing * j) * s, Math.sin(spacing * j) * s, z];
-            //console.log(point);
-        } else {
-
-            var b = j%bass.length;
-            var m = j%mids.length;
-            var h = j%highs.length;
-            //var point = [Math.cos(spacing*mouseX1*j)*Math.sin(spacing*j*mouseY1)*s,Math.sin(spacing*mouseX1*j)*Math.sin(spacing*j*mouseY1)*s,z];
-            console.log(mids[j]);
-            var point = [Math.cos(spacing*bass[b]*j)*Math.sin(spacing*j*mids[m])*s,Math.sin(spacing*mids[m]*j)*Math.sin(spacing*j*highs[h])*s,z];
-
-        }
+        // } else {
+        //     var point = [Math.cos(spacing*mouseX1*j)*Math.sin(spacing*j*mouseY1)*s,Math.sin(spacing*mouseX1*j)*Math.sin(spacing*j*mouseY1)*s,z];
+        // }
 
         // Add the points
         this.points.push(point);
@@ -205,24 +290,17 @@ for (var i = 0; i < dim; i++) {
 
 // Set the size based on scaling
 
-        if (style == 0 || style == 2) {
-            ctx.lineWidth = this.scale;
-            ctx.strokeStyle = rgb(255);
-            ctx.line(this.lastx2d + this.lastScale, this.lasty2d, x2d + this.scale, y2d);
-        }
-
-        if (style == 1) {
             ctx.fillStyle = rgb(255);
 
-            // hack to speed up
-            if (2*this.scale > 3) {
-                ctx.fillEllipse(this.lastx2d + this.lastScale, this.lasty2d, 2*this.scale, 2*this.scale);
-            } else {
-               ctx.fillRect(this.lastx2d + this.lastScale, this.lasty2d, 2*this.scale, 2*this.scale);
-            }
+              particles[i].position.x = this.lastx2d;
+              particles[i].position.y = this.lasty2d;
+              particles[i].scale.x = bparticles[i].scale.y = particles[i].scale.z = 2*this.scale;
 
 
-        }
+                // ctx.fillEllipse(this.lastx2d + this.lastScale, this.lasty2d, 2*this.scale, 2*this.scale);
+
+
+
         // Store the last point so we can join it to the next one.
 
         this.lastx2d=x2d;
@@ -240,7 +318,7 @@ for (var i = 0; i < dim; i++) {
         }
         if (style == 1 || style == 3) {
         ctx.fillStyle = rgb(255);
-        ctx.fillEllipse(this.lastx2d + this.lastScale, this.lasty2d, 2*this.scale, 2*this.scale);
+        //ctx.fillEllipse(this.lastx2d + this.lastScale, this.lasty2d, 2*scale, 2*scale);
         ctx.fillRect(this.firstx2d + this.firstScale, this.firsty2d, this.scale, this.scale);
         }
         }
@@ -252,57 +330,7 @@ for (var i = 0; i < dim; i++) {
 }
 
 
-function draw() {
-    ctx.background(0);
-
-    for (var i = 0; i < ball.length; i++) {
-      ball[i].draw();
-    }
-
-}
-
-function rotateX(point3d,angleX) {
-
-        var x = point3d[0];
-        var z = point3d[2];
-
-        var cosRY = Math.cos(angleX);
-        var sinRY = Math.sin(angleX);
-
-        var tempz = z;
-        var tempx = x;
-
-        x = (tempx*cosRY)+(tempz*sinRY);
-        z = (tempx*-sinRY)+(tempz*cosRY);
-
-        point3d[0] = x;
-        point3d[2] = z;
-        return point3d;
-
-}
-
-function rotateY(point3d,angleY) {
-
-        var y = point3d[1];
-        var z = point3d[2];
-
-        var cosRX = Math.cos(angleY);
-        var sinRX = Math.sin(angleY);
-
-        var tempz = z;
-        var tempy = y;
-
-        y = (tempy*cosRX)+(tempz*sinRX);
-        z = (tempy*-sinRX)+(tempz*cosRX);
-
-        point3d[1] = y;
-        point3d[2] = z;
-        return point3d;
-
-}
-
 </script>
-<script language="javascript" src="js/soundcloud.js"></script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
 </body>
-
 </html>

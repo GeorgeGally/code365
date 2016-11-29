@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+
+
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var block_size = 20;
+var frameRate = 60;
+var number_of_balls = 1055;
+var balls = [];
+sensitivity = 40;
+
+for (var i = 0; i < number_of_balls; i++) {
+  addBall(i, randomInt(w), randomInt(h));
+}
+
+function setup(){
+    ctx.background(0);
+}
+//console.log(balls);
+
+// think of an function like a machine
+function addBall(i, _x, _y ){
+
+  // we create a ball object - an object has properties
+  var ball = {
+    x:  _x,
+    y: _y,
+    z: random(-100,100),
+    speed_x: 0,
+    speed_y: random(-10, 10),
+    c: rgba(random(180,255), 0, 0, random(0.5, 1)),
+    size: block_size,
+    me: i
+  }
+
+  balls.push(ball);
+}
+
+var motion = [];
+
+ctx.lineStyle = "green";
+function draw(){
+  update();
+  // ctx.background(250,0,0, 0.05);
+  ctx.background(0, 0.2);
+  drawBalls();
+
+  //pixelate(4);
+} // end draw
+
+
+function update(){
+  moveBalls();
+
+}
+
+function moveBalls(){
+
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+
+    for (var j = 0; j < balls.length; j++) {
+      pp = balls[j];
+      if (dist(b.x, b.y, pp.x, pp.y) < 30) {
+        //console.log('x');
+        // ctx.lineColour = rgba(255,0,0,1);
+        // ctx.lineWidth = 2;
+        // ctx.line(b.x, b.y, pp.x, pp.y)
+        ctx.fillStyle = b.c;
+        //var x = Math.round(b.x/block_size)*block_size;
+        var y = Math.round(b.y/block_size)*block_size;
+          if (b.speed_x < 0) {
+
+            ctx.fillRect(0, y-block_size, block_size*4*b.speed_x, block_size);
+          } else {
+            ctx.fillRect(0, y-block_size, block_size*4*b.speed_x, block_size);
+          }
+
+      }
+    }
+
+    //b = ballHit(b)
+    b = wallHit(b);
+
+    b.x += b.speed_x;
+    b.y += b.speed_y;
+
+    // we adjust the hit area because shere is drawn from the centre
+
+
+
+  } // end for loop
+}
+
+function ballHit(b){
+  for (var j = 0; j < balls.length; j++) {
+    m = balls[j];
+    if (b.me !=  m.me && b.x > m.x - b.size/2 && b.x< m.x && b.y > m.y - b.size/2 && b.y< m.y ) {
+      b.speed_x*=-1;
+      b.speed_y*=-1;
+      ctx.fillStyle = b.c;
+    //  ctx.fillRect(m.x, m.y, block_size*2, block_size*2);
+    }
+  }
+
+  return b;
+}
+
+
+function wallHit(b){
+  if (b.x > width - b.size/2  || b.x < b.size/2  ) {
+    b.speed_x = b.speed_x *-1;
+  }
+
+  if (b.y > height - b.size/2 || b.y < b.size/2 ) {
+    b.speed_y = b.speed_y *-1;
+  }
+
+  return b;
+}
+
+function drawBalls(){
+
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    ctx.fillStyle = b.c;
+    //b = selfHit(b);
+    b.y = Math.sin(frameCount/100/b.me) * h;
+    var x = Math.round(b.x/block_size)*block_size;
+    var y = Math.round(b.y/block_size)*block_size;
+    // ctx.fillRect(x, y, block_size, block_size);
+//    if (b.speed_x > 0) {
+    ctx.fillRect(0, y, w, block_size);
+  // } else {
+  //   ctx.fillRect(b.x-block_size, b.y, block_size, block_size);
+  // }
+
+  } // end for loop
+}
+
+
+
+</script>
+<!-- <script language="javascript" src="js/motion_detection.js"></script> -->
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+
+</html>

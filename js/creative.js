@@ -434,6 +434,14 @@ function posNeg(){
  return randomInt(0,1) * 2 - 1;
 }
 
+function sticky(num, clamper){
+  return Math.round(num/clamper)*clamper;
+}
+
+function ave(num, clamper){
+  return Math.round(num/clamper)*clamper;
+}
+
 function angle(cx, cy, ex, ey) {
   var dy = ey - cy;
   var dx = ex - cx;
@@ -482,6 +490,33 @@ if( denom === 0 || (numeA === 0 && numeB === 0) ) {
  (uA * (y2 - y1)) + y1
  ]
  }
+}
+
+
+function selfHit(p){
+
+  	for (var i = 0; i < balls.length; i++) {
+  		if (i != p.me) {
+
+  			p2 = balls[i];
+
+  			if (hittestBall(p, p2)) {
+  				p.speedx *= -1;
+  				p.speedy *= -1;
+  				p2.speedx *= -1;
+  				p2.speedy *= -1;
+  			}
+  		}
+
+  		}
+      return p;
+}
+
+function hittestBall(p, p2){
+
+      if(p.x > p2.x - p2.sz  && p.x <  p2.x + p2.sz  && p.y > p2.y - p2.sz  && p.y < p2.y + p2.sz) {
+        return true;
+      }
 }
 
 

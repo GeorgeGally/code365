@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+
+
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var block_size = 20;
+var frameRate = 60;
+var number_of_balls = 5;
+var balls = [];
+sensitivity = 40;
+var x = y = w/2;
+for (var i = 0; i < number_of_balls; i++) {
+  addBall(i, w/2, h/2);
+}
+
+function setup(){
+    ctx.background(0);
+}
+
+function addBall(i, _x, _y ){
+
+  var ball = {
+    x:  _x,
+    y: _y,
+    z: random(-100,100),
+    speed_x: random(20),
+    speed_y: random(-10, 10),
+    c: rgba(random(180,255), 0, 0, random(0.1, 0.3)),
+    size: block_size,
+    me: i,
+    //trails: []
+  }
+
+  balls.push(ball);
+}
+
+function draw(){
+  update();
+  ctx.background(0, 0.8);
+  drawBalls();
+  pixelate(20);
+}
+
+
+function update(){
+  moveBalls();
+
+}
+
+function moveBalls(){
+
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    b = wallHit(b);
+    b.size += b.speed_x;
+
+
+  } // end for loop
+}
+
+
+function wallHit(b){
+  if (b.size > width ) {
+    b.size = random(50);
+  }
+
+
+  return b;
+}
+
+function drawBalls(){
+
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    ctx.fillStyle = b.c;
+    //b = selfHit(b);
+    //b.y = Math.sin(frameCount/100/b.me) * h;
+    var x = Math.round(b.x/block_size)*block_size;
+    var y = Math.round(b.y/block_size)*block_size;
+    ctx.fillEllipse(x, y, block_size * Math.round(b.size/block_size), block_size * Math.round(b.size/block_size));
+
+
+  } // end for loop
+}
+
+
+
+</script>
+</body>
+
+</html>

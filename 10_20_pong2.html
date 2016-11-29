@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+
+<script>
+var ctx = createCanvas("canvas1");
+
+var ball = {
+  x: w/2,
+  y: h/2,
+  speedx: random(-4,4),
+  speedy: random(-4,4)
+}
+
+function draw(){
+  ball.x += ball.speedx;
+  ball.y += ball.speedy;
+  if (ball.x > w) {ball.x = 0;}
+  if (ball.x < 0) {ball.x = w;}
+  if (ball.y > h) {ball.y = 0;}
+  if (ball.y < 0) {ball.y = h;}
+  ctx.fillStyle = "red";
+  ctx.fillEllipse(ball.x, ball.y, 20, 20);
+}
+
+
+</script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>
