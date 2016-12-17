@@ -14,7 +14,7 @@ var mix = [];
 var audioChannelVolume = [];
 var volume = [];
 
-var genres = ["slomo", "deeptechno", "ebm", "disco", "deepdisco", "indiedisco", "slomodisco", "slomohouse", "downtempotechno", "downtempo", "deepness", "pixies", "lowmotion", "plastikman", "minimalhouse", "acidhouse", "cosmic", "cosmicdisco", "ambient"];
+var genres = ["slomo", "deeptechno", "ebm", "disco", "deepdisco", "indiedisco", "slomodisco", "slomohouse", "downtempotechno", "downtempo", "deepness", "pixies", "lowmotion", "plastikman", "minimalhouse", "acidhouse", "cosmic", "cosmicdisco", "ambient", "vapourwave"];
 
 
 var audioCtxCheck = window.AudioContext || window.webkitAudioContext;
@@ -210,33 +210,36 @@ else {
     };
 
 
-    this.directStream = function(direction){
-        if(direction=='toggle'){
-            if (this.player.paused) {
-                this.player.play();
-            } else {
-                this.player.pause();
-            }
-        }
-        else if(this.sound.kind=="playlist"){
-            if(direction=='coasting') {
-                this.streamPlaylistIndex++;
-            }else if(direction=='forward') {
-                if(this.streamPlaylistIndex>=this.sound.track_count-1) this.streamPlaylistIndex = 0;
-                else this.streamPlaylistIndex++;
-            }else{
-                if(this.streamPlaylistIndex<=0) this.streamPlaylistIndex = this.sound.track_count-1;
-                else this.streamPlaylistIndex--;
-            }
-            if(this.streamPlaylistIndex>=0 && this.streamPlaylistIndex<=this.sound.track_count-1) {
-               this.player.setAttribute('src',this.streamUrl());
-               this.player.play();
-            }
-        }
+this.directStream = function(direction){
+
+  if(direction=='toggle'){
+
+    if (this.player.paused) {
+      this.player.play();
+    } else {
+      this.player.pause();
     }
 
+  } else if(this.sound.kind=="playlist"){
 
-  };
+      if(direction=='coasting') {
+        this.streamPlaylistIndex++;
+      }else if(direction=='forward') {
+          if(this.streamPlaylistIndex>=this.sound.track_count-1) this.streamPlaylistIndex = 0;
+          else this.streamPlaylistIndex++;
+      }else{
+          if(this.streamPlaylistIndex<=0) this.streamPlaylistIndex = this.sound.track_count-1;
+          else this.streamPlaylistIndex--;
+      }
+          if(this.streamPlaylistIndex>=0 && this.streamPlaylistIndex<=this.sound.track_count-1) {
+            this.player.setAttribute('src',this.streamUrl());
+            this.player.play();
+          }
+  }
+
+}
+
+};
 
 function mapSound(_me, _total){
 

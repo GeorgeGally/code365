@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<title>Code365</title>
+<head>
+    <meta charset="utf-8">
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="js/creative.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<!-- <script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/video.js"></script> -->
+
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var block_size = 20;
+var maxballs = 500;
+var balls = [];
+var motion = [];
+var gridx = 20;
+var gridy = 20;
+var number_of_balls = gridx * gridy;
+var grid = createGrid(gridx, gridy);
+var grid2 = createGrid(gridx * 2, gridy * 2);
+
+for (var i = 0; i < number_of_balls; i++) {
+  addBall(i, grid[i].x , grid[i].y);
+}
+
+
+ctx.background(0);
+
+
+function addBall(i, _x, _y){
+  var sz = ave(random(20, 100),gridx*2);
+  me = balls.length;
+  var ball = {
+    x:  _x,
+    y: _y,
+    speed_x: random(-2, 2),
+    speed_y: random(-5,-1),
+    c: rgba(0),
+    size: sz,
+    me: (i + random(100))%255
+  }
+
+  balls.push(ball);
+  if (balls.length > maxballs) removeBall();
+
+}
+
+function removeBall(){
+  balls.splice(0,1);
+  //console.log(balls.length);
+}
+
+
+function update(){
+
+  for (var i = 0; i < balls.length; i++) {
+
+    b = balls[i];
+    //console.log(i);
+    b.size = 5 + mapSound(b.me,balls.length)/2;
+    //console.log(b.size);
+    if (b.x > width - b.size/2  || b.x < b.size/2  ) {
+      b.speed_x = b.speed_x *-1;
+    }
+
+    //b.y = tween(b.y, b.y + (b.speed_y+ mapSound(i, balls.length)/40), 5);
+
+    if (b.y < 0) {
+      b.y = height;
+    }
+
+    if (b.y > height) {
+      b.y = 0;
+    }
+    // b.x = tween(b.x, b.x + (b.speed_y+ mapSound(i, balls.length)/40), 5);
+    //b.x += b.speed_x;
+
+  } // end for loop
+
+}
+
+
+function draw(){
+
+  ctx.background(235);
+  update();
+
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = rgb(255);
+
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+
+    ctx.fillStyle = b.c;
+    ctx.fillEllipse(b.x, b.y, b.size, b.size);
+    ctx.fillStyle = rgb(255);
+    ctx.fillEllipse(b.x, b.y, b.size/1.2, b.size/1.2);
+  }
+
+  // ctx.lineWidth = 0.2;
+  // ctx.strokeStyle = rgba(220, 0.9);
+
+  //triangulate(20);
+  //pixelate(10);
+}
+
+
+
+
+</script>
+<!-- <script language="javascript" src="js/motion_detection.js"></script> -->
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+
+</html>

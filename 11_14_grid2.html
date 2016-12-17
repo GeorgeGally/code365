@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<title>Code365</title>
+<head>
+
+    <meta charset="utf-8">
+
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var block_size = 20;
+var maxballs = 500;
+var balls = [];
+var engine = new particleEngine();
+var motion = [];
+var gridx = 20;
+var gridy = 20;
+var number_of_balls = gridx * gridy;
+var grid = createGrid(gridx, gridy);
+var grid2 = createGrid(gridx * 2, gridy * 2);
+
+for (var i = 0; i < number_of_balls; i++) {
+  engine.addParticle(grid[i].x , grid[i].y, rgb(random(100)), i);
+  engine.particles[i].speed = new Vector(0, random(-5,-1));
+  engine.particles[i].size = 10;
+}
+
+var particles = engine.particles;
+//console.log(particles);
+
+ctx.background(0);
+
+function update(){
+
+  particles = engine.particles;
+  for (var i = 0; i < particles.length; i++) {
+    p = particles[i];
+    var s = mapSound(p.me, particles.length);
+    p.c = hsl(360-ave(s, 40), 50, 40);
+    p.size = 5 + s/4;
+  } // end for loop
+
+}
+
+
+function draw(){
+
+  ctx.background(235);
+  update();
+  engine.moveParticles();
+  // ctx.lineWidth = 4;
+  // ctx.strokeStyle = rgb(255);
+
+  for (var i = 0; i < particles.length; i++) {
+    b = particles[i];
+    if (i == 20) console.log(b.c);
+    ctx.fillStyle = b.c;
+    ctx.fillEllipse(b.position.x, b.position.y, b.size, b.size);
+    // ctx.fillStyle = rgb(255);
+    // ctx.fillEllipse(b.position.x, b.position.y, b.size/1.2, b.size/1.2);
+  }
+
+}
+
+
+
+
+</script>
+
+<script language="javascript" src="js/soundcloud.js"></script>
+</body>
+
+</html>

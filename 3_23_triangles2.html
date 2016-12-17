@@ -17,7 +17,7 @@ body {
 	}
 </style>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -28,8 +28,8 @@ var grid = createGrid(grid_w, grid_h, w/2,h);
 var num_particles = grid_w * grid_h;
 ctx.strokeWeight(10);
 
-for (var i = 0; i < num_particles; i++) {	
-	
+for (var i = 0; i < num_particles; i++) {
+
 	var x = w/2 + (-1 + i) * 350;
     var m = map(i, 0, num_particles, 0, 255);
     var cc = hsl(m, 96, 60);
@@ -44,9 +44,9 @@ function draw(){
 	ctx.fillStyle = rgba(255,255,255, 0.4);
 	ctx.fillRect(0, 0, w, h);
 	//ctx.clearRect(0, 0, w, h);
-	
+
 	ctx.fillStyle = rgb(0);
-	ctx.fillTriangle(p.x, p.y, w/2 + w/4, p.y, w/2, p.y - 300);
+	ctx.fillEqTriangle(p.x, p.y, 300);
 	moveParticles();
 	//pixelate(5);
 
@@ -54,7 +54,7 @@ function draw(){
 
 
 function addParticle(_x, _y, _colour, _me, _me2){
-	
+
 	var particle = {
 		x: _x,
 		y: _y,
@@ -70,7 +70,7 @@ function addParticle(_x, _y, _colour, _me, _me2){
 		sz: 100,
 		angle: radians((2.2*_me)%360)
 	}
-	
+
 	particles.push(particle);
 
 }
@@ -79,7 +79,7 @@ function addParticle(_x, _y, _colour, _me, _me2){
 function moveParticles(){
 
 	for (var i = 0; i < particles.length; i++) {
-		
+
 		p = particles[i];
 		p.sz =  tween(p.sz, map(audioChannelVolume[p.me2], 0, 150,
 			0, 450), 8);
