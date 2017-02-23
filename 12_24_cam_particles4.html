@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+<script language="javascript" src="js/video.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var block_size = 20;
+var rect_size = 60;
+
+var maxballs = 1500;
+var engine = new particleEngine(0);
+var particles = engine.particles;
+var motion = [];
+var sensitivity = 20;
+
+function update(){
+
+  motion = motionDetection(block_size);
+  //ctx.drawImage(video, 0,0, w, h);
+
+  for (var i = 0; i < motion.length; i++) {
+    m = motion[i];
+    engine.addParticle(m.x, m.y, rgb(m.z.x, m.z.y, m.z.z));
+    //m.image = new Image();
+
+    engine.last.size = 10;
+    engine.last.speed = new Vector(random(-5,5), random(-5,5));
+    //console.log(engine.last);
+    if (engine.particles.length > maxballs) {
+      engine.removeParticle();
+    }
+  }
+  //particles = engine.particles;
+  for (var i = 0; i < particles.length; i++) {
+    b = particles[i];
+
+    //b.pos.x += b.speed.x;
+    //b.pos.y += b.speed.y;
+    // b.size *= 0.95;
+    b.size += 1.008;
+    b.alpha -= 0.05;
+    //if (i == 3) console.log(b.pos.x);
+    // we adjust the hit area because shere is drawn from the centre
+    if (b.pos.x > w  || b.pos.x < 0 || b.pos.y > h || b.pos.y < 0 || b.size < 1 || b.size> 25) {
+      engine.removeParticle(i);
+    }
+
+
+  } // end for loop
+
+}
+
+
+
+function draw(){
+
+  ctx.background(250, 1);
+
+  //ctx.drawImage(video, 0, 0, w, h);
+
+  //var my_sample = ctx.getImageData(0, 0, w, h);
+	//var frame = new Uint32Array(my_sample.data.buffer);
+
+  update();
+
+  var wratio = w/video.width;
+  var hratio = h/video.height;
+  //ctx.fillStyle = "#00aeef";
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    b = engine.particles[i];
+    //if (i == 3) console.log(b.pos.x + b.size/2 + ((b.pos.y + b.size/2) * w));
+    // ctx.fillStyle = getMyColour(frame, b);
+    //getMyColour(w, h, frame, b);
+    //console.log(getColour(b));
+    //ctx.fillStyle = b.c;
+    //b.pos.x = w - b.pos.x;
+    //drawImage( image, source_x, source_y, w, h, dest_x, dest_y, w, h );
+    //drawImage( video, 0, 0, w, h, dest_x, dest_y, w, h );
+    //ctx.fillEllipse(b.pos.x, b.pos.y, b.size, b.size);
+    //ctx.fillRect(b.pos.x, b.pos.y, b.size, b.size);
+    //ctx.drawImage(video, b.pos.x, b.pos.y, b.size, b.size)
+    ctx.drawImage(video, b.position.x/2  , b.position.y/2, b.size/ wratio, b.size/wratio, w - b.pos.x - b.size/2 , b.pos.y - b.size/2, b.size , b.size );
+    //ctx.drawImage(video, b.position.x  , b.position.y / h_ratio , b.size/w_ratio, b.size/h_ratio, w - b.position.x + b.size/2 , b.position.y + b.size/2, b.size , b.size );
+  }
+
+}
+
+
+function getMyColour(_w, _h, _frame, p) {
+  //console.log(_w);
+  var my_pos = 0;
+  var ww = 0;
+  var xx = p.position.x;
+  var yy = width * p.position.y;
+  //if (_w!= undefined)  ww = _w/2;
+  //var my_pos = p.pos.x + p.size/2 + ((p.pos.y + p.size/2) * w);
+  // var my_pos = p.pos.x + p.pos.y * _w;
+  var my_pos = xx + yy;
+  //console.log(w);
+  var r = _frame[my_pos] >> 0 & 0xff;
+  var g = _frame[my_pos] >> 8 & 0xff;
+  var b = _frame[my_pos] >> 16 & 0xff;
+  ctx.fillStyle = rgb(r, g, b, p.alpha);
+  ctx.fillRect(p.pos.x, p.pos.y, p.size, p.size);
+  //return rgb(r, g, b, p.alpha);
+}
+
+</script>
+
+<script language="javascript" src="js/motion_detection.js"></script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+
+</html>

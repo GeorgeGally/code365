@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background: #ffffee">
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var tree = new particleEngine(0);
+var branches = tree.particles;
+
+addBranch();
+
+function draw() {
+
+	if (chance(100)) addBranch();
+
+	for (var i = 0; i < branches.length; i++) {
+		b = branches[i];
+		//console.log(b);
+		growBranch(b)
+		drawBranch(b.segments.last);
+	}
+
+}
+
+
+function addBranch(){
+
+	tree.addParticle();
+	var branch = tree.last;
+	branch.segments = new particleEngine(0);
+	branch.c = rgb(random(100,235),random(100), 0);
+	branch.sz = random(30, 80);
+	branch.moving = true;
+	branch.angle = radians(random(360));
+	branches = tree.particles;
+
+}
+
+
+
+function growBranch (_branch){
+
+	var b = _branch;
+
+	if (b.moving) {
+
+		if (b.sz > 5) {
+			b.sz -= 1;
+		} else {
+			b.moving = false;
+		}
+
+		console.log(b.sz);
+		var nodes = b.segments;
+		var last = nodes.last;
+		nodes.addParticle();
+		// clone values
+		var p = nodes.last;
+		p.sz = last.sz;
+		p.c = last.c;
+		//console.log(p);
+		if (nodes.particles.length>0) {
+			p.oldx = p.position.x;
+			p.oldy = p.position.y;
+	} else {
+			p.oldx = w/2;
+			p.oldy = h/2;
+	}
+		if (chance(50)) {
+			p.angle  = last.angle + radians(random(-1, 1));
+		}
+		if (chance(10)) {
+			p.angle  = last.angle + posNeg()*radians(random(95));
+		}
+		var x = p.oldx + Math.sin(p.angle) * p.sz/4;
+		var y = p.oldy + Math.cos(p.angle) * p.sz/4;
+
+		if(b.moving) nodes.addParticle(x, y);
+
+		if (x > w || x < 0 || y > h || y < 0 ) {
+			b.moving = false;
+			addBranch();
+		}
+
+	}
+}
+
+
+function drawBranch(p){
+	//console.log(p);
+ ctx.lineWidth = 2;
+ ctx.HfillEllipse(p.position.x, p.position.y, p.sz, p.sz);
+ ctx.strokeStyle = "white";
+ ctx.HstrokeEllipse(p.position.x, p.position.y, p.sz, p.sz);
+
+}
+
+
+// function Branch(){
+//
+// 	this.segments = new particleEngine(0);
+// 	this.segments.c = rgb(random(100,235),random(100), 0);
+//
+// 	this.sz = random(30, 80);
+// 	this.moving = true;
+// 	this.angle = radians(random(360));
+//
+// 	for (var i = 0; i < branches.length-1; i++) {
+// 		for (var j = 0; j < branches[i].segments.particles.length-1; j++) {
+//  	var b = branches[i].segments.particles[j]
+// 		if (b.position.x == this.oldx && b.position.y == this.oldy) {
+// 			this.moving = false;
+// 		}
+// 	}
+// 	}
+// 	this.segments.addParticle(this.oldx, this.oldy);
+//
+// 	this.segments.direction = new Vector(posNeg(), posNeg());
+// 	this.segments.angle = angle;
+//
+// 	this.drawSegments = function(){
+// 		//for (var i = 0; i < this.segments.particles.length; i++) {
+// 		var i = this.segments.particles.length-1;
+// 			p = this.segments.particles[i];
+// 			ctx.fillStyle = this.segments.c;
+// 			if (this.sz > 5) {
+// 				this.sz -= 1;
+// 			} else {
+// 				this.moving = false;
+// 			}
+// 			this.drawBranch(p)
+// 		//}
+// 	}
+//
+// 	 this.drawBranch = function(p){
+//
+// 		ctx.lineWidth = 2;
+// 		ctx.HfillEllipse(p.position.x, p.position.y, this.sz, this.sz);
+// 		ctx.strokeStyle = "white";
+// 		ctx.HstrokeEllipse(p.position.x, p.position.y, this.sz, this.sz);
+//
+// 	}
+//
+//
+// 	this.moveBranch = function (){
+//
+// 		if (this.moving) {
+//
+// 			var segments = this.segments.particles;
+// 			this.oldx = this.segments.last.position.x;
+// 			this.oldy = this.segments.last.position.y;
+//
+// 			if (chance(50)) {
+// 				this.angle  += radians(random(-1, 1));
+// 		  }
+// 			if (chance(10)) {
+// 				this.angle  += posNeg()*radians(random(95));
+// 			}
+// 			var x = this.oldx + Math.sin(this.angle) * this.sz/4;
+// 			var y = this.oldy + Math.cos(this.angle) * this.sz/4;
+//
+// 			if(this.moving) this.segments.addParticle(x, y);
+//
+// 			if (x > w || x < 0 || y > h || y < 0 ) {
+// 				this.moving = false;
+// 				addBranch();
+// 			}
+//
+// 		}
+// 	}
+//
+// }
+
+
+</script>
+</body>
+</html>

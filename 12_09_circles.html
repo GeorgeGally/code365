@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+<script language="javascript" src="js/tween.min.js"></script>
+<script type="text/javascript" src="js/controlKit.min.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+
+<script>
+
+var hidden_ctx = createHiddenCanvas("hidden_canvas");
+var ctx = createCanvas("canvas1");
+var num = 10;
+var sz = 500;
+var sampleSize = 12;
+var engine = new particleEngine(0);
+var particles = engine.particles;
+var imgData;
+ctx.strokeWeight = 10;
+
+hidden_ctx.font = "bold 260pt Times";
+hidden_ctx.fillStyle="blue";
+hidden_ctx.textAlign = "center";
+hidden_ctx.textBaseline = "middle";
+
+var letter = 0;
+var words = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+
+
+brightSpark();
+// outside();
+
+function draw(){
+
+  ctx.background(250);
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    //checkHit(p)
+    move(p);
+    drawCircle(p);
+  }
+
+  if (chance(100)) drawNewText();
+  outside();
+
+}
+
+
+function checkHit(p){
+
+	for (var j = 0; j < engine.particles.length; j++) {
+		var pp = engine.particles[j];
+		if (p.me!=j && dist(p.position.x, p.position.y, pp.position.x,    pp.position.y) < (p.sz/2 + pp.sz/2)) {
+			pp.active = false;
+			p.active = false;
+      p.sz-=1;
+      if (p.sz < 3) engine.particles.slice(p.me,1);
+		}
+	}
+}
+
+function drawCircle(p){
+	ctx.strokeStyle = rgb(0, 0.1);
+  ctx.strokeWeight = 5;
+  ctx.save();
+  ctx.translate(p.position.x, p.position.y);
+  p.r = tween(p.r, radians(p.position.x + p.position.y)*0.5, 4)
+  ctx.rotate(p.r);
+	ctx.HstrokeEllipse(p.dir*p.sz/2, p.dir*p.sz/2, p.sz, p.sz);
+  ctx.restore();
+
+
+	if (!p.out) {
+		ctx.fillStyle = "black";
+		ctx.HfillEllipse(p.position.x, p.position.y, 5, 5);
+	}
+
+  if (p.out == true && p.sz> 20) p.active = false;
+
+}
+
+function move(p){
+	//if (p.active && p.sz < 60) {
+    p.position.x = tween(p.position.x, p.target.x, 40);
+    p.position.y = tween(p.position.y, p.target.y, 40);
+		p.sz = tween(p.sz, p.sz + p.speed, 2);
+  //}
+	//if (p.sz > 60) {
+		//p.active = false;
+	//}
+}
+
+function moveCircle(x, y, count){
+  if (count < engine.particles.length) {
+    var p = engine.particles[count];
+    p.active = true;
+    p.target.x = x;
+    p.target.y = y;
+    p.sz = p.sz/2;
+    p.dir = posNeg();
+    p.r = random(1);
+  }
+}
+
+function addCircle(x, y, out){
+
+	var same = false;
+	var new_sz = randomInt(2, 13);
+
+	for (var k = 0; k < engine.particles.length; k++) {
+
+    var pp = engine.particles[k];
+		if (dist(pp.position.x, pp.position.y, x, y) < (pp.sz/2 + new_sz/2)) {
+			same = true;
+		}
+	}
+	if (!same) {
+		engine.addParticle(x, y);
+		active_particle = engine.particles.length-1;
+		var p = engine.particles[active_particle];
+		p.fixed = false;
+    p.target.x = x;
+    p.target.y = y;
+		p.sz = new_sz;
+    p.out = out;
+    p.dir = posNeg();
+		p.speed = random(0.01, 1.9);
+		p.active = true;
+    p.r = random(1);
+	}
+}
+
+
+
+
+function outside(){
+  var sampleSize = randomInt(10, 90);
+	for (var y = 0; y < h; y+= sampleSize) {
+
+		 for (var x = 0; x < w; x+= sampleSize) {
+
+			var pt = (y * w + x)*4;
+      var bright = brightness(imgData[pt], imgData[pt+1], imgData[pt+2]);
+			if(bright > 0.2) {
+				addCircle(x + random(-2,2), y + random(-2,2), false);
+			}
+
+		 }
+	}
+	hidden_ctx.clearRect(0,0, w, h);
+}
+
+function drawNewText(){
+  console.log("drawNewText");
+  drawText();
+  var count = 0
+  for (var y = 0; y < h; y+= sampleSize) {
+     for (var x = 0; x < w; x+= sampleSize) {
+       var pt = (y * w + x)*4;
+       var bright = brightness(imgData[pt], imgData[pt+1], imgData[pt+2]);
+ 			if(bright > 0.2) {
+ 				moveCircle(x + random(-3,3), y + random(-3,3), count);
+        count++;
+ 			}
+     }
+   }
+   if (count < engine.particles.length) engine.particles.splice(count, engine.particles.length-1);
+}
+
+
+
+
+function drawText(){
+  var ww = words[letter];
+  console.log(ww);
+  hidden_ctx.background = rgb(0);
+  hidden_ctx.fillStyle = "white";
+	hidden_ctx.fillText(ww, w/2, h/2);
+	imgData = hidden_ctx.getImageData(0, 0, w, h).data;
+  letter = (letter + 1)%27
+}
+
+
+function brightSpark(){
+	drawText()
+	for (var y = 0; y < h; y+= sampleSize) {
+
+		 for (var x = 0; x < w; x+= sampleSize) {
+
+			var pt = (y * w + x)*4;
+      var bright = brightness(imgData[pt], imgData[pt+1], imgData[pt+2]);
+			if(bright > 0.2) {
+				addCircle(x + random(-3,3), y + random(-3,3), false);
+			}
+
+		 }
+	}
+	hidden_ctx.clearRect(0,0, w, h);
+}
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

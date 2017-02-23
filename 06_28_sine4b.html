@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 7;
+ctx.lineCap="round";
+ctx.lineJoin = "miter";
+var grid_w = 20;
+var grid_h = 220;
+var grid = createGrid(grid_w, grid_h, w, h);
+var counter = 0;
+var particles = [];
+var num_particles = grid_w * grid_h;
+var cols = ['#fdea00', '#50bfe8', '#f06724', '#8cc640'];
+var angle = 360/num_particles;
+var circ_sz = 2;
+var t_size = 250;
+var middle = 0;
+for (var i = 0; i < num_particles; i+=1) {
+    	var x = grid[i][0];
+    	var y = grid[i][1];
+		addParticle(x, y, cols[i%5], i);
+};
+
+
+
+function draw(){
+	//ctx.fillStyle = rgba(255,255,255, 0.1);
+	//ctx.fillRect(0,0,w,h);
+	ctx.background(0);
+
+	ctx.save();
+
+	//HfillEclipse doesn't work with clipping
+	ctx.fillStyle = rgb(0);
+	ctx.ellipse(w/2, h/2, 400, 400);
+	ctx.clip();
+	ctx.fillStyle = rgb(0);
+	ctx.HfillEllipse(w/2, h/2, 400, 400);
+
+
+	drawParticles();
+	ctx.restore();
+	ctx.strokeStyle = rgb(255);
+	ctx.lineWidth = 3;
+	//ctx.HstrokeEllipse(w/2, h/2, 400, 400);
+
+}
+
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: w/2,
+		y: _y,
+		startx: random(w/2),
+		starty: _y,
+		c: _colour,
+		me: (_me + randomInt(-4, 4))%100,
+		offset: 0,
+		on: false,
+		speedx: 0.02,
+		speedy: posNeg()*random(0.4,4),
+		sz: circ_sz,
+		counter: _x/w
+	}
+	particle.x = particle.startx;
+	particles.push(particle);
+}
+
+
+function drawParticles(){
+
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		p.counter+= p.speedx;
+		p.x = map(200 + Math.sin(p.counter)*200, 0, p.startx, 0, w);
+		p.sz = 20 - map(p.x, 0, w/2, 0, 15);
+		//p.sz = tween(p.sz, 40-Math.abs(Math.sin(p.counter)*40), 10);
+		//console.log(p.sz);
+		//if (audioChannelVolume[p.me]> 80) {
+			p.on == true;
+			ctx.fillStyle = rgb(sticky(5+ p.sz*20, 20));
+			ctx.fillEllipse (p.x, p.y, p.sz, p.sz);
+
+		if (chance(10000) && p.on == true) {
+			p.on == false;
+		}
+	}
+	//ctx.line(-w/2, 95, w/2, 95);
+}
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+
+</body>
+</html>

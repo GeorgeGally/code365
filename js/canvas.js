@@ -4,17 +4,20 @@ var w, width, h, height;
 var canvas;
 
 	// this enables me to have many canvases all positioned on top of eachother at 100% width and height of page
-function createCanvas(canvas_name){
+	
+function createCanvas(_canvas_name){
 	canvas = document.createElement('canvas');
 	var body = document.querySelector('body');
-	canvas.setAttribute("id", canvas_name);
+	canvas.setAttribute("id", _canvas_name);
 	canvas.style.position = "absolute";
 	canvas.style.left = "0px";
 	canvas.style.top = "0px";
 	body.appendChild(canvas);
 	var ctx = canvas.getContext('2d');
-	resize();
-	window.addEventListener("resize", resize, false);
+
+		resize();
+		window.addEventListener("resize", resize, false);
+
 	return ctx;
 }
 
@@ -29,7 +32,7 @@ function createGLCanvas(canvas_name){
 	body.appendChild(canvas);
 	var gl = canvas.getContext('webgl');
 	if (!gl) var gl = canvas.getContext('experimental-webgl');
-	resize();
+	resize(canvas_name);
 	window.addEventListener("resize", resize, false);
 	return gl;
 }

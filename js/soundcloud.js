@@ -271,6 +271,14 @@ function getBass(){
 }
 
 
+function getTotalVolume(){
+  var v = 0;
+  for (var i = 0; i < volume.length; i++) {
+    v += audioChannelVolume[i];
+  }
+  return (Math.round(v/(audioChannelVolume.length-1)));
+}
+
 function getMids(){
 
   var b = 0;
@@ -278,7 +286,7 @@ function getMids(){
   for (var i = audioChannelVolume.length/3; i < 2*Math.round(audioChannelVolume.length/3); i++) {
     b += audioChannelVolume[i];
   }
-  return (Math.round(b/(audioChannelVolume.length-1)));
+  return (Math.round(b/(audioChannelVolume.length/3-1)));
 
 }
 
@@ -690,7 +698,7 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
     // -----------------------------------------------------------------------------
 // calculate RMS - a good approximation of "loudness"
 
-function getRMS(freq) {
+function getRMS(buffer) {
   var rms = 0;
   for (var i = 0; i < buffer.length; i++) {
     rms += buffer[i] * buffer[i];

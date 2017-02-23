@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+var num = Math.floor(w/40);
+ctx.lineWidth = 1;
+ctx.strokeStyle = rgb(255);
+var grid = createGrid(num,1);
+var engine = new particleEngine(5);
+var counter = 0;
+
+
+// var maxballs = 10500;
+// var engine = new particleEngine(grid.length-1, grid);
+// var particles = engine.particles;
+//
+// var ratio_x, ratio_y;
+// var positions = [];
+// var ball = new Vector(0, h/2);
+// var speed = new Vector(2,0);
+//
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+  p.speed.x = random(1)/10;
+  p.counter = 0;
+}
+
+
+function draw(){
+  ctx.background(200);
+  ctx.save();
+
+  //ctx.translate(w/2, h/2);
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    ctx.fillStyle = rgb(255);
+    p.pos.x = w/2 + Math.sin(p.counter)*w/4;
+    ctx.fillEllipse(p.pos.x, p.pos.y, 10,10);
+    p.counter += p.speed.x;
+  }
+
+
+
+  }
+
+
+
+
+</script>
+
+
+</body>
+
+</html>
+›

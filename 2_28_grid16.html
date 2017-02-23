@@ -4,7 +4,7 @@
  <meta charset="utf-8">
  <title>Soundcloud Viz</title>
  <script src='http://connect.soundcloud.com/sdk.js'></script>
- <script language="javascript" src="js/creative.js"></script>
+ <script language="javascript" src="js/creative_coding.js"></script>
 <script language="javascript" src="js/canvas.js"></script>
 
 	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
@@ -12,7 +12,7 @@
 	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -54,16 +54,16 @@ var Wave = function(_num_particles, _x, _y, _me) {
 		}
 		particles.push(particle);
 	}
-	
+
 
 	this.moveParticles = function(){
 
 		for (var i = 0; i < particles.length ; i++) {
-			
+
 			p = particles[i];
 
-			//DISTRIBUTED MAPPED SOUND VALUE  
-			var s = audioChannelVolume[10+p.me%83];
+			//DISTRIBUTED MAPPED SOUND VALUE
+			var s = ave(audioChannelVolume[10+p.me%83],26);
 			//var s = mapSound(p.me, 220 + num_particles*num_waves);
 			// console.log(s)
 			// if (s == 0) s = random(100)
@@ -75,13 +75,13 @@ var Wave = function(_num_particles, _x, _y, _me) {
 			//ctx.lineWidth = s/50;
 			//ctx.fillStyle = hsl(s*2.4, 50, 50);
 			//ctx.fillStyle = rgb(0);
-			ctx.fillStyle = rgba(s,0,0,0.2);
+			ctx.fillStyle = rgba(s,0.2);
 			//ctx.strokeEllipse(p.x, h-(30 + p.y), s, s);
 			// if (p.y < h/2) {
 			// 	ctx.line(p.x, p.y, p.x, spacing_y + p.y+s*2);
-			
+
 			// } else {
-				//if (s>140) 
+				//if (s>140)
 					ctx.fillRect(p.x, p.y-spacing_y/2, spacing_y + s*1, spacing_y+1);
 					// ctx.line (p.x + s + 4, p.y, p.x + s + 4, p.y + spacing_y+1);
 					// ctx.line (p.x + s + 8, p.y, p.x + s + 8, p.y + spacing_y+1);
@@ -90,7 +90,7 @@ var Wave = function(_num_particles, _x, _y, _me) {
 				//ctx.shadowOffsetY = -s/20;
 			//}
 
-			
+
 		};
 
 	}
@@ -113,7 +113,7 @@ console.log(spacing_y)
 var grid = makeGrid(grid_w, grid_h);
 var num_particles = 1;
 
-for (var i = 0; i < num_waves; i++) {	
+for (var i = 0; i < num_waves; i++) {
 	waves[i] = new Wave(num_particles, grid[i][0]*spacing_x,grid[i][1]*spacing_y + spacing_y/2, i*num_particles);
 
 			// if (i>0) ctx.line(waves[i].particles[i].x, waves[i].particles[i].y, waves[i].particles[i-1].x, waves[i]particles[i-1].y);
@@ -128,12 +128,12 @@ function draw(){
 	// ctx.fillRect(0, 0, w, h);
 	// ctx.fillStyle = rgb(255);
 	ctx.clearRect(0, 0, w, h);
-	
+
 	//ctx.lineWidth = 0.5;
 	//ctx.line(w/2, 0, w/2, h);
 	for (var i = 0; i < num_waves; i++) {
 		waves[i].draw();
-		
+
 
 		if (i>0) {
 		if (grid[i][0] > grid[i-1][0]) {

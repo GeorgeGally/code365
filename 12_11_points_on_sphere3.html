@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative_coding.js"></script>
+ <script language="javascript" src="js/canvas.js"></script>
+ <script language="javascript" src="js/vector.js"></script>
+ <script language="javascript" src="js/vector_particles.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+ctx.lineWidth = 0.5;
+
+var radius = 220;
+var c = 0;
+var rotation = 0;
+var num_particles = 100;
+var engine = new particleEngine(num_particles);
+var particles = engine.particles;
+
+for (var i = 0; i < particles.length; i++) {
+  var p = particles[i];
+  p.angle =  radians(-90+i*360/num_particles);
+  p.position.x = w/2 + (p.sz/2+radius) * Math.cos(p.angle);
+  p.position.y = h/2 + (p.sz/2+radius) * Math.sin(p.angle);
+  p.start.x = p.position.x;
+  p.start.y = p.position.y;
+}
+
+
+function draw(){
+	var ratio = w/audioChannelVolume.length;
+	ctx.background(250, 0.3);
+	moveParticles();
+}
+
+
+function moveParticles(){
+	rotation = audioChannelVolume[50];
+	c = tween(c, 10+2*audioChannelVolume[40], 10);
+  ctx.strokeStyle = rgba(0,0,0,1);
+
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		var me = Math.floor(p.me*360/num_particles);
+		p.angle += radians(rotation/120);
+		radius = tween(radius, map(audioChannelVolume[p.me], 0,80, 0, 100), 2);
+
+		var r = radius;
+    var s = mapSound(i, particles.length)/10;
+		p.sz = tween(p.sz, map(radius,0, 200, 0, 40), 2);
+		p.position.x = w/2 + (200) * Math.cos(p.angle);
+		p.position.y = h/2 + (200) * Math.sin(p.angle);
+    var linepos = new Vector(w/2 + (200 - p.sz/2) * Math.cos(p.angle),
+  h/2 + (200 - p.sz/2) * Math.sin(p.angle));
+    var linepos2 = new Vector(w/2 + c/2 * Math.cos(p.angle), h/2 + c/2* Math.sin(p.angle));
+		ctx.strokeStyle = rgba(0,0,0,1);
+		ctx.line(linepos2.x, linepos2.y, linepos.x, linepos.y);
+
+		//var s = map(audioChannelVolume[Math.floor(me)],0,50, 0, 10);
+		// if (s>9.5) {
+		// 	ctx.fillStyle = rgba(220,0,0,1);
+		// } else {
+      ctx.fillStyle = rgba(0,0,0,1);
+		//}
+			ctx.HstrokeEllipse(p.position.x, p.position.y, p.sz, p.sz);
+
+			//ctx.fillEllipse(p.position.x, p.position.y, 4, 4);
+
+
+		ctx.strokeStyle = rgba(0,0,0,1);
+
+		};
+
+
+		ctx.HstrokeEllipse(w/2, h/2, c, c);
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

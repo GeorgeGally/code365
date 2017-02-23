@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+  <meta charset="utf-8">
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(0);
+ctx.lineWidth = 1;
+
+var block_size = 44;
+var border = 80;
+
+var grid_w = (w-(2*border))/block_size;
+var grid_h = (h-(2*border))/block_size;
+var grid = createGrid(grid_w, grid_h, w-(2*border), h-(2*border));
+
+
+var blocks = [];
+for (var i = 0; i < grid.length; i++) {
+  grid[i].x+=border;
+  grid[i].y+=border;
+  blocks[i] = new Block(block_size, randomInt(1,4));
+  if (chance(2)) blocks[i].rot = 1;
+}
+
+
+
+function draw() {
+
+  ctx.background(255);
+  ctx.strokeStyle = rgb(0);
+  for (var i = 0; i < grid.length; i++) {
+    ctx.save();
+    ctx.translate(grid[i].x, grid[i].y);
+    blocks[i].rot && ctx.rotateDeg(90);
+    blocks[i].drawStripes(new Vector(0,0));
+    ctx.restore();
+  }
+
+}
+
+
+function Block(block_size, num_stripes){
+
+  this.block_size = block_size;
+  this.rot = 0;
+  this.spacing = block_size/num_stripes;
+  this.stripes = [];
+  var count = 0;
+
+  for (var x1 = 0; x1 < this.block_size; x1+=this.spacing) {
+    this.stripes[count] = new Stripes(x1, 0, this.block_size, this.block_size-x1);
+    count++;
+  }
+
+  for (var y1 = 0; y1 < this.block_size; y1+=this.spacing) {
+    this.stripes[count] = new Stripes(0, y1, this.block_size-y1, this.block_size);
+    count++;
+  }
+
+  function Stripes(x1, y1, x2, y2) {
+    this.x1 = x1 || 0;
+    this.y1 = y1 || 0;
+    this.x2 = x2 || 0;
+    this.y2 = y2 || 0;
+  }
+
+  this.drawStripes = function(start){
+    start.x -= this.block_size/2;
+    start.y -= this.block_size/2;
+    for (var i = 0; i < this.stripes.length; i++) {
+      ctx.line(start.x + this.stripes[i].x1, start.y + this.stripes[i].y1, start.x + this.stripes[i].x2, start.y + this.stripes[i].y2);
+    }
+    ctx.strokeRect(start.x, start.y, this.block_size, this.block_size);
+  }
+
+}
+
+
+
+
+</script>
+
+</body>
+
+</html>

@@ -1,25 +1,23 @@
 
 
+
 //GET CHANGES FROM BACKGROUND
 var sensitivity = 20;
 var samplesize = 10;
 var old = [];
 var motion_array = [];
+var hidden_ctx = createHiddenCanvas("canvas2");
 
-var hidden_ctx = createCanvas("canvas2");
-var canvas2 = document.getElementById("canvas2");
-canvas2.style.position = 'absolute';
-canvas2.style.top = '0px';
-canvas2.style.right = '-2000px';
 
-function motionDetection(_samplesize){
+function motionDetection(_samplesize, _flip){
 
 	if (_samplesize == undefined) {
 		_samplesize = samplesize;
 	}
+
 	motion_array = [];
 	hidden_ctx.drawImage(video,0,0,w,h);
-	sample = hidden_ctx.getImageData(0,0,w,h);
+	sample = hidden_ctx.getImageData(0, 0, w, h);
 	var buffer = new Uint32Array(sample.data.buffer);
 
 	//ctx.drawImage(video, 0,0,w,h);
@@ -37,9 +35,16 @@ function motionDetection(_samplesize){
 			var g = buffer[pos] >> 8 & 0xff;
 			var b = buffer[pos] >> 16 & 0xff;
 
-  			if (Math.abs(r-old[pos]) > sensitivity) {
-  				var c = new Vector(r,g,b);
-  				motion_array.push(new Vector(w-x,y,c));
+  			if (old.length > 0 && Math.abs(r-old[pos]) > sensitivity) {
+
+					var c = new Vector(r,g,b);
+
+					if (_flip == true) {
+  					motion_array.push(new Vector(w-x,y,c));
+					} else {
+						motion_array.push(new Vector(x,y,c));
+					}
+
   			}
 
   			old[pos] = r;

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script language="javascript" src="js/creative_coding.js"></script>
+  <script language="javascript" src="js/canvas.js"></script>
+  <script language="javascript" src="js/three.min.js"></script>
+  <script language="javascript" src="js/_maxiLib.js"></script>
+  <script language="javascript" src="js/vector.js"></script>
+  <script type="text/javascript" src="js/d3.js"></script>
+  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background: #fff">
+
+<script>
+
+var url = "data/twiz.csv";
+
+// GLOBALS
+var ctx = createCanvas("canvas1");
+var r = 0;
+var show = 10;
+var particles = [];
+var num_particles = 1000;
+var sphere;
+var spacing = 0.01;
+var radius = 1;
+var d=0, t=0;
+var movement = [];
+
+// setup 3D environment
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 100, aspect, 0.1, 1000 );
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+var geometry = new THREE.SphereGeometry( 1, 28, 18, 4 );
+geometry.dynamic = true;
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+// scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+renderer.setClearColor( 0xf3f3f3 );
+camera.position.z = 100;
+camera.near = 60;
+camera.far  = 155;
+
+sphere = new THREE.Mesh( geometry, dMaterial );
+scene.add( sphere );
+sphere.position.x = 0;
+sphere.position.y = 0;
+sphere.position.z = 0;
+sphere.scale.x = sphere.scale.y = sphere.scale.y = 10;
+sphere.s = 1;
+
+
+d3.csv(url, function(error, data) {
+    //console.log(data);
+    for (var i = 0; i < data.length; i++) {
+      movement[i] = new Vector();
+      // movement[i]['x1'] = data[i]['x1'].substr(14);
+      movement[i].x = data[i]['x1'].substr(14);
+      movement[i].y = data[i]['y1'];
+      movement[i].z = map(data[i]['z2'], 0, 200, -1.4, 0.6);
+      //movement[i].z = -1.4;
+      //console.log(movement[i].z);
+      for (var j = 0; j < data[i]['z1'].length; j++) {
+        if (data[i]['z1'].charAt(j) == "  ") {
+          //console.log("xx: " + data[i]['z1'].substr(j))
+          // movement[i].y = data[i]['z1'].substr(j).trim();
+          //movement[i].z = data[i]['z1'].substr(0, j-1);
+          // movement[i]['x2'] = data[i]['z1'].substr(j).trim();
+          //     movement[i]['z1'] = data[i]['z1'].substr(0, j-1);
+
+          break;
+        }
+      }
+    }
+
+    //console.log(movement);
+  //addParticle(movement[i].x, movement[i].y, movement[i].z);
+  // sphere = new THREE.Mesh( geometry, dMaterial );
+  // scene.add( sphere );
+  // sphere.position.x = Math.cos(i*spacing) * radius;
+  // sphere.position.y = Math.sin(i*spacing) * radius;
+  // sphere.position.z = 0;
+  // sphere.scale.x = sphere.scale.y = sphere.scale.y = 1;
+  // sphere.s = 1;
+  //console.log(movement[0]);
+  // for (var i = movement.length - 1; i >= 0; i--) {
+  //   addParticle(movement[i]);
+  // }
+
+});
+
+
+
+renderer.setClearColor( 0x000000 );
+camera.position.z = 80;
+camera.near = 60;
+camera.far  = 255;
+
+var show = 10;
+
+function draw() {
+
+  var m = movement[frameCount%movement.length];
+  //drawParticles();
+  //console.log(m.x);
+  if (sphere) {
+    sphere.position.x = tween(sphere.position.x, m.x*100, 30);
+    sphere.position.y = tween(sphere.position.x, m.y*100, 30);
+    sphere.position.z = tween(sphere.position.x, m.z*100, 30);
+    //console.log(sphere)
+  }
+  //scene.rotation.z+= 0.01;
+  renderer.render( scene, camera );
+
+};
+
+
+
+
+function Particle(){
+  this.sphere = new THREE.Mesh( geometry, dMaterial );
+  scene.add( this.sphere );
+  this.sphere[i].position.x = Math.cos(i*spacing) * radius;
+  this.sphere[i].position.y = Math.sin(i*spacing) * radius;
+  this.sphere[i].position.z = 0;
+  this.sphere[i].scale.x = this.sphere[i].scale.y = this.sphere[i].scale.y = 10;
+  this.sphere[i].s = 1;
+}
+
+
+function addParticle(){
+
+  var s = new THREE.Mesh( geometry, dMaterial );
+
+  s.position.x = 0;
+  s.position.y = 0;
+  s.position.z = 0;
+  s.scale.x = s.scale.y = s.scale.y = 10;
+  s.s = 1;
+  sphere.push(s);
+  scene.add( s );
+  //console.log(s)
+}
+
+var scale = 5;
+
+function drawParticles(){
+
+   if (show < num_particles) show+=0.1;
+
+
+    for (var i = 0; i < sphere.length; i++) {
+      //console.log(sphere);
+      sphere[i].position.x = Math.cos(r*i) * (i);
+      sphere[i].position.y = Math.sin(r*i) * (i);
+      sphere[i].position.z = Math.sin(frameCount/1000) * (-i);
+
+      //if(drawOutput[i]) sphere[i].s = tween(sphere[i].s, drawOutput[i], 25);
+      sphere[i].s = tween(sphere[i].s, scale, 25);
+      //sphere[i].s = scale;
+      sphere[i].scale.x = sphere[i].scale.y = sphere[i].scale.z = sphere[i].s;
+
+      // r+=0.0000005;
+      // r+= (freq1+freq2)/5000000000;
+      r+= (freq1)/2000000000;
+
+      }
+
+      if ((r < 3.9 && r > 1.5) || r> 6) {
+        scene.rotation.x += 0.02;
+        scene.rotation.y += 0.01;
+
+      }
+
+
+
+}
+
+</script>
+</body>
+</html>

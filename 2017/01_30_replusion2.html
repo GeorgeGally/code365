@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var img = new Image();
+
+var POINTS = 500;
+var RADIUS = 90;
+var FORCE = 3.5;
+var MOUSE_RADIUS = 100;
+var CONNECTIONS = POINTS / RADIUS;
+
+
+var engine = new particleEngine(0);
+
+
+function draw() {
+
+  ctx.background(250);
+  if (chance(5)) {
+    addParticle();
+  }
+  for (var i = 0; i < engine.particles.length; i++) {
+
+    var p = engine.particles[i];
+    update(p);
+    ctx.fillStyle = p.c;
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz-1, p.sz-1);
+
+  }
+
+
+}
+
+
+function addParticle(){
+  engine.addParticle(w/2, h/2);
+  engine.last.resistance = 0.90;
+  engine.last.sz = randomInt(3,30);
+  engine.last.c = rgb(180-engine.last.sz*6);
+}
+
+
+function update(p) {
+
+    p.acceleration.x += (w/2 - p.pos.x) / p.sz;
+    p.acceleration.y += (h/2 - p.pos.y) / p.sz;
+
+    p.speed.x += p.acceleration.x;
+    p.speed.y += p.acceleration.y;
+
+    p.speed.x *= p.resistance;
+    p.speed.y *= p.resistance;
+
+    p.pos.x += p.speed.x;
+    p.pos.y += p.speed.y;
+
+    p.acceleration.x = 0;
+    p.acceleration.y = 0;
+
+    for (var j = p.me + 1; j < engine.length; j++) {
+        var p2 = engine.particles[j];
+           var dx = p.pos.x - p2.pos.x;
+           var dy = p.pos.y - p2.pos.y;
+           var distance = dist(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y);
+
+           dx /= distance;
+           dy /= distance;
+
+           var forceX = dx * (FORCE / distance);
+           var forceY = dy * (FORCE / distance);
+
+           p.acceleration.x += forceX;
+           p.acceleration.y += forceY;
+
+           p2.acceleration.x -= forceX;
+           p2.acceleration.y -= forceY;
+
+          //  if (distance < nBalls / CONNECTIONS) {
+          //      ctx.moveTo(balls[i].x, balls[i].y);
+          //      ctx.lineTo(balls[j].x, balls[j].y);
+          //  }
+
+
+   }
+
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

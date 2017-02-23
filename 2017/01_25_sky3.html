@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script src="../js/aframe.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/aframe-sun-sky.min.js"></script>
+
+</head>
+<body>
+  <script id="vertex_shader" type="x-shader/x-vertex">
+
+//
+// varying vec3 vNormal;
+//
+// void main() {
+//
+// 	vNormal = normal;
+//
+// 	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+//
+// }
+
+</script>
+
+<script>
+var ctx = createHiddenCanvas("canvas1");
+//var ctx = createCanvas("canvas1");
+canvas.style.zIndex = 100;
+w = canvas.width = 600;
+h = canvas.height = 600;
+var vertexShader = document.getElementById( 'vertex_shader' ).textContent;
+</script>
+
+  <a-scene>
+    <a-assets>
+    <img id="texture" src="../img/eyeball.jpg">
+  </a-assets>
+    <a-sun-sky material="sunPosition: -0.2 5 -5"></a-sun-sky>
+      <a-sphere id="box1" position="0 0.5 1.2" normal-texture-offset="0 1" segments-height="32" segments-width="60" radius="0.5" metalness = "0.56" color="#222"></a-sphere>
+      <a-entity position="0 -1 3">
+        <a-camera></a-camera>
+      </a-entity>
+    </a-scene>
+
+<script>
+var scene = document.querySelector('a-scene');
+var box;
+var block_size = 1;
+var box1 = document.getElementById('box1');
+var rotation = new Vector(90,45,0);
+var engine = new particleEngine(40);
+var radius = 250;
+
+var scene = document.querySelector('a-scene').object3D;
+//console.log(scene);
+//scene.material.side = THREE.DoubleSide;
+var sphere = document.querySelector('a-sphere').object3D;
+
+
+var geometry = box1.getAttribute('geometry');
+console.log(geometry);
+
+// var faceVertexUvs = geometry.faceVertexUvs[ 0 ];
+// 	for ( i = 0; i < faceVertexUvs.length; i ++ ) {
+//
+// 		var uvs = faceVertexUvs[ i ];
+// 		var face = geometry.faces[ i ];
+//
+// 		for ( var j = 0; j < 3; j ++ ) {
+//
+// 			uvs[ j ].x = face.vertexNormals[ j ].x * 0.5 + 0.5;
+// 			uvs[ j ].y = face.vertexNormals[ j ].y * 0.5 + 0.5;
+//
+// 		}
+//
+// 	}
+
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.width = randomInt(10);
+  p.angle = distributeAngles(i, engine.particles.length);
+  p.speed.x = random(1,10);
+  getPos(p, radius);
+  //console.log(p);
+}
+
+
+function getPos(p, radius) {
+  p.pos.x = Math.sin(radians(p.angle)) * w/2;
+  p.pos.y = Math.cos(radians(p.angle)) * h/2;
+  //return p;
+}
+
+
+function draw() {
+  ctx.background("#fff");
+  ctx.strokeStyle = "white";
+  box1.setAttribute('rotation', {x: rotation.x+=0, y: rotation.y+=0.1, z: rotation.z-=0});
+  ctx.fillStyle = "black";
+  moveParticles();
+  drawParticles();
+}
+
+
+function moveParticles(){
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i]
+    p.angle += 1;
+
+    getPos(p, radius);
+
+  }
+}
+
+function drawParticles(){
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i]
+    ctx.lineWidth = p.width;
+    //ctx.line(p.pos.x, 0, p.pos.x, h);
+    ctx.HfillEllipse(w/2, h/2, Math.sin(frameCount/100)*w, Math.sin(frameCount/100)*w);
+  }
+}
+
+
+</script>
+
+
+
+</body>
+
+</html>

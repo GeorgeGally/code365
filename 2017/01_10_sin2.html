@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var canvas1 = document.getElementById('canvas1');
+canvas1.style.zIndex = "10";
+var num = 80;
+ctx.lineWidth = 0.5;
+ctx.strokeStyle = rgb(255);
+var engine = new particleEngine(0);
+var spacing = 360/num;
+var planets = [];
+var moons = [];
+var words = ['kindness', 'gentleness', 'compassion', 'generosity', 'dream', 'chill', 'gratitude', 'live', 'relax', 'peace' ];
+var sampleSize = 10;
+ctx.font = "140px helvetica";
+ctx.fillStyle="blue";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+
+for (var i = 0; i < num; i++) {
+  var x = w/2 + Math.cos(radians(i*spacing))* 200;
+  var y = h/2 + Math.sin(radians(i*spacing))* 200;
+  addParticle(x, y, radians(i*spacing))
+}
+
+function addParticle(_x, _y, _angle){
+  engine.addParticle(_x+random(-sampleSize/2,sampleSize/2), _y+random(-sampleSize/2,sampleSize/2));
+  var p = engine.last;
+  p.speed.x = posNeg();
+  p.radius = random(150,350);
+  p.start_radius = p.radius;
+  var i = engine.particles.length;
+  p.counter = random(360);
+  p.angle = _angle;
+  planets[i] = new particleEngine(randomInt(10));
+  for (var j = 0; j < planets[i].particles.length; j++) {
+    var b = planets[i].particles[j];
+    b.speed.x = posNeg()*random(150)/3000;
+    b.pos.x = _x;
+    b.pos.y = _y;
+    //b.speed.x = 0.001;
+    b.radius = random(20,80);
+    b.start_radius = b.radius;
+    b.counter = randomInt(120);
+    moons[j] = new particleEngine(randomInt(10));
+    for (var k = 0; k < moons[j].particles.length; k++) {
+      var m = moons[j].particles[k];
+      // m.speed.x = sticky(random(100),10)/3000;;
+      m.speed.x = random(-1,1)/100;
+      m.radius = random(20, 40);
+      //m.radius = 30;
+      m.start_radius = m.radius;
+      m.counter = randomInt(300);
+    }
+  }
+  //console.log(planets);
+}
+
+// function setup(){
+// brightSpark();
+// }
+
+function draw(){
+  //ctx.background(255);
+  ctx.clearRect(0,0,w,h);
+  ctx2.background(0);
+  ctx.save();
+  //ctx.fillStyle = rgb(255);
+  //ctx.fillEllipse(w/2, h/2, 50,50);
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    ctx.fillStyle = rgb(255);
+    ctx.strokeStyle = rgb(255);
+    //p.radius = p.start_radius/2 + Math.cos(p.counter)* p.start_radius;
+    p.angle+=0.03;
+    //p.pos.x += Math.cos(p.counter) * p.radius/100;
+    //p.pos.y = h/2 + Math.sin(p.counter)* p.radius;
+    p.pos.x = w/2 + Math.cos(p.angle) * 200;
+    p.pos.y = h/2 + Math.sin(p.angle)* 200;
+    // ctx.fillEllipse(p.pos.x, p.pos.y, p.radius/10,p.radius/10);
+    //ctx.fillEllipse(p.pos.x, p.pos.y, 4, 4);
+    p.counter += p.speed.x;
+    //ctx.line(p.pos.x, p.pos.y, w/2, h/2);
+    // if(i>0) {
+    //   ctx.line(p.pos.x, p.pos.y, engine.particles[i-1].pos.x, engine.particles[i-1].pos.y);
+    // } else {
+    //   ctx.line(p.pos.x, p.pos.y, engine.particles[engine.particles.length-1].pos.x, engine.particles[engine.particles.length-1].pos.y);
+    // }
+    ctx.strokeStyle = rgba(255);
+    if (planets[i] !=undefined) {
+      for (var j = 0; j < planets[i].particles.length; j++) {
+        var b = planets[i].particles[j];
+        ctx.fillStyle = rgba(255);
+        b.radius = b.start_radius/2 + Math.cos(b.counter)* b.start_radius;
+        b.pos.x = p.pos.x + Math.cos(b.counter/5) * b.radius;
+        b.pos.y = p.pos.y + Math.sin(b.counter/5) * b.radius;
+        // ctx.fillEllipse(b.pos.x, b.pos.y, b.radius/10,b.radius/10);
+        ctx.fillEllipse(b.pos.x, b.pos.y, 5,5);
+        ctx.line(p.pos.x, p.pos.y, b.pos.x, b.pos.y);
+        //ctx.line(b.pos.x, b.pos.y, w/2, h/2);
+        b.counter += b.speed.x/2;
+         for (var k = 0; k < moons[j].particles.length; k++) {
+            var m = moons[j].particles[k];
+            ctx.fillStyle = rgba(255);
+            m.radius = m.start_radius/2 + Math.cos(m.counter)* m.start_radius;
+            m.pos.x = b.pos.x + Math.cos(m.counter) * m.radius;
+            m.pos.y = b.pos.y + Math.sin(m.counter) * m.radius;
+            // ctx.fillEllipse(m.pos.x, m.pos.y, m.radius/10,m.radius/10);
+            ctx.fillEllipse(m.pos.x, m.pos.y, 4,4);
+            // ctx2.fillStyle = rgba(100, 215, 60, 0.2);
+            // ctx2.fillEllipse(m.pos.x, m.pos.y, m.radius,m.radius);
+            ctx2.fillEllipse(m.pos.x, m.pos.y, 30, 30);
+            ctx2.strokeStyle = rgba(255);
+            //ctx2.HstrokeEllipse(m.pos.x, m.pos.y, m.radius,m.radius);
+            ctx.line(m.pos.x, m.pos.y, b.pos.x, b.pos.y);
+            m.counter += m.speed.x/4;
+          }
+    }
+  }
+
+  //ctx.strokeStyle = rgb(250);
+  //ctx.strokeEllipse(p.pos.x, p.pos.y, p.radius/5, p.radius/5);
+  ctx.fillStyle = rgb(200);
+  ctx.fillEllipse(p.pos.x, p.pos.y, 4, 4);
+
+  }
+
+
+
+  }
+
+
+
+  function aveColour(x, y, imgData){
+    var r = 0, g = 0, b = 0;
+    var count = 0;
+    var yy =y;
+    var sourceBuffer32 = new Uint32Array(imgData.buffer);
+    for (var xx = x; xx < x + sampleSize; xx+=2) {
+      //console.log(xx);
+      //for (var yy = y; y < y + sampleSize; yy+=2) {
+
+        var pos = (yy * w + xx)*4;
+        //b += brightness(imgData[pt2], imgData[pt2+1], imgData[pt2+2])
+        b += (sourceBuffer32[pos] >> 16) & 0xff;
+        g += (sourceBuffer32[pos] >> 8) & 0xff;
+        r += (sourceBuffer32[pos] >> 0) & 0xff;
+        // r += imgData[pt2];
+        // g += imgData[pt2+1];
+        // b += imgData[pt2+2];
+        count++;
+      //}
+    }
+    //console.log(count);
+    return rgb(r/count, g/count, b/count);
+  }
+
+
+  function brightSpark(){
+    ctx.background(255);
+    ctx.fillStyle = "black";
+    var ww = randomInt(0,words.length-1);
+  	ctx.fillText(words[ww], w/2, h/2);
+  	//draw();
+    //ctx.drawImage(img, 0, 0, img.width, img.height);
+  	imgData = ctx.getImageData(0, 0, w, h).data;
+  	for (var y = 0; y < h; y+= sampleSize) {
+  		for (var x = 0; x < w; x+= sampleSize) {
+        var pt = (y * w + x)*4;
+  			var ave_brightness = brightness(imgData[pt], imgData[pt+1], imgData[pt+2]);
+        // var ave_colour = aveColour(x, y, imgData);
+        // ctx.fillStyle = ave_colour;
+        // ctx.fillRect(x, y, sampleSize, sampleSize);
+  			if(ave_brightness < 40) {
+  				addParticle(x, y, ave_brightness/2);
+  			}
+  		}
+    }
+  	ctx.clearRect(0,0, w, h);
+  }
+
+
+
+</script>
+
+
+</body>
+
+</html>
+›

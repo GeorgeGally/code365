@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>test</title>
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+</head>
+
+<body style="background:#000;">
+<script type="text/javascript">
+
+	var c = createCanvas("canvas1");
+	var particle_array = [];
+	var imgData;
+	var maxParticles = 1000;
+
+	c.font = "200px helvetica";
+	c.fillStyle="blue";
+	c.textAlign = "center";
+	c.textBaseline = "middle";
+	var words = ['Freedom', 'Happiness', 'Health', 'Wealth'];
+	brightSpark();
+
+	function draw(){
+		c.save();
+		for (var i = particle_array.length - 1; i >= 0; i--) {
+
+			p = particle_array[i];
+			// c.fillRect(p.x, p.y, p.size, p.size);
+			if(p.x!=0 && p.y!=0) {
+			c.globalCompositeOperation = 'multiply';
+			c.globalAlpha = p.alpha;
+			c.fillStyle=p.c;
+			//c.drawImage(img,p.x, p.y, p.size, p.size);
+			c.fillEllipse(p.x, p.y, p.size, p.size);
+			//p.speedx=  random(-2,2);
+			//p.speedy=  random(-2,2);
+			if (p.alpha<1) p.alpha+=0.0019999;
+			if (p.size<0.005) { p.x = p.orig_x+random(-4,4); p.y = p.orig_y+random(-4,4);
+				p.size = 3;p.speedx = random(-2,2),
+				p.speedy =  random(-2,2)
+			}
+			p.x += p.speedx + random(-1,1);
+			p.y += p.speedy + random(-1,1);
+			p.size *= p.reduce;
+		}
+		};
+		c.restore();
+
+
+		if(particle_array.size>maxParticles) particle_array.shift();
+	}
+
+	function brightSpark(){
+		var w = randomInt(0,words.length-1);
+		c.fillStyle="white"
+		c.fillText(words[w], window.innerWidth/2, window.innerHeight/2);
+		//c.eqTriangle(w/2, h/2, 100);
+		//c.fillEllipse(width/2, h/2, 200,200);
+		draw();
+		imgData = c.getImageData(0, 0, window.innerWidth, window.innerHeight).data;
+
+		for (var y = 0; y < window.innerHeight; y+=4) {
+
+			 for (var x = 0; x < window.innerWidth; x+=4) {
+
+				var pt = (y *window.innerWidth + x)*4;
+				var fBrightness;
+				fBrightness = (0.3*imgData[pt] + 0.59*imgData[pt+1] + 0.11*imgData[pt+2]);
+
+				if(fBrightness > 10) {
+			 		addParticle(x,y);
+			 	}
+
+			 }
+		}
+
+		c.clearRect(0,0,window.innerWidth,window.innerHeight);
+	}
+
+function addParticle(_x, _y){
+	var r = randomInt(0,255);
+	var g = randomInt(0,255);
+	var b = randomInt(0,255);
+		var particle = {
+		orig_x: _x,
+		orig_y: _y,
+		x: _x+random(-4,4),
+		y: _y+random(-4,4),
+		c: rgb(r, g, 0),
+		size: 3,
+		reduce: random(0.8, 0.9999),
+		alpha: 0.05,
+		speedx: random(-1,1),
+		speedy: random(-1,1)
+	};
+	particle_array.push(particle);
+}
+	// requestAnimationFrame(drawme);
+</script>
+
+ </body>
+</html>

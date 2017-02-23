@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+var engine = new particleEngine(0);
+var particles = engine.particles;
+
+
+for (var i = 0; i < 650; i++) {
+  addParticles();
+}
+
+function draw(){
+
+  ctx.background(0);
+  particles = engine.particles
+  ctx2.fillStyle = "white";
+  update();
+  //drawParticles();
+
+}
+
+function addParticles(){
+
+  engine.addParticle();
+  //console.log(engine.particles.length);
+  var p = engine.last;
+  p.move = true;
+  p.size = 4;
+  p.speed.x = randomWhole(5);
+  p.speed.y = randomWhole(5);
+
+  if (p.me <10) {
+    p.move = false;
+    p.pos.x = w/2+ randomInt(-10, 10);
+    p.pos.y = h/2+ randomInt(-10, 10);
+    drawParticles(p)
+  } else {
+
+    // top
+    if (chance(3)) {
+      p.pos.y = random(10);
+      p.pos.x = random(10, w-10);
+    // bottom
+    } else if (chance(3)) {
+      p.pos.y = random(h-10, h);
+      p.pos.x = random(10, w-10);
+      //left
+    } else if (chance(3)) {
+      p.pos.x = random(10);
+      p.pos.y = random(10, h-10);
+    } else  {
+      //right
+      p.pos.x = random(w-10, w);
+      p.pos.y = random(h-10);
+    }
+
+  }
+
+}
+
+function drawParticles(b){
+
+    ctx2.fillEllipse(b.pos.x, b.pos.y, b.size, b.size);
+
+}
+
+
+function update(){
+
+  for (var i = 0; i < particles.length; i++) {
+    p = particles[i];
+
+    if (p.move) {
+      p.speed.x += randomWhole(0.1, 0.2);
+      p.speed.y += randomWhole(0.1, 0.2);
+      if (p.size> 1) p.size -= 0.001;
+      p.pos.x += p.speed.x;
+      p.pos.y += p.speed.y;
+      hitTest(i);
+
+      if (bounce(p.pos.x, 0, w)) p.speed.x *=-1;
+      if (bounce(p.pos.y, 0, h)) p.speed.y *=-1;
+
+      ctx.strokeStyle = rgba(255);
+      ctx.strokeRect(p.pos.x, p.pos.y, p.size, p.size);
+
+    }
+
+    //drawParticles(p);
+  }
+
+
+}
+
+
+function hitTest(_i){
+  for (var j = 0; j < particles.length; j++) {
+    if (_i!=j){
+      b1 = particles[_i];
+      b2 = particles[j];
+      if (b1.move && !b2.move && dist(b1.pos.x, b1.pos.y, b2.pos.x, b2.pos.y) <=  b1.size/2 + b2.size/2) {
+        //b1.pos.x = sticky(b1.pos.x, b1.size/2);
+        //b1.pos.y = sticky(b1.pos.y, b1.size/2);
+        drawParticles(b1);
+        b1.move = false;
+
+        engine.particles = particles.splice(1, engine.particles.length-1);
+        addParticles();
+      }
+    }
+  }
+}
+
+
+
+
+</script>
+
+</body>
+
+</html>

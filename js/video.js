@@ -1,50 +1,50 @@
 
-
-var imgData;
-var video
-var showBgImg = false; 
-var showVideo = false; 
+var video;
+var showBgImg = false;
+var showVideo = false;
 
 document.addEventListener("DOMContentLoaded", function() {
 
-video = document.createElement('video'); 
-document.body.appendChild(video);
+  video = document.createElement('video');
+  document.body.appendChild(video);
 
-video.autoplay  = true;
-video.loop  = true;
-video.setAttribute("id", "videoOutput"); 
-video.setAttribute("style", "display:none;");
-video.width = 320;
-video.height = 240;
+  video.autoplay  = true;
+  video.loop  = true;
+  video.setAttribute("id", "videoOutput");
+  video.setAttribute("style", "display:none;");
+  video.width = 320;
+  video.height = 240;
 
 
-// check if browser supports getUserMedia - yes we are looking at you Safari!
-navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL; 
+  // check if browser supports getUserMedia - yes we are looking at you Safari!
+  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+  window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
 
-if (navigator.getUserMedia) {
-  
-  
-  // Set the source of the video element with the stream from the camera
-  if (typeof MediaStreamTrack === 'undefined' ||
-    typeof MediaStreamTrack.getSources === 'undefined') {
-    alert('This browser does not support MediaStreamTrack.\n\nTry Chrome.');
-  } else {
-    MediaStreamTrack.getSources(gotSources);
+  if (navigator.getUserMedia) {
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+        console.log("enumerateDevices() not supported.");
+        return;
+      }
+
+      // List cameras and microphones.
+
+      navigator.mediaDevices.enumerateDevices()
+      .then(function(devices) {
+        gotSources(devices);
+      })
+      .catch(function(err) {
+        console.log(err.name + ": " + err.message);
+      });
+
   }
 
-} else {
-
-  alert('Native web camera streaming (getUserMedia) not supported in this browser.');
-
-}
-
-//doing this so that can use another camera
+//CHOOSE WHICH CAMERA TO USE
 
 function setupCamera(cameras){
-  
-  console.log(cameras)
-  
+
+  //console.log(cameras)
+
   //var videoSource = cameras[cameras.length-1].id;
   var videoSource = cameras[0].id;
 
@@ -66,10 +66,10 @@ function setupCamera(cameras){
 }
 
 function successCallback(stream) {
-    
+
 
       if (video.mozCaptureStream) {
-          video.mozSrcObject = stream;              
+          video.mozSrcObject = stream;
       } else {
         video.src = (window.URL && window.URL.createObjectURL(stream)) || stream;
       }
@@ -84,66 +84,57 @@ function errorCallback(error) {
 // hacky loop to make sure video is streaming
 
 video.addEventListener('loadeddata', function() {
-  var attempts = 50;    
+  var attempts = 50;
   function checkVideo() {
-      
+
     if (attempts > 0) {
-        
+
       if (video.videoWidth > 0 && video.videoHeight > 0) {
 
           video.available = true;
 
       } else {
-        
+
         // Wait a bit and try again
         window.setTimeout(checkVideo, 100);
 
       }
-      
-    
+
+
     } else {
-      
+
       // Give up after 10 attempts
       alert('Unable to play video stream. Is webcam working?');
-    
+
     }
-      
+
       attempts--;
-      
-  }    
-  
+
+  }
+
   checkVideo();
-  
+
   }, false);
 
 
-function gotSources(sourceInfos) {
-  var cameras = [];
-  for (var i = 0; i !== sourceInfos.length; ++i) {
+  function gotSources(devices) {
 
-    var sourceInfo = sourceInfos[i];
-    
-    // var option = document.createElement('option');
-    // option.value = sourceInfo.id;
-    // if (sourceInfo.kind === 'audio') {
-    //   option.text = sourceInfo.label || 'microphone ' +
-    //     (audioSelect.length + 1);
-    //   audioSelect.appendChild(option);
-    if (sourceInfo.kind === 'video') {
-      console.log(sourceInfo.label);
-      cameras.push(sourceInfo);
-    //   option.text = sourceInfo.label || 'camera ' + (videoSelect.length + 1);
-    //   videoSelect.appendChild(option);
-    // } else {
-    //   console.log('Some other kind of source: ', sourceInfo);
-    //}
-  }
-  }
-   //console.log(cameras[1].id);
-  //return cameras;
-  setupCamera(cameras);
-}
-});
+    var cameras = [];
+
+    devices.forEach(function(device) {
+
+        // console.log(device.kind + ": " + device.label + " id = " + device.deviceId);
+
+        if (device.kind === 'videoinput') {
+          //console.log(device.deviceId);
+          cameras.push(device);
+        }
+
+    })
+
+    setupCamera(cameras);
+
+  };
 
 
-
+})

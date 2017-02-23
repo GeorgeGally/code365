@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script src="../js/aframe.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<script>
+var ctx = createHiddenCanvas("canvas1");
+//var ctx = createCanvas("canvas1");
+canvas.style.zIndex = 100;
+</script>
+
+  <a-scene inspector="url: https://aframe.io/releases/0.3.0/aframe-inspector.min.js">
+    <a-assets>
+    <img id="texture" src="../img/ant.gif">
+  </a-assets>
+      <a-sky color="#efefef"></a-sky>
+      <a-box id="box1" position="0 0.5 1" rotation="0 5 0" width="1" height="1" depth="1" src="#canvas1" color="#efefef"></a-box>
+      <a-entity position="0 -1 3">
+        <a-camera></a-camera>
+      </a-entity>
+    </a-scene>
+
+<script>
+var scene = document.querySelector('a-scene');
+var box;
+var block_size = 1;
+var box1 = document.getElementById('box1');
+var rotation = new Vector();
+
+
+var Wave = function(_num_particles, _y) {
+
+	ctx.strokeStyle = rgba(0,0,0,0.8);
+	ctx.lineWidth = 25;
+	var particles = [];
+	var radius = 220;
+	var num_particles = _num_particles;
+	var pos_y = _y;
+	console.log(_num_particles)
+
+	this.setup = function(){
+		for (var i = 0; i < num_particles; i++) {
+		    var cc = rgba(random(25),random(255),0, 0.5);
+			this.addParticle(w/2, h/2, cc, i);
+		}
+	}
+
+	this.draw = function(){
+		this.moveParticles();
+	}
+
+	this.addParticle = function(_x, _y, _colour, _me){
+		var particle = {
+			x: _x,
+			y: _y,
+			c: _colour,
+			me: _me,
+			speedx: 0,
+			speedy: random(2,20),
+			sz: 100+_me*28,
+			angle: radians(-90+_me*360/num_particles)
+		}
+		particles.push(particle);
+	}
+
+
+	this.moveParticles = function(){
+
+
+		for (var i = 0; i < particles.length; i++) {
+
+			p = particles[i];
+      ctx.fillStyle = "white";
+        ctx.strokeStyle = "white";
+			//DISTRIBUTED MAPPED SOUND VALUE
+			var s = mapSound(p.me, num_particles);
+			p.speedx = tween(p.speedx, map(s, 0, 255, 0, 2),10);
+
+			// DRAW ARCS
+			ctx.beginPath();
+			ctx.arc(p.x, p.y, p.sz, 0, p.speedx * Math.PI);
+			ctx.stroke();
+
+
+		};
+
+	}
+
+this.setup();
+
+}
+
+
+// SETUP WAVES CLASS
+
+var waves = [];
+var num_waves = 1;
+var spacing = h/num_waves;
+
+for (var i = 0; i < num_waves; i++) {
+	var num_particles = 6;
+	waves[i] = new Wave(num_particles,i*spacing+spacing/2);
+};
+
+
+
+
+function draw() {
+  ctx.background("#4CC3D9");
+  box1.setAttribute('rotation', {x: rotation.x, y: rotation.y+=0.1, z: rotation.z-=1});
+
+
+  for (var i = 0; i < num_waves; i++) {
+    waves[i].draw();
+  };
+
+}
+
+
+
+
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+
+</body>
+
+</html>

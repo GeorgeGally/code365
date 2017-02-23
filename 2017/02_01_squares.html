@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(0);
+var block_size = 200;
+var num_stripes = 10;
+
+
+var start = new Vector(200,200);
+
+// 0,  0 - 100, 100
+// 20, 0 - 100, 80
+// 40, 0 - 100, 60
+// 60, 0 - 100, 40
+// 80, 0 - 100, 20
+//
+// 0,  0 - 100, 100
+// 0, 20 - 80,  100
+// 0, 40 - 60,  100
+// 0, 60 - 40,  100
+// 0, 80 - 20,  100
+
+
+
+var stripes = new Block(block_size, num_stripes);
+
+console.log(stripes);
+
+
+function draw() {
+
+  ctx.background(0);
+  ctx.strokeStyle = rgb(255);
+
+  for (var i = 0; i < stripes.length; i++) {
+    ctx.line(start.x + stripes[i].x1, start.y + stripes[i].y1, start.x + stripes[i].x2, start.y + stripes[i].y2);
+  }
+  ctx.strokeRect(start.x, start.y, block_size, block_size);
+}
+
+
+function Block(block_size, num_stripes){
+
+  var spacing = block_size/num_stripes;
+  var stripes = [];
+  var count = 0;
+
+  for (var x1 = 0; x1 < block_size; x1+=spacing) {
+    stripes[count] = new Stripes(x1, 0, block_size, block_size-x1);
+    count++;
+  }
+
+  for (var y1 = 0; y1 < block_size; y1+=spacing) {
+    stripes[count] = new Stripes(0, y1, block_size-y1, block_size);
+    count++;
+  }
+
+  function Stripes(x1, y1, x2, y2) {
+    this.x1 = x1 || 0;
+    this.y1 = y1 || 0;
+    this.x2 = x2 || 0;
+    this.y2 = y2 || 0;
+  }
+
+  return stripes;
+}
+
+
+
+
+
+</script>
+
+</body>
+
+</html>

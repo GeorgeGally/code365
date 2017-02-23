@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+<script language="javascript" src="js/tween.min.js"></script>
+<script type="text/javascript" src="js/controlKit.min.js"></script>
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+</head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var sz = 500;
+var sampleSize = 20;
+var engine = new particleEngine(0);
+var particles = engine.particles;
+var active_particle = engine.particles-1;;
+ctx.strokeStyle = rgb(0);
+
+ctx.font = "bold 300pt helvetica";
+//ctx.font = "bold 300pt Courier";
+ctx.fillStyle="blue";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+var words = ['Freedom', 'Love', 'Health', 'Wealth'];
+//var words = ['kindness', 'gentleness', 'compassion', 'generosity', 'dream', 'chill', 'gratitude', 'live', 'relax', 'peace' ];
+
+var img = new Image();
+var img_w, img_h, img_scale;
+// img.src = 'img/people/stevie-nicks1.jpg';
+img.src = 'img/jesus.gif';
+var compressor = 0.8;
+
+img.onload = function() {
+    var img_loaded;
+    img_w = img.width;
+    img_h = img.height;
+    img_scale = w/img_w;
+   	result = ScaleImage(img.width, img.height, w, h, false);
+   	ctx.drawImage(img, 0, 0, img.width, img.height);
+    brightSpark();
+};
+
+
+
+function draw(){
+	ctx.clearRect(0, 0, w, h);
+
+  ctx.drawImage(img, 0, 0, img.width, img.height);
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    checkHit(p)
+    if (chance(50)) addCircle(random(w), random(w), 2)
+    move(p);
+    drawCircle(p);
+  }
+
+}
+
+
+function checkHit(p){
+	for (var j = 0; j < engine.particles.length; j++) {
+		var pp = engine.particles[j];
+		if (p.me!=j && dist(p.position.x, p.position.y, pp.position.x, pp.position.y) < (p.sz/2 + pp.sz/2)) {
+			pp.active = false;
+			p.active = false;
+		}
+	}
+}
+
+function drawCircle(p){
+	ctx.fillStyle = "black";
+	ctx.HstrokeEllipse(p.position.x, p.position.y, p.sz, p.sz);
+
+	if (p.sz > 15) {
+		ctx.fillStyle = "black";
+		ctx.HfillEllipse(p.position.x, p.position.y, p.sz/2, p.sz/2);
+	}
+}
+
+function move(p){
+
+	if (p.active && p.sz < 80) {
+		p.sz+= p.speed;
+	} else {
+		p.active = false;
+	}
+
+}
+
+
+
+function addCircle(x, y, b){
+
+	var same = false;
+	var new_sz = randomInt(1, 2);
+
+	for (var k = 0; k < engine.particles.length; k++) {
+		var pp = engine.particles[k];
+
+		if (dist(pp.position.x, pp.position.y, x, y) < (pp.sz/2 + b/2)) {
+			//console.log("same");
+			same = true;
+		}
+	}
+	if (!same) {
+		engine.addParticle(x, y);
+		active_particle = engine.particles.length-1;
+		var p = engine.particles[active_particle];
+		p.fixed = false;
+		p.sz = b;
+		p.speed = random(0.01, 0.5);
+		p.active = true;
+	}
+}
+
+
+
+function brightSpark(){
+	imgData = ctx.getImageData(0, 0, w, h).data;
+	for (var y = 0; y < h; y+= sampleSize) {
+		for (var x = 0; x < w; x+= sampleSize) {
+      //var pt = (y * w + x)*4;
+			//var fBrightness = brightness(imgData[pt], imgData[pt+1], imgData[pt+2]);
+      var ave_brightness = aveColour(x, y, imgData);
+			if(ave_brightness < 80) {
+				addCircle(x, y, ave_brightness/2);
+			}
+		}
+  }
+	ctx.clearRect(0,0, w, h);
+}
+
+
+function aveColour(x, y, imgData){
+  var b = 0;
+  var count = 0;
+  for (var xx = x; xx < x + sampleSize; xx+=2) {
+    //for (var yy = y; y < y + sampleSize; yy+=2) {
+      var pt2 = (y * w + xx)*4;
+      b += brightness(imgData[pt2], imgData[pt2+1], imgData[pt2+2])
+      count++;
+    //}
+  }
+  console.log(count);
+  return b/count;
+}
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

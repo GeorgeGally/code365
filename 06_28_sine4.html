@@ -4,7 +4,7 @@
  <meta charset="utf-8">
  <title>Soundcloud Viz</title>
 <!-- <script src='http://connect.soundcloud.com/sdk.js'></script>  -->
- <script language="javascript" src="js/creative.js"></script>
+ <script language="javascript" src="js/creative_coding.js"></script>
 <script language="javascript" src="js/canvas.js"></script>
 
 	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
@@ -12,7 +12,7 @@
 	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -33,7 +33,7 @@ var t_size = 250;
 var middle = 0;
 for (var i = 0; i < num_particles; i+=1) {
     	var x = grid[i][0];
-    	var y = grid[i][1];    	
+    	var y = grid[i][1];
 		addParticle(x, y, cols[i%5], i);
 };
 
@@ -43,22 +43,22 @@ function draw(){
 	//ctx.fillStyle = rgba(255,255,255, 0.1);
 	//ctx.fillRect(0,0,w,h);
 	ctx.background(0);
-	
+
 	ctx.save();
 
 	//HfillEclipse doesn't work with clipping
-	ctx.fillStyle = rgb(255);
+	ctx.fillStyle = rgb(0);
 	ctx.ellipse(w/2, h/2, 400, 400);
 	ctx.clip();
-	ctx.fillStyle = rgb(255);
+	ctx.fillStyle = rgb(0);
 	ctx.HfillEllipse(w/2, h/2, 400, 400);
-	
+
 
 	drawParticles();
 	ctx.restore();
 	ctx.strokeStyle = rgb(255);
 	ctx.lineWidth = 3;
-	ctx.HstrokeEllipse(w/2, h/2, 400, 400);
+	//ctx.HstrokeEllipse(w/2, h/2, 400, 400);
 
 }
 
@@ -94,7 +94,7 @@ function drawParticles(){
 		//console.log(p.sz);
 		//if (audioChannelVolume[p.me]> 80) {
 			p.on == true;
-			ctx.fillStyle = rgb(0, 0, 0);
+			ctx.fillStyle = rgb(255);
 			ctx.fillEllipse (p.x, p.y, p.sz, p.sz);
 
 		if (chance(10000) && p.on == true) {

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script src="../js/aframe.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/aframe-sun-sky.min.js"></script>
+<script src="../js/aframe-mountain-component.min.js"></script>
+</head>
+<body>
+
+
+<script>
+var ctx = createHiddenCanvas("canvas1");
+//var ctx = createCanvas("canvas1");
+canvas.style.zIndex = 100;
+w = canvas.width = 600;
+h = canvas.height = 600;
+</script>
+
+  <a-scene id="main_scene">
+
+    <a-sun-sky material="sunPosition: -0.2 4.1 0"></a-sun-sky>
+
+    <a-mountain color="white"></a-mountain>
+
+    <a-sphere id="world" geometry="buffer: false;" position="0 0.4 0.5" segments-height="18" segments-width="18" radius="0.4" color="#222"></a-sphere>
+
+      <a-entity position="0 -1 3">
+        <a-camera></a-camera>
+      </a-entity>
+    </a-scene>
+
+<script>
+var scene = document.querySelector('a-scene');
+//console.log(scene);
+var box;
+var block_size = 1;
+var box1 = document.getElementById('world');
+var rotation = new Vector(90,45,0);
+var engine = new particleEngine(8);
+var boxes = [];
+var mesh = box1.getObject3D('mesh');
+
+console.log(mesh);
+
+mesh.geometry.dynamic = true;
+mesh.material.shading = THREE.FlatShading;
+//console.log(mesh.material.shading);
+// mesh.geometry.attributes.dynamic = true;
+// mesh.geometry.attributes.position.dynamic = true;
+
+//mesh.castShadow = true;
+//
+// mesh.geometry.attributes.position.array.needsUpdate = true
+var array = mesh.geometry.vertices;
+//console.log(array);
+
+
+  for (var i = 0; i < array.length; i++) {
+    var m = array[i];
+    m.start = new Vector(m.x,m.y,m.z);
+    m.orig = new Vector(m.x,m.y,m.z);;
+
+  }
+
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  boxes[i] = document.createElement('a-sphere');
+  boxes[i].setAttribute('geometry', { radius: '0.09'});
+  boxes[i].setAttribute('material', { color: "#010101", roughness: '0.3', metalness: "0.06"});
+  scene.appendChild(boxes[i]);
+  p.angle = distributeAngles(i, engine.particles.length);
+  p.speed.x = random(1, 3);
+  getPos(p, 1);
+}
+
+
+function updateMesh(){
+  for (var i = 0; i < array.length; i++) {
+    var m = array[i];
+    //m.x += random(-0.03, 0.03);
+    //m.y += random(-0.03, 0.03);
+
+    if(chance(2000) && m.orig.x>0) m.start.x += random(0.1);
+    if(chance(2000) && m.orig.y>0) m.start.y += random(0.1);
+    if(chance(2000) && m.orig.z>0) m.start.z += random(0.1);
+
+    //if(chance(2000) && m.orig.z<0) m.start.z += random(-0.1);
+    m.start.x = clamp(m.start.x,-1,1);
+    m.start.y = clamp(m.start.y,-1,1);
+    m.start.z = clamp(m.start.z,-1,1);
+
+    m.orig.x = tween(m.orig.x, m.start.x, 2);
+    m.orig.y = tween(m.orig.y, m.start.y, 2);
+    m.orig.z = tween(m.orig.z, m.start.z, 2);
+
+    m.x = tween(m.x, m.orig.x, 2);
+    m.y = tween(m.y, m.orig.y, 2);
+    m.z = tween(m.z, m.orig.z, 2);
+    
+    mesh.verticesNeedUpdate = true;
+    mesh.geometry.verticesNeedUpdate = true;
+    //console.log(m);
+  }
+}
+
+function getPos(p, radius) {
+  if (radius == undefined) radius = 1;
+  p.pos.x = Math.sin(radians(p.angle)) * radius;
+  p.pos.z = Math.cos(radians(p.angle)) * radius;
+  p.pos.y = 0.4;
+  //console.log(p.pos.x);
+  //return p;
+}
+
+
+function draw() {
+  ctx.background("#fff");
+  // ctx.strokeStyle = "white";
+  box1.setAttribute('rotation', {x: rotation.x+=0.2, y: rotation.y+=0.1, z: rotation.z-=0});
+  ctx.fillStyle = "black";
+  moveParticles();
+  // drawParticles();
+
+}
+
+
+function moveParticles(){
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i]
+    p.angle += 0.6;
+    getPos(p);
+    //console.log(p.angle);
+    // boxes[i].setAttribute('position', {x: Math.cos(p.angle), y: 0.4, z: 0.5+ Math.sin(p.angle)});
+    boxes[i].setAttribute('position', {x: p.pos.x, y: p.pos.y, z: 0.5 + p.pos.z});
+    updateMesh();
+}
+
+
+
+
+}
+
+function drawParticles(){
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i]
+    ctx.lineWidth = p.width;
+    //ctx.line(p.pos.x, 0, p.pos.x, h);
+    ctx.HfillEllipse(w/2, h/2, Math.sin(frameCount/100)*w, Math.sin(frameCount/100)*w);
+  }
+}
+
+
+</script>
+
+
+
+</body>
+
+</html>

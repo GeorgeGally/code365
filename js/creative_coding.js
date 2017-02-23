@@ -3,11 +3,15 @@ var TWO_PI = Math.PI * 2;
 
 var p = CanvasRenderingContext2D.prototype;
 
-
 p.colour = function (r, g, b, a){
   'use strict';
   this.fillStyle = this.getColour(r, g, b, a);
 };
+
+// p.fill = function (r, g, b, a) {
+//   'use strict';
+//   this.fillStyle = this.getColour(r, g, b, a);
+// }
 
 
 p.lineColour = function (r, g, b, a){
@@ -22,7 +26,18 @@ p.colourName = function (c){
 
 p.getColour = function (r, g, b, a){
   'use strict';
-  if (g == undefined) {
+  var c;
+
+  if((typeof r === 'string' || r instanceof String) && r.substr(0,1) == "#") {
+
+  return r;
+
+  } else if (typeof r === 'string' || r instanceof String) {
+
+  return r;
+
+  } else if (g == undefined) {
+
     c = rgb(r, r, r);
 
   } else if (b == undefined && a == undefined) {
@@ -79,7 +94,6 @@ p.circleH = function(x, y, width, height) {
 };
 
 p.ellipse = function(x, y, width, height) {
-  'use strict';
  if (height == undefined) { height = width; }
  this.beginPath();
  for(var i=0; i<Math.PI*2; i+=Math.PI/16) {
@@ -89,17 +103,15 @@ p.ellipse = function(x, y, width, height) {
 };
 
 p.Hellipse = function(x, y, width, height) {
- 'use strict';
  if (height == undefined) { height = width; }
  this.beginPath();
  for(var i=0;i<Math.PI*2;i+=Math.PI/64) {
  this.lineTo(x+(Math.cos(i)*width/2), y+(Math.sin(i)*height/2));
  }
- this.closePath();
+ //this.closePath();
 };
 
 p.fillEllipse = function(x, y, width, height) {
- 'use strict';
  if (height == undefined) height = width;
  this.ellipse(x,y,width, height);
  this.fill();
@@ -146,7 +158,7 @@ p.line = function (x1, y1, x2, y2){
  this.moveTo(x1,y1);
  this.lineTo(x2,y2);
  this.stroke();
- this.beginPath();
+ this.closePath();
 };
 
 
@@ -235,15 +247,7 @@ p.eqTriangle = function(x, y, sz, down) {
 
 
 p.background = function (r, g, b, a){
- if (g == undefined) {
- this.fillStyle = rgb(r, r, r);
- } else if (b == undefined && a == undefined) {
-  this.fillStyle = rgba(r, r, r, g);
- } else if (a == undefined) {
-  this.fillStyle = rgb(r, g, b);
- } else {
- this.fillStyle = rgba(r, g, b, a);
- }
+ this.fillStyle = this.getColour(r, g, b, a);;
  this.fillRect(0, 0, w, h);
 };
 
@@ -256,6 +260,15 @@ function degreesToPoint(deg, diameter) {
     var r = diameter / 2;
     return {x: r * Math.cos(rad), y: r * Math.sin(rad)};
 }
+
+p.rotateDegrees = function(deg){
+  this.rotate(radians(deg));
+}
+
+p.rotateDeg = function(deg){
+  this.rotate(radians(deg));
+}
+
 
 
 function xyz(px, py, pz, pitch, roll, yaw) {
@@ -307,12 +320,15 @@ function rgba(r, g, b, a) {
  }
 };
 
-function hsl(h, s, l) { return 'hsl('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%)';};
+function hsl(h, s, l) {
+  return 'hsl('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%)';
+};
+
 function hsla(h, s, l, a) { return 'hsla('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%, '+clamp(a,0,1)+')';};
 
 function brightness(r, g, b){
       return Math.floor(rgbToHsl(r, g, b)[2]*100);
-    };
+};
 
 function rgbToHsl(r, g, b){
     r /= 255, g /= 255, b /= 255;
@@ -376,14 +392,33 @@ function hslToRgb(h, s, l){
 }
 
 
-function randomInt(min, max) {
- if(max===undefined) {
- max = min;
- min = 0;
+function random(min, max) {
+ if(min===undefined) {
+  min = 0;
+  max = 1;
+ } else if(max=== undefined) {
+  max = min;
+  min = 0;
  }
- return Math.floor(Math.random() * (max+1-min)) +min;
+ return (Math.random() * (max-min)) + min;
+};
+
+
+function randomInt(min, max) {
+  if(max===undefined) {
+    max = min;
+    min = 0;
+  }
+  return Math.floor(Math.random() * (max+1-min)) +min;
 }
 
+function randomWhole(min, max) {
+  return posNeg() * random(min, max);
+}
+
+function randomWholeInt(min, max) {
+  return posNeg() * randomInt(min, max);
+}
 
 
 function map(value, min1, max1, min2, max2, clampResult) {
@@ -411,16 +446,7 @@ function dist(x1, y1, x2, y2) {
  return Math.sqrt((x2*x2) + (y2*y2));
 }
 
-function random(min, max) {
- if(min===undefined) {
-  min = 0;
-  max = 1;
- } else if(max=== undefined) {
-  max = min;
-  min = 0;
- }
- return (Math.random() * (max-min)) + min;
-};
+
 
 function tween(pos, target, speed){
  if (speed == undefined) speed = 20;
@@ -444,6 +470,24 @@ function ave(num, clamper){
   return Math.round(num/clamper)*clamper;
 }
 
+function randomGrey(){
+  return rgb(sticky(randomInt(240),10));
+}
+
+
+function greyscale(data){
+  for(var y = 0; y < data.height; y++){
+        for(var x = 0; x < data.width; x++){
+            var i = (y * 4) * data.width + x * 4;
+            var avg = (data.data[i] + data.data[i + 1] + data.data[i + 2]) / 3;
+            data.data[i] = avg;
+            data.data[i + 1] = avg;
+            data.data[i + 2] = avg;
+        }
+    }
+    return data;
+}
+
 function angle(cx, cy, ex, ey) {
   var dy = ey - cy;
   var dx = ex - cx;
@@ -454,12 +498,20 @@ function angle(cx, cy, ex, ey) {
   return theta;
 }
 
-function bounce(num, min, max) {
- if (num >= max || num <= min) {
- return 1;
- } else {
- return 0;
- }
+function distributeAngles(me, total) {
+    return me/total * 360;
+}
+
+
+function bounce(num, min, max, sz) {
+  if (sz === undefined) {
+    sz = 0;
+  }
+  if (num >= max - sz/2 || num - sz/2 <= min ) {
+    return 1;
+  } else {
+    return 0;
+  }
  //return num > max ? -1 : num < min ? -1 : 1
 }
 
@@ -606,6 +658,50 @@ function makeGrid(_w, _h){
  return grid;
 }
 
+
+function colourPool(){
+
+  this.colours = [];
+  this.probs = [];
+  this.list = [];
+
+  this.add = function(_colour, _prob){
+    if (_prob == undefined)_prob = 1;
+    this.colours.push(_colour);
+    this.probs.push(_prob);
+    this.list  = this.generateWeighedList(this.colours, this.probs);
+    return this;
+  }
+
+  this.get = function(){
+    return this.list[randomInt(this.list.length-1)];
+  }
+
+  this.generateWeighedList = function(list, weight) {
+    var weighed_list = [];
+
+    // Loop over weights
+    for (var i = 0; i < weight.length; i++) {
+
+        var multiples = weight[i] * 100;
+
+        // Loop over the list of items
+        for (var j = 0; j < multiples; j++) {
+            weighed_list.push(list[i]);
+        }
+    }
+
+    return weighed_list;
+};
+
+// var list = ['javascript', 'php', 'ruby', 'python'];
+// var weight = [0.5, 0.2, 0.2, 0.1];
+// var weighed_list = this.generateWeighedList(list, weight);
+//
+// console.log(weighed_list);
+  return this;
+}
+
 function createGrid(_gw, _gh, _w, _h){
 
   if (_w === undefined) _w = w;
@@ -686,6 +782,75 @@ function pixelate(blocksize,blockshape) {
 
 }
 
+p.posterize = function(blocksize, ammt) {
+ if (ammt == undefined) ammt = 0;
+
+ if (blocksize == undefined) blocksize = 20;
+
+ ammt = Math.floor(ammt);
+ blocksize = Math.floor(blocksize);
+
+ var imgData=this.getImageData(0,0,w,h);
+
+ this.clearRect(0,0,w,h);
+
+ var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+
+ for (var x = 0; x < w; x += blocksize) {
+
+   for (var y = 0; y < h; y += blocksize) {
+
+         var pos = (x + y * w);
+         var b = (sourceBuffer32[pos] >> 16) & 0xff;
+         var g = (sourceBuffer32[pos] >> 8) & 0xff;
+         var r = (sourceBuffer32[pos] >> 0) & 0xff;
+         r = sticky(r, ammt);
+         g = sticky(g, ammt);
+         b = sticky(b, ammt);
+         this.fillStyle = rgb(r,g,b);
+         this.fillRect(x, y, blocksize, blocksize);
+
+       }
+   }
+
+}
+
+ p.theshhold = function(blocksize, ammt ,flip) {
+  if (ammt == undefined) ammt = 0;
+
+  if (blocksize == undefined) blocksize = 20;
+  if (flip == undefined) flip = false;
+
+  ammt = Math.floor(ammt);
+  blocksize = Math.floor(blocksize);
+
+  var imgData=this.getImageData(0,0,w,h);
+
+  this.clearRect(0,0,w,h);
+
+  var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+
+  for (var x = 0; x < w; x += blocksize) {
+
+    for (var y = 0; y < h; y += blocksize) {
+
+          var pos = (x + y * w);
+          var b = (sourceBuffer32[pos] >> 16) & 0xff;
+          var g = (sourceBuffer32[pos] >> 8) & 0xff;
+          var r = (sourceBuffer32[pos] >> 0) & 0xff;
+          // r = sticky(r, ammt);
+          // g = sticky(g, ammt);
+          // b = sticky(b, ammt);
+
+          if(brightness(r,g,b) < ammt) {
+          this.fillStyle = rgb(0);
+          this.fillRect(w-x, y, blocksize, blocksize);
+          }
+
+        }
+    }
+
+}
 
 
 function pixelShuffle(blockwidth, blockheight, freq, x1, y1, x2, y2) {
@@ -720,47 +885,6 @@ function pixelShuffle(blockwidth, blockheight, freq, x1, y1, x2, y2) {
     }
 
 }
-
-
-// function pixelShuffle(blockwidth, blockheight, freq, x1, y1, x2, y2) {
-
-//   if (x1 === undefined) {
-//     x1 = 0; y1 = 0; x2 = w; y2 = h;
-//   }
-
-
-
-//   if (freq == undefined) freq = 20;
-//   if (blockwidth == undefined) blockwidth = 20;
-//   if (blockheight == undefined) blockheight = blockwidth;
-
-//     var imgData=ctx.getImageData(0,0,x2,y2);
-//     //ctx.clearRect(0,0,w,h);
-//     //var sourceBuffer8 = new Uint8Array(imgData.data.buffer);
-//     //var sourceBuffer8 = new Uint8ClampedArray(imgData.data.buffer);
-//     //shuffle(sourceBuffer8, 1);
-//     var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
-
-//     for(var x = x1; x < x2; x += blockwidth) {
-//         for(var y = y2; y < y2; y += blockheight) {
-
-//           var pos = (x + y * x2);
-
-//           if (chance(freq)) {
-//             pos = (pos + randomInt(-100,100)*4) % (x2*y2*4);
-//             //pos = (pos + randomInt(-100,100)*4) % ((x1+x2)*(y1+y2)*4);
-//             var b = (sourceBuffer32[pos] >> 16) & 0xff;
-//             var g = (sourceBuffer32[pos] >> 8) & 0xff;
-//             var r = (sourceBuffer32[pos] >> 0) & 0xff;
-//             ctx.fillStyle = rgba(r,g,b, 0.9);
-//             ctx.fillRect(x, y, blockwidth, blockheight);
-
-//           }
-//         };
-
-//     }
-
-// }
 
 
 
@@ -935,19 +1059,22 @@ document.onmouseup = function() {
   //window.mouseup();
 }
 
-var mouseSpeedX = mouseSpeedX = 0;
-var mouseX = 0,
- mouseY = 0,
- lastMouseX = 0,
- lastMouseY = 0,
- oldMouseX = 0,
- oldMouseY = 0,
- frameRate = 60,
- frameCount = frameNumber = 0,
- lastUpdate = Date.now(),
- mouseDown = false;
+var mouseSpeedX = 0,
+mouseSpeedX = 0,
+mouseX = 0,
+mouseY = 0,
+lastMouseX = 0,
+lastMouseY = 0,
+oldMouseX = 0,
+oldMouseY = 0,
+frameRate = 60,
+frameCount = 0,
+frameNumber = 0,
+lastUpdate = Date.now(),
+mouseDown = false,
+mouseMoved = false;
 
-function cjsloop() {
+function loop() {
 
  var now = Date.now();
  var elapsedMils = now - lastUpdate;
@@ -957,13 +1084,10 @@ function cjsloop() {
  frameCount++;
  frameNumber++;
  lastUpdate = now - elapsedMils % (1000/window.frameRate );
- mouseSpeedX = mouseX - oldMouseX;
- mouseSpeedY = mouseX - oldMouseX;
- lastMouseX = oldMouseX = mouseX;
- lastMouseY = oldMouseY = mouseY;
-    mouseReleased = 0;
+ mouseReleased = 0;
+ mouseMoved = 0;
  }
- requestAnimationFrame(cjsloop);
+ requestAnimationFrame(loop);
 
 };
 
@@ -1005,8 +1129,15 @@ function cjsloop() {
 function init() {
 
 window.addEventListener('mousemove', function(e) {
+  oldMouseX = mouseX;
+  oldMouseY = mouseY;
   mouseX = e.clientX;
   mouseY = e.clientY;
+  mouseSpeedX = mouseX - oldMouseX;
+  mouseSpeedY = mouseX - oldMouseX;
+  lastMouseX = oldMouseX = mouseX;
+  lastMouseY = oldMouseY = mouseY;
+  mouseMoved = true;
 });
 
 window.addEventListener('mousedown', function(e){mouseDown =true; if(typeof onMouseDown == 'function') onMouseDown() ;});
@@ -1014,7 +1145,7 @@ window.addEventListener('mouseup', function(e){mouseDown = false;if(typeof onMou
 window.addEventListener('keydown', function(e){if(typeof onKeyDown == 'function') onKeyDown(e);});
 window.addEventListener('keyup', function(e){if(typeof onKeyUp == 'function') onKeyUp(e);});
 if(typeof window.setup == 'function') window.setup();
-cjsloop();
+loop();
 }
 
 window.addEventListener('load',init);

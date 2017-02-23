@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<script src="../js/phaser.js"></script>
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+var ctx = createCanvas("canvas1");
+
+var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+function preload() {
+  game.load.image('sky', 'assets/background.png');
+  game.load.image('platform', 'assets/platform_ride.png');
+  game.load.image('ice-platform', 'assets/ice-platform.png');
+  game.load.image('ground', 'assets/platform.png');
+  game.load.image('star', 'assets/star.png');
+  game.load.image('diamond', 'assets/diamond.png');
+  game.load.image('firstaid', 'assets/firstaid.png');
+  game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+  game.load.spritesheet('baddie', 'assets/baddie.png', 32, 32);
+}
+
+var score = 0;
+var scoreText;
+var lives = 5;
+var livesText;
+var sky;
+var player;
+var facing = 'left';
+var jumpTimer = 0;
+var ground;
+var platforms;
+var cursors;
+var stars;
+var firstaids;
+var diamonds;
+var baddies;
+
+function create() {
+
+    //  We're going to be using physics, so enable the Arcade Physics system
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    //  A simple background for our game
+    sky = game.add.tileSprite(0, 0, 800, 600, 'sky');
+
+    platforms = game.add.physicsGroup();
+    platforms.enableBody = true;
+    var ice = platforms.create(0, 64, 'ice-platform');
+    ice.body.friction.x = 2;
+    platforms.create(200, 180, 'platform');
+    var ice = platforms.create(400, 296, 'ice-platform');
+    ice.body.friction.x = -0.2;
+    platforms.create(600, 412, 'platform');
+
+    platforms.setAll('body.allowGravity', false);
+    platforms.setAll('body.immovable', true);
+    platforms.setAll('body.velocity.x', 100);
+
+
+   player = game.add.sprite(32, game.world.height - 150, 'dude');
+
+   //  We need to enable physics on the player
+   game.physics.arcade.enable(player);
+
+   //  Player physics properties. Give the little guy a slight bounce.
+   player.body.bounce.y = 0.2;
+   player.body.gravity.y = 600;
+   player.body.collideWorldBounds = true;
+
+   //  Our two animations, walking left and right.
+   player.animations.add('left', [0, 1, 2, 3], 10, true);
+   player.animations.add('right', [5, 6, 7, 8], 10, true);
+
+   cursors = game.input.keyboard.createCursorKeys();
+   scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#fff' });
+
+   lifeText = game.add.text(300, 16, 'lives: ' + lives, { fontSize: '32px', fill: '#fff' });
+
+   stars = game.add.group();
+   stars.enableBody = true;
+
+    //  Here we'll create 12 of them evenly spaced apart
+   for (var i = 0; i < 22; i++)
+   {
+       //  Create a star inside of the 'stars' group
+       var star = stars.create(i * 70, 0, 'star');
+
+       //  Let gravity do its thing
+       star.body.gravity.y = 6;
+
+       //  This just gives each star a slightly random bounce value
+       star.body.bounce.y = 0.7 + Math.random() * 0.2;
+   }
+
+   diamonds = game.add.group();
+   diamonds.enableBody = true;
+
+   for (var i = 0; i < 4; i++) {
+       //  Create a star inside of the 'stars' group
+       var diamond = diamonds.create(random(w/4, w-w/4), random(h/2), 'diamond');
+
+       //  Let gravity do its thing
+       diamond.body.gravity.y = 1;
+
+       //  This just gives each star a slightly random bounce value
+       diamond.body.bounce.y = 0.7 + Math.random() * 0.2;
+   }
+
+   firstaids = game.add.group();
+   firstaids.enableBody = true;
+
+   for (var i = 0; i < 3; i++) {
+       //  Create a star inside of the 'stars' group
+       var firstaid = firstaids.create(random(w/4, w-w/4), random(h/2), 'firstaid');
+
+       //  Let gravity do its thing
+       firstaid.body.gravity.y = 1;
+
+       //  This just gives each star a slightly random bounce value
+       firstaid.body.bounce.y = 0.7 + Math.random() * 0.2;
+   }
+
+   baddies = game.add.group();
+   baddies.enableBody = true;
+
+   for (var i = 0; i < 3; i++)
+   {
+       //  Create a star inside of the 'stars' group
+       var baddie = baddies.create(random(w/4, w-w/4), random(h/2), 'baddie');
+
+       baddie.body.bounce.y = 0.2;
+       baddie.body.gravity.y = 300;
+       //baddie.speed.y = random(-2, 2);
+       baddie.body.collideWorldBounds = true;
+
+       //  Our two animations, walking left and right.
+       baddie.animations.add('left', [0, 1], 10, true);
+       baddie.animations.add('right', [2, 3], 10, true);
+       //baddie.animations.add('run');
+       baddie.velocity = random(-10, 10);
+       if (baddie.velocity > 0) {
+         baddie.animations.play('right', 15, true);
+       } else {
+         baddie.animations.play('left', 15, true);
+       }
+
+   }
+
+}
+
+
+
+function update() {
+
+  sky.tilePosition.x +=0.1;
+    //  Collide the player and the stars with the platforms
+  platforms.forEach(wrapPlatform, this);
+
+  //wrapPlatform(ground);
+
+    var hitPlatform = game.physics.arcade.collide(player, platforms);
+
+    var hitPlatform = game.physics.arcade.collide(
+    player, platforms,
+    setFriction, null, this
+);
+
+    //  Reset the players velocity (movement)
+ player.body.velocity.x = 0;
+
+ if (cursors.left.isDown)
+ {
+     //  Move to the left
+     player.body.velocity.x = -150;
+     player.animations.play('left');
+ } else if (cursors.right.isDown) {
+     //  Move to the right
+     player.body.velocity.x = 150;
+     player.animations.play('right');
+ } else {
+     //  Stand still
+     player.animations.stop();
+
+     player.frame = 4;
+ }
+
+ // forEach(baddies as baddie) {
+ //   baddie.x += baddie.velocity;
+ // }
+
+
+    if (baddies.x < -baddies.width)
+    {
+        baddies.x = game.world.width;
+    }
+
+    //console.log(player.y);
+    //  Allow the player to jump if they are touching the ground.
+ // if (cursors.up.isDown && player.body.touching.down && player.y> 410) {
+ //     player.body.velocity.y = -350;
+ // }
+
+ movePlayer(player, cursors, game.time)
+
+  game.physics.arcade.collide(stars, platforms);
+  game.physics.arcade.overlap(player, stars, collectStar, null, this);
+
+  game.physics.arcade.collide(diamonds, platforms);
+  game.physics.arcade.overlap(player, diamonds, collectDiamond, null, this);
+
+  game.physics.arcade.collide(firstaids, platforms);
+  game.physics.arcade.overlap(player, firstaids, collectFirstAir, null, this);
+
+  game.physics.arcade.collide(baddies, platforms);
+  game.physics.arcade.overlap(player, baddies, hitBaddie, null, this);
+
+}
+
+
+function movePlayer(player, cursors, time) {
+  //  Do this AFTER the collide check, or we won't have blocked/touching set
+  var standing = player.body.blocked.down || player.body.touching.down;
+
+  player.body.velocity.x = 0;
+
+  if (cursors.left.isDown) {
+
+      player.body.velocity.x = -200;
+
+      if (facing !== 'left') {
+          player.play('left');
+          facing = 'left';
+      }
+
+  } else if (cursors.right.isDown) {
+
+      player.body.velocity.x = 200;
+
+      if (facing !== 'right'){
+          player.play('right');
+          facing = 'right';
+      }
+    } else {
+        if (facing !== 'idle') {
+            player.animations.stop();
+
+                    if (facing === 'left')
+                    {
+                        player.frame = 0;
+                    }
+                    else
+                    {
+                      player.frame = 5;
+                    }
+
+                  facing = 'idle';
+                }
+            }
+
+            if (standing && cursors.up.isDown && time.time > this.jumpTimer)
+            {
+                player.body.velocity.y = -500;
+                jumpTimer = time.time + 750;
+            }
+}
+
+function collectStar (player, star) {
+
+    // Removes the star from the screen
+    star.kill();
+    score += 10;
+   scoreText.text = 'Score: ' + score;
+
+}
+
+function collectDiamond (player, diamond) {
+
+    // Removes the star from the screen
+    diamond.kill();
+    score += 20;
+    scoreText.text = 'Score: ' + score;
+
+}
+
+function collectFirstAir (player, firstaid) {
+
+    // Removes the star from the screen
+    firstaid.kill();
+    score += 30;
+    lives+=1;
+    scoreText.text = 'Score: ' + score;
+    lifeText.text = 'Lives: ' + lives;
+}
+
+
+function hitBaddie (player, baddie) {
+
+    // Removes the star from the screen
+    baddie.x = random(game.world.width);
+    baddie.y = random(game.world.height);
+    lives -= 1;
+    score -= 35;
+    lifeText.text = 'Lives: ' + lives;
+
+}
+
+function setFriction (player, platform) {
+
+    if (platform.key === 'ice-platform')
+    {
+        player.body.x -= platform.body.x - platform.body.prev.x;
+    }
+
+}
+
+function wrapPlatform (platform) {
+
+    if (platform.body.velocity.x < 0 && platform.x <= -160)
+    {
+        platform.x = 640;
+    }
+    else if (platform.body.velocity.x > 0 && platform.x >= 640)
+    {
+        platform.x = -160;
+    }
+
+}
+
+
+</script>
+
+</body>
+
+</html>

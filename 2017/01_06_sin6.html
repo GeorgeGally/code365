@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+var num = Math.floor(w/40);
+ctx.lineWidth = 1;
+ctx.strokeStyle = rgb(255);
+var grid = createGrid(num,1);
+var engine = new particleEngine(25);
+var planets = [];
+var counter = 0;
+var radius = 260;
+
+
+
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+  p.speed.x = random(1)/40;
+  p.radius = random(100,300);
+  p.start_radius = p.radius;
+  p.counter = 0;
+  planets[i] = new particleEngine(randomInt(2,26));
+  for (var j = 0; j < planets[i].particles.length; j++) {
+    var b = planets[i].particles[j];
+    b.speed.x = random(-1)/60;
+    b.radius = random(20, 50);
+    b.start_radius = b.radius;
+    b.counter = 0;
+  }
+}
+
+
+function draw(){
+  ctx.background(0);
+  ctx.strokeStyle = rgb(255);
+  ctx.save();
+  ctx.fillStyle = rgb(255);
+  //ctx.fillEllipse(w/2, h/2, 50,50);
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    ctx.fillStyle = rgb(255);
+    p.radius = p.start_radius/2 + Math.cos(p.counter)* p.start_radius;
+    p.pos.x = w/2 + Math.cos(p.counter)* p.radius;
+    p.pos.y = h/2 + Math.sin(p.counter)* p.radius;
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.radius/10,p.radius/10);
+    p.counter += p.speed.x;
+    ctx.line(p.pos.x, p.pos.y, w/2, h/2);
+    for (var j = 0; j < planets[i].particles.length; j++) {
+        var b = planets[i].particles[j];
+        ctx.fillStyle = rgb(255);
+        b.radius = b.start_radius/2 + Math.cos(b.counter)* b.start_radius;
+        b.pos.x = p.pos.x + Math.cos(b.counter) * b.radius;
+        b.pos.y = p.pos.y + Math.sin(b.counter) * b.radius;
+        ctx.fillEllipse(b.pos.x, b.pos.y, b.radius/10,b.radius/10);
+        ctx.line(p.pos.x, p.pos.y, b.pos.x, b.pos.y);
+        //ctx.line(b.pos.x, b.pos.y, w/2, h/2);
+        b.counter += b.speed.x;
+    }
+  }
+
+
+
+  }
+
+
+
+
+</script>
+
+
+</body>
+
+</html>
+›

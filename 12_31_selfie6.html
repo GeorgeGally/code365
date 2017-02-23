@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/video.js"></script>
+
+
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+
+<script src="js/clmtrackr.min.js"></script>
+<script src="js/model_pca_20_svm.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+var block_size = 10;
+ctx.lineWidth = 3;
+
+var maxballs = 10500;
+var engine = new particleEngine(0);
+var particles = engine.particles;
+var motion = [];
+var loadVid = false;
+var vid;
+var ratio_x, ratio_y;
+var positions = [];
+var ctracker = new clm.tracker();
+ctracker.init(pModel);
+
+function setup(){
+  vid = document.getElementById('videoOutput');
+  ratio_x = width/video.width;
+  ratio_y = height/video.height;
+  ctracker.start(vid);
+//console.log(vid);
+}
+
+var pix =20;
+function draw(){
+
+  sensitivity = 20;
+
+  ctx.background(0);
+
+  ctx.drawImage(video, 0, 0, w, h);
+
+  pix = map(mouseY, 0, h, 10, 100);
+  var p = 200-map(mouseX, 0, w, 0, 200);
+
+  pix = 8;
+  p = 20;
+
+  if (mouseDown) {
+    console.log(Math.floor(pix) + " : " + Math.floor(p));
+  }
+
+  ctx.theshhold(pix, p);
+
+  update();
+  drawParticles();
+  if (positions.length > 0) drawEyes(positions);
+}
+
+
+function drawParticles(){
+  for (var i = 0; i < engine.particles.length; i++) {
+  b = engine.particles[i];
+  ctx.fillStyle = b.c;
+  ctx.strokeStyle = b.c;
+  ctx.fillRect(sticky(b.pos.x, pix), sticky(b.pos.y, pix), pix, pix);
+  //ctx.line(b.pos.x, b.pos.y, b.target.x, b.target.y);
+}
+}
+
+
+function update(){
+
+  if (ctracker.getCurrentPosition()) {
+    positions = ctracker.getCurrentPosition();
+
+    //ctracker.draw(canvas);
+  }
+
+  if (positions.length > 0) {
+
+
+    addParticle(ratio_x * positions[27][0], ratio_y * positions[27][1]);
+    addParticle(ratio_x * positions[32][0], ratio_y * positions[32][1]);
+
+    var x = ratio_x * (positions[60][0] + Math.abs(positions[60][0]-positions[57][0])/2);
+    var y = ratio_y * (positions[60][1] + Math.abs(positions[60][1] - positions[57][1])/2);
+
+
+     //ctx.fillEllipse(x, y, 10, 10);
+     if (Math.abs(positions[60][1] - positions[57][1]) > 20) {
+
+       for (var i = 0; i < 3; i++) {
+         addParticle(x, y);
+       }
+
+
+
+     }
+
+
+  }
+
+  particles = engine.particles;
+  for (var i = 0; i < particles.length; i++) {
+    b = particles[i];
+
+    b.target.x += b.speed.x;
+    b.target.y += b.speed.y;
+
+    b.pos.x = tween(b.pos.x, b.target.x, 10);
+    b.pos.y = tween(b.pos.y, b.target.y, 10);
+
+    // b.size -= 0.04;
+    //b.size += 0.1;
+    //b.alpha -= 0.5;
+    //if (i == 3) console.log(b.pos.x);
+    // we adjust the hit area because shere is drawn from the centre
+    if (b.pos.x > w  || b.pos.x < 0 || b.pos.y > h || b.pos.y < 0 || b.size < 1.5 || b.size> 35) {
+      engine.removeParticle(i);
+    }
+
+
+  }
+
+}
+
+
+function addParticle(x, y){
+  //console.log("addParticle");
+  engine.addParticle( x + random(-2,2), y + random(-10,10), rgb(255));
+  engine.last.size = pix;
+  //engine.last.c = hsl(randomInt(255), 80, 55);
+  engine.last.c = rgba(randomInt(100, 225),0, 0, 0.6);
+  engine.last.speed = new Vector(random(-1,1), random(-8,-4));
+  if (engine.particles.length > maxballs) {
+    engine.removeParticle();
+  }
+}
+
+
+function drawEyes(positions){
+      ctx.fillStyle = "blue";
+      cross(ratio_x * positions[27][0], ratio_y * positions[27][1], 1.6 * pix, 5.4 * pix)
+
+      cross(ratio_x * positions[32][0], ratio_y * positions[32][1], 1.6 * pix, 5.4 * pix)
+
+
+}
+
+</script>
+
+<!-- <script language="javascript" src="js/motion_detection.js"></script> -->
+
+</body>
+
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script src="../js/aframe.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+<script>
+var ctx = createHiddenCanvas("canvas1");
+canvas.style.zIndex = 100;
+</script>
+
+  <a-scene inspector="url: https://aframe.io/releases/0.3.0/aframe-inspector.min.js">
+    <a-assets>
+    <img id="texture" src="../img/ant.gif">
+  </a-assets>
+      <a-sky color="#efefef"></a-sky>
+      <a-box id="box1" position="0 0.5 1" rotation="0 5 0" width="1" height="1" depth="1" src="#canvas1" color="#efefef"></a-box>
+      <a-entity position="0 -1 3">
+        <a-camera></a-camera>
+      </a-entity>
+    </a-scene>
+
+<script>
+var scene = document.querySelector('a-scene');
+var box;
+var block_size = 1;
+var box1 = document.getElementById('box1');
+var rotation = new Vector();
+// function setup(){
+//
+//     box = document.createElement('a-box');
+//     box.setAttribute('geometry', {
+//       primitive: 'box',
+//       height: block_size,
+//       width: block_size,
+//       depth: block_size
+//     });
+//     box.setAttribute('position', {x: 0, y: -0.5, z: 1});
+//
+//     box.setAttribute('material', {color: "#4CC3D9"});
+//     scene.appendChild(box);
+//     console.log(box);
+//  }
+
+
+var radius = 200;
+
+function draw() {
+  ctx.background("#4CC3D9");
+  box1.setAttribute('rotation', {x: rotation.x+=1, y: rotation.y+=1, z: 1});
+  ctx.fillStyle = "white";
+  ctx.save();
+  ctx.translate(w/2, h/2);
+  var x = Math.sin(frameCount/20)*radius;
+  var y = Math.cos(frameCount/20)*radius;
+  ctx.fillEllipse(x,y, 200,200);
+  ctx.restore();
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<meta charset="utf-8">
+	<title>test</title>
+
+	<script src='http://connect.soundcloud.com/sdk.js'></script>
+	<script language="javascript" src="js/creative_coding.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/vector.js"></script>
+	<script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background:#000;">
+
+<script type="text/javascript">
+
+	var ctx = createCanvas("canvas1");
+	var num = 11;
+	var sz = 400;
+	ctx.strokeStyle = rgb(220);
+	var engine = new particleEngine(num);
+	var particles = engine.particles;
+	var partice_grid = createGrid(num,1, sz, sz);
+	for (var i = 0; i < particles.length; i++) {
+		particles[i].x = partice_grid[i][0];
+		particles[i].y = partice_grid[i][1];
+	}
+	var grid = createGrid(num,1, sz, sz);
+	var block_w = sz/grid.length;
+	var v = 0;
+function draw() {
+
+	ctx.background(245);
+
+	ctx.translate(w/2, h/2);
+	ctx.rotate(radians(45));
+	v = tween(v, getTotalVolume() *2, 20);
+	//console.log(v);
+	drawStripes();
+	ctx.save();
+	ctx.triangle(-sz/2, -sz/2 , -sz/2, sz/2, 0, 0);
+
+	ctx.clip();
+	drawOddStripes();
+	ctx.restore();
+	ctx.save();
+	ctx.triangle(sz/2, -sz/2, sz/2, sz/2, 0, 0);
+	ctx.clip();
+	drawOddStripes();
+	ctx.restore();
+	ctx.rotate(radians(-45));
+	ctx.translate(-w/2, -h/2);
+	//ctx.triangle(0, 0, w, 0, w/2, h/2);
+	//ctx.triangle(w, 0, w, h, w/2, h/2);
+};
+
+
+function drawOddStripes(){
+
+	for (var i = 0; i < grid.length; i++) {
+		switch(i%2) {
+			case 0:
+					ctx.fillStyle = rgb(255);
+					break;
+			default:
+					ctx.fillStyle = rgb(0);
+	}
+		ctx.fillRect(grid[i][0]-sz/2-block_w/2, -sz/2, block_w, sz);
+	}
+}
+
+function drawStripes(){
+	for (var i = 0; i < grid.length; i++) {
+		switch(i%2) {
+			case 0:
+					ctx.fillStyle = rgb(0);
+					break;
+			default:
+					ctx.fillStyle = rgb(255);
+	}
+		ctx.fillRect(grid[i][0]-sz/2-block_w/2, -sz/2, block_w, sz);
+	}
+}
+
+function drawMask(){
+	ctx.beginPath();
+	ctx.moveTo(0, h/2, 0, h);
+	ctx.lineTo(0, h/2, 0, h);
+	for (var i = 0; i < particles.length; i++) {
+		var p = particles[i];
+		var s = h/2 + mapSound(i, particles.length) - h/8;
+		if (s > 0) {
+			p.y = tween(p.y, s, 10);
+		}
+
+
+		//ctx.fillRect(p.x, p.y, 20, 20);
+		if (i== 0) {
+			ctx.lineTo(0, h/2, p.x, p.y);
+		} else {
+			ctx.lineTo(particles[i-1].x, particles[i-1].y, p.x, p.y);
+		}
+
+	}
+	var p = particles[particles.length-1];
+	ctx.lineTo(p.x, p.y, w, h/2);
+	ctx.lineTo(w, h/2, w, h);
+	ctx.lineTo(w, h, 0, h);
+	ctx.lineTo(0, h, 0, h/2);
+
+	ctx.fill();
+	ctx.closePath();
+}
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+ </body>
+</html>

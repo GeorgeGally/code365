@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/video.js"></script>
+
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<script src="../js/clmtrackr.min.js"></script>
+<script src="../js/model_pca_20_svm.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+var block_size = 10;
+ctx.lineWidth = 1;
+
+var maxballs = 10500;
+var engine = new particleEngine(500);
+var particles = engine.particles;
+var motion = [];
+var loadVid = false;
+var vid;
+var ratio_x, ratio_y;
+var positions = [];
+var ctracker = new clm.tracker();
+var friction = 0.96;
+var spring = 0.04;
+
+for (var i = 0; i < particles.length; i++) {
+  p= particles[i];
+  p.pos.x = w/2;
+  p.pos.y = -200;
+  p.target.x = w/2;
+  p.target.y = -200;
+
+}
+
+ctracker.init(pModel);
+
+function setup(){
+  vid = document.getElementById('videoOutput');
+  ratio_x = width/video.width;
+  ratio_y = height/video.height;
+  ctracker.start(vid);
+
+//console.log(vid);
+}
+
+var pix =20;
+function draw(){
+
+  sensitivity = 20;
+
+  ctx.background(0);
+
+  //ctx.drawImage(video, 0, 0, w, h);
+
+  pix = map(mouseY, 0, h, 10, 100);
+  var p = 200-map(mouseX, 0, w, 0, 200);
+
+  pix = 38;
+  p = 20;
+
+  if (mouseDown) {
+    console.log(Math.floor(pix) + " : " + Math.floor(p));
+  }
+
+  //ctx.theshhold(pix, p, true);
+
+  update();
+  drawParticles();
+  //if (positions.length > 0) drawEyes(positions);
+}
+
+
+function drawParticles(){
+  for (var i = 0; i < engine.particles.length; i++) {
+  b = engine.particles[i];
+  // ctx.fillStyle = b.c;
+  // ctx.strokeStyle = b.c;
+  ctx.strokeStyle = "white";
+  ctx.fillStyle = "white";
+  //ctx.fillRect(sticky(b.pos.x, pix/4), sticky(b.pos.y, pix/4), pix/4, pix/4);
+  // ctx.HstrokeEllipse(sticky(b.pos.x, pix/4), sticky(b.pos.y, pix/4), 100, 100);
+  ctx.fillEllipse(b.pos.x, b.pos.y, 5, 5);
+  ctx.fillEllipse(b.target.x, b.target.y, 10, 10);
+  ctx.line(b.pos.x, b.pos.y, b.target.x, b.target.y);
+  // top left
+  // if (b.pos.x <= w/2 && b.pos.y < h/2) {
+  //   ctx.line(0,0, b.pos.x, b.pos.y);
+  // }
+  // // top right
+  // if (b.pos.x > w/2 && b.pos.y < h/2) {
+  //   ctx.line(w,0, b.pos.x, b.pos.y);
+  // }
+  //
+  // // bottom left
+  // if (b.pos.x <= w/2 && b.pos.y >= h/2) {
+  //   ctx.line(0,h, b.pos.x, b.pos.y);
+  // }
+  // // bottom right
+  // if (b.pos.x > w/2 && b.pos.y >= h/2) {
+  //   ctx.line(w, h, b.pos.x, b.pos.y);
+  // }
+}
+}
+
+
+function update(){
+
+  if (ctracker.getCurrentPosition()) {
+    positions = ctracker.getCurrentPosition();
+
+    //ctracker.draw(canvas);
+
+
+  if (positions.length > 0) {
+
+  particles = engine.particles;
+  console.log(positions.length);
+  for (var i = 0; i < positions.length; i++) {
+
+    if (engine.particles.length >= i) {
+    b = engine.particles[i];
+
+    var x = ratio_x * (positions[i][0]);
+    var y = ratio_y * (positions[i][1]);
+
+    b.target.x = x;
+    b.target.y = y;
+    updateSprings(b);
+    //b.pos.x = tween(b.pos.x, b.target.x, 20);
+    //b.pos.y = tween(b.pos.y, b.target.y, 20);
+
+
+}
+  }
+  }
+}
+  }
+
+
+function addParticle(x, y){
+  x = w-x;
+  //console.log("addParticle");
+  engine.addParticle( x + random(-2,2), y + random(-10,10), rgb(255));
+  engine.last.size = pix;
+  //engine.last.c = hsl(randomInt(255), 80, 55);
+  engine.last.c = rgba(randomInt(100, 225),0, 0, 0.6);
+  engine.last.speed = new Vector(random(-1,1), random(-8,-4));
+  if (engine.particles.length > maxballs) {
+    engine.removeParticle();
+  }
+}
+
+
+function updateSprings(b) {
+
+ var dx = b.target.x - b.pos.x;
+ var dy = b.target.y - b.pos.y;
+ var ax = dx * b.spring;
+ var ay = dy * b.spring;
+ b.speed.x += ax;
+ b.speed.y += ay;
+ //We build in some friction here, otherwise the ball
+ //will keep on moving to and fro for ever.
+ b.speed.x *= b.friction;
+ b.speed.y *= b.friction;
+ b.pos.x +=  b.speed.x;
+ b.pos.y +=  b.speed.y;
+}
+
+</script>
+
+<!-- <script language="javascript" src="js/motion_detection.js"></script> -->
+
+</body>
+
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<meta charset="utf-8">
+	<title>test</title>
+
+	<script src='http://connect.soundcloud.com/sdk.js'></script>
+	<script language="javascript" src="js/creative_coding.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/vector.js"></script>
+	<script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background:#000;">
+
+<script type="text/javascript">
+
+	var ctx = createCanvas("canvas1");
+	var num = 10;
+	var sz = 500;
+	var engine = new particleEngine(2);
+	var particles = engine.particles;
+	var active_particle = engine.particles-1;;
+	ctx.strokeStyle = rgb(0);
+	for (var i = 0; i < engine.particles.length; i++) {
+		var p = engine.particles[i];
+		p.fixed = false;
+		var r = random(sz/2);
+		var new_sz = randomInt(5, 15);
+		var angle = radians(random(360));
+		p.position.x = w/2 + Math.floor(sticky(Math.sin(angle)*r,10));
+		p.position.y = h/2 + Math.floor(sticky(Math.cos(angle)*r,10));
+	}
+
+function draw() {
+
+	ctx.background(245);
+	addCircle();
+	//ctx.fillEllipse(w/2, h/2, sz, sz);
+	for (var i = 0; i < engine.particles.length; i++) {
+		var p = engine.particles[i];
+		for (var j = 0; j < engine.particles.length; j++) {
+			var pp = engine.particles[j];
+			//console.log(p.sz+pp.sz);
+			if (i!=j && dist(p.position.x, p.position.y, pp.position.x, pp.position.y) < (p.sz/2 + pp.sz/2 + 1)) {
+				pp.active = false;
+				p.active = false;
+
+				//console.log("hit");
+			}
+		}
+		//console.log(p);
+		if (p.active && p.sz < 100) {
+
+			p.sz+=1;
+		} else {
+			p.active = false;
+		}
+    ctx.fillStyle = "black";
+    ctx.HstrokeEllipse(p.position.x, p.position.y, p.sz, p.sz);
+
+		if (p.sz > 10) {
+      ctx.fillStyle = "white";
+			ctx.HstrokeEllipse(p.position.x, p.position.y, p.sz/2, p.sz/2);
+		}
+		if (p.sz > 20) {
+      ctx.fillStyle = "black";
+			ctx.HstrokeEllipse(p.position.x, p.position.y, p.sz/3, p.sz/3);
+		}
+		if (p.sz > 30) {
+      ctx.fillStyle = "white";
+			ctx.HstrokeEllipse(p.position.x, p.position.y, p.sz/4, p.sz/4);
+		}
+
+
+	}
+
+};
+
+function addCircle(){
+	//console.log("add");
+	var r = random(sz/2);
+	var new_sz = randomInt(2, 5);
+	var angle = radians(random(360));
+	var x = w/2 + Math.floor(Math.sin(angle)*r);
+	var y = h/2 + Math.floor(Math.cos(angle)*r);
+	var same = false;
+
+	for (var k = 0; k < engine.particles.length; k++) {
+		var pp = engine.particles[k];
+		//console.log(Math.floor(dist(pp.position.x, pp.position.y, x, y)));
+		if (dist(pp.position.x, pp.position.y, x, y) < (pp.sz/2 + new_sz)) {
+			//console.log("same");
+			same = true;
+		}
+	}
+	if (!same) {
+		engine.addParticle(x, y);
+		active_particle = engine.particles.length-1;
+		var p = engine.particles[active_particle];
+		p.fixed = false;
+		p.sz = new_sz;;
+		p.active = true;
+	}
+}
+
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+ </body>
+</html>

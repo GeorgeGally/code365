@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+<script language="javascript" src="js/simplex-noise.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body style="background: #f7f7f7">
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var seed = window.location.hash.substr(1) || String(Math.random()).split('.')[1];
+
+var r = random( seed )
+var simplex = new SimplexNoise( r )
+var simplex3 = simplex.noise3D.bind(simplex)
+
+var t = 0;
+var count = 0;
+var curve, change;
+
+var branches = [];
+var twigs = [];
+var trunks = [];
+addBranch();
+
+function draw() {
+
+	if (chance(200)) addBranch();
+	for (var i = 0; i < branches.length; i++) {
+		branches[i].addSegment()
+		branches[i].drawSegments();
+	}
+
+
+
+}
+
+
+
+
+function addBranch(){
+	var _branch = new Branch();
+	branches.push(_branch);
+}
+
+
+var config = {
+    margin: 0.9,
+    activeLines : 10,
+    line_width: 3,
+    random : random,
+    simplex3 : simplex3,
+    maxAngle : Math.PI * 0.2,
+    lineLength : 22,
+    simplexScale : 0.1,
+    simplexDepthScale : 0.1,
+  }
+
+///////////////////////// BRANCH CLASS
+
+function Branch(_x, _y){
+
+	if (_x == undefined) _x = w/2;
+	if (_y == undefined) _y = h/2;
+
+	this.segments = new particleEngine(0);
+	this.segments.c = randomGrey();
+	//this.segments.c = "black";
+	this.line_width = 1;
+	this.me = branches.length-1;
+	this.moving = true;
+
+	this.angle = radians(random(360));
+	var r = random(50,300);
+	//var r = 200;
+	this.oldx = w/2 + Math.sin(this.angle) * r;
+	this.oldy = h/2 + Math.cos(this.angle) * r;
+	this.segments.addParticle(this.oldx, this.oldy);
+	this.curve = 0.001;
+	this.change = 0.01;
+	this.t = 0;
+
+	this.segments.direction = new Vector(posNeg(), posNeg());
+	this.segments.angle = angle;
+
+	this.drawSegments = function(){
+		//for (var i = 0; i < this.segments.particles.length; i++) {
+		var i = this.segments.particles.length-1;
+			p = this.segments.particles[i];
+			ctx.strokeStyle = this.segments.c;
+			//if (this.line_width > 0.2) this.line_width -= 0.003;
+			ctx.lineWidth = this.line_width;
+			if (i>0) ctx.line(this.segments.particles[i-1].position.x, this.segments.particles[i-1].position.y, p.position.x, p.position.y);
+		//}
+	}
+
+	this.addSegment = function (){
+
+		if (this.moving) {
+			var last = this.segments.particles.length-1;
+			var segments = this.segments.particles;
+			this.oldx = segments[last].position.x;
+			this.oldy = segments[last].position.y;
+
+			if (chance(20)) {
+		    this.angle  = simplex.noise3D(this.oldx, this.oldy, this.t) * 0.005;
+		    //console.log(change);
+		  }
+
+			var x = this.oldx + Math.sin(this.angle) * random(12);
+			var y = this.oldy + Math.cos(this.angle) * random(12);
+
+			this.selfHit(x, y, this.oldx, this.oldy);
+			this.othersHit(x, y, this.oldx, this.oldy);
+			// checkHit(x, y, oldx, oldy);
+			if(this.moving) this.segments.addParticle(x, y);
+
+			if (x>w || x < 0 || y > h || y < 0 ) {
+				this.moving = false;
+				addBranch();
+			}
+
+		}
+	}
+
+
+	this.selfHit = function(x, y, x2, y2){
+
+	  if (this.segments.particles.length > 0) {
+
+			for (var i = 1; i < this.segments.particles.length; i++) {
+
+			  hit = checkIntersection(
+					x, y, x2, y2,
+					this.segments.particles[i].position.x, this.segments.particles[i].position.y, this.segments.particles[i-1].position.x, this.segments.particles[i-1].position.y );
+							//console.log(hit);
+				if (hit!= undefined && hit!= false) {
+				  //console.log("selfhit");
+					this.moving = false;
+				  addBranch();
+				  break;
+				}
+
+			}
+
+	  }
+
+	}
+
+	this.othersHit = function (x, y, x2, y2){
+		for (var j = 0; j < branches.length-1; j++) {
+
+			if (branches.length > 0 && this.moving) {
+			var branch1 = branches[j];
+
+			if (this.branchHit(branch1, x, y, x2, y2)) {
+				this.moving = false;
+				//console.log("othersHit");
+				addBranch();
+				break;
+			}
+		}
+		}
+
+	}
+
+	this.branchHit = function (test_branch, x, y, x2, y2){
+
+		//console.log(branch1.segments.particles.length);
+		for (var i = 1; i < test_branch.segments.particles.length; i++) {
+
+			var p1 = test_branch.segments.particles;
+
+			if (test_branch.segments.particles.length > 0) {
+
+		    hit = checkIntersection(
+					p1[i].position.x, p1[i].position.y,
+					p1[i-1].position.x, p1[i-1].position.y,
+					x, y, x2, y2
+				);
+
+		    if (hit!= undefined && hit!= false) {
+		    	return true;
+		    }
+
+	  		}
+
+	  	}
+
+		}
+
+}
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+
+
+<body>
+
+<script>
+
+var fov = 240;
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(0);
+var drag = 1.02;
+
+function draw() {
+
+
+  ctx.fillEllipse(w/2, h/2, 100, 100);
+
+    ctx.background(0);
+    addParticle();
+    for (var i = 0; i < engine.particles.length; i++) {
+      p = engine.particles[i];
+      moveParticle(p);
+        //ctx.colour(255);
+        ctx.fillStyle = p.c;
+        ctx.fillEllipse(p.pos.x, p.pos.y, p.size, p.size);
+
+    }
+
+
+}
+
+function moveParticle(p){
+  p.speed.x *= drag;
+  p.speed.y *= drag;
+  p.size*=1.02;
+  //p.speed.y+=0.2
+  p.pos.x += p.speed.x;
+  p.pos.y += p.speed.y;
+  if (p.pos.y>h) engine.particles.splice(p.me, 1);
+  //console.log(p.pos.y);
+}
+
+function addParticle(){
+  engine.addParticle(w/2, h/2);
+  var p = engine.last;
+  p.speed = new Vector (posNeg() * random(0.1, 3), posNeg() * random(0.1, 3));
+  p.c = hsl(random(0,50), 60, 40)
+  p.size = 20;
+
+  while (engine.particles.length> 200) engine.particles.shift();
+}
+
+</script>
+
+</body>
+
+</html>

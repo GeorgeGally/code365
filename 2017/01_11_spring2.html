@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script language="javascript" src="../js/tween.js"></script>
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+var ctx = createCanvas("canvas1");
+
+var num = 20;
+var spacing = 360/num;
+ctx.lineWidth = 0.5;
+ctx.strokeStyle = rgb(255);
+var engine = new particleEngine(0);
+var spring = 0.03;
+
+var planets = [];
+
+for (var i = 0; i < num; i++) {
+  var x = w/2 + Math.cos(radians(i*spacing)) * 200;
+  var y = h/2 + Math.sin(radians(i*spacing)) * 200;
+  addParticle(x, y);
+  planets[i] = new particleEngine(num);
+}
+
+function addParticle(_x, _y){
+  engine.addParticle();
+  var p = engine.last;
+  p.target.x = _x;
+  p.target.y = _y;
+}
+
+reset();
+
+function draw(){
+  ctx.background(255);
+
+
+  if (chance(400)) reset();
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    update(p);
+    ctx.fillStyle = rgb(0);
+    ctx.fillEllipse(p.pos.x, p.pos.y, 20,20);
+    for (var j = 0; j < planets[i].particles.length; j++) {
+      b = planets[i].particles[j];
+      b.target.x = p.target.x + Math.cos(radians(j*spacing)) * 20;
+      b.target.y = p.target.y + Math.sin(radians(j*spacing)) * 20;
+      update(b);
+      ctx.fillStyle = rgb(255, 0, 0);
+      ctx.fillEllipse(b.pos.x, b.pos.y, 4,4);
+    }
+  }
+
+  }
+
+
+function update(b) {
+
+ var dx = b.target.x - b.pos.x;
+ var dy = b.target.y - b.pos.y;
+ var ax = dx * spring;
+ var ay = dy * spring;
+ b.speed.x += ax;
+ b.speed.y += ay;
+ //We build in some friction here, otherwise the ball
+ //will keep on moving to and fro for ever.
+ b.speed.x *= b.friction;
+ b.speed.y *= b.friction;
+ b.pos.x +=  b.speed.x;
+ b.pos.y +=  b.speed.y;
+}
+
+
+function reset(){
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    p.pos = new Vector(w/2, h/2);
+    p.friction = 0.98;
+    for (var j = 0; j < planets[i].particles.length; j++) {
+      b = planets[i].particles[j];
+      b.pos = new Vector(w/2, h/2);
+      b.target.x = p.target.x;
+      b.target.y = p.target.y;
+      b.friction = 0.96;
+    }
+  }
+}
+
+
+</script>
+
+
+</body>
+
+</html>
+›

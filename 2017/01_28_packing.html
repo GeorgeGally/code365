@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var engine = new particleEngine(0);
+
+function draw() {
+
+  ctx.background(0);
+  ctx.fillStyle = rgb(0);
+  ctx.strokeStyle = rgb(255);
+  var x = random(w);
+  var y = random(h);
+  var radius = random(10,80);
+  var hit = false;
+
+  for (var i = 0; i < engine.particles.length; i++) {
+
+    p = engine.particles[i];
+
+    for (var j = i; j < engine.particles.length; j++) {
+      p2 = engine.particles[j];
+
+      if (dist(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y)> p.radius/2 + p2.radius/2) {
+        //p.radius+=1;
+      }
+    }
+
+    if (dist(x,y,p.pos.x, p.pos.y)< p.radius/2 + radius/2){
+      hit = true;
+    } else {
+
+    }
+
+    ctx.strokeEllipse(p.pos.x, p.pos.y, p.radius, p.radius);
+
+  }
+  if (!hit) {
+    engine.addParticle(x,y);
+    var p = engine.last;
+    p.radius = radius;
+
+  }
+
+
+}
+
+
+
+
+
+</script>
+
+</body>
+
+</html>

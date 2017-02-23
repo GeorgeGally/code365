@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<meta charset="utf-8">
+	<title>test</title>
+
+	<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+	<script language="javascript" src="js/creative_coding.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/vector.js"></script>
+	<script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+<script type="text/javascript">
+
+	var ctx = createCanvas("canvas1");
+	var num = 10;
+	var sz = 500;
+	var sampleSize = 16;
+	var engine = new particleEngine(0);
+	var particles = engine.particles;
+	var active_particle = engine.particles-1;;
+	ctx.strokeStyle = rgb(0);
+
+	ctx.font = "bold 300pt helvetica";
+	//ctx.font = "bold 300pt Courier";
+	ctx.fillStyle="blue";
+	ctx.textAlign = "center";
+	ctx.textBaseline = "middle";
+	var words = ['Freedom', 'Love', 'Health', 'Wealth'];
+//var words = ['kindness', 'gentleness', 'compassion', 'generosity', 'dream', 'chill', 'gratitude', 'live', 'relax', 'peace' ];
+function setup(){
+	brightSpark();
+}
+
+
+function draw() {
+
+	//ctx.background(245);
+	ctx.clearRect(0, 0, w, h);
+	for (var i = 0; i < engine.particles.length; i++) {
+
+		var p = engine.particles[i];
+
+		checkHit(p)
+
+		move(p);
+		drawCircle(p);
+
+	}
+
+};
+
+function checkHit(p){
+	for (var j = 0; j < engine.particles.length; j++) {
+		var pp = engine.particles[j];
+		if (p.me!=j && dist(p.position.x, p.position.y, pp.position.x, pp.position.y) < (p.sz/2 + pp.sz/2)) {
+			pp.active = false;
+			p.active = false;
+		}
+	}
+}
+
+function drawCircle(p){
+	ctx.fillStyle = "black";
+	ctx.HstrokeEllipse(p.position.x, p.position.y, p.sz, p.sz);
+
+	if (p.sz > 20) {
+		ctx.fillStyle = "black";
+		ctx.HstrokeEllipse(p.position.x, p.position.y, p.sz/2, p.sz/2);
+	}
+}
+
+function move(p){
+	if (p.active && p.sz < 100) {
+		p.sz+= p.speed;
+	} else {
+		p.active = false;
+	}
+}
+
+function addCircle(x, y){
+
+	var same = false;
+	var new_sz = randomInt(1, 2);
+
+	for (var k = 0; k < engine.particles.length; k++) {
+		var pp = engine.particles[k];
+
+		if (dist(pp.position.x, pp.position.y, x, y) < (pp.sz/2 + new_sz/2)) {
+			console.log("same");
+			same = true;
+		}
+	}
+	if (!same) {
+		engine.addParticle(x, y);
+		active_particle = engine.particles.length-1;
+		var p = engine.particles[active_particle];
+		p.fixed = false;
+		p.sz = new_sz;
+		p.speed = random(0.1, 4);
+		p.active = true;
+	}
+}
+
+
+function brightSpark(){
+	var ww = randomInt(0,words.length-1);
+	ctx.fillText(words[ww], w/2, h/2);
+	//draw();
+	imgData = ctx.getImageData(0, 0, w, h).data;
+	for (var y = 0; y < h; y+= sampleSize) {
+
+		 for (var x = 0; x < w; x+= sampleSize) {
+
+			var pt = (y * w + x)*4;
+			var fBrightness;
+			fBrightness = (0.3*imgData[pt] + 0.59*imgData[pt+1] + 0.11*imgData[pt+2]);
+
+			if(fBrightness > 10) {
+				addCircle(x + random(-3,3), y + random(-3,3));
+			}
+
+		 }
+	}
+
+	ctx.clearRect(0,0, w, h);
+}
+
+
+
+
+
+
+</script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+ </body>
+</html>

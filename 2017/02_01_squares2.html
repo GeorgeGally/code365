@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(0);
+var block_size = 200;
+var num_stripes = 10;
+var grid = createGrid(10,10, 800, 800);
+
+var start = new Vector(200,200);
+
+// 0,  0 - 100, 100
+// 20, 0 - 100, 80
+// 40, 0 - 100, 60
+// 60, 0 - 100, 40
+// 80, 0 - 100, 20
+//
+// 0,  0 - 100, 100
+// 0, 20 - 80,  100
+// 0, 40 - 60,  100
+// 0, 60 - 40,  100
+// 0, 80 - 20,  100
+// var blocks = [];
+// for (var i = 0; i < grid.length; i++) {
+//   blocks[i] = new Block(block_size, randomInt(1,5));
+// }
+
+var block = new Block(block_size, randomInt(1,5));
+
+console.log(block);
+
+
+function draw() {
+
+  ctx.background(0);
+  ctx.strokeStyle = rgb(255);
+  for (var i = 0; i < grid.length; i++) {
+    block.drawStripes(start);
+  }
+
+}
+
+
+
+
+function Block(block_size, num_stripes){
+  this.block_size = block_size-2;
+  
+  this.spacing = block_size/num_stripes;
+  this.stripes = [];
+  var count = 0;
+
+  for (var x1 = 0; x1 < this.block_size; x1+=this.spacing) {
+    this.stripes[count] = new Stripes(x1, 0, this.block_size, this.block_size-x1);
+    count++;
+  }
+
+  for (var y1 = 0; y1 < this.block_size; y1+=this.spacing) {
+    this.stripes[count] = new Stripes(0, y1, this.block_size-y1, this.block_size);
+    count++;
+  }
+
+  function Stripes(x1, y1, x2, y2) {
+    this.x1 = x1 || 0;
+    this.y1 = y1 || 0;
+    this.x2 = x2 || 0;
+    this.y2 = y2 || 0;
+  }
+
+  this.drawStripes = function(start){
+    for (var i = 0; i < this.stripes.length; i++) {
+      ctx.line(start.x + this.stripes[i].x1, start.y + this.stripes[i].y1, start.x + this.stripes[i].x2, start.y + this.stripes[i].y2);
+    }
+    ctx.strokeRect(start.x-2, start.y-2, block_size+4, block_size+4);
+  }
+
+  //return this.stripes;
+}
+
+
+
+
+
+</script>
+
+</body>
+
+</html>

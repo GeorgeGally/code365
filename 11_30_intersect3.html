@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+
+<script language="javascript" src="js/jquery-1.6.2.js"></script>
+<script language="javascript" src="js/simplex-noise.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body style="background: #f7f7f7">
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var seed = window.location.hash.substr(1) || String(Math.random()).split('.')[1];
+
+var r = random( seed )
+var simplex = new SimplexNoise( r )
+var simplex3 = simplex.noise3D.bind(simplex)
+
+var config = {
+    margin: 0.9,
+    activeLines : 10,
+    line_width: 4,
+    simplex3 : simplex3,
+    maxAngle : Math.PI * 0.2,
+    lineLength : 5,
+    simplexScale : 0.6,
+    simplexDepthScale : 0.001,
+}
+
+var t = 0;
+var count = 0;
+var curve, change;
+
+var branches = new particleEngine(0);
+var twigs = [];
+var trunks = [];
+addBranch();
+
+function draw() {
+	//ctx.background(245);
+	//if (chance(10)) addParticle();
+	moveBranch();
+	drawBranches();
+
+}
+
+function moveTwig(){
+
+}
+
+function moveBranch(){
+
+	var r = random(20);
+	if (chance(100)) branches.direction.x = posNeg() * branches.direction.x;
+	if (chance(100)) branches.direction.y = posNeg() * branches.direction.y;
+	var last = branches.particles.length-1;
+	var branch = branches.particles;
+	//branch[last].angle +=radians(random(-5,5));
+	var angle = branch[last].angle;
+	//if (chance(100)) angle = posNeg() * angle/2;
+	var oldx = branch[last].position.x;
+	var oldy = branch[last].position.y;
+	var x = oldx + Math.sin(angle) * r * branches.direction.x;
+	var y = oldy + Math.cos(angle) * r * branches.direction.y;
+	branches.addParticle(x, y);
+	if (chance(500)) newTwig(x,y);
+	selfHit(x, y, oldx, oldy, branches);
+	checkHit(x, y, oldx, oldy);
+
+	if (x>w || x < 0 || y > h || y < 0 ) newBranch();
+
+}
+
+function moveTwig(){
+
+	var r = random(20);
+	if (chance(100)) twig.direction.x = posNeg() * twig.direction.x;
+	if (chance(100)) twig.direction.y = posNeg() * twig.direction.y;
+	var last = twig.particles.length-1;
+	var twig = twig.particles;
+	//branch[last].angle +=radians(random(-5,5));
+	var angle = twig[last].angle;
+	//if (chance(100)) angle = posNeg() * angle/2;
+	var oldx = twig[last].position.x;
+	var oldy = twig[last].position.y;
+	var x = oldx + Math.sin(angle) * r * twig.direction.x;
+	var y = oldy + Math.cos(angle) * r * twig.direction.y;
+	twig.addParticle(x, y);
+	selfHit(x, y, oldx, oldy, twigs);
+	checkHit(x, y, oldx, oldy);
+
+	if (x>w || x < 0 || y > h || y < 0 ) newTwig();
+
+}
+
+
+function drawBranches(){
+	for (var i = 0; i < branches.particles.length; i++) {
+		p = branches.particles[i];
+		ctx.strokeStyle = branches.c;
+		branches.line_width -= 0.01;
+		ctx.lineWidth = branches.line_width;
+		if (i>0) ctx.line(branches.particles[i-1].position.x, branches.particles[i-1].position.y, p.position.x, p.position.y);
+	}
+}
+
+function drawTwigs(){
+	for (var i = 0; i < twigs.particles.length; i++) {
+		p = twigs.particles[i];
+		ctx.strokeStyle = twigs.c;
+		if (i>0) ctx.line(twigs.particles[i-1].position.x, twigs.particles[i-1].position.y, p.position.x, p.position.y);
+	}
+}
+
+
+function newBranch(){
+  trunks.push(branches);
+  branches = new particleEngine(0);
+	branches.twigs = [];
+	branches.line_width = 10;
+	//ctx.background(250, 0.8);
+	addBranch();
+}
+
+function newTwig(x, y){
+	console.log("newTwig");
+  branches.twigs.push(twigs);
+  twigs = new particleEngine(0);
+	addTwig(x,y);
+}
+
+
+function addBranch(){
+	var angle = radians(random(360));
+	var r = random(200);
+	var x = w/2 + Math.sin(angle) * r;
+	var y = h/2 + Math.cos(angle) * r;
+	branches.addParticle(x, y);
+	branches.c = randomGrey();
+	branches.direction = new Vector(posNeg(), posNeg());
+	branches.angle = angle;
+}
+
+function addTwig(_x, _y){
+	var angle = radians(random(360));
+	var r = random(200);
+	var x = _x + Math.sin(angle) * r;
+	var y = _y + Math.cos(angle) * r;
+	twigs.addParticle(x, y);
+	twigs.c = randomGrey();
+	twigs.direction = new Vector(posNeg(), posNeg());
+	twigs.angle = angle;
+}
+
+function selfHit(x, y, x2, y2, branches){
+
+  if (branches.particles.length > 0) {
+
+		for (var i = 1; i < branches.particles.length; i++) {
+
+		      hit = checkIntersection(
+						x, y, x2, y2,
+						branches.particles[i].position.x, branches.particles[i].position.y, branches.particles[i-1].position.x, branches.particles[i-1].position.y );
+						//console.log(hit);
+			      if (hit!= undefined && hit!= false) {
+			        console.log("selfhit");
+			        newBranch();
+			        break;
+			      }
+
+  	}
+
+  }
+}
+
+
+function checkHit(x1, y1, x2, y2){
+    var is_hit = false;
+
+    for (var j = 0; j < trunks.length; j++) {
+    	var lines2 = trunks[j];
+    	if (lines2.length > 0) {
+
+			for (var i = 1; i < lines2.particles.length; i++) {
+
+      hit = checkIntersection(x1, y1, x2, y2, lines2[i].position.x, lines2[i].position.y, lines2[i-1].position.x, lines2[i-1].position.y );
+
+      if (hit!= undefined && hit!= false) {
+
+        newBranch();
+        is_hit = true;
+        break;
+      }
+  }
+
+  }
+}
+
+return is_hit;
+
+}
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

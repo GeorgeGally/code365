@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 2;
+var divisor = start_divisor = 80;
+var grid_w = (w)/80;
+var grid_h = (h)/80;
+var grid = createGrid(grid_w, grid_h, w+100, h+100);
+//console.log(grid);
+var engine = new particleEngine(grid_w*grid_h, grid);
+var particles = engine.particles;
+
+var changer = 0.5;
+
+var colours = new colourPool()
+    .add('#FFFFFF', 3)
+    .add('#ECECEC', 2)
+    .add('#CCCCCC', 2)
+    .add('#333333', 1)
+    .add('#0095a8', 4)
+    .add('#00616f', 4)
+    .add('#FF3300')
+    .add('#FF6600');
+    
+  var c = colours.get();
+  console.log(c);
+
+for (var i = 0; i < particles.length; i++) {
+  particles[i].size = divisor;
+}
+
+function draw(){
+  ctx.background(240);
+  drawParticles();
+}
+
+function drawParticles(){
+  for (var i = 0; i < particles.length; i++) {
+    p = particles[i];
+
+    ctx.save();
+
+    var x = 80+p.pos.x-divisor/2;
+    var y = 120+p.pos.y-divisor/2;
+    //
+    // Create clipping region
+    //ctx.arc(100, 100, 75, 0, Math.PI*2, false);
+    ctx.rect(80, 120, w-160, h-200);
+    //
+    ctx.clip();
+
+    drawPattern(x, y)
+
+    ctx.restore();
+
+    if (frameCount%100 == 0) changer *=-1;
+
+
+  }
+
+   divisor+=0.5;
+}
+
+function updateParticles(){
+  for (var i = 0; i < particles.length; i++) {
+    p = particles[i];
+
+  }
+}
+
+function drawPattern(x, y) {
+
+  ctx.strokeStyle = "green";
+  ctx.centreStrokeRect(x, y, divisor,  divisor);
+  ctx.strokeStyle = "red";
+  ctx.HstrokeEllipse(x, y, divisor, divisor);
+  ctx.strokeStyle = "yellow";
+  ctx.HstrokeEllipse(x + divisor/2, y + divisor/2, divisor/2,  divisor/2);
+
+
+}
+
+</script>
+
+</body>
+
+</html>

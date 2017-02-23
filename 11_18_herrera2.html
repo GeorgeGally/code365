@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<meta charset="utf-8">
+	<title>test</title>
+
+	<script src='http://connect.soundcloud.com/sdk.js'></script>
+	<script language="javascript" src="js/creative_coding.js"></script>
+	<script language="javascript" src="js/canvas.js"></script>
+	<script language="javascript" src="js/vector.js"></script>
+	<script language="javascript" src="js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background:#000;">
+
+<script type="text/javascript">
+
+	var ctx = createCanvas("canvas1");
+	var num = 10;
+	var engine = new particleEngine(num);
+	var particles = engine.particles;
+	var partice_grid = createGrid(num,1);
+	for (var i = 0; i < particles.length; i++) {
+		particles[i].x = partice_grid[i][0];
+		particles[i].y = partice_grid[i][1];
+	}
+	var grid = createGrid(num*2,1);
+
+function draw() {
+
+	ctx.background(245);
+
+	for (var i = 0; i < grid.length; i++) {
+		switch(i%2) {
+			case 0:
+					ctx.fillStyle = rgb(0);
+					break;
+			default:
+					ctx.fillStyle = rgb(255);
+	}
+		ctx.fillRect(grid[i][0], 0, w/grid.length, h);
+	}
+	ctx.save();
+	drawMask();
+	ctx.clip();
+
+	for (var i = 0; i < grid.length; i++) {
+		switch(i%2) {
+			case 0:
+					ctx.fillStyle = rgb(255);
+					break;
+			default:
+					ctx.fillStyle = rgb(0);
+	}
+		ctx.fillRect(grid[i][0], 0, w/grid.length, h);
+	}
+
+
+ctx.restore();
+};
+
+
+function drawMask(){
+	ctx.beginPath();
+	ctx.moveTo(0, h/2, 0, h);
+	ctx.lineTo(0, h/2, 0, h);
+	for (var i = 0; i < particles.length; i++) {
+		var p = particles[i];
+		var s = h/2 + mapSound(i, particles.length) - h/8;
+		if (s > 0) {
+			p.y = tween(p.y, s, 20);
+		}
+
+
+		//ctx.fillRect(p.x, p.y, 20, 20);
+		if (i== 0) {
+			ctx.lineTo(0, h/2, p.x, p.y);
+		} else {
+			ctx.lineTo(particles[i-1].x, particles[i-1].y, p.x, p.y);
+		}
+
+	}
+	var p = particles[particles.length-1];
+	ctx.lineTo(p.x, p.y, w, h/2);
+	ctx.lineTo(w, h/2, w, h);
+	ctx.lineTo(w, h, 0, h);
+	ctx.lineTo(0, h, 0, h/2);
+
+	ctx.fill();
+	ctx.closePath();
+}
+
+</script>
+<script language="javascript" src="js/soundcloud.js"></script>
+ </body>
+</html>

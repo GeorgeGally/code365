@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+var num = Math.floor(w/40);
+ctx.lineWidth = 1;
+ctx.strokeStyle = rgb(255);
+var grid = createGrid(num,1);
+var maxballs = 10500;
+var engine = new particleEngine(grid.length-1, grid);
+var particles = engine.particles;
+
+var ratio_x, ratio_y;
+var positions = [];
+var ball = new Vector(0, h/2);
+var speed = new Vector(2,0);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  b = engine.particles[i];
+}
+
+
+function draw(){
+  ctx.background(0);
+  ctx.save();
+
+  ctx.translate(w/2, h/2);
+  triInTri(0, -50);
+  //ctx.translate(w/2, h/2);
+  ctx.rotateDegrees(180);
+  triInTri(0, -50);
+  // ctx.translate(w/2, h/2);
+  ctx.rotateDegrees(180);
+  triInTri(100, 100);
+  triInTri(-100, 100);
+
+
+
+
+
+  // for (var i = -0; i <= 100; i+=50) {
+  //   ctx.eqTriangle(i,-25, 25);
+  // }
+
+  // ctx.eqTriangle(0, -50, 100);
+  // ctx.rotateDegrees(-180);
+  // ctx.eqTriangle(0, -50, 100);
+  //
+  // //ctx.rotateDegrees(180);
+  // ctx.eqTriangle(100, 100, 100);
+  // ctx.rotateDegrees(180);
+  // ctx.eqTriangle(-100, 100, 100);
+  //
+  // ctx.eqTriangle(-200, -50, 100);
+  // ctx.rotateDegrees(-180);
+  // ctx.eqTriangle(200, -50, 100);
+  //
+  //
+  // for (var i = -75; i <= 275; i+=50) {
+  //       ctx.eqTriangle(i, -12.5, 25);
+  // }
+  // for (var i = 25; i <= 200; i+=50) {
+  //   ctx.eqTriangle(i, 137.5, 25);
+  // }
+  //
+  // ctx.rotateDegrees(-180);
+  // for (var i = -275; i <= 100; i+=50) {
+  //   ctx.eqTriangle(i, -12.5, 25);
+  // }
+  // for (var i = -175; i <= 0; i+=50) {
+  //   ctx.eqTriangle(i, 137.5, 25);
+  // }
+
+  //ctx.eqTriangle(275, -12.5, 25);
+  // ctx.eqTriangle(225,-12.5, 25);
+  // ctx.eqTriangle(175,-12.5, 25);
+  // ctx.eqTriangle(125,-12.5, 25);
+  // ctx.eqTriangle(75,-12.5, 25);
+  // ctx.eqTriangle(25,-12.5, 25);
+  // ctx.eqTriangle(-25,-12.5, 25);
+  // ctx.eqTriangle(-75,-12.5, 25);
+
+  ctx.restore();
+
+
+
+  //if (mouseDown) {
+  //  console.log(Math.floor(pix) + " : " + Math.floor(p));
+  }
+
+
+
+function triInTri(x, y){
+  ctx.translate(x, y);
+  // ctx.strokeStyle = rgb(255,0,0);
+  // ctx.eqTriangle(0, 0, 100);
+
+  ctx.strokeStyle = rgb(255);
+  ctx.eqTriangle(0, -75, 25);
+
+
+
+
+  ctx.rotateDegrees(180);
+  ctx.eqTriangle(0,50, 25);
+
+  for (var i = -50; i <=50; i+=50) {
+    ctx.eqTriangle(i, -25, 25);
+  }
+
+  ctx.rotateDegrees(180);
+
+  ctx.eqTriangle(-25, -37.5, 25);
+  ctx.eqTriangle(25, -37.5, 25);
+
+  for (var i = -50; i <=50; i+=50) {
+    ctx.eqTriangle(i, 0, 25);
+  }
+
+  for (var i = -75; i <=75; i+=50) {
+    ctx.eqTriangle(i, 37.5, 25);
+  }
+
+  ctx.translate(-x, -y);
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>
+›

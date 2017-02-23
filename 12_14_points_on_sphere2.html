@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="js/creative_coding.js"></script>
+ <script language="javascript" src="js/canvas.js"></script>
+ <script language="javascript" src="js/vector.js"></script>
+ <script language="javascript" src="js/vector_particles.js"></script>
+	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 1;
+
+var radius = 220;
+var out = radius;
+var out_on = false;
+var center_on = false;
+var all_on = false;
+var c = 0;
+var dir = 1;
+var rotation = 0;
+var num_particles = 30;
+var engine = new particleEngine(num_particles);
+var particles = engine.particles;
+
+for (var i = 0; i < particles.length; i++) {
+  var p = particles[i];
+  p.angle =  radians(-90+i*360/num_particles);
+  p.position.x = w/2 + (p.sz/2+radius) * Math.cos(p.angle);
+  p.position.y = h/2 + (p.sz/2+radius) * Math.sin(p.angle);
+  p.start.x = p.position.x;
+  p.start.y = p.position.y;
+  p.radius = radius;
+}
+
+
+function draw(){
+	var ratio = w/audioChannelVolume.length;
+	ctx.background(189, 218, 229, 1);
+	moveParticles();
+}
+
+
+function moveParticles(){
+
+  if (chance(300)) dir = posNeg();
+  rotation = dir * audioChannelVolume[50];
+
+	c = tween(c, 40+map(audioChannelVolume[40], 0, 100, 0, 80), 10);
+  ctx.strokeStyle = rgba(0,0,0,1);
+
+  if (chance(500)) out_on = !out_on;
+  if (chance(200)) out_on = false;
+  if (chance(500)) all_on = !all_on;
+  if (chance(300)) center_on = !center_on;
+
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		var me = Math.floor(p.me*360/num_particles);
+		p.angle += radians(rotation/120);
+		p.radius = tween(p.radius, map(audioChannelVolume[p.me], 0, 80, c, 100), 2);
+
+    if (chance(500) || out_on) {
+      out = p.radius * 0.7;
+    }
+    if (all_on) {
+      p.on = true;
+    } else {
+      p.on = false;
+    }
+
+    if (chance(100)) p.on = !p.on;
+
+
+    var s = mapSound(i, particles.length)/10;
+		p.sz = tween(p.sz, map(p.radius, 0, 100, 0, 30), 12);
+		p.position.x = w/2 + (out) * Math.cos(p.angle);
+		p.position.y = h/2 + (out) * Math.sin(p.angle);
+    var linepos = new Vector(w/2 + (out - p.sz/2) * Math.cos(p.angle),
+  h/2 + (out - p.sz/2) * Math.sin(p.angle));
+    var linepos2 = new Vector(w/2 + c/2 * Math.cos(p.angle), h/2 + c/2* Math.sin(p.angle));
+		ctx.strokeStyle = rgba(255);
+		ctx.line(linepos2.x, linepos2.y, linepos.x, linepos.y);
+
+    ctx.fillStyle = rgb(255);
+
+		ctx.HstrokeEllipse(p.position.x, p.position.y, p.sz, p.sz);
+		if (p.on) ctx.fillEllipse(p.position.x, p.position.y, p.sz-20, p.sz-20);
+
+		};
+
+
+		ctx.HstrokeEllipse(w/2, h/2, c, c);
+    if (center_on) ctx.HfillEllipse(w/2, h/2, c-20, c-20);
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

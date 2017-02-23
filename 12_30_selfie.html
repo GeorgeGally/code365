@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+<script language="javascript" src="js/video.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var block_size = 5;
+
+var maxballs = 30500;
+var engine = new particleEngine(0);
+var particles = engine.particles;
+var motion = [];
+var cratio = 255/h;
+
+function draw(){
+  sensitivity = 20;
+
+  ctx.background(0);
+
+  ctx.drawImage(video, 0, 0, w, h);
+
+  var pix = map(mouseY, 0, h, 10, 100);
+  var p = map(mouseX, 0, w, 0, 200);
+
+  var pix = 25;
+  var p = 10;
+
+  if (mouseDown) {
+    console.log(Math.floor(pix) + " : " + Math.floor(p));
+  }
+
+  ctx.circleize(pix, p);
+
+
+
+}
+
+
+
+ctx.circleize = function(blocksize, ammt) {
+ if (ammt == undefined) ammt = 0;
+
+ if (blocksize == undefined) blocksize = 20;
+
+ ammt = Math.floor(ammt);
+ blocksize = Math.floor(blocksize);
+
+ var imgData=this.getImageData(0,0,w,h);
+
+ this.clearRect(0,0,w,h);
+ this.fillStyle = rgb(0);
+ this.strokeStyle = rgb(0);
+
+ var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+
+ for (var x = 0; x < w; x += blocksize) {
+
+   for (var y = 0; y < h; y += blocksize) {
+
+         var pos = (x + y * w);
+         var b = (sourceBuffer32[pos] >> 16) & 0xff;
+         var g = (sourceBuffer32[pos] >> 8) & 0xff;
+         var r = (sourceBuffer32[pos] >> 0) & 0xff;
+
+         r = sticky(r, ammt);
+         g = sticky(g, ammt);
+         b = sticky(b, ammt);
+
+
+        var b = brightness(r,g,b);
+        if (b < 10) {
+          this.centreStrokeRect(x, y, blocksize*0.9, blocksize*0.9);
+          this.centreStrokeRect(x, y, blocksize*0.5, blocksize*0.5);
+          this.fillEllipse(x, y, 6, 6);
+
+
+        } else if (b < 20 && b>= 10) {
+
+          this.strokeEllipse(x, y, blocksize*0.9, blocksize*0.9);
+          this.strokeEllipse(x, y, blocksize*0.5, blocksize*0.5);
+          this.fillEllipse(x, y, 6, 6);
+
+      } else if (b < 40 && b>= 20) {
+
+        this.centreStrokeRect(x, y, blocksize*0.9, blocksize*0.9);
+        this.eqTriangle(x, y, blocksize*0.35);
+        this.fillEllipse(x, y, 6, 6);
+
+        } else {
+          // this.fillStyle = rgb(255);
+          // this.fillRect(x, y, blocksize, blocksize);
+        }
+
+
+       }
+   }
+
+}
+
+
+
+</script>
+
+<script language="javascript" src="js/motion_detection.js"></script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+
+</html>

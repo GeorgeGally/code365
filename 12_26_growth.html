@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="js/creative_coding.js"></script>
+<script language="javascript" src="js/canvas.js"></script>
+<script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var block_size = 5;
+
+var maxballs = 30500;
+var engine = new particleEngine(0);
+var particles = engine.particles;
+var motion = [];
+var cratio = 255/h;
+
+function draw(){
+
+  ctx.background(0, 0.5);
+  particles = engine.particles
+
+  if (chance(10)) addParticles();
+  update();
+  drawParticles();
+
+}
+
+function addParticles(){
+  engine.addParticle();
+  var p = engine.last;
+  p.move = true;
+  if (chance(100)) p.move = false;
+  p.size = 10;
+  p.pos = new Vector(random(w), random(h));
+  p.speed.x = random(-10,10);
+  p.speed.y = random(-10,10);
+}
+
+function drawParticles(){
+  for (var i = 0; i < engine.particles.length; i++) {
+    b = engine.particles[i];
+    //ctx.fillStyle = b.c;
+    ctx.fillStyle = rgb(200);
+    ctx.fillEllipse(b.pos.x, b.pos.y, b.size+1, b.size+1);
+  }
+
+}
+
+
+function update(){
+
+  for (var i = 0; i < particles.length; i++) {
+    p = particles[i];
+    if (p.move) {
+      p.pos.x += p.speed.x;
+      p.pos.y += p.speed.y;
+      hitTest(i);
+      if (bounce(p.pos.x, 0, w)) p.speed.x *=-1;
+      if (bounce(p.pos.y, 0, h)) p.speed.y *=-1;
+    }
+  }
+
+
+}
+
+
+function hitTest(_i){
+  for (var j = 0; j < particles.length; j++) {
+    if (_i!=j){
+      b1 = particles[_i];
+      b2 = particles[j];
+      if (!b2.move && dist(b1.pos.x, b1.pos.y, b2.pos.x, b2.pos.y) <  b1.size/2 + b2.size/2) {
+        b1.speed *=-1;
+        b1.move = false;
+      }
+    }
+  }
+}
+
+
+
+
+</script>
+
+</body>
+
+</html>
