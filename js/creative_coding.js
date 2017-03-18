@@ -346,8 +346,9 @@ function hsl(h, s, l) {
 
 function hsla(h, s, l, a) { return 'hsla('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%, '+clamp(a,0,1)+')';};
 
-function brightness(r, g, b){
-      return Math.floor(rgbToHsl(r, g, b)[2]*100);
+function brightness(r, g, b, _scale){
+      var scale = _scale || 100;
+      return Math.floor(rgbToHsl(r, g, b)[2]*scale);
 };
 
 function rgbToHsl(r, g, b){

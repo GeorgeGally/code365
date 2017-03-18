@@ -159,7 +159,8 @@ p.drawText = function (_options){
             var b = (sourceBuffer32[pos] >> 16) & 0xff;
             var g = (sourceBuffer32[pos] >> 8) & 0xff;
             var r = (sourceBuffer32[pos] >> 0) & 0xff;
-						//console.log(r);
+						// var brt = brightness(r, g, b, 100);
+
 						if (options.colourType == "red") {
 							var c = rgb(r, 0, 0);
 						} else if (options.colourType == "green") {
