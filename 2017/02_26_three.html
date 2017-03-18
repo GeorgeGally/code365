@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ 	<script src='http://connect.soundcloud.com/sdk.js'></script>
+ 	<script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+	<script language="javascript" src="../js/three.min.js"></script>
+	<script language="javascript" src="../js/Detector.js"></script>
+	<script language="javascript" src="../js/three_setup.js"></script>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+var color, sprite, size;
+var geometry, material, mesh;
+
+function init() {
+
+	scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+
+  geometry = new THREE.SphereGeometry(120, 5, 5);
+  material = new THREE.MeshBasicMaterial({shading: THREE.FlatShading, color: 0xffffff});
+
+  for ( var i = 0; i < geometry.vertices.length; i ++ ) {
+	   var vertices = [];
+	    for ( var v = 0; v < geometry.vertices.length; v ++ ) {
+	         vertices.push( geometry.vertices[ v ].clone() );
+	         if ( v === i ) {
+	            vertices[ vertices.length - 1 ].x *= 2;
+	 						vertices[ vertices.length - 1 ].y *= 2;
+	 						vertices[ vertices.length - 1 ].z *= 2;
+	 					}
+	 }
+	geometry.morphTargets.push( { name: "target" + i, vertices: vertices } );
+	}
+
+  mesh = new THREE.Mesh(geometry, material);
+  mesh.material.morphTargets = true;
+  //mesh.position.y = 2.21;
+  scene.add(mesh);
+
+  ambientLight = new THREE.AmbientLight( 0x000000 );
+  //scene.add( ambientLight );
+
+  renderer.setClearColor( 0xf7f7f7 );
+
+}
+
+//init();
+
+
+
+function draw() {
+
+
+  for (var v = 0; v < mesh.geometry.vertices.length; v ++ ){
+    if (chance(111)) {
+      mesh.morphTargetInfluences[ v ] = random(0.01, 0.2);
+    }
+	}
+
+	renderer.render( scene, camera );
+
+}
+
+
+
+</script>
+ <!-- <script language="javascript" src="../js/soundcloud.js"></script> -->
+</body>
+</html>

@@ -17,7 +17,7 @@ body {
 	}
 </style>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -172,20 +172,17 @@ function drawParticles() {
 
 function drawCircle(object) {
   ctx.fillStyle = object.drawColor;
-  ctx.beginPath();
-  ctx.arc(object.position.x, object.position.y, objectSize, 0, Math.PI * 2);
-  ctx.closePath();
-  ctx.fill();
+	ctx.fillEllipse(object.position.x, object.position.y, objectSize, objectSize);
 }
- 
-var particles = []; 
+
+var particles = [];
 
 var midX = w / 2;
-var midY = h / 2; 
+var midY = h / 2;
 
 // Add one emitter located at `{ x : 100, y : 230}` from the origin (top left)
 // that emits at a velocity of `2` shooting out from the right (angle `0`)
-var emitters = [new Emitter(new Vector(midX - 150, midY), Vector.fromAngle(0, 2))];
+var emitters = [new Emitter(new Vector(midX - 150, midY), Vector.fromAngle(-2, 2))];
 
 // Add one field located at `{ x : 400, y : 230}` (to the right of our emitter)
 // that repels with a force of `140`

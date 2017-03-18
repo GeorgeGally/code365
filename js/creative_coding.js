@@ -13,6 +13,10 @@ p.colour = function (r, g, b, a){
 //   this.fillStyle = this.getColour(r, g, b, a);
 // }
 
+p.lineStyle = function (r, g, b, a){
+  'use strict';
+  this.strokeStyle = this.getColour(r, g, b, a);
+};
 
 p.lineColour = function (r, g, b, a){
   'use strict';
@@ -247,13 +251,27 @@ p.eqTriangle = function(x, y, sz, down) {
 
 
 p.background = function (r, g, b, a){
- this.fillStyle = this.getColour(r, g, b, a);;
+  var c = this.getMyCurrentFill();
+ this.fillStyle = this.getColour(r, g, b, a);
  this.fillRect(0, 0, w, h);
+ this.fillStyle = c;
+
 };
+
+p.getMyCurrentFill = function() {
+  //console.log(ctx.fillStyle);
+  var r = parseInt(ctx.fillStyle.substring(1,3), 16);
+  var g = parseInt(ctx.fillStyle.substring(3,5), 16);
+  var b = parseInt(ctx.fillStyle.substring(5), 16);
+  return rgb(r,g,b);
+}
+
+
+
 
 function radians(deg) {return deg*Math.PI/180;};
 
-function degrees(rad) {return rad*180/Math.PI;};
+function degrees(rad) {return (rad*180/Math.PI)%360;};
 
 function degreesToPoint(deg, diameter) {
     var rad = Math.PI * deg / 180;
@@ -315,8 +333,10 @@ function rgba(r, g, b, a) {
    return 'rgb('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+')';
  } else if (b == undefined) {
     return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(g,0,1)+')';
- } else {
- return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', '+clamp(a,0,1)+')';
+  } else if (a == undefined){
+  return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', 1)';
+} else {
+return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', '+clamp(a,0,1)+')';
  }
 };
 
@@ -488,7 +508,7 @@ function greyscale(data){
     return data;
 }
 
-function angle(cx, cy, ex, ey) {
+function getAngle(cx, cy, ex, ey) {
   var dy = ey - cy;
   var dx = ex - cx;
   var theta = Math.atan2(dy, dx); // range (-PI, PI]
@@ -654,7 +674,6 @@ function makeGrid(_w, _h){
   k++;
   }
 };
-//console.log(grid);
  return grid;
 }
 
@@ -663,18 +682,18 @@ function colourPool(){
 
   this.colours = [];
   this.probs = [];
-  this.list = [];
+  this.colour_list = [];
 
   this.add = function(_colour, _prob){
     if (_prob == undefined)_prob = 1;
     this.colours.push(_colour);
     this.probs.push(_prob);
-    this.list  = this.generateWeighedList(this.colours, this.probs);
+    this.colour_list  = this.generateWeighedList(this.colours, this.probs);
     return this;
   }
 
   this.get = function(){
-    return this.list[randomInt(this.list.length-1)];
+    return this.colour_list[randomInt(this.colour_list.length-1)];
   }
 
   this.generateWeighedList = function(list, weight) {
@@ -694,13 +713,89 @@ function colourPool(){
     return weighed_list;
 };
 
-// var list = ['javascript', 'php', 'ruby', 'python'];
-// var weight = [0.5, 0.2, 0.2, 0.1];
-// var weighed_list = this.generateWeighedList(list, weight);
-//
-// console.log(weighed_list);
   return this;
 }
+
+var Vector = function(_x, _y, _z){
+  this.x = _x || 0;
+  this.y = _y || 0;
+  this.z = _z || 0;
+
+  this.add = function(_vector){
+    this.x += _vector.x || 0;
+    this.y += _vector.y || 0;
+    this.z += _vector.z || 0;
+    return this;
+  }
+
+  this.subtract = function(_vector){
+    this.x -= _vector.x || 0;
+    this.y -= _vector.y || 0;
+    this.z -= _vector.z || 0;
+    return this;
+  }
+
+  this.subtr = function(_vector2){
+    var v = new Vector();
+    v.x = this.x - _vector2.x || 0;
+    v.y = this.y - _vector2.y || 0;
+    v.z = this.z - _vector2.z || 0;
+    return v;
+  }
+
+  this.multiply = function(_vector){
+    this.x *= _vector.x || 0;
+    this.y *= _vector.y || 0;
+    this.z *= _vector.z || 0;
+    return this;
+  }
+
+  this.divide = function(_vector){
+    this.x /= _vector.x || 1;
+    this.y /= _vector.y || 1;
+    this.z /= _vector.z || 1;
+    return this;
+  }
+
+  this.angle = function(x1, x2){
+    return degrees(Math.atan2(this.x - x1, this.y - y2)) || degrees(Math.atan2(this.y/this.y));
+  }
+
+  this.velocity = function(){
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
+
+  // return the angle of the vector in radians
+  this.getDirection = function() {
+  	return Math.atan2(this.y, this.x);
+  };
+
+  // set the direction of the vector in radians
+  this.setDirection = function(direction) {
+  	var magnitude = this.getMagnitude();
+    this.x = Math.cos(angle) * magnitude;
+    this.y = Math.sin(angle) * magnitude;
+  };
+
+  // get the magnitude of the vector
+  this.getMagnitude = function() {
+  	// use pythagoras theorem to work out the magnitude of the vector
+    //console.log("y: "+ this.y * this.y);
+  	return Math.sqrt((this.x * this.x) + (this.y * this.y));
+  };
+
+  // set the magnitude of the vector
+  this.setMagnitude = function(magnitude) {
+  	var direction = this.getDirection();
+  	this.x = Math.cos(direction) * magnitude;
+  	this.y = Math.sin(direction) * magnitude;
+  };
+
+  return this;
+
+}
+
+
 
 function createGrid(_gw, _gh, _w, _h){
 
@@ -728,9 +823,101 @@ function createGrid(_gw, _gh, _w, _h){
 
 }
 
+
+function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _starty){
+
+  if (_num_items_horiz == undefined) _num_items_horiz = 1;
+  if (_num_items_vert == undefined) _num_items_vert = 1;
+  var _horiz = _num_items_horiz || 1;
+  var _vert = _num_items_vert || 1;
+
+  this.spacing_x;
+  this.spacing_y;
+
+  this.num_items_horiz = 0;
+  this.num_items_vert = 0;
+
+  this.start = {x: _startx || 0 , y: _starty || 0};
+
+  this.grid_w = _grid_w || window.innerWidth;
+  this.grid_h = _grid_h || window.innerHeight;
+
+  this.x = [];
+  this.y = [];
+
+  this.add = function(_horiz, _vert) {
+
+    this.num_items_horiz += _horiz || 1;
+    this.num_items_vert += _vert || 1;
+
+    this.spacing_x = this.grid_w / this.num_items_horiz;
+    this.spacing_y = this.grid_h / this.num_items_vert;
+
+    this.createGrid();
+
+    return this;
+
+  }
+
+
+  this.setStart = function(_x, _y) {
+
+     this.start = {x: _x || 0 , y: _y || 0};
+     createGrid();
+
+  }
+
+  this.createGrid = function() {
+
+    for (var _y = 0; _y < this.grid_h; _y+=this.spacing_y) {
+
+      for (var _x = 0; _x < this.grid_w; _x+=this.spacing_x) {
+
+        this.x.push(this.start.x + this.spacing_x/2 + _x);
+        this.y.push(this.start.y + this.spacing_y/2 + _y);
+
+      }
+    };
+
+  }
+
+  this.add(_horiz, _vert);
+
+  return this;
+
+}
+
+
 ////// EFFECTS
 
-function pixelate(blocksize,blockshape) {
+p.pixelate = function (blocksize) {
+
+  if (blocksize == undefined) blocksize = 20;
+  var imgData=this.getImageData(0,0,w,h);
+
+  this.clearRect(0,0,w,h);
+
+    var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+    for(var x = 0; x < w; x += blocksize)
+    {
+        for(var y = 0; y < h; y += blocksize)
+        {
+
+          var pos = (x + y * w);
+          var b = (sourceBuffer32[pos] >> 16) & 0xff;
+          var g = (sourceBuffer32[pos] >> 8) & 0xff;
+          var r = (sourceBuffer32[pos] >> 0) & 0xff;
+          ctx.fillStyle = rgb(r,g,b);
+          ctx.fillRect(x, y, blocksize, blocksize);
+
+        }
+    }
+
+}
+
+
+function pixelate(blocksize,blockshape, _ctx) {
+  if (_ctx == undefined) _ctx = ctx;
   if (blockshape == undefined) blockshape = 0;
   if (blocksize == undefined) blocksize = 20;
   var imgData=ctx.getImageData(0,0,w,h);
@@ -1002,6 +1189,28 @@ function mirror(){
 
 }
 
+
+function hasClass(el, className) {
+  if (el.classList)
+    return el.classList.contains(className)
+  else
+    return !!el.className.match(new RegExp('(\\s|^)' + className + '(\\s|$)'))
+}
+
+function addClass(el, className) {
+  if (el.classList)
+    el.classList.add(className)
+  else if (!hasClass(el, className)) el.className += " " + className
+}
+
+function removeClass(el, className) {
+  if (el.classList)
+    el.classList.remove(className)
+  else if (hasClass(el, className)) {
+    var reg = new RegExp('(\\s|^)' + className + '(\\s|$)')
+    el.className=el.className.replace(reg, ' ')
+  }
+}
 
 
 function ScaleImage(srcwidth, srcheight, targetwidth, targetheight, fLetterBox) {

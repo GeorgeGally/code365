@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body style="background: #fff;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+
+var num = 20;
+var grid = createGrid(20, 1, w, h);
+
+var engine = new particleEngine(num, grid);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  setParticles(p, engine);
+}
+
+function setParticles(p, _engine) {
+  p.size = random(20,250);
+  p.size2 = 120;
+  p.orbit = new Vector(w/2, h/2);
+  p.angle = random(360);
+  p.angle2 = random(360);
+  p.speed = new Vector(random(-4,4), posNeg()*random(0.2,4));
+}
+
+function draw() {
+
+  //ctx.background(255, 0.035);
+  ctx3.clearRect(0,0,w,h);
+
+
+
+      for (var i = 0; i < engine.particles.length; i++) {
+          var p = engine.particles[i];
+
+          update(p, engine);
+
+          drawArm(p);
+
+          drawOrbits(p);
+
+  }
+
+}
+
+
+function drawArm(p){
+  // ctx3.fillStyle = rgba(0,0,0, 0.8);
+  // ctx3.fillEllipse(p.pos.x, p.pos.y, 40, 40);
+  // ctx.strokeStyle = rgba(0,0.05);
+  ctx3.fillStyle = rgba(200,0,0);
+  ctx3.fillEllipse(p.pos.x, p.pos.y, 5, 5);
+  // ctx.line(p.pos.x, p.pos.y, p.pos.x, h);
+}
+
+function drawOrbits(p){
+  ctx3.fillStyle = rgba(200,0,0);
+  ctx3.fillEllipse(p.orbit.x, p.orbit.y, p.size/3, p.size/3);
+  ctx3.fillStyle = rgba(255);
+  ctx3.fillEllipse(p.orbit.x, p.orbit.y, 5, 5);
+  ctx.strokeStyle = rgba(0,0.05);
+  ctx.line(p.pos.x, p.pos.y, p.orbit.x, p.orbit.y);
+  ctx3.strokeStyle = rgba(200,0,0,0.5);
+  ctx3.line(p.pos.x, p.pos.y, p.orbit.x, p.orbit.y);
+}
+
+
+function update(p, _engine) {
+
+    p.angle += 1.59;
+    p.pos.y = h/2 + Math.sin(p.angle/400)*h/2;;
+    p.angle2 += p.speed.y/120;
+    p.orbit.x = p.pos.x + Math.cos(p.angle2) * p.size2;
+    p.orbit.y = p.pos.y + Math.sin(p.angle2) * p.size2;
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

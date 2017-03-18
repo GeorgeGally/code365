@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/snap.svg-min.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var s = Snap();
+
+var colours = new colourPool();
+colours.add('#ff0000', 20);
+colours.add('#000', 50);
+colours.add('#003377', 20);
+
+
+// Lets create big circle in the middle:
+//var bigCircle = s.circle(w/2, 150, 100);
+var circs = [];
+var num_circs = 25;
+var engine = new particleEngine(num_circs);
+engine.bounce = 1;
+
+var pat = s.path("M10-5-10,15M15,0,0,15M0-5-20,15").attr({
+        fill: "none",
+        // stroke: "#bada55",
+        // stroke: "#000",
+        stroke: rgba(0,0,0,0.4),
+        strokeWidth: 4
+    });
+
+pat = pat.pattern(0, 0, 10, 10);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.vol = 0;
+
+  p.size = randomInt(15,125);
+  p.c = rgb(random(255), random(255), random(55));
+  p.c = colours.get();
+  p.circle = s.circle(p.pos.x, p.pos.y, p.size);
+  //circs[i] = s.circle(p.x, h/2, 100);
+  p.circle.attr({
+    //fill: p.c,
+    fill: pat
+  })
+}
+
+function draw() {
+  //ctx.background(0);
+  engine.moveParticles();
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.circle.attr({
+      cx: p.pos.x,
+      cy: p.pos.y
+    })
+  }
+
+}
+
+
+
+</script>
+ <!-- <script language="javascript" src="../js/soundcloud.js"></script> -->
+
+</body>
+
+</html>

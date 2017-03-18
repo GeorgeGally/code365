@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body style="background: #fff;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+
+var imagedata = ctx.getImageData(0, 0, width, height);
+var engine = new particleEngine(1);
+var p = engine.last;
+p.radius = 40000;
+
+function setPixel(x, y, r, g, b, a) {
+  var i = (y * w + x) * 4;
+  var d = dist(x,y, p.pos.x, p.pos.y);
+  var c = p.radius / d;
+  imagedata.data[i++] = c;
+  imagedata.data[i++] = c;
+  imagedata.data[i++] = c;
+  imagedata.data[i] = 255;
+}
+
+
+function draw() {
+  p.pos = new Vector(mouseX, mouseY);
+  for( var y = 0 ; y < h; y++ ) {
+    for( var x = 0 ; x < w; x++ ) {
+      // set the colour randomly
+      setPixel(x, y, randomInt(255), randomInt(255), randomInt(255), 255);
+    }
+  }
+  ctx.putImageData( imagedata, 0, 0 );
+  console.log("done");
+  ctx.strokeStyle = "white";
+  ctx.strokeEllipse(p.pos.x, p.pos.y, 100,100);
+}
+
+
+
+
+
+
+
+</script>
+
+</body>
+
+</html>

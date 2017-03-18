@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+
+var engine = new particleEngine(4);
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.size = random(40,100);
+  p.angle = radians(random(360));
+  if (i>0) p.parent = engine.particles[i-1];
+}
+
+function draw() {
+
+  ctx.background(250, 0.02);
+  ctx3.clearRect(0,0,w,h);
+
+    update();
+
+      for (var i = 0; i < engine.particles.length; i++) {
+          var p = engine.particles[i];
+          drawArm(p);
+
+          ctx3.fillStyle = rgb(220,0,0, 0.5);
+          ctx3.fillEllipse(p.end.x, p.end.y, 2, 2);
+  }
+
+  ctx2.fillStyle = rgb(0,0,0, 0.5);
+  ctx2.fillEllipse(engine.particles[engine.particles.length-1].end.x, engine.particles[engine.particles.length-1].end.y, 2, 2);
+
+  ctx.fillStyle = rgba(220,0,0, 0.1);
+  ctx.fillEllipse(engine.particles[0].pos.x, engine.particles[0].pos.y, 20, 20);
+  ctx.fillStyle = rgba(220,0,0, 0.5);
+  ctx.fillEllipse(engine.particles[0].pos.x, engine.particles[0].pos.y, 4, 4);
+
+
+
+}
+
+function drawArm(p){
+  ctx.strokeStyle = rgba(0,0.5);
+  ctx.line(p.pos.x, p.pos.y, p.end.x, p.end.y);
+
+
+}
+
+
+function update() {
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.angle += p.speed.x/100;
+  //p.angle = Math.sin(frameCount/((1+p.me)*100))* 3.2;
+  if (i>0) {
+    p.pos = engine.getEnd(p.parent)
+  } else {
+    p.pos.x = w/2 + Math.cos(frameCount/100) *200;
+    p.pos.y = h/2 + Math.sin(frameCount/100) *200;
+  }
+
+  p.end = engine.getEnd(p);
+
+
+  }
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

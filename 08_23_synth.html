@@ -15,7 +15,7 @@
 	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -79,7 +79,7 @@ var notes = [];
 //notes = ["C3","D3","E3","F3","G3","A3","B3","C4","D4","E4","A4","G4","A4","B4"];
 notes = [69,69,67,65,64,67,66,64,62,65,64,62,57,55,60,57];
 
-setupSegments(); 
+setupSegments();
 resetBalls();
 
 // for (var i = 0; i < num_spikes; i++) {
@@ -97,7 +97,7 @@ resetBalls();
 maxiAudio.play = function() {
 
 	clock.ticker();
-	
+
 	if(clock.tick){
 		//console.log("tick")
 		transport_position = (transport_position + 1)%steps;
@@ -109,16 +109,16 @@ maxiAudio.play = function() {
 	//console.log(actual)
 	if (segments.particles[actual].on) {
 
-	//first 
+	//first
 	var wave = osc_speed*osc[0].sinewave(frameCount/1000);
 	var osc1 = osc[1].sinewave(wave);
-	
+
 	// second oscilator
-	
+
 	var wave2 = 656*osc[2].sinewave(segments.particles[actual].note);
 	var osc2 = osc[3].sinewave(wave2);
 	var osc3 = osc[4].sinewave(osc1);
-	
+
 	}
 
 	// var all = osc1 + osc2 + osc3;
@@ -135,7 +135,7 @@ maxiAudio.play = function() {
 	//master_output =  drums;
 	// this.output = master_output * master_vol;
 	this.output = final_wave * master_vol;
-	
+
 
 
 }
@@ -152,7 +152,7 @@ function draw(){
 	drawBalls();
 	arcSegments(steps ,220);
 	startStop();
-		
+
 }
 
 
@@ -167,11 +167,11 @@ function drawBalls(){
 		sequencerHittestBall(b);
 		b.position.x += b.speed.x * accelerate;
 		b.position.y += b.speed.y * accelerate;
-		
+
 		if (dist(b.position.x, b.position.y, mouseX, mouseY) < b.sz/2) hit(b);
 
 		if (b.position.x >= w-b.sz/2 || b.position.x <= b.sz/2) b.speed.x *=-1;
-		if (b.position.y >= h-b.sz/2 || b.position.y <= b.sz/2) b.speed.y *=-1;	
+		if (b.position.y >= h-b.sz/2 || b.position.y <= b.sz/2) b.speed.y *=-1;
 
 		if (b.counter < frameCount) {
 			b.c = rgba(200, 0.4);
@@ -219,20 +219,20 @@ function resetBalls(){
 }
 
 
-function sequencerHittestBall(b){ 
-	
-	var a = angle(w/2, h/2, b.position.x, b.position.y);
+function sequencerHittestBall(b){
+
+	var a = getAngle(w/2, h/2, b.position.x, b.position.y);
 
 	for (var i = 0; i < segments.particles.length; i++) {
-		
+
 	var t = segments.particles[i];
 
-	if (b.position.x > w/2) { 
+	if (b.position.x > w/2) {
 		sz = b.sz/2;
 	} else {
 		sz = -b.sz/2;
 	}
-	if (b.position.y > h/2) { 
+	if (b.position.y > h/2) {
 		sz2 = b.sz/2;
 	} else {
 		sz2 = -b.sz/2;
@@ -246,7 +246,7 @@ function sequencerHittestBall(b){
 
 
 		if (t.on && b.on) {
-			
+
 			t.on = true;
 			b.on = false;
 			hit(b);
@@ -255,7 +255,7 @@ function sequencerHittestBall(b){
 			//shoveBall(b, t);
 
 		} else if (t.on && !b.on) {
-			
+
 			t.on = false;
 			b.on = true;
 			t.accent = false;
@@ -270,21 +270,21 @@ function sequencerHittestBall(b){
 
 		}
 
-    	} 
+    	}
 	}
 
 }
 
 
 function selfHittest(b){
-		
+
 	for (var j = 0; j < balls.particles.length; j++) {
-		
+
 		if (j != b.me) {
-			
+
 			p2 = balls.particles[j];
 			var d = dist(b.position.x, b.position.y, p2.position.x, p2.position.y);
-			
+
 			if (d < b.sz) {
 
 				//closed_hats.trigger();
@@ -297,9 +297,9 @@ function selfHittest(b){
 				hit(b);
 
 
-			} 
+			}
 		}
-				
+
 	}
 }
 
@@ -332,13 +332,13 @@ function startStop(){
 
 
 function moveDial(p){
-	
+
 	if (!dragging && dist(p.x, p.y, mouseX, mouseY) > p.sz/2 - 2 && dist(p.x, p.y, mouseX, mouseY) < p.sz/2 +4 ) {
 				p.over = true;
 			} else {
 				p.over = false;
 			}
-			
+
 			if (p.over || p.drag) {
 				ctx.strokeStyle = "#7da7d9";
 			} else {
@@ -356,9 +356,9 @@ function moveDial(p){
 				if (mouseX < oldX) {
 					p.s = tween(p.s, p.s + dist(oldX, oldY, mouseX, mouseY)/10, 20);
 				} else {
-					p.s = tween(p.s, p.s - dist(oldX, oldY, mouseX, mouseY)/10, 20);	
+					p.s = tween(p.s, p.s - dist(oldX, oldY, mouseX, mouseY)/10, 20);
 				}
-			
+
 			p.s	= clamp(p.s, 1, 180);
 
 			}
@@ -388,7 +388,7 @@ addSpikes = function(_x, _y, _colour, _me){
 
 	spikes.push(spike);
 }
-	
+
 
 function arcSegments(num ,r){
 
@@ -399,9 +399,9 @@ function arcSegments(num ,r){
 
 
 
-function setupSegments() { 
+function setupSegments() {
 
-    for(var i = 0; i < segments.particles.length; i++){ 
+    for(var i = 0; i < segments.particles.length; i++){
 
     	var s = segments.particles[i];
     	s.accent = false;
@@ -411,44 +411,44 @@ function setupSegments() {
     	s.startAngle = startAngle;
     	s.endAngle = endAngle;
     	s.c = "#72d0f4";
-    	// increase per segment        
+    	// increase per segment
     	startAngle += segmentWidth;
     	endAngle += segmentWidth;
 
     }
 }
 
-	
-function drawSegments(radius) {   
-          
-    for(var i = 0; i < segments.particles.length; i++){ 
-    	
+
+function drawSegments(radius) {
+
+    for(var i = 0; i < segments.particles.length; i++){
+
     	var s = segments.particles[i];
     	s = switchSegments(s);
 
 
-    	if (!stop) { 
+    	if (!stop) {
 
 	    	if (transport_position == i) {
-	    		
+
 	    		if (s.on) {
 	    			//console.log(s.note);
 	    			ctx.strokeStyle = "#ef662f";
 	    		} else {
 	    			ctx.strokeStyle = rgba(239, 102, 47, 0.3);
 	    		}
-	    		
-	    		
+
+
 	    	} else {
 
-	    		ctx.strokeStyle = s.c;	
+	    		ctx.strokeStyle = s.c;
 
 	    	}
 
 	    	//if (i == 0) ctx.strokeStyle = "black";
-    	
+
     	}
-    	
+
     	ctx.beginPath();
     	ctx.arc(w/2, h/2, segment_radius, (s.startAngle * Math.PI / 180), ((s.endAngle-1) * Math.PI / 180), false);
     	ctx.lineWidth = segmentLineWidth;
@@ -459,8 +459,8 @@ function drawSegments(radius) {
 
 
 function switchSegments(p){
-	
-	var a = angle(w/2, h/2, mouseX, mouseY);
+
+	var a = getAngle(w/2, h/2, mouseX, mouseY);
 	var d = dist(w/2, h/2, mouseX, mouseY);
 
 	if (d > segment_radius - segmentLineWidth/2  && d < segment_radius + segmentLineWidth/2 && a > p.
@@ -468,26 +468,26 @@ function switchSegments(p){
 		p.over = true;
 		p.c = "red";
 		p.c = hsl(10 + 18*40, 80, 50);
-	
+
 	} else {
-	
+
 		p.over = false;
 		p.c = "#eee";
-	
-	}		
+
+	}
 
 	if (p.over && mousePressed && !dragging && p.on && lastclick < frameCount) {
-		
+
 		p.on = false;
 		console.log("click");
 		lastclick = frameCount;
 
 	} else if (p.over && mousePressed && !dragging && !p.on && lastclick < frameCount) {
-		
+
 		lastclick = frameCount;
 		p.on = true;
 
-	} 
+	}
 
 	if (p.on) {
 		if(p.accent) {
@@ -495,20 +495,20 @@ function switchSegments(p){
 		} else {
 			p.c = "#72d0f4";
 		}
-		
 
-	} 
+
+	}
 
 	if (p.over && !p.on) {
-		
+
 		p.c = "red";
-	
+
 	}
 
 	if (p.over && mousePressed) {
-		
+
 		p.c = "#ef662f";
-	
+
 	}
 	return p;
 
@@ -517,8 +517,8 @@ function switchSegments(p){
 function moveSpikes(){
 	for (var i = 0; i < spikes.length; i++) {
 		var p = spikes[i];
-		//var me = (p.me)%256; 
-		//p.angle += radians(p.speedx); 
+		//var me = (p.me)%256;
+		//p.angle += radians(p.speedx);
 		// var r = 8 + tween(radius, map(mapSound(p.me, num_particles), 0,100, 0, 20), 8);
 		// var r = 2+ radius/2;
 		// r =  map(mapSound(p.me, num_particles), 0, 150, radius, radius + 180);
@@ -533,7 +533,7 @@ function moveSpikes(){
 		x = p.x + Math.floor((radius + p.r) * Math.cos(p.angle));
 		y = p.y + Math.floor((radius + p.r) * Math.sin(p.angle));
 
-		ctx.lineWidth = 2;			
+		ctx.lineWidth = 2;
 		ctx.strokeStyle = p.c;
 		ctx.line(x2, y2, x,y);
 		ctx.fillEllipse(x, y, 10, 10);
@@ -545,7 +545,7 @@ function moveSpikes(){
 
 // var object = {
 //     // pixelWidth : pixelWidth,
-//     // pixelHeight : pixelHeight,  
+//     // pixelHeight : pixelHeight,
 //     prob : prob,
 //     range: [1, 100],
 //     xy: [pixelWidth,pixelWidth]
@@ -553,7 +553,7 @@ function moveSpikes(){
 
 // var controlKit = new ControlKit();
 // 	controlKit.addPanel({label: 'Control Panel', align: 'left', fixed: false, position: [w-250, h-280], width: 200})
-//      .addSlider(object, 'prob', 'range', { onChange: function(index){ 
+//      .addSlider(object, 'prob', 'range', { onChange: function(index){
 //     	prob =  object.prob;
 //     	glitch(); }}, {label: 'Probability'}
 //     )
@@ -561,7 +561,7 @@ function moveSpikes(){
 //                 onChange:function(index){
 
 //             	pixelWidth = 1 + Math.floor(Math.round(object.xy[0]*object.xy[0]*300));
-            	
+
 //             	pixelHeight = 1 + Math.floor(Math.round(object.xy[1]*object.xy[1]*300));
 //             	//console.log(pixelWidth + " : " + pixelHeight)
 //             	glitch();

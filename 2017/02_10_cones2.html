@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var colours = new colourPool();
+colours.add('#fff', 50);
+colours.add('#000', 50);
+var num_circs = 550;
+var engine = new particleEngine(num_circs);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.vol = 0;
+  p.grid2 = createGrid(1,20);
+  p.c = rgb(random(255), random(255), random(55));
+  //p.c = colours.get();
+}
+
+function draw() {
+
+  ctx.clearRect(0,0,w,h);
+  drawCone(w/2,h/2);
+  // drawCone(w-w/4,h/4);
+  // drawCone(w/4,h-h/4);
+  // drawCone(w-w/4,h-h/4);
+
+}
+
+
+
+function drawCone(startx, starty){
+
+  for (var i = 0; i < num_circs; i++) {
+    var p = engine.particles[i];
+    if(chance(2)) ctx.fillStyle = p.c;
+    p.vol = tween(p.vol, mapSound(i, num_circs), 10);
+    p.pos.x = tween(p.pos.x, Math.cos(frameCount/120 + getTotalVolume()/120) * 1, 5);;
+    p.pos.y = tween(p.pos.y, Math.sin(frameCount/100 + getTotalVolume()/120) * 1, 5);;
+    ctx.HfillEllipse(startx - i/2*p.pos.x, starty - i/2*p.pos.y, map(p.vol, 0,255, 300,500) - i/2);
+  }
+}
+
+
+</script>
+ <script language="javascript" src="../js/soundcloud.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+
+
+var ctx = createCanvas("canvas1");
+//ctx.lineCap="round";
+
+var worms = [];
+//console.log(worm);
+
+for (var i = 0; i < 300; i++) {
+  worms[i] = new Worm(i);
+}
+
+function draw(){
+  ctx.background(250, 0.05);
+  for (var i = 0; i < worms.length; i++) {
+    worms[i].update();
+  }
+}
+
+
+function Worm(i){
+   this.x = [];
+   this.y = [];
+   this.me = i;
+   this.xx = random(w);
+   this.yy = random(h);
+   this.segLength = 10;
+   this.numSegs = 30;
+   ctx.lineWidth = 1;
+   ctx.strokeStyle = rgba(0,0,0,1);
+
+   for (var i = 0; i < this.numSegs; i++) {
+    this.x.push(this.xx);
+    this.y.push(this.yy);
+  }
+
+
+
+   this.dragSegment = function(i, xin, yin) {
+
+    var dx = xin - this.x[i];
+    var dy = yin - this.y[i];
+    var angle = Math.atan2(dy, dx);
+
+    var x = xin - Math.cos(angle) * this.segLength;
+    this.x[i] = tween(this.x[i], x, 5);
+
+    var y = yin - Math.sin(angle) * this.segLength;
+    this.y[i] = tween(this.y[i], y, 5);
+    this.segment(this.x[i], this.y[i], angle);
+  }
+
+  this.segment = function(x, y, a) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(a);
+    ctx.line(0, 0, this.segLength, 0);
+    ctx.restore();
+  }
+
+  this.update = function(){
+  //   if(audioChannelVolume[10]) {
+  //     this.xx = tween(this.xx, map(mapSound(this.me, worms.length/2), 0, 200, 0, w), 50);
+  //   this.yy = tween(this.yy,map(mapSound(this.me, worms.length/2), 0, 200, 0, h), 50);
+  // }
+    this.xx += random(-10, 10);
+    //this.xx += Math.cos(this.me + frameCount/1000)*random(100);
+    this.yy += random(-10, 10);
+    //this.yy += Math.sin(this.me + frameCount/1000)*random(100);
+
+    this.dragSegment(0, this.xx, this.yy);
+
+    for(var i=0; i<this.x.length-1; i++) {
+      this.dragSegment(i+1, this.x[i], this.y[i]);
+    }
+  }
+
+}
+
+
+</script>
+ <!-- <script language="javascript" src="../js/soundcloud.js"></script> -->
+</body>
+</html>

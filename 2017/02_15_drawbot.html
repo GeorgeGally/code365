@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body style="background: #fff;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+
+var num = 3;
+var grid = createGrid(num, 1, w, h);
+
+var engine = new particleEngine(num, grid);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  setParticles(p, engine);
+}
+
+function setParticles(p, _engine) {
+  // p.size = random(60,150);
+  p.size = 90;
+  // p.engine = new particleEngine(randomInt(2, 3));
+  p.engine = new particleEngine(3);
+  p.size2 = 120;
+  p.orbit = new Vector(w/2, h/2);
+  p.angle = random(360);
+  p.angle2 = random(360);
+  p.speed = new Vector(random(-4,4), posNeg()*random(0.2,4));
+}
+
+function draw() {
+
+  //ctx.background(255, 0.035);
+  ctx3.clearRect(0,0,w,h);
+
+
+
+      for (var i = 0; i < engine.particles.length; i++) {
+          var p = engine.particles[i];
+          ctx3.lineWidth = 1;
+
+          updateMain(p);
+          drawArm(p);
+          for (var j = 0; j < p.engine.particles.length; j++) {
+            var p2 = p.engine.particles[j];
+            updateOrbits(p, p2)
+            drawOrbits(p, p2);
+          //
+          }
+          ctx3.lineWidth = 2;
+          ctx3.line(p.pos.x, p.pos.y, p.pos.x, h);
+  }
+
+}
+
+
+function drawArm(p){
+  ctx3.fillStyle = rgba(255,0,0);
+  ctx3.fillEllipse(p.pos.x, p.pos.y, 15, 15);
+}
+
+
+
+function drawOrbits(p, p2){
+  ctx3.fillStyle = rgba(255,0,0);
+  ctx3.fillEllipse(p2.pos.x, p2.pos.y, 10, 10);
+  ctx.fillStyle = rgba(0,0,0, 0.1);
+  ctx.HfillEllipse(p2.pos.x, p2.pos.y, p.size/1.6, p.size/1.6);
+  ctx.strokeStyle = rgba(255,0.2);
+  ctx.HstrokeEllipse(p2.pos.x, p2.pos.y, p.size/1.6, p.size/1.6);
+  // ctx3.fillStyle = rgba(255);
+  // ctx3.fillEllipse(p2.pos.x, p2.pos.y, 5, 5);
+  ctx3.strokeStyle = rgba(255,0,0);
+  ctx3.line(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y);
+}
+
+
+function updateMain(p) {
+
+    p.angle += 1.5;
+    p.pos.y = h/2 + Math.sin(p.angle/200)*h/2;;
+
+}
+
+
+function updateOrbits(p, p2) {
+
+    p2.angle += p2.speed.y/60;
+    p2.pos.x = p.pos.x + Math.cos(p2.angle) * p.size;
+    p2.pos.y = p.pos.y + Math.sin(p2.angle) * p.size;
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

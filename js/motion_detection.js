@@ -65,3 +65,11 @@ function motionDetection(_samplesize, _flip){
 		//ctx.fillRect(target_topLeft.x, target_topLeft, target_bottomRight.x-target_topLeft.x, target_bottomRight.y-target_topLeft.y);
 		return motion_array;
 }
+
+// function getPixelValue(buffer, x, y, w){
+// 	var pos = x + y * w;
+// 	var r = buffer[pos] >> 0 & 0xff;
+// 	var g = buffer[pos] >> 8 & 0xff;
+// 	var b = buffer[pos] >> 16 & 0xff;
+// 	return {r: r, g: g, b: b}
+// }

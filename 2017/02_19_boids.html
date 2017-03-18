@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/new_vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body style="background: #000;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var res = 5;
+//var imagedata = ctx.getImageData(0, 0, w, h);
+var engine = new particleEngine(1);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+  p.acceleration = new Vector(0,0);
+  p.bounce = true;
+  p.velocity = new Vector(0,0);
+  p.desired = new Vector(0,0);
+  p.steer = new Vector(0,0);
+  p.r = 6;
+  p.maxspeed = 4;
+  p.maxforce = 0.1;
+  p.pos = new Vector(random(w),random(h));
+}
+
+
+
+function draw() {
+  ctx.background(250);
+
+  //engine.moveParticles();
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    seek(p, new Vector(mouseX, mouseY));
+    update(p);
+    display(p);
+
+
+  //   if(bounce(p.pos.x, 0, w, 40)) p.speed.x*=-1;
+  //   if(bounce(p.pos.y, 0, h, 40)) p.speed.y*=-1;
+  //
+  //   p.pos.x += p.speed.x;
+  //   p.pos.y += p.speed.y;
+  //
+}
+
+
+    ctx.strokeStyle = "red";
+    ctx.strokeEllipse(mouseX, mouseY, 100,100);
+  //
+  // }
+  //console.log("done");
+
+}
+
+function seek(p, target) {
+p.desired = target.subtract(p.location);
+p.desired.normalize();
+p.desired.multiply(p.maxspeed);
+p.steer = p.desired.subtract(p.velocity);
+p.steer.limit(p.maxforce);
+
+applyForce(p);
+}
+
+function applyForce(p) {
+  // We could add mass here if we want A = F / M
+
+  p.acceleration.addTo(p.steer);
+
+//console.log(p.acceleration);
+}
+
+
+function update(p) {
+  // We could add mass here if we want A = F / M
+  p.velocity.addTo(p.acceleration);
+
+  p.velocity.limit(p.maxspeed);
+  p.pos.addTo(p.velocity);
+
+  p.acceleration.multiply(0);
+}
+
+
+function display(p) {
+  var theta = p.velocity.getDirection();
+  ctx.save();
+  ctx.rotateDegrees(theta);
+  ctx.fillStyle = "grey";
+  ctx.eqFillTriangle(p.pos.x, p.pos.x, 30);
+  ctx.restore();
+}
+
+
+
+
+
+</script>
+
+</body>
+
+</html>

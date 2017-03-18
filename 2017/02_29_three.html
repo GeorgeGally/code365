@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ 	<script src='http://connect.soundcloud.com/sdk.js'></script>
+ 	<script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/three.min.js"></script>
+	<script language="javascript" src="../js/Detector.js"></script>
+  <script language="javascript" src="../js/three_setup.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+
+var cameraAndLight;
+var listening = 0;
+
+var colorType = 1; // The type of colors used on the sphere, controlled by a popup menu:
+                   //    0 = No colors: color of every face is white (Three.NoColors)
+                   //    1 = One color per face:  A single color per face, stored in geometry  (Three.FaceColors)
+                   //    2 = Three colors per face:  Three colors per face, stored in geometry (Three.VertexColors)
+                   //    3 = One color per vertex:  Three colors per face, but color copied from vertexColor array
+
+var faceColorVelocities;   // Array of speeds, one for each face, at which the face
+                           // the face colors change.  Used for "One color per face".
+var faceVertexColorVelocities;  // A 2D array.  Each element is an array of three speeds,
+                                // used for "Three colors per face".
+var vertexColors;  // An array of one color for each vertex, for use for "One color per vertex"
+var vertexColorVelocities; // Array of speeds at which hues of vetex colors changed,
+                           // used for "One color per vertex".
+var saveFaceVertexColors; // save the arrays of vertex color from the geometry while doing One color per vertex
+
+var vertexAnimData = [];  // Array of objects, one for each vertex that
+                           // is currently being animated.  Items are added
+                           // to this array in function updateForFrame()
+
+var wireSphere;  // The wireframe sphere, which can be turned on and off.
+
+var colorAnimation = true;  // For saving state of colorAnimationCheckbox when it is disabled
+// var container;
+// init();
+
+
+
+
+
+function draw() {
+
+    var i,j,c;
+    cameraAndLight.rotateY(0.01);
+    cameraAndLight.rotateX(0.01);
+
+             // Update animating vertices by changing their lengths.
+        if (vertexAnimData.length == 0 || vertexAnimData.length < 62 && Math.random() < 0.9) {
+               // Fewer than 12 vertices are being animated.  Add data for aother new one.
+            var ad = {}; // The data for an animating vertex.
+            while (true) {
+                   // Select ad.vertexNum to be an index of a vertex that is not already animating.
+                ad.vertexNum = Math.floor(geometry.vertices.length*Math.random());
+                var used = false;
+                for (i = 0; i < vertexAnimData.length; i++) {
+                    if (ad.vertexNum == vertexAnimData.vertexNum) {
+                        used = true;
+                        break;
+                    }
+                }
+                if (!used)
+                    break;
+            }
+            //if (listening == true) {
+            var f = 0;
+            f = mapSound(ad.vertexNum*2, geometry.vertices.length);
+            if (isNaN(f)) f = 1;
+            f = clamp(f, 5, 12);
+            //console.log(mic.getSprectrum(500));
+            ad.length = 8;   // This is the initial length of the vector of vertex coords.
+            ad.direction = 0;  // 0 says vertex is moving away from the center; 1 says it's moving back.
+            ad.maxLength = f;  // The length at which it will start moving back.
+            ad.velocity = 0.1 + 0.99*Math.random();  // Amount added to length in each frame.
+            vertexAnimData.push(ad);  // Add item to the array of vertex animation data.
+        //}
+        }
+        for (i = vertexAnimData.length-1; i >= 0; i--) {
+                // Update the i-th animating vertex.
+            var ad = vertexAnimData[i];  // Animation data for this vertex.
+            var vertex = geometry.vertices[ ad.vertexNum ];
+            if (ad.direction == 0) { // increase length; reverse direction if maxLength is reached
+                ad.length += ad.velocity;
+                if (ad.length > ad.maxLength)
+                   ad.direction = 1;
+            }
+            else {  // decrease length; if length is less than 10, stop animating this vertex
+                ad.length -= ad.velocity;
+                if (ad.length < 10) {
+                    ad.length = 10;
+                    vertexAnimData.splice(i,1); // removes item i from the array
+                }
+            }
+            vertex.setLength( ad.length );
+        }
+        geometry.verticesNeedUpdate = true;  // Needed to tell the renderer to use the new vertex coordinates!!
+    // }
+    renderer.render(scene, camera);
+}
+
+
+/**
+ *  This is called when the user clicks "Reset Vertices".  It resets the length of all vertices
+ *  are being animated to 10 and removes all vertices from the list of animating vertices.
+ *  (If a vertex animation is in progress, new vertices will quickly be added to the array.)
+ */
+function resetVertices() {
+    for (var i = 0; i < vertexAnimData.length; i++) {
+        geometry.vertices[ vertexAnimData[i].vertexNum ].setLength(10);
+        geometry.verticesNeedUpdate = true;
+    }
+    vertexAnimData = [];
+
+}
+
+
+
+/**
+ *  Called when the user changes the color type.
+ */
+function doColorTypeSelect() {
+    var i;
+    var animCheck = document.getElementById("colorAnimationCheckbox");
+    if (colorType == 0) {
+        // animCheck.checked = colorAnimation;  // restore animationCheckbox state
+        animCheck.disabled = false;
+    }
+    if (colorType == 3) {  // restore saved vertex colors to geometry
+        for (i = 0; i < geometry.faces.length; i++) {
+            geometry.faces[i].vertexColors = saveFaceVertexColors[i];
+        }
+        saveFaceVertexColors = null;
+    }
+    colorType = Number( document.getElementById("colorTypeSelect").value );
+    if (colorType == 0) {
+        //colorAnimation = animCheck.checked;  // save current animationCheckbox state
+        animCheck.disabled = true;
+        //animCheck.checked = false;
+    }
+    if (colorType == 3) {  // save vertexColors from geometry, and substitue per-vertex colors
+        saveFaceVertexColors = [];
+        for (i = 0; i < geometry.faces.length; i++) {
+           saveFaceVertexColors.push(geometry.faces[i].vertexColors);
+           geometry.faces[i].vertexColors = [ new THREE.Color(), new THREE.Color(), new THREE.Color() ];
+        }
+        for (i = 0; i < geometry.faces.length; i++) {
+            var f = geometry.faces[i];
+            f.vertexColors[0] = vertexColors[ f.a ];  // color for first vertex (f.a) of this face
+            f.vertexColors[1] = vertexColors[ f.b ];  // color for second vertex (f.b) of this face
+            f.vertexColors[2] = vertexColors[ f.c ];  // color for third vertex (f.c) of this face
+        }
+    }
+    if (colorType == 0)
+        material.vertexColors = THREE.NoColors;
+    else if (colorType == 1)
+        material.vertexColors = THREE.FaceColors;
+    else
+        material.vertexColors = THREE.VertexColors;
+    material.needsUpdate = true;
+    geometry.colorsNeedUpdate = true;
+
+  }
+
+//--------------------------- animation support -----------------------------------
+
+var animating = true;
+
+function init() {
+
+        var light = new THREE.DirectionalLight();
+        light.position.set(0,0,1);
+        camera.position.set(0,0,40);
+        cameraAndLight = new THREE.Object3D();
+        cameraAndLight.add(camera);
+        cameraAndLight.add(light);
+        scene.add(cameraAndLight);
+
+    /* Create the icosphere geomtry, with random face colors and color velocities */
+    geometry = new THREE.IcosahedronGeometry(10,1);
+    faceColorVelocities = [];
+    for (i = 0; i < geometry.faces.length; i++) {
+        var cc = Math.random()/2;
+        geometry.faces[i].color.setRGB( 0.15,0.15,0.15 );  // used for per face color
+        faceColorVelocities.push(0.001 + 0.001*Math.random());
+    }
+
+    /* Create the individual colors and velocities for each vertex of each face */
+    faceVertexColorVelocities = [];
+    for (i = 0; i < geometry.faces.length; i++) {
+        var v = [];  // color velocities for vertices of this face
+        geometry.faces[i].vertexColors = [];  // array of colors used for per-vertex coloring
+        for (var j = 0; j < 3; j++) {
+            var c = new THREE.Color();
+            // c.setHSL( Math.random(), 0.7, 0.5 );
+            var cc = Math.random()*2;
+            c.setRGB( cc,cc,cc );
+            geometry.faces[i].vertexColors.push(c);
+            v.push(0.001 + 0.002*Math.random());
+        }
+        faceVertexColorVelocities.push(v);
+    }
+
+    /* Create an array of one vertex per color, to be used for "One color per vertex" color mode */
+    vertexColors = [];
+    vertexColorVelocities = [];
+    for (i = 0; i < geometry.vertices.length; i++) {
+        var c = new THREE.Color();
+        c.setHSL( Math.random(), 0.7, 0.4 );
+        vertexColors.push(c);
+        vertexColorVelocities.push(0.001 + 0.002*Math.random());
+    }
+
+    material = new THREE.MeshPhongMaterial({
+        polygonOffset: true,
+        polygonOffsetUnits: 1,
+        polygonOffsetFactor: 1,
+        color: "white", // will only be used when vertexColors is set to THREE.NoColors
+        vertexColors: THREE.FaceColors  // face colors come from geometry, one color per face
+    });
+    material.shading = THREE.FlatShading;
+
+
+    var sphere = new THREE.Mesh( geometry, material );
+    wireSphere = new THREE.Mesh(
+         geometry,
+         new THREE.MeshBasicMaterial({ color: 0, wireframe: true })
+    );
+    try {
+    scene.add(sphere);
+     }
+     catch (e) {
+        console.log("e: "+ e);
+     }
+}
+
+function onWindowResize() {
+
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize( window.innerWidth, window.innerHeight );
+            }
+
+        function map(value, min1, max1, min2, max2, clampResult) {
+            var returnvalue = ((value-min1) / (max1 - min1) * (max2-min2)) + min2;
+            if(clampResult) return clamp(returnvalue, min2, max2);
+            else return returnvalue;
+        };
+
+        function clamp(value, min, max) {
+            if(max<min) {
+                var temp = min;
+                min = max;
+                max = temp;
+
+            }
+            return Math.max(min, Math.min(value, max));
+        };
+
+
+        /**
+         *  An event listener for key events, installed in init()
+         */
+        function doKey(evt) {
+            var moved = true;
+          switch (evt.keyCode) {
+              case 37: cameraAndLight.rotateY(0.05); break;       // left
+              case 39: cameraAndLight.rotateY(-0.05); break;      // right
+              case 38: cameraAndLight.rotateX(0.05); break;       // up
+              case 40: cameraAndLight.rotateX(-0.05); break;      // down
+              case 13: cameraAndLight.rotation.set(0,0,0); break; // return
+              case 36: cameraAndLight.rotation.set(0,0,0); break; // home
+              default: moved = false;
+          }
+          if (moved) {
+              evt.preventDefault();
+                if (!animating) {
+                    render();
+                }
+            }
+        }
+
+
+
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body style="background: #000;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+
+var engine = new particleEngine(3);
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.size = random(20,160);
+  p.orbit = new Vector(w/2, h/2);
+  p.angle = radians(random(360));
+  p.angle2 = radians(random(360));
+  if (i>0) p.parent = engine.particles[i-1];
+}
+
+function draw() {
+
+  //ctx.background(250, 0.005);
+  ctx3.clearRect(0,0,w,h);
+
+    update();
+
+      for (var i = 0; i < engine.particles.length; i++) {
+          var p = engine.particles[i];
+          drawArm(p);
+          //ctx3.fillStyle = rgba(220,0,0, 0.3);
+          //ctx3.fillEllipse(p.pos.x, p.pos.y, 20, 20);
+          // if (i==0) {
+          //   ctx3.fillStyle = rgb(0,0,0);
+          // } else {
+              // ctx3.fillStyle = rgba(220,0,0, 0.7);
+              ctx3.fillStyle = rgba(0,0,0, 0.3);
+          ctx3.fillStyle = rgba(220,0,0, 0.3);
+          ctx3.fillEllipse(p.pos.x, p.pos.y, 140, 140);
+
+          // if (i==engine.particles.length-1) {
+          //   ctx.fillStyle = rgba(220,0,0, 0.7);
+          //   ctx.fillEllipse(p.pos.x, p.pos.y, 140, 2);
+          // }
+
+          p.angle2 += 0.1;
+          p.orbit.x = p.pos.x + Math.cos(p.angle2) * 50;
+          p.orbit.y = p.pos.y + Math.sin(p.angle2) * 50;
+          ctx3.fillStyle = rgba(220,0,0, 0.3);
+          ctx3.fillEllipse(p.orbit.x, p.orbit.y, 140, 140);
+          ctx3.fillStyle = rgba(255);
+          ctx3.fillEllipse(p.pos.x, p.pos.y, 5, 5);
+          ctx3.fillEllipse(p.orbit.x, p.orbit.y, 5, 5);
+
+
+  }
+
+  // ctx2.strokeStyle = rgba(0,0,0, 0.1);
+  // ctx2.strokeEllipse(engine.particles[engine.particles.length-1].end.x, engine.particles[engine.particles.length-1].end.y, 80, 80);
+
+
+
+
+
+}
+
+function drawArm(p){
+  ctx.strokeStyle = rgba(255,0.1);
+  ctx.line(p.pos.x, p.pos.y, p.end.x, p.end.y);
+
+
+}
+
+
+function update() {
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+
+    p.acceleration.x += p.speed.x/20;
+    p.angle = Math.sin(p.acceleration.x)* .9;
+  if (i>0) {
+    p.pos = engine.getEnd(p.parent)
+  } else {
+    p.pos.x = w/2 + Math.cos(frameCount/100) * w/4;
+    p.pos.y = w/4 + Math.sin(frameCount/400) * h/4;
+  }
+
+  p.end = engine.getEnd(p);
+
+
+  }
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

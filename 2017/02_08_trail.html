@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+var max_trails = 100;
+frameRate = 120;
+
+var engine = new particleEngine(14);
+engine.bounce = true;
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.size = random(40,100);
+  p.angle = radians(random(360));
+  p.angle_speed = random(1)/20;
+  p.trail = [];
+  p.orbit = new Vector(0,0);
+  if (i>0) p.parent = engine.particles[i-1];
+}
+
+function draw() {
+
+  ctx3.clearRect(0,0,w,h);
+  //ctx.clearRect(0,0,w,h);
+    update();
+
+  for (var i = 0; i < engine.particles.length; i++) {
+          var p = engine.particles[i];
+
+          if (chance(10)) p.speed.x +=random(-0.2, 0.2);
+          if (chance(10)) p.speed.y +=random(-0.2, 0.2);
+          p.angle+=p.angle_speed;
+          p.orbit = new Vector(p.pos.x + Math.cos(p.angle)*100, p.pos.y + Math.sin(p.angle)*100);
+          for (var j = i; j < engine.particles.length-1; j++) {
+            var p2 = engine.particles[j];
+            if (checkIntersection(p2.pos.x, p2.pos.y,p2.orbit.x, p2.orbit.y, p.pos.x, p.pos.y, p.orbit.x, p.orbit.y )) { p2.angle_speed *=-1;
+            p.angle_speed *=-1;
+           }
+          }
+          for (var j = 1; j < p.trail.length; j++) {
+            var t = p.trail[j];
+            ctx.strokeStyle = rgba(220,220,220,0.1);
+            ctx.line(p.trail[j].x, p.trail[j].y, p.trail[j-1].x, p.trail[j-1].y );
+            ctx3.strokeStyle = rgba(0,0,0,1);
+            ctx3.line(p.trail[j].x, p.trail[j].y, p.trail[j-1].x, p.trail[j-1].y );
+          }
+          ctx3.fillStyle = rgb(0);
+          ctx3.fillEllipse(p.pos.x, p.pos.y, 10, 10);
+
+          ctx3.fillStyle = rgba(220,0,0, 0.1);
+          ctx3.fillEllipse(p.orbit.x, p.orbit.y, 20, 20);
+          ctx3.line(p.orbit.x, p.orbit.y,p.pos.x, p.pos.y)
+
+          ctx3.fillStyle = rgba(220,0,0, 0.5);
+          ctx3.fillEllipse(p.orbit.x, p.orbit.y, 4, 4);
+
+          ctx.fillStyle = rgba(220,0.5);
+          ctx.fillEllipse(p.orbit.x, p.orbit.y, 4, 4);
+
+  }
+
+}
+
+function update() {
+  engine.moveParticles();
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.trail.push(p.pos);
+  if (p.trail.length > max_trails) p.trail.splice(0,1);
+
+  }
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

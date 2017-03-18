@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body style="background: #fff;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+
+var num = 30;
+
+var engine = new particleEngine(num);
+var engine2 = new particleEngine(1);
+engine2.bounce = 1;
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  setParticles(p, engine);
+}
+
+function setParticles(p, _engine) {
+  // p.size = random(60,150);
+  p.size = 90;
+  if (p.me > 0) p.parent = _engine.particles[p.me-1];
+  // p.engine = new particleEngine(randomInt(2, 3));
+  //p.engine = new particleEngine(3);
+  p.size2 = 120;
+  p.orbit = new Vector(w/2, h/2);
+  p.angle = random(360);
+  p.speed = new Vector(random(-4,4), posNeg()*random(0.2,4));
+}
+
+function draw() {
+
+  ctx3.background(255, 0.035);
+  //ctx3.clearRect(0,0,w,h);
+  //engine2.last.speed = new Vector(random(-6,6), random(-6,6));
+  //engine2.moveParticles();
+  engine2.last.pos.x = w/2 + Math.sin(frameCount/150)*w/2;
+  engine2.last.pos.y = h/2 + Math.sin(frameCount/10)*80;
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    updatePosition(p);
+    drawPosition(p);
+  }
+
+  ctx3.fillStyle = rgba(255,20,110);
+  ctx3.fillEllipse(engine2.particles[0].pos.x, engine2.particles[0].pos.y, 15, 15);
+}
+
+
+function updatePosition(p){
+   if (p.me > 0) {
+     p.pos.x = tween(p.pos.x, p.parent.pos.x, 4);
+     p.pos.y = tween(p.pos.y, p.parent.pos.y, 4);
+   } else {
+     p.pos = new Vector(engine2.particles[0].pos.x, engine2.particles[0].pos.y);
+   }
+}
+
+
+function drawPosition(p){
+  ctx3.fillStyle = rgba(0,0,0);
+  ctx3.fillEllipse(p.pos.x, p.pos.y, 15, 15);
+}
+
+
+
+
+
+</script>
+
+</body>
+
+</html>

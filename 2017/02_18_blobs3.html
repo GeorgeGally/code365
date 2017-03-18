@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body style="background: #000;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+
+var imagedata = ctx.getImageData(0, 0, w, h);
+var engine = new particleEngine(5);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+  p.size = 5000;
+  p.bounce = true;
+  p.speed = new Vector(random(-15,15),random(-15,15));
+  p.pos = new Vector(random(w),random(h));
+}
+
+
+function setPixel(p, x, y) {
+
+  var c = 0;
+
+  for (var j = 0; j < engine.particles.length; j++) {
+    p2 = engine.particles[j];
+    d = dist(x,y, p2.pos.x, p2.pos.y);
+    c +=  (2+ p.size / d);
+  }
+  var i = (y * w + x) * 4;
+
+  imagedata.data[i++] = c;
+  imagedata.data[i++] = c;
+  imagedata.data[i++] = c;
+  imagedata.data[i] = 255;
+  imagedata.data[i+=2] = 0;
+  imagedata.data[i+=2] = 0;
+  imagedata.data[i+=2] = 0;
+  imagedata.data[i+=2] = 255;
+}
+
+
+function draw() {
+  ctx.background(0);
+  //engine.moveParticles();
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    if(bounce(p.pos.x, 0, w, 40)) p.speed.x*=-1;
+    if(bounce(p.pos.y, 0, h, 40)) p.speed.y*=-1;
+
+    p.pos.x += p.speed.x;
+    p.pos.y += p.speed.y;
+
+    for( var y = 0 ; y < h; y+=2 ) {
+      for( var x = 0 ; x < w; x+=2 ) {
+        // set the colour randomly
+        setPixel(p, x, y);
+      }
+    }
+
+
+    // p.pos = new Vector(mouseX, mouseY);
+  }
+
+
+  ctx.putImageData( imagedata, 0, 0 );
+
+  // for (var i = 0; i < engine.particles.length; i++) {
+  //   p = engine.particles[i];
+  //   ctx.strokeStyle = "red";
+  //   ctx.strokeEllipse(p.pos.x, p.pos.y, 100,100);
+  //
+  // }
+  //console.log("done");
+
+}
+
+
+
+
+
+
+
+</script>
+
+</body>
+
+</html>

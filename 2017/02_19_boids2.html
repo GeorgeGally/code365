@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/new_vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body style="background: #000;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+
+wanderer = new Vehicle(width/2,height/2);
+
+
+
+
+function draw() {
+  ctx.background(250);
+  wanderer.wander();
+  wanderer.run();
+
+}
+
+function Vehicle(x, y){
+
+ this.location = new Vector(x,y);
+ this.velocity = new Vector(1,1);
+ this.acceleration = new Vector(0,0);
+ this.r  = 6;
+ this.wandertheta = 0;
+ this.maxforce = 0.05;    // Maximum steering force
+ this.maxspeed = 2;    // Maximum speed
+
+ this.run = function() {
+   this.update();
+   this.borders();
+   this.display();
+ }
+
+
+ // Method to update location
+ this.update = function() {
+   // Update velocity
+
+   this.velocity.addTo(this.acceleration);
+   //console.log(this.acceleration);
+   // Limit speed
+   this.velocity.limit(this.maxspeed);
+   this.location.addTo(this.velocity);
+
+   // Reset accelertion to 0 each cycle
+
+   this.acceleration.mult(0);
+ }
+
+
+ this.wander = function() {
+
+     var wanderR = 25;         // Radius for our "wander circle"
+     var wanderD = 80;         // Distance for our "wander circle"
+     var change = 0.3;
+     this.wandertheta += random(-change,change);     // Randomly change wander theta
+
+    // console.log(this.velocity);
+     // Now we have to calculate the new location to steer towards on the wander circle
+    var circleloc = this.velocity.copy();    // Start with velocity
+
+    circleloc.normalize();            // Normalize to get heading
+    //console.log(circleloc.getMagnitude());
+    circleloc.mult(wanderD);          // Multiply by distance
+
+    circleloc.addTo(location);               // Make it relative to boid's location
+
+    var h = this.velocity.getDirection();        // We need to know the heading to offset wandertheta
+     //
+     var circleOffSet = new Vector(wanderR * Math.cos(this.wandertheta+h),wanderR * Math.sin(this.wandertheta+h));
+
+     var target = circleloc.add(circleOffSet);
+
+     this.seek(target);
+
+     // Render wandering circle, etc.
+     //if (debug) drawWanderStuff(location,circleloc,target,wanderR);
+   }
+
+   this.applyForce = function(force) {
+  // We could add mass here if we want A = F / M
+    this.acceleration.addTo(force);
+
+}
+
+// A method that calculates and applies a steering force towards a target
+// STEER = DESIRED MINUS VELOCITY
+this.seek = function(target) {
+var desired = target.subtract(location);  // A vector pointing from the location to the target
+
+// Normalize desired and scale to maximum speed
+desired.normalize();
+desired.mult(this.maxspeed);
+// Steering = Desired minus Velocity
+var steer = desired.subtract(this.velocity);
+steer.limit(this.maxforce);  // Limit to maximum steering force
+
+this.applyForce(steer);
+}
+
+this.display = function() {
+  // Draw a triangle rotated in the direction of velocity
+  var theta = this.velocity.getDirection() + radians(90);
+  //console.log(theta);
+  //fill(127);
+  //stroke(0);
+  //pushMatrix();
+  ctx.save();
+  ctx.translate(location.x,location.y);
+  ctx.rotate(theta);
+  ctx.eqFillTriangle(0, 0, 10);
+  // beginShape(TRIANGLES);
+  // vertex(0, -r*2);
+  // vertex(-r, r*2);
+
+  ctx.restore();
+}
+
+
+this.borders = function() {
+if (this.location.x < -this.r) this.location.x = width+this.r;
+if (this.location.y < -this.r) this.location.y = height+this.r;
+if (this.location.x > width+this.r) this.location.x = -this.r;
+if (this.location.y > height+this.r) this.location.y = -this.r;
+}
+
+
+  return this;
+}
+
+
+
+</script>
+
+</body>
+
+</html>

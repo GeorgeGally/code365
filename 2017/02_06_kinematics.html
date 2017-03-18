@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+
+var engine = new particleEngine(0);
+
+arm1 = engine.addParticle();
+arm1.size = 100;
+
+arm2 = engine.addParticle(arm1.end.x, arm1.end.y);
+arm2.angle = 45;
+arm2.size = 200;
+arm2.parent = arm1;
+
+arm3 = engine.addParticle(arm2.end.x, arm2.end.y);
+arm3.angle = 25;
+arm3.size = 100;
+arm3.parent = arm2;
+
+function draw() {
+
+  ctx.background(250, 0.01);
+
+    update();
+
+      for (var i = 0; i < engine.particles.length; i++) {
+          var p = engine.particles[i];
+          drawArm(p);
+
+  }
+
+
+}
+
+function drawArm(p){
+  ctx.lineStyle = rgba(0,0.1);
+  ctx.line(p.pos.x, p.pos.y, p.end.x, p.end.y);
+  ctx.fillStyle = rgb(220,0,0);
+  ctx.fillEllipse(p.pos.x, p.pos.y, p.sz-1, p.sz-1);
+
+}
+
+
+function update() {
+  arm1.angle = Math.sin(frameCount/150)* 3.2;
+  arm2.angle = Math.cos(frameCount/150)* 1.2;
+  arm3.angle += 0.01;
+  arm1.end = arm2.pos = engine.getEnd(arm1);
+  arm2.end = engine.getEnd(arm2);
+  arm3.pos = engine.getEnd(arm2)
+  arm3.end = engine.getEnd(arm3)
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

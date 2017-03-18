@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/new_vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body style="background: #000;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var grid = new Grid(10, 1, w/2, 100, w/4, h/2-100);
+var engine = new particleEngine(10);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.pos = new Vector(grid.x[i], grid.y[i]);
+}
+
+
+
+
+function draw() {
+  ctx.background(240);
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    ctx.fillStyle = rgb(205-mapSound(i, 10));
+    ctx.fillRect(p.pos.x, p.pos.y, 50, 100);
+  }
+
+}
+
+
+
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+
+</html>

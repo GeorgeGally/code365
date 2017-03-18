@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<!-- <script language="javascript" src="../js/vector.js"></script> -->
+<!-- <script language="javascript" src="../js/vector_particles.js"></script> -->
+
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+var balls = [];
+var radius = 10;
+var num = 2;
+
+var attractor = new Attractor();
+
+
+function Attractor(){
+  this.pos = new Vector(w/2, h/2);
+  this.mass = 100;
+}
+
+
+for (var i = 0; i < num; i++) {
+  balls[i] = new Ball(random(w), random(h), i);
+}
+
+function draw(){
+  ctx.background(255);
+  ctx.fillStyle = "red";
+  ctx.fillEllipse(attractor.pos.x, attractor.pos.y, 20, 20);
+  if (mouseDown) {
+    //reset();
+    radius+=20;
+  }
+
+  for (var i = 0; i < num; i++) {
+    var b = balls[i];
+    b.drawBall();
+  }
+
+
+}
+
+
+
+
+
+// BALL OBJECT
+
+function Ball(_x, _y, _i){
+  this.x = _x;
+  this.y = _y;
+
+  this.me = _i;
+  this.start_x = _x;
+  this.start_y = _y;
+  this.offset = 0;
+  this.pos = new Vector(_x, _y);
+
+  // console.log("this: " + this.pos.x);
+  // console.log("attractor: " + attractor.pos.x);
+
+  this.block_size = sticky(random(50), 10);
+  if (chance(3)) {
+    this.offset += random(250);
+    this.block_size = sticky(random(15), 2);
+  }
+  this.vel = new Vector();
+  this.acc = new Vector();
+  this.force = new Vector();
+  this.mass = this.block_size;
+  this.angle = random(360);
+
+  this.drawBall = function(){
+    this.update();
+    ctx.fillStyle = "black";
+    ctx.fillEllipse(this.pos.x, this.pos.y, this.block_size, this.block_size);
+  }
+
+  this.update = function(){
+
+    this.attract();
+    //this.vel.add(this.acc);
+
+    //this.acc.multiply(0,0)
+
+
+    // this.x = w/2 + Math.cos(this.angle) * (radius+this.offset+this.block_size/2);
+    // this.y = h/2 + Math.sin(this.angle) * (radius+this.offset+this.block_size/2);
+    // this.repulse();
+  }
+
+  this.attract = function(){
+    var acceleration = this.pos.subtr(attractor.pos);
+    //acceleration.setMagnitude(0.2);
+    var distSquared = acceleration.getMagnitude();
+    var G = 1;
+    var strength = G / distSquared;
+    acceleration.setMagnitude(strength);
+    this.vel.add(acceleration);
+    this.pos.subtract(this.vel);
+    //
+    //this.acc = velocity;
+    //console.log(this.acc);
+  }
+
+  this.repulse = function(){
+    for (var i = this.me+1; i < balls.length-1; i++) {
+      var b2 = balls[i];
+      if (dist(b2.x, b2.y, this.x, this.y) < (this.block_size/2 + b2.block_size/2)) {
+        b2.angle +=0.01;
+        b2.angle +=0.01;
+        b2.offset +=0.5;
+      }
+    }
+  }
+
+
+}
+
+
+
+
+
+
+</script>
+
+
+</body>
+
+</html>
