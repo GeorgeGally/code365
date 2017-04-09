@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+<meta charset="utf-8">
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var gw = 120;
+var gh = 20;
+var grid = new Grid(gw, gh);
+ctx.lineWidth = 0.2;
+var mode = 3;
+console.log(grid);
+
+// create particles
+var balls = [];
+var number_of_balls = gw * gh;
+for (var i = 0; i < number_of_balls; i++) {
+  addBall(grid.x[i], grid.y[i], i);
+}
+
+function addBall(x, y, i){
+  var ball = {
+    x: x,
+    y: y,
+    sz: 10,
+    me: i
+  }
+  balls.push(ball);
+}
+
+function draw(){
+  if (chance(500)) mode = randomInt(0,5);
+  ctx.background(0, 0.2);
+  for (var i = 0; i < balls.length; i++) {
+    var b = balls[i];
+    moveBall(b);
+    drawBall(b);
+  }
+}
+
+
+function moveBall(b){
+    // var m = Math.round(Mic.spectrum.length/2);
+    // if (mode == 0) {
+    //   var s = Mic.mapRawSound(b.me, balls.length, 10, 100);
+    // } else if (mode == 1) {
+      //var s = map(mapSound(b.me, balls.length, 10, 100), 0, 140, 0, 50);
+      var new_me = b.me%50;
+      var s = map(audioChannelVolume[new_me], 0, 140, 4, grid.spacing_y - 2);
+    // } else {
+    //   var s = map(Mic.spectrum[b.me%(m-1)], 0, 255, 4, grid.spacing_y - 2);
+    // }
+
+    if(s > 0) {
+
+    b.sz = tween(b.sz, s, 2);
+    }
+
+    b.y +=2;
+    if( b.y > h) b.y = 0;
+}
+
+
+function drawBall(b){
+    ctx.fillStyle = rgb(b.sz*5);
+    ctx.fillRect(b.x, b.y - b.sz, grid.spacing_x - 2, b.sz);
+
+}
+
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+
+</html>

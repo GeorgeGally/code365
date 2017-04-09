@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+    <script language="javascript" src="../js/creative_coding.js"></script>
+
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/vector_particles.js"></script>
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body style="background: #efefef">
+
+<script>
+var videoctx = createCanvas('video1');
+var videocanvas = document.getElementById('video1');
+var ctx = createCanvas('canvas1');
+var samplesize = 15;
+var engine = new particleEngine();
+var maxParticles = 1500;
+
+var video = document.createElement('video');
+    video.src = "assets/haah1.m4v";
+    video.load();
+    video.play();
+
+
+function draw(){
+    //check for vid data
+    // console.log(videoctx.width);
+    if(video.readyState === video.HAVE_ENOUGH_DATA && videocanvas.width > 0){
+      //draw video to canvas starting from upper left corner
+
+      // videoctx.drawImage(video, 0, 0, 640*2.02, 360*2.02);
+      // videoctx.drawImage(video, 0, 0, 640, 360);
+      ctx.drawImage(video, 0, 0, w, h);
+      //if (chance(50))
+      //pixelShuffle(5,50,4);
+      triangulate(20);
+      //brightSpark();
+
+      // videoctx.pixelate(40);
+    }
+
+    for (var i = engine.particles.length - 1; i >= 0; i--) {
+
+    p = engine.particles[i];
+    //console.log(p);
+    if(p.pos.x!=0 && p.pos.y!=0) {
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.c;
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+
+    if (p.alpha<1) p.alpha+=0.0019999;
+
+    if (p.sz<0.005) { p.pos.x = p.start.x+random(-4,4); p.y = p.start.y+random(-4,4);
+      p.sz = 3;
+      p.speed.x = random(-2,2);
+      p.speed.y =  random(-2,2);
+    }
+    p.pos.x += p.speed.x;
+    p.pos.y += p.speed.y;
+    p.sz *= p.reduce;
+  }
+  };
+
+  if(engine.particles.length > maxParticles) engine.particles.shift();
+
+}
+
+
+function brightSpark(){
+  videoctx.drawImage(video, 0, 0, w, h);
+
+  var motion = motionDetection(samplesize);
+  for (var i = 0; i < motion.length; i++) {
+    var m = motion[i];
+    // var c = rgb(r, g, b);
+      var c = rgb(m.z.x, m.z.y, m.z.z);
+    addParticle(m.x,m.y,c);
+}
+}
+
+function addParticle(x,y,c){
+  //console.log(x);
+  x += (posNeg()*random(samplesize));
+  y += (posNeg()*random(samplesize));
+
+  engine.addParticle(x,y,c);
+  var p = engine.last;
+  p.sz = 3;
+  p.reduce =  random(0.8, 0.9999);
+  p.alpha = 0.05;
+  // speedx: random(-1,1),
+  // speedy: random(-1,1)
+}
+
+
+
+</script>
+    <script language="javascript" src="../js/motion_detection.js"></script>
+</body>
+
+</html>

@@ -1,7 +1,47 @@
-
 var TWO_PI = Math.PI * 2;
+//loadScript('../js/fx.js', done);
+
+function done(){
+  console.log("done")
+}
 
 var p = CanvasRenderingContext2D.prototype;
+
+
+p.mirror = function(_side){
+
+  var side = _side || 1;
+  var input = ctx.getImageData(0, 0, w, h);
+  var output = ctx.createImageData(w, h);
+  var inputData = input.data;
+  var outputData = output.data
+   // loop
+   if (side ==1) {
+   for (var y = 0; y < h-1; y += 1) {
+       for (var x = 0; x < w/2; x += 1) {
+         // RGB
+         var i = (y*w + x)*4;
+         var flip = (y*w + (w/2 - x))*4;
+         for (var c = 0; c < 4; c += 1) {
+            outputData[i+c] = inputData[flip+c];
+         }
+       }
+   }
+   this.putImageData(output, w/2, 0);
+  } else {
+    for (var y = 0; y < h/2; y += 1) {
+      for (var x = 1; x < w; x += 1) {
+        var i = (y*w + x)*4;
+        var flip = ((h/2-y)*w + x)*4;
+        for (var c = 0; c < 4; c += 1) {
+          outputData[i+c] = inputData[flip+c];
+        }
+      }
+    }
+    this.putImageData(output, 0, h/2);
+  }
+}
+
 
 p.colour = function (r, g, b, a){
   'use strict';
@@ -235,9 +275,9 @@ p.eqDownFillTriangle = function(x, y, sz, down) {
 
 p.eqDownTriangle = function(x, y, sz, down) {
  this.translate(x, y);
- this.rotate(radians(180));
+ if (!down) this.rotate(radians(180));
  this.triangle(0, 0 - sz, 0 + sz, 0 + sz/2, 0 - sz, 0 + sz/2);
- this.rotate(radians(-180));
+ if (!down) this.rotate(radians(-180));
  this.translate(-x, -y);
 }
 
@@ -260,9 +300,9 @@ p.background = function (r, g, b, a){
 
 p.getMyCurrentFill = function() {
   //console.log(ctx.fillStyle);
-  var r = parseInt(ctx.fillStyle.substring(1,3), 16);
-  var g = parseInt(ctx.fillStyle.substring(3,5), 16);
-  var b = parseInt(ctx.fillStyle.substring(5), 16);
+  var r = parseInt(this.fillStyle.substring(1,3), 16);
+  var g = parseInt(this.fillStyle.substring(3,5), 16);
+  var b = parseInt(this.fillStyle.substring(5), 16);
   return rgb(r,g,b);
 }
 
@@ -439,6 +479,13 @@ function randomWhole(min, max) {
 
 function randomWholeInt(min, max) {
   return posNeg() * randomInt(min, max);
+}
+
+function randomColour(){
+  var r = randomInt(255);
+  var g = randomInt(255);
+  var b = randomInt(255);
+  return rgb(r,g,b);
 }
 
 
@@ -659,11 +706,11 @@ function pointCircleCollide(point, circle, r) {
 }
 
 
-function cross(_x, _y, _w, _h){
+p.cross = function (_x, _y, _w, _h){
  if (_w === undefined) _w =20;
  if (_h === undefined) _h =60;
- ctx.fillRect( _x - _w/2, _y - _h/2,  _w, _h);
- ctx.fillRect( _x - _h/2, _y - _w/2,  _h, _w);
+ this.fillRect( _x - _w/2, _y - _h/2,  _w, _h);
+ this.fillRect( _x - _h/2, _y - _w/2,  _h, _w);
 }
 
 function makeGrid(_w, _h){
@@ -682,19 +729,19 @@ function makeGrid(_w, _h){
 function colourPool(){
 
   this.colours = [];
-  this.probs = [];
+  this.weights = [];
   this.colour_list = [];
 
-  this.add = function(_colour, _prob){
-    if (_prob == undefined)_prob = 1;
-    this.colours.push(_colour);
-    this.probs.push(_prob);
-    this.colour_list  = this.generateWeighedList(this.colours, this.probs);
+  this.add = function(_colour, _weight){
+    if (_weight == undefined) _weight = 1;
+    this.colour_list.push(_colour);
+    this.weights.push(_weight);
+    this.pool  = this.generateWeighedList(this.colour_list, this.weights);
     return this;
   }
 
   this.get = function(){
-    return this.colour_list[randomInt(this.colour_list.length-1)];
+    return this.pool[randomInt(this.pool.length-1)];
   }
 
   this.generateWeighedList = function(list, weight) {
@@ -712,10 +759,11 @@ function colourPool(){
     }
 
     return weighed_list;
-};
+  };
 
   return this;
 }
+
 
 var Vector = function(_x, _y, _z){
   this.x = _x || 0;
@@ -796,8 +844,6 @@ var Vector = function(_x, _y, _z){
 
 }
 
-
-
 function createGrid(_gw, _gh, _w, _h){
 
   if (_w === undefined) _w = w;
@@ -831,7 +877,7 @@ function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _sta
   if (_num_items_vert == undefined) _num_items_vert = 1;
   var _horiz = _num_items_horiz || 1;
   var _vert = _num_items_vert || 1;
-
+  this.length = 0;
   this.spacing_x;
   this.spacing_y;
 
@@ -870,20 +916,21 @@ function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _sta
 
   this.createGrid = function() {
 
-    for (var _y = 0; _y < this.grid_h; _y+=this.spacing_y) {
+    for (var _y = 0; _y < this.num_items_vert; _y++) {
 
-      for (var _x = 0; _x < this.grid_w; _x+=this.spacing_x) {
+      for (var _x = 0; _x < this.num_items_horiz; _x++) {
 
-        this.x.push(this.start.x + this.spacing_x/2 + _x);
-        this.y.push(this.start.y + this.spacing_y/2 + _y);
+        this.x.push(_x*this.spacing_x+ this.spacing_x/2);
+        this.y.push(_y*this.spacing_y+ this.spacing_y/2);
 
       }
     };
-
+    this.length = this.num_items_vert * this.num_items_horiz;
   }
 
   this.add(_horiz, _vert);
 
+  //console.log(this);
   return this;
 
 }
@@ -899,6 +946,7 @@ p.pixelate = function (blocksize) {
   this.clearRect(0,0,w,h);
 
     var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+
     for(var x = 0; x < w; x += blocksize)
     {
         for(var y = 0; y < h; y += blocksize)
@@ -908,8 +956,8 @@ p.pixelate = function (blocksize) {
           var b = (sourceBuffer32[pos] >> 16) & 0xff;
           var g = (sourceBuffer32[pos] >> 8) & 0xff;
           var r = (sourceBuffer32[pos] >> 0) & 0xff;
-          ctx.fillStyle = rgb(r,g,b);
-          ctx.fillRect(x, y, blocksize, blocksize);
+          this.fillStyle = rgb(r,g,b);
+          this.fillRect(x, y, blocksize, blocksize);
 
         }
     }
@@ -953,6 +1001,11 @@ function pixelate(blocksize,blockshape, _ctx) {
            } else if (blockshape == 3) {
             ctx.fillStyle = rgb(r,g,b);
             ctx.fillEllipse(x, y, blocksize-3, blocksize-3);
+          } else if (blockshape == 4) {
+           //ctx.fillStyle = rgb(0);
+           ctx.fillStyle = rgb(r,g,b);
+           var sz = blocksize - map(r, 0, 255, 0, blocksize);
+           ctx.fillEllipse(x, y, sz, sz);
           } else {
           	var bb = brightness(r,g,b);
           	if (bb< 40) {
@@ -1026,14 +1079,14 @@ p.posterize = function(blocksize, ammt) {
           var b = (sourceBuffer32[pos] >> 16) & 0xff;
           var g = (sourceBuffer32[pos] >> 8) & 0xff;
           var r = (sourceBuffer32[pos] >> 0) & 0xff;
-          // r = sticky(r, ammt);
-          // g = sticky(g, ammt);
-          // b = sticky(b, ammt);
-
-          if(brightness(r,g,b) < ammt) {
-          this.fillStyle = rgb(0);
+          r = sticky(r, ammt);
+          g = sticky(g, ammt);
+          b = sticky(b, ammt);
+          this.fillStyle = rgb(r, g, b);
+          // if(brightness(r,g,b) < ammt) {
+          // this.fillStyle = rgb(0);
           this.fillRect(w-x, y, blocksize, blocksize);
-          }
+          // }
 
         }
     }
@@ -1126,13 +1179,10 @@ function halftone(blocksize, reverse) {
 
 function triangulate(grid_w, grid_h, alpha) {
 
-	if (grid_h == undefined) {
-		grid_h = grid_w;
-	}
+	grid_h = grid_h || grid_w;
 
-	if (alpha == undefined) {
-		alpha = 0.8;
-	}
+	alpha = alpha || 0.8;
+
 
 	var ww = Math.ceil(w/grid_w);
 	var	hh = Math.ceil(h/grid_h);
@@ -1169,14 +1219,16 @@ function triangulate(grid_w, grid_h, alpha) {
 
 // MIRROR THE CANVAS
 
-function mirror(){
+function mirror(_side){
 
+  var side = _side || 1;
   var input = ctx.getImageData(0, 0, w, h);
   var output = ctx.createImageData(w, h);
   var inputData = input.data;
   var outputData = output.data
    // loop
-   for (var y = 1; y < h-1; y += 1) {
+   if (side ==1) {
+   for (var y = 0; y < h-1; y += 1) {
        for (var x = 0; x < w/2; x += 1) {
          // RGB
          var i = (y*w + x)*4;
@@ -1187,8 +1239,67 @@ function mirror(){
        }
    }
    ctx.putImageData(output, w/2, 0);
-
+ } else if (side ==2) {
+   for (var y = 0; y < h/2; y += 1) {
+     for (var x = 1; x < w; x += 1) {
+       var i = (y*w + x)*4;
+       var flip = ((h/2-y)*w + x)*4;
+       for (var c = 0; c < 4; c += 1) {
+         outputData[i+c] = inputData[flip+c];
+       }
+     }
+   }
+   ctx.putImageData(output, 0, h/2);
+  } else {
+    for (var y = h/2; y < h; y += 1) {
+      for (var x = 1; x < w; x += 1) {
+        var i = (y*w + x)*4;
+        var flip = ((h/2-y)*w + x)*4;
+        for (var c = 0; c < 4; c += 1) {
+          outputData[i+c] = inputData[flip+c];
+        }
+      }
+    }
+    ctx.putImageData(output, 0, h/2);
+  }
 }
+
+
+
+// function mirror(_side){
+//   var side = _side || 1;
+//   var input = ctx.getImageData(0, 0, w, h);
+//   var output = ctx.createImageData(w, h);
+//   var inputData = input.data;
+//   var outputData = output.data
+//    // loop
+//    if (side ==1) {
+//      for (var y = 1; y < h-1; y += 1) {
+//          for (var x = 0; x < w/2; x += 1) {
+//            // RGB
+//            var i = (y*w + x)*4;
+//            var flip = (y*w + (w/2 - x))*4;
+//            for (var c = 0; c < 4; c += 1) {
+//               outputData[i+c] = inputData[flip+c];
+//            }
+//          }
+//         ctx.putImageData(output, w/2, 0);
+//      }
+//  } else {
+//        for (var x = 1; x < w; x += 1) {
+//          for (var y = 0; y < h/2; y += 1) {
+//          // RGB
+//          var i = (y*w + x)*4;
+//          var flip = ((h-y)*w + x)*4;
+//          for (var c = 0; c < 4; c += 1) {
+//             outputData[i+c] = inputData[flip+c];
+//          }
+//        }
+//    }
+//    ctx.putImageData(output, 0, h/2);
+//  }
+//
+// }
 
 
 function hasClass(el, className) {
@@ -1359,3 +1470,22 @@ loop();
 }
 
 window.addEventListener('load',init);
+
+
+// loadscript utility
+
+function loadScript(url, callback) {
+    // Adding the script tag to the head as suggested before
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = url;
+
+    // Then bind the event to the callback function.
+    // There are several events for cross browser compatibility.
+    script.onreadystatechange = callback;
+    script.onload = callback;
+
+    // Fire the loading
+    head.appendChild(script);
+}

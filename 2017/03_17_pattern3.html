@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/video.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 1;
+ctx.lineCap = "round";
+var grid = new Grid (50, 30);
+var nums = [3, 3, 4, 4, 6, 8, 10, 12]
+grid.sides = []
+for (var i = 0; i < grid.length; i++) {
+  grid.sides[i] = 2;
+}
+
+var counter = 0;
+//console.log(grid);
+function draw(){
+  ctx.background(225);
+  if(frameCount%2 == 0) {
+  for (var i = grid.num_items_vert; i > 0 ; i--) {
+    var pos = i*grid.num_items_horiz + counter;
+    //var pos2 = i*grid.num_items_horiz + (counter+1)%grid.num_items_vert;
+    var s = Math.round(map(mapSound(i/2, grid.num_items_vert), 0, 255, 0, 16));
+
+    if(s < 10) {
+      grid.sides[pos ] = 2;
+    } else {
+      grid.sides[pos] = nums[s-10];
+    }
+    //grid.sides[pos2] = 2;
+  }
+  counter = (counter + 1);
+  }
+  for (var i = 0; i < grid.length; i++) {
+    var sides = grid.sides[i];
+    myPolygon(grid.x[i],grid.y[i], sides, grid.spacing_x/2.2);
+  }
+
+if (counter >= grid.num_items_horiz) {
+  for (var i = 0; i < grid.length; i++) {
+    grid.sides[i] = 2;
+    counter = 0;
+  }
+}
+
+
+}
+
+function myPolygon(x, y, sides, size){
+ Xcenter = x;
+ Ycenter = y;
+
+ctx.fillStyle = "black";
+
+ctx.moveTo (Xcenter +  size * Math.cos(i), Ycenter +  size *  Math.sin(i));
+ for (var i = 1; i <= sides; i += 2) {
+    ctx.beginPath();
+
+    ctx.lineTo (Xcenter + size * Math.cos(i * 2 * Math.PI / sides), Ycenter + size * Math.sin(i * 2 * Math.PI / sides));
+
+    ctx.lineTo (Xcenter + size * Math.cos((i+1) * 2 * Math.PI / sides), Ycenter + size * Math.sin((i+1) * 2 * Math.PI / sides));
+    ctx.lineTo (Xcenter, Ycenter);
+    // ctx.stroke();
+    ctx.closePath();
+    ctx.fill();
+
+  }
+  ctx.strokeStyle = "black";
+
+  ctx.moveTo (Xcenter +  size * Math.cos(0), Ycenter +  size *  Math.sin(0));
+  for (var i = 1; i <= sides; i += 1) {
+     ctx.lineTo (Xcenter + size * Math.cos(i * 2 * Math.PI / sides), Ycenter + size * Math.sin(i * 2 * Math.PI / sides));
+   }
+  ctx.stroke();
+}
+
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

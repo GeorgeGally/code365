@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/url.js"></script>
+<script language="javascript" src="../js/toxiclibs.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+var ctx = createCanvas("canvas1");
+
+var c = 0;
+var dir = 1;
+var rotation = 0;
+var ss = 0;
+var r = 0.0;
+var radius = 220;
+var out = radius;
+var out_on = false;
+var center_on = false;
+var all_on = false;
+var adding = false;
+var removing = false;
+var my_mode = randomInt(1,2);
+console.log(my_mode);
+
+ var  VerletPhysics2D = toxi.physics2d.VerletPhysics2D,
+      VerletParticle2D = toxi.physics2d.VerletParticle2D,
+      VerletSpring2D = toxi.physics2d.VerletSpring2D,
+      AttractionBehavior = toxi.physics2d.behaviors.AttractionBehavior,
+      GravityBehavior = toxi.physics2d.behaviors.GravityBehavior,
+      ZoomLensInterpolation = toxi.math.ZoomLensInterpolation,
+      NamedColor = toxi.color.NamedColor,
+      Collections = toxi.color.Collections,
+      Vec2D = toxi.geom.Vec2D,
+      TColor = toxi.color.TColor,
+      Rect = toxi.geom.Rect;
+
+
+var physics = new VerletPhysics2D();
+physics.addBehavior(new GravityBehavior(new Vec2D(0,0.5)));
+physics.setWorldBounds(new Rect(0, 0, w, h));
+
+
+num_shakers = 5;
+num_movers = 2;
+var d = 120;
+var d2 = 120;
+var frames=400;
+var angle;
+var theta = 0;
+var offset = 0;
+var moverX;
+var moverY;
+var v = 0;
+ctx.lineWidth = 1;
+
+var movers = [];
+var shakers = [];
+var particles = [];
+var springs = [];
+var lines_on = true;
+var big_mover = false;
+
+for (var i = 0; i < num_shakers; i++) {
+  addShaker(i);
+}
+
+
+
+
+
+function draw() {
+  physics.update();
+  //ctx.background(189, 218, 229, 1);
+  ctx.background(0);
+  ctx.strokeStyle="black";
+  ctx.fillStyle="black";
+  ctx.lineWidth = 0.5;
+  theta += 2*Math.PI/frames;
+  drawLines();
+
+}
+
+
+function drawLines(){
+
+
+  if (chance(1000)) {
+    my_mode = randomInt(1,2);
+    console.log(my_mode);
+  }
+  // if (chance(500)) lines_on = !lines_on;
+  // if (chance(5000)) big_mover = !big_mover;
+  //
+  // if (chance(5000)) {
+  //   num_movers = randomInt(2, 6);
+  // };
+
+  ctx.save();
+  ctx.translate(w/2, h/2);
+  ctx.rotate(theta/10);
+
+  if(my_mode == 1) {
+    Mode1();
+  } else if(my_mode == 2) {
+    Mode2();
+  } else if(my_mode == 3) {
+    Mode3();
+  } else {
+    Mode4();
+  }
+
+  ctx.restore();
+}
+
+function Mode1(){
+    ctx.lineWidth = 1;
+    if (chance(100)) lines_on = !lines_on;
+    if (chance(1000)) num_movers +=1;
+    if (chance(5000)) num_movers -=1;
+
+    if (chance(1000)) addShaker();
+    //if (chance(5000)) removeShaker();
+
+    v = tween(v, map(audioChannelVolume[10],0,140, 20, 150), 5);
+    d = tween(d, v, 15);
+    d2 = tween(d2, v, 5);
+    for (var i=0; i < shakers.length; i++) {
+
+      shakers[i].x = Math.cos(angle)*d;
+      shakers[i].y = Math.sin(angle)*d;
+      ctx.fillStyle="white";
+      ctx.strokeStyle="white";
+      ctx.fillEllipse(shakers[i].x, shakers[i].y, 12, 12);
+      angle = 2*Math.PI/shakers.length*i;
+      for (var j=0; j< num_movers; j++) {
+
+        offset = theta+2*Math.PI/num_movers*j;
+        moverX = Math.cos(offset)*d2;
+        moverY = Math.sin(offset)*d2;
+        if (lines_on) ctx.line(shakers[i].x, shakers[i].y, moverX, moverY);
+
+        if (big_mover) {
+          ctx.strokeEllipse(moverX, moverY, 100, 100);
+          ctx.fillEllipse(moverX, moverY, 12, 12);
+        } else {
+          ctx.fillEllipse(moverX, moverY, 12, 12);
+        }
+
+
+      }
+
+    }
+}
+
+function Mode2(){
+    ctx.lineWidth = 4;
+    v = tween(v, map(audioChannelVolume[20],0,200, 120, 350), 15);
+    d = tween(d, v+20, 35);
+    d2 = tween(d2, v, 25);
+    ctx.fillStyle="white";
+    ctx.strokeStyle="white";
+    for (var i=0; i < shakers.length; i++) {
+
+      shakers[i].x = Math.cos(angle)*d;
+      shakers[i].y = Math.sin(angle)*d;
+
+      //ctx.fillEllipse(shakers[i].x, shakers[i].y, 12, 12);
+      angle = 2*Math.PI/shakers.length*i;
+      for (var j=0; j< num_movers; j++) {
+
+        offset = theta+2*Math.PI/num_movers*j;
+        moverX = Math.cos(offset)*d2;
+        moverY = Math.sin(offset)*d2;
+        if (lines_on) ctx.line(shakers[i].x, shakers[i].y, moverX, moverY);
+
+
+        ctx.fillEllipse(moverX, moverY, 12, 12);
+
+
+      }
+
+    }
+}
+
+function Mode3(){
+    ctx.lineWidth = 2;
+    if (chance(200)) addShaker();
+    if (chance(50)) num_movers++;
+    v = tween(v, map(audioChannelVolume[20],0,200, 60, 250), 15);
+    d = tween(d, v + 20, 35);
+    d2 = tween(d2, v+30, 5);
+    ctx.fillStyle="white";
+    ctx.lineWeight = 0.2;
+    for (var i=0; i < shakers.length; i++) {
+
+      shakers[i].x = Math.cos(angle)*d;
+      shakers[i].y = Math.sin(angle)*d;
+
+      ctx.fillEllipse(shakers[i].x, shakers[i].y, 12, 12);
+      angle = 2*Math.PI/shakers.length*i;
+
+      for (var j=0; j< num_movers; j++) {
+
+        offset = theta+2*Math.PI/num_movers*j;
+        moverX = Math.cos(offset)*d2;
+        moverY = Math.sin(offset)*d2;
+        if (lines_on) ctx.line(shakers[i].x, shakers[i].y, moverX, moverY);
+
+        if (big_mover) {
+          ctx.fillStyle="white";
+          ctx.fillEllipse(moverX, moverY, 60, 60);
+          ctx.fillStyle="white";
+          ctx.fillEllipse(moverX, moverY, 22, 22);
+        } else {
+          ctx.fillEllipse(moverX, moverY, 12, 12);
+        }
+
+
+      }
+
+    }
+}
+
+
+function Mode4(){
+
+  ctx.strokeStyle = rgba(255,0.4);
+  var x = map(Math.sin(r),-1,1,1,720);
+  r+=0.00002;
+  if (audioChannelVolume[10] > 0)  ss = tween(ss, map(audioChannelVolume[10],0,140, 0, 200),10);
+  for (var i = 0; i < particles.length; ++i) {
+    ctx.strokeEllipse(x-w/2, x-h/2, 10000*i/ss, 10000*i/ss);
+  }
+
+}
+
+function Mode5(){
+  ctx.lineWidth = 2;
+  if (chance(300)) dir = posNeg();
+  if (audioChannelVolume[50]>0) rotation = dir * audioChannelVolume[50];
+
+  c = tween(c, 40+map(audioChannelVolume[40], 0, 100, 0, 80), 10);
+  ctx.strokeStyle = rgba(0,0,0,1);
+
+  if (chance(500)) out_on = !out_on;
+  if (chance(200)) out_on = false;
+  if (chance(500)) all_on = !all_on;
+  if (chance(300)) center_on = !center_on;
+
+  for (var i = 0; i < particles.length; i++) {
+    p =particles[i];
+    var me = Math.floor(p.me*360/particles.length);
+    p.angle += radians(rotation/120);
+    p.radius = tween(p.radius, map(audioChannelVolume[p.me], 0, 80, c, 100), 2);
+
+
+    var s = mapSound(i, particles.length)/10;
+    p.sz = tween(p.sz, map(p.radius, 0, 100, 0, 30), 12);
+    p.x = (out) * Math.cos(p.angle);
+    p.y = (out) * Math.sin(p.angle);
+    // console.log(out);
+    var linepos = new Vector((out - p.sz/2) * Math.cos(p.angle),
+  (out - p.sz/2) * Math.sin(p.angle));
+    var linepos2 = new Vector(c/2 * Math.cos(p.angle), c/2* Math.sin(p.angle));
+    ctx.strokeStyle = rgba(255);
+    ctx.line(linepos2.x, linepos2.y, linepos.x, linepos.y);
+
+    ctx.fillStyle = rgb(255);
+
+    ctx.HstrokeEllipse(p.x, p.y, p.sz, p.sz);
+    if (p.on) ctx.fillEllipse(p.x, p.y, p.sz-20, p.sz-20);
+
+    };
+
+
+    ctx.HstrokeEllipse(0, 0, c, c);
+    if (center_on) ctx.HfillEllipse(0, 0, c-20, c-20);
+}
+
+
+
+
+
+function addShaker(){
+
+  var s = new VerletParticle2D(new Vec2D(w/2, h/4));
+  shakers.push(s);
+  var p = new VerletParticle2D(new Vec2D(w/2, h/2));
+  p.x = w/2;
+  p.y = h/2;
+  p.sz = 5;
+  p.angle = random(360);
+  p.on = true;
+  p.me = particles.length;
+  p.radius = radius;
+  particles.push(p);
+
+  physics.addParticle(s);
+  physics.addParticle(p);
+
+  var sp = new VerletSpring2D(shakers[i], particles[i], 90, 0.0001);
+  springs.push(sp);
+  physics.addSpring(sp);
+
+}
+
+function removeShaker(){
+  console.log("removeShaker");
+  if (shakers.length > 1) {
+    var s = new VerletParticle2D(new Vec2D(w/2, h/4));
+    var s = shakers[0];
+    var p = particles[0];
+    var sp = springs[0];
+
+    // physics.removeParticle(s);
+    // physics.removeParticle(p);
+    // physics.removeSpring(sp);
+
+    shakers.splice(0,1);
+    particles.splice(0,1);
+    springs.splice(0,1);
+  }
+}
+
+
+
+window.onkeydown=function(event){
+
+    //console.log(event.which);
+    if (event.which == 38) num_movers++;
+    if (event.which == 40) num_movers--;
+    if (num_movers> 50) num_movers = 50;
+    if (num_movers< 2) num_movers = 2;
+
+    if (event.which == 39) addShaker();
+    if (event.which == 37) removeShaker();
+    //console.log(movers);
+
+};
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

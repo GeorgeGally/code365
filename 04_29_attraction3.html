@@ -4,7 +4,7 @@
 
     <meta charset="utf-8">
     <title>Soundcloud Viz</title>
-    
+
     <script src='http://connect.soundcloud.com/sdk.js'></script>
     <script language="javascript" src="js/creative_coding.js"></script>
     <script language="javascript" src="js/canvas.js"></script>
@@ -18,7 +18,7 @@
 
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -50,14 +50,14 @@ function draw(){
     ctx.fillRect(0, 0, w, h);
     //particle.draw();
     //console.log();
-  
-        
+
+
     //for (var i = 0; i < balls.particles.length; i++) {
         var i = 0;
         b = balls.particles[i];
-        
+
         for (var j = 0; j < flies[i].particles.length; j++) {
-            
+
             p = flies[i].particles[j];
             //ctx.fillStyle = hsl(map(audioChannelVolume[p.me%80], 0, 150, 0, 100),map(audioChannelVolume[p.me%100], 0, 150, 0, 100), 40);
             ctx.fillStyle = "black";
@@ -78,7 +78,7 @@ function draw(){
 
         }
 
-    //} 
+    //}
      // for (var i = 0; i < balls.particles.length; i++) {
 
         b = balls.particles[i];
@@ -87,9 +87,8 @@ function draw(){
         b.sz =  tween(b.sz, map(audioChannelVolume[b.me], 0, 100, 5, 45), 4);
         //ctx.fillStyle = hsl(map(audioChannelVolume[p.me*5], 0, 150, 30, 70),map(audioChannelVolume[p.me%100], 0, 150, 0, 100), 15);
         ctx.fillStyle = "black";
-        ctx.fillEllipse(b.position.x, b.position.y, b.sz, b.sz);
 
-    //}
+      mirror();
 
 }
 

@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
  <head>
 
     <meta charset="utf-8">
     <title>Soundcloud Viz</title>
-    
+
     <script src='http://connect.soundcloud.com/sdk.js'></script>
     <script language="javascript" src="js/creative_coding.js"></script>
     <script language="javascript" src="js/canvas.js"></script>
@@ -18,7 +18,7 @@
 
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -55,13 +55,13 @@ function draw(){
     ctx.background(255, 0.5);
     //ctx.globalCompositeOperation = 'screen';
     ctx.fillStyle = rgba(0, 0.8);
-        
+
     for (var i = 0; i < balls.particles.length; i++) {
-        
+
         b = balls.particles[i];
         p.r = 6 + tween(p.r, mix[0]/4.5, 16);
-        //b.angle += radians(b.speed.x); 
-        b.angle += radians(map(audioChannelVolume[b.me%120], 0, 100, -1, 0.5)); 
+        //b.angle += radians(b.speed.x);
+        b.angle += radians(map(audioChannelVolume[b.me%120], 0, 100, -1, 0.5));
         b.x = w/2 + (b.sz/2+p.r) * Math.cos(b.angle);
 		b.y = h/2 + (b.sz/2+p.r) * Math.sin(b.angle);
         b.sz = 5;
@@ -69,7 +69,7 @@ function draw(){
         //ctx.fillEllipse(b.x, b.y, b.sz, b.sz);
 
         for (var j = 0; j < flies[i].particles.length; j++) {
-            
+
             var mouse = new Vector(b.x+b.sz*2, b.y+b.sz*2);
             p = flies[i].particles[j];
             mouse = mouse.subtract(p.position);
@@ -88,7 +88,7 @@ function draw(){
 
         }
 
-    } 
+    }
 
 
 }

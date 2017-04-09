@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ 	<script src='http://connect.soundcloud.com/sdk.js'></script>
+ 	<script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+var ctx = createCanvas("canvas1");
+var grid = new Grid(10, 10, w/2, h/2);
+var engine = new particleEngine(10*10, grid);
+var particles = engine.particles;
+
+for (var i = 0; i < particles.length; i++) {
+  p = particles[i];
+  p.pos.y = h/2;
+}
+
+function draw() {
+  ctx.background(0, 0.1);
+  ctx.fillStyle = "white";
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    moveParticles(p);
+  }
+
+
+}
+
+function moveParticles(p){
+
+    var f = mapSound(p.me/2, particles.length);
+
+    //particle.size = clamp(f,120,400);
+    p.size = f;
+    //particle.size -= (f-particle.size)/10;
+    p.pos.x = w/2 + w/4 * Math.sin(p.me + frameCount/200);
+    p.pos.y = h/2 + h/4 * Math.sin(p.me + frameCount/50);
+    ctx.fillEllipse(p.pos.x, p.pos.y, f/16, f/16);
+}
+
+
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

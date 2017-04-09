@@ -1,6 +1,14 @@
-function strobe(){
-		 if (random(100)>8) {
-   ctx.background(0);
+
+var oldColour = [];
+var movement = [];
+var sensitivity = 15;
+
+
+function strobe(_prob, _c){
+	var prob = _prob || 100;
+	var c = _c || 0;
+	if (chance(prob)) {
+   	ctx.background(c);
   }
 }
 
@@ -34,10 +42,6 @@ function pixelate(blocksize, blockshape) {
     }
 }
 
-
-var oldColour = [];
-var movement = [];
-var sensitivity = 15;
 
 function colourArray(blocksize, alpha) {
 
@@ -119,19 +123,15 @@ function drawCirc(x,y, ww, r,g,b){
     x += random(-8,8);
     y += random(-8,8);
     if ( r!=182 && g!=213 && b !=255) {
-                ctx.fillStyle = rgba(r,g,b, 0.4);
-                ww = random(20, 50);
-              // ctx.fillEllipse(x, y, blocksize, blocksize);
-              ctx.fillEllipse(x, y, ww, ww);
-
-}
+    	ctx.fillStyle = rgba(r,g,b, 0.4);
+      ww = random(20, 50);
+      ctx.fillEllipse(x, y, ww, ww);
+		}
 }
 
-function colourArray(){
 
-}
 
-p.drawText = function (_options){
+ function drawText (_options){
 	if (_options.background === undefined) _options.background = "none";
 
 	options = {

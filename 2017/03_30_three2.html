@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/url.js"></script>
+<script language="javascript" src="../js/physics2.js"></script>
+<script language="javascript" src="../js/three.min.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #f3f3f3">
+
+<script>
+
+var ctx = createHiddenCanvas("canvas1");
+var canvas = document.getElementById('canvas1');
+//var ctx = createCanvas("canvas1");
+canvas.style.zIndex = 100;
+canvas.width = width = w = 1024;
+canvas.height = height = h = 1024;
+
+ctx.strokeStyle = rgba(0,0,0,0.8);
+
+var particles = [];
+var radius = 150;
+var num_particles = 1400;
+var cols = ['#fdea00', '#50bfe8', '#f06724', '#8cc640'];
+var angle = 360/num_particles;
+var circ_sz = 300;
+var t_size = 150;
+var top_offset = 0;
+
+for (var i = 0; i < num_particles; i+=1) {
+
+		//var x = 2*Math.cos(radians(i*angle))*radius;
+    	var x = random(w);
+    	var y = random(h);
+
+		addParticle(x, y, cols[i%5], i);
+};
+
+var s1 = 1;
+var s2 = -1;
+
+
+/////////////////////////////////////
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 70, aspect, 1, 1000 );
+//camera = new THREE.PerspectiveCamera(70, width / height, 1, 1000);
+var d=0, t=0;
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true, alpha: true});
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+var sz = 4;
+var geometry = new THREE.BoxGeometry( sz, sz, sz);
+geometry.dynamic = true;
+
+texture = new THREE.Texture(canvas);
+texture.needsUpdate = true;
+var material = new THREE.MeshBasicMaterial({ map: texture });
+material.shading = THREE.SmoothShading;
+var plane = [];
+
+for (var i = 0; i < num_particles; i++) {
+  plane[i] = new THREE.Mesh( geometry, material );
+  //scene.add( plane[i] );
+  plane[i].rotation.z += (i * Math.PI);
+  // plane[i].position.x = random(-15,15);
+
+  if (i == 0) {
+    plane[i].position.z = 0;
+    plane[i].position.x = 0;
+    plane[i].position.y = 0;
+    plane[i].scale.x = plane[i].scale.y = plane[i].scale.z = 6;
+  } else {
+    plane[i].position.z = -1500;
+    plane[i].position.x = randomInt(-60, 60);
+    plane[i].position.y = randomInt(-62, 60);
+    plane[i].scale.x = plane[i].scale.y = plane[i].scale.z = random(0.4, 2);
+  }
+  //plane[i].position.z = randomInt(-62, 62);
+  plane[i].start = new Vector(plane[i].position.x, plane[i].position.y,plane[i].position.z);
+  plane[i].position.normalize();
+  plane[i].position.multiplyScalar( Math.random() * 20 + 15 );
+  plane[i].s = 1;
+  plane[i].counter = random(-18,18);
+  plane[i].s2 = 1;
+  plane[i].me = i%3;
+
+  scene.add( plane[i] );
+
+
+}
+
+
+camera.position.z = 70;
+camera.near = 30;
+camera.far  = 95;
+
+var scale_factor = 1;
+var red = false;
+
+function draw() {
+
+  ctx.background(220)
+  t_size = tween(t_size, map(audioChannelVolume[20],0,100, 550, 900), 3);
+
+
+	moveParticles();
+
+	ctx.save();
+	ctx.fillStyle = rgb(0);
+	//ctx.ellipse(w/2, h/2, 400, 400);
+	ctx.rect(w/2-t_size/2, h/2-t_size/2, t_size, t_size);
+	ctx.clip();
+	ctx.fillStyle = rgb(0);
+	ctx.fillRect(w/2-t_size/2, h/2-t_size/2, t_size, t_size);
+
+	//ctx.HfillEllipse(w/2, h/2, 400, 400);
+	ctx.strokeStyle = rgb(255);
+	ctx.fillStyle = rgb(0);
+	drawParticles();
+	ctx.restore();
+
+	ctx.fillStyle = "#000";
+	ctx.lineWidth = 1;
+
+	ctx.save();
+	ctx.fillStyle = rgb(0);
+	//ctx.eqFillTriangle(w/2, top_offset + h/2, t_size);
+	ctx.rect(w/2-t_size/2, h/2-t_size/2, t_size, t_size);
+	ctx.clip();
+	//ctx.globalCompositeOperation = 'lighten';
+
+	// ctx.fillStyle = rgb(0);
+	ctx.fillStyle = cols[randomInt(4)];
+	drawParticles();
+	ctx.restore();
+
+  texture.needsUpdate = true;
+  plane[0].scale.x = plane[0].scale.y = plane[0].scale.z = map(mapSound(10, 100), 0, 140, 0.8, 2);
+  plane[0].rotation.y +=0.01;
+  renderer.render( scene, camera );
+}
+
+
+
+
+function Mode1(){
+  for (i=0;i<plane.geometry.vertices.length;i++){
+    // t = map(audioChannelVolume[i],0,180, 0, 0.8);
+    t = map(mapSound(i, plane.geometry.vertices.length),0,180, 0, 0.8);
+    plane.geometry.vertices[i].z = 10 +Math.sin(t)*Math.cos(i)*30;
+
+  }
+
+  scene.rotation.y+=0.01;
+}
+
+
+function Mode2(){
+  // for (i=0;i<plane.geometry.vertices.length;i++){
+  //   // t = map(audioChannelVolume[i],0,180, 0, 0.8);
+  //   t = map(mapSound(i, plane.geometry.vertices.length),0,180, 0, 0.8);
+  //   plane.geometry.vertices[i].z = tween(plane.geometry.vertices[i].z,t*scale_factor, 20);
+  //
+  // }
+
+  //scene.rotation.y+=0.01;
+}
+
+
+var settings = QuickSettings.create();
+// QuickSettings.useExtStyleSheet();
+settings.setGlobalChangeHandler(draw);
+//settings.addRange(title, min, max, value, step, callback);
+settings.addRange("camera.position.z", -100, 100, 60, 1, function(value) {
+  camera.position.z = value;
+  draw();
+});
+settings.addRange("plane.position.x", -100, 100, 80, 1, function(value) {
+  plane[0].position.x = value;
+  draw();
+});
+settings.addRange("plane.position.y", -100, 100, 80, 1, function(value) {
+  plane[0].position.y = value;
+  draw();
+});
+settings.addRange("plane.position.z", -100, 100, 80, 1, function(value) {
+  plane[0].position.z = value;
+  draw();
+});
+
+settings.addRange("scene.rotation.x", -180, 180, 0, 0.01, function(value) {
+  scene.rotation.x = radians(value);
+  draw();
+});
+settings.addRange("scene.rotation.y", -180, 180, 0, 0.01, function(value) {
+  scene.rotation.y = radians(value);
+  draw();
+});
+settings.addRange("plane.scale.x", 0.1, 5, 1, 0.1, function(value) {
+  plane[0].scale.x = value;
+  draw();
+});
+settings.addRange("plane.scale.y", 0.1, 5, 1, 0.1, function(value) {
+  plane[0].scale.y = value;
+  draw();
+});
+settings.addRange("scale_factor", 0, 150, 0, 0.1, function(value) {
+  scale_factor = value;
+  draw();
+});
+
+
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: _x,
+		y: _y,
+		c: _colour,
+		me: _me,
+		speedx: posNeg()*random(0.4,4),
+		speedy: posNeg()*random(0.4,4),
+		sz: random(2,10),
+		angle: random(1)
+	}
+
+	particles.push(particle);
+}
+
+
+function drawParticles(){
+
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		//ctx.fillStyle = p.c;
+		ctx.fillEllipse(p.x, p.y, p.sz, p.sz);
+	}
+
+}
+
+function moveParticles(){
+
+	for (var i = 0; i < particles.length; i++) {
+
+		p = particles[i];
+		p.sz = map(audioChannelVolume[p.me%100],0,100, -3, 5);
+
+		p.x = (p.x + p.speedx)%w;
+		p.y = (p.y + p.speedy)%h;
+
+	};
+
+}
+
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

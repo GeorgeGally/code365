@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+      <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="../js/creative_coding.js"></script>
+
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/vector_particles.js"></script>
+    <script language="javascript" src="../js/three.min.js"></script>
+    <script language="javascript" src="../js/Detector.js"></script>
+    <script language="javascript" src="../js/threejs/controls/TrackballControls.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+<body style="background: #efefef">
+
+<script>
+
+
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 70, aspect, 0.1, 1000 );
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+
+camera.position.z = 80;
+camera.near = 50;
+camera.far  = 95;
+
+var controls = new THREE.TrackballControls( camera );
+controls.target.set( 0, 0, 0 )
+
+
+var number_of_balls = 100;
+var radius = 20;
+var mode = 1;
+var sin_up = false;
+var balls = [];
+
+// - - - - points
+  geometry = new THREE.Geometry();
+  //material = new THREE.PointsMaterial( { size:.1 } );
+  for (i1=1; i1<=10; i1+=1) {
+    var x1 = Math.random()*2-1;
+    var y1 = Math.random()*2-1;
+    var z1 = Math.random()*2-1;
+    geometry.vertices.push(new THREE.Vector3(x1,y1,z1));
+  }
+  // object3d = new THREE.Points(geometry, new THREE.PointsMaterial( { color: "#333", size: 4 } ));
+  // scene.add(object3d);
+// - - - - line
+  geometry = new THREE.Geometry();
+  geometry.vertices = [ new THREE.Vector3(-1,1,0), new THREE.Vector3(0,-1,0), new THREE.Vector3(1,1,0) ];
+  material = new THREE.LineBasicMaterial( { color:0xffffff } );
+  object3d = new THREE.Line(geometry, material);
+  scene.add(object3d);
+// - - - - sphere
+  geometry = new THREE.SphereGeometry(.5);
+  material = new THREE.MeshPhongMaterial( {color:0xffffff} );
+  mesh = new THREE.Mesh(geometry, material);
+  mesh.scale.x = 2;
+  mesh.position.set(0, 1, 0);
+  scene.add(mesh);
+
+
+for (var i = 0; i < number_of_balls; i++) {
+  addBall(i);
+}
+
+var my_chance = 1900;
+
+function draw(){
+
+  if (chance(my_chance)) drawLine();
+  if (chance(my_chance)) drawCircle();
+  if (chance(my_chance)) drawSin();
+  if (chance(my_chance)) drawRings();
+  if (chance(my_chance)) drawSnake();
+  if (chance(my_chance)) drawRain();
+  if (chance(my_chance)) drawCluster();
+  // if (chance(400)) drawUpDown();
+  // if (chance(400)) sin_up != sin_up;
+
+    for (var i = balls.length - 1; i >= 0; i--) {
+
+    p = balls[i];
+
+    moveParticle(p);
+
+  }
+  controls.update();
+  renderer.render( scene, camera );
+
+  }
+
+
+
+///////////////////
+
+  function moveParticle(b){
+
+    var s = mapSound(b.name, balls.length);
+
+    // if (sin_up) {
+    //   hh = 0;
+    // } else {
+    //   hh = Math.sin(frameCount/100) * 1/4;
+    // }
+    if (mode == 3) {
+      b.target.y = 20 * Math.cos(b.angle + frameCount/20);
+    }
+
+    if (mode == 5) {
+      b.target.y = Math.cos(b.angle + frameCount/20) * radius/10;
+    }
+
+    if (mode == 6) {
+      b.target.x = 20 * Math.cos(b.angle + frameCount/20);
+    }
+
+    if (mode == 7) {
+      b.target.y -= map(s, 0, 200, 0.2, 3);
+      if (b.target.y < -110) {
+        b.position.y = b.target.y = 110;
+      }
+    }
+
+
+
+    if (mode != 4) {
+      b.target_sz = Math.sin(b.angle + frameCount/20) * 20;
+    }
+
+    //b.target.z = map(s, 0, 200, -10, 50);
+
+    b.position.x = tween(b.position.x, b.target.x, 30);
+    b.position.y = tween(b.position.y, b.target.y, 30);
+    b.position.z = tween(b.position.z, b.target.z, 30);
+
+    if (mode == 8) b.target_sz = map(s, 0, 200, 0.3, 2.8);
+    // b.scale.x = tween(b.scale.x, b.target_sz, 5);
+    // b.scale.y = tween(b.scale.x, b.target_sz, 5);
+    b.scale.x = b.scale.y = b.scale.z = tween(b.scale.x, b.target_sz, 5);
+
+  }
+
+drawCluster();
+
+
+
+function drawLine(){
+  mode = 1;
+for (var i = 0; i < balls.length; i++) {
+  b = balls[i];
+  b.target.x = b.start.x;
+  b.target.y = b.start.y;
+  b.target.z = b.start.z;
+  b.target_sz = 1;
+}
+}
+
+function drawCircle(){
+  console.log("drawCircle");
+  mode = 2;
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    b.target.x = Math.cos(b.angle) * radius;
+    b.target.y = Math.sin(b.angle) * radius;
+  }
+}
+
+function drawSin(){
+  console.log("drawSin");
+  mode = 3;
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    b.target.x = b.start.x;
+    b.target.y = 200 * Math.sin(b.angle + frameCount/100);
+    b.target_sz = 1;
+  }
+}
+
+
+
+
+
+
+function drawRings(){
+  console.log("drawRings");
+  mode = 4;
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    b.target.x = 0;
+    b.target.y = 0;
+    b.target_sz = 1 + b.name * 5;
+  }
+}
+
+
+function drawUpDown(){
+  console.log("drawUpDown");
+  mode = 5;
+  for (var i = 0; i < balls.length; i++) {
+    p = balls[i];
+    p.target.x = p.start.x;
+    p.target.y = Math.sin(frameCount/100) + Math.cos(p.angle + frameCount/100) * radius/2;
+  }
+}
+
+
+function drawSnake(){
+  console.log("drawSnake");
+  mode = 6;
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    b.target.x = 0;
+    b.target.z = 1.5 * b.start.x;
+    b.target.y = 0;
+    b.target_sz = 1;
+  }
+}
+
+
+function drawRain(){
+  console.log("drawRain");
+  mode = 7;
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    b.target.x = b.start.x;
+    b.target.z = b.start.z;
+    //b.target.y = 0;
+  }
+}
+
+
+function drawCluster(){
+  console.log("drawCluster");
+  mode = 8;
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+    b.target.x = random(-10,10);
+    b.target.y = random(-10,10);
+    b.target.z = random(-10,10);
+    //b.target.y = 0;
+  }
+}
+
+
+
+
+/////////////
+
+
+function addBall(i){
+  var angle = radians(distributeAngles(i, number_of_balls));
+  var sz =  1.5;
+  var pos = -100 + i*4;
+  //console.log(pos);
+  var geometry = new THREE.SphereGeometry( sz, 20, 42, 12 );
+  var sphere = new THREE.Mesh( geometry, dMaterial );
+  sphere.position.x = pos;
+  sphere.position.y = 0;
+  sphere.position.z = 10;
+  sphere.vx =  0;
+  sphere.target_sz =  sz;
+  sphere.angle =  angle;
+  sphere.name = balls.length;
+  sphere.vy = random(1,3);
+  sphere.speed = new Vector(random(-0.1, 0.1), random(-0.1, 0.1), 0.05);
+  sphere.start = new THREE.Vector3(pos, 0, 10);
+  sphere.target = new THREE.Vector3(0,0,0);
+  scene.add( sphere );
+
+
+  balls.push(sphere);
+  //if (balls.length > maxballs) removeBall();
+}
+
+//console.log(balls);
+
+document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+
+
+function onDocumentTouchStart( event ) {
+
+	if ( event.touches.length == 1 ) {
+
+		event.preventDefault();
+		mouseX = event.touches[ 0 ].pageX - windowHalfX;
+		mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+	}
+}
+
+
+function onDocumentTouchMove( event ) {
+
+	if ( event.touches.length == 1 ) {
+
+		event.preventDefault();
+		mouseX = event.touches[ 0 ].pageX - windowHalfX;
+		mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+	}
+
+}
+
+
+
+</script>
+  <script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+
+</html>

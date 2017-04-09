@@ -12,7 +12,7 @@
 	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -29,7 +29,7 @@ for (var i = 0; i < num_particles; i++) {
     // var cc = rgba(random(25),random(255),0, 0.5);
     var m = map(i, 0, num_particles, 0, 360);
     var cc = hsl(m, 96, 50);
-	addParticle(random(55), random(55), cc, i);
+	   addParticle(random(55), random(55), cc, i);
 
 }
 
@@ -41,7 +41,7 @@ function draw(){
 	moveParticles();
 	ctx.fillStyle = rgba(0,0,0,1);
 	ctx.HfillEllipse(w/2, h/2, radius-8, radius-8);
-	
+
 }
 
 
@@ -65,20 +65,14 @@ function addParticle(_x, _y, _colour, _me){
 function moveParticles(){
 	for (var i = 0; i < particles.length; i++) {
 		p = particles[i];
-		//var me = (p.me)%256; 
-		//p.angle += radians(p.speedx); 
-		// var r = 8 + tween(radius, map(mapSound(p.me, num_particles), 0,100, 0, 20), 8);
 		var r = map(mapSound(p.me2, num_particles+20), 0,200, radius/2, radius/2+ 100);
-		//var r = radius/2 + audioChannelVolume[40+(p.me%220)];
 
-			// p.sz = tween(p.sz, map(audioChannelVolume[Math.floor(me)],0,100, 150, 300), 5);
-		
 		x = w/2 + p.x + (p.sz/2+r) * Math.cos(p.angle);
 		y = h/2 + p.y + (p.sz/2+r) * Math.sin(p.angle);
 		// ctx.strokeWeight = 0;
 		// ctx.fillStyle = p.c;
 		// ctx.fillEllipse(x, y, 3, 3);
-		ctx.strokeWeight = 0.5;			
+		ctx.strokeWeight = 0.5;
 		ctx.strokeStyle = p.c;
 		ctx.line(w/2, h/2, x,y);
 		};

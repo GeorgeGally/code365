@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/new_vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var num = 23;
+ctx.font = '13px Courier';
+//function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _starty)
+var grid = new Grid(num, 26, w, h);
+var engine = new particleEngine(num*26);
+
+
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.pos = new Vector(grid.x[i], grid.y[i]);
+  p.count = 0;
+  p.sz = 10;
+}
+
+
+
+
+function draw() {
+  ctx.background(255);
+
+  for (var i = 0; i < engine.particles.length-1; i++) {
+    var p = engine.particles[i];
+    var s = 2 * Sound.mapSound(i, engine.particles.length * 2);
+
+    p.pos.y += 1;
+    if (p.pos.y > h) p.pos.y = 0;
+
+
+    if (s != undefined) {
+      p.count = Math.round(tween(p.count, s, 60),1);
+      p.sz = tween(p.sz, map(s, 0, 200, 18, grid.spacing_x-6), 2);
+    }
+    ctx.fillStyle = rgb(0);
+    ctx.fillRect(p.pos.x, p.pos.y+10, 0 + p.sz, grid.spacing_y-2);
+    ctx.fillStyle = rgb(255);
+    ctx.fillText(p.count, p.pos.x+1, p.pos.y);
+
+  }
+  //mirror();
+}
+
+
+
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+
+</html>

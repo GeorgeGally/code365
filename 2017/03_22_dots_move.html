@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+      <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="../js/creative_coding.js"></script>
+
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/vector_particles.js"></script>
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+<body style="background: #efefef">
+
+<script>
+var videoctx = createCanvas('video1');
+var videocanvas = document.getElementById('video1');
+var ctx = createCanvas('canvas1');
+var samplesize = 15;
+var radius = 200;
+var grid = new Grid(50, 1);
+var engine = new particleEngine(grid.length, grid);
+var mode = 1;
+
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+  p.engine = new particleEngine(10);
+}
+
+function drawLine(){
+  mode = 1;
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+  p.target.x = p.start.x;
+  p.target.y = p.start.y;
+}
+}
+
+function drawCircle(){
+  mode = 2;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    p.target.x = w/2 + Math.cos(p.angle) * radius;
+    p.target.y = h/2 + Math.sin(p.angle) * radius;
+  }
+}
+
+function drawSin(){
+  mode = 3;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    p.target.x = p.start.x;
+    p.target.y = h/2 + Math.cos(p.angle + frameCount/100) * radius/2;
+  }
+}
+
+function drawRings(){
+  mode = 4;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    p.target.x = w/2;
+    p.target.y = h/2;
+    p.target_sz = 20 + p.me * 5;
+  }
+}
+
+
+
+
+function draw(){
+
+  ctx.background(245);
+
+  if (chance(400)) drawLine();
+  if (chance(400)) drawCircle();
+  if (chance(400)) drawSin();
+  if (chance(400)) drawRings();
+    for (var i = engine.particles.length - 1; i >= 0; i--) {
+
+    p = engine.particles[i];
+
+    moveParticle(p);
+    drawParticle(p);
+  }
+
+
+
+  }
+
+
+function moveParticle(p){
+  if (mode == 3) {
+    p.target.y = h/2 + Math.cos(p.angle + frameCount/20) * radius/2;
+  }
+  if (mode != 4) {
+    p.sz = Math.sin(p.angle + frameCount/20) * 20;
+  }
+  //if (p.alpha<1) p.alpha+=0.0019999;
+  p.pos.x = tween(p.pos.x, p.target.x, 20);
+  p.pos.y = tween(p.pos.y, p.target.y, 20);
+  //p.pos.x += p.speed.x;
+  //p.pos.y += p.speed.y;
+
+  p.sz = tween(p.sz, p.target_sz, 20);
+
+  for (var j = 0; j < p.engine.particles.length; j++) {
+    var b = p.engine.particles[j];
+    b.angle += 0.1;
+    b.target.x = p.pos.x + Math.cos(b.angle) * 50;
+    b.target.y = p.pos.y + Math.sin(b.angle) * 50;
+    b.pos.x = tween(b.pos.x, b.target.x, 20);
+    b.pos.y = tween(b.pos.y, b.target.y, 20);
+  }
+}
+
+
+function drawParticle(p){
+  ctx.strokeStyle = rgb(0);
+  ctx.fillStyle = rgb(0);
+  if (mode == 4) {
+  ctx.strokeEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+} else {
+  ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+}
+for (var j = 0; j < p.engine.particles.length; j++) {
+  var b = p.engine.particles[j];
+  ctx.fillRect(b.pos.x, b.pos.y, b.sz/2, b.sz/2);
+}
+}
+
+
+</script>
+  <script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+
+</html>

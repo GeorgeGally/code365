@@ -4,7 +4,7 @@
 
     <meta charset="utf-8">
     <title>Soundcloud Viz</title>
-    
+
     <script src='http://connect.soundcloud.com/sdk.js'></script>
     <script language="javascript" src="js/creative_coding.js"></script>
     <script language="javascript" src="js/canvas.js"></script>
@@ -18,7 +18,7 @@
 
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -59,13 +59,13 @@ function draw(){
     ctx.fillRect(0, 0, w, h);
     //particle.draw();
     //console.log();
-  
-        
+
+
     for (var i = 0; i < balls.particles.length; i++) {
-        
+
         b = balls.particles[i];
-        b.angle += radians(b.speed.x); 
-        //b.angle += radians(map(audioChannelVolume[b.me%60], 0, 100, -1, 1)); 
+        b.angle += radians(b.speed.x);
+        //b.angle += radians(map(audioChannelVolume[b.me%60], 0, 100, -1, 1));
         b.x = w/2 +  (b.sz/2+radius) * Math.cos(b.angle);
 		b.y = h/2 +  + (b.sz/2+radius) * Math.sin(b.angle);
 
@@ -75,10 +75,10 @@ function draw(){
 
         ctx.fillEllipse(b.x, b.y, b.sz, b.sz);
 
-          
+
 
         for (var j = 0; j < flies[i].particles.length; j++) {
-            
+
             var mouse = new Vector(b.x+b.sz/2, b.y+b.sz/2);
             p = flies[i].particles[j];
             mouse = mouse.subtract(p.position);
@@ -92,13 +92,13 @@ function draw(){
             p.sz =  map(audioChannelVolume[p.me%80], 0, 120, 1, 4);
             ctx.strokeStyle = p.c;
             ctx.fillStyle = p.c;
-            ctx.line(p.position.x, p.position.y, b.x, b.y);
+            //ctx.line(p.position.x, p.position.y, b.x, b.y);
             ctx.fillEllipse(p.position.x, p.position.y, p.sz, p.sz);
 
 
         }
 
-    } 
+    }
 
 
 }

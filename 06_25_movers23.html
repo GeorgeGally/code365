@@ -14,7 +14,7 @@
 	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+
 <script>
 var ctx = createCanvas("canvas1");
 
@@ -108,7 +108,7 @@ function drawLines(){
   ctx.rotate(theta/10);
 
   for (var i=0; i < shakers.length; i++) {
-    
+
     shakers[i].x = Math.cos(angle)*d;
     shakers[i].y = Math.sin(angle)*d;
     ctx.fillStyle="black";
@@ -137,9 +137,9 @@ function drawLines(){
 
 
 window.onkeydown=function(event){
-  
+
     //if (event.which == 38) movers = (movers+1)%40
-    //if (event.which == 40) movers = (movers-1); 
+    //if (event.which == 40) movers = (movers-1);
     //if (movers < 0) movers = 40;
     if (event.which == 39) addShaker();
     //if (event.which == 37) num = (num-1); if (num < 0) num = 40;

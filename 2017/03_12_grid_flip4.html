@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+ <script language="javascript" src="../js/canvas.js"></script>
+ <script language="javascript" src="../js/vector.js"></script>
+ <script language="javascript" src="../js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+
+// SETUP WAVES CLASS
+
+
+var grid_w = 20;
+var grid_h = 10;
+
+var flip1 = true;
+var flip2 = true;
+ctx.lineCap = 'round';
+
+var grid = new Grid(grid_w, grid_h);
+var engine = new particleEngine(grid_w * grid_h, grid);
+
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+	ctx.strokeStyle = rgba(0,0,0,0.8);
+	p.radius = 150;
+	p.rot = 0;
+  var c = random(255);
+  var cc = rgb(c , c, random(55));
+  if(chance(50)) cc = rgb(255);
+  p.c = cc;
+  p.speedx =  posNeg()*2;
+  p.speedy =  random(-20,20);
+  p.sz =  p.radius + p.me*random(10,30);
+}
+
+function moveParticles(){
+
+		for (var i = 0; i < engine.particles.length; i++) {
+
+			p = engine.particles[i];
+			var s = mapSound(p.me, engine.particles.length);
+			p.speedx = tween(p.speedx, map(s, 0, 255, 1, 5), 2);
+			p.angle += p.speedx;
+      drawParticle(p);
+
+		};
+
+
+
+}
+
+
+function drawParticle(p){
+  ctx.save();
+  ctx.translate(p.pos.x, p.pos.y);
+  ctx.rotateDegrees(p.angle);
+  var s = mapSound(p.me, engine.particles.length);
+  ctx.fillEllipse(0, 0, 8, 8);
+  ctx.strokeStyle = p.c;
+  ctx.lineWidth = map(s, 0, 255, 4, 22);
+  ctx.line(0, 0, w/4, h/4);
+  ctx.restore();
+}
+
+
+function draw(){
+	ctx.clearRect(0, 0, w, h);
+  moveParticles();
+	ctx.mirror();
+  ctx.mirror(2);
+  // ctx.mirror();
+  // ctx.mirror(2);
+  //pixelate(10,2);
+}
+
+
+
+</script>
+ <script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

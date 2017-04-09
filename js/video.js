@@ -1,10 +1,11 @@
 
 var video;
+var vid_ctx;
 var showBgImg = false;
 var showVideo = false;
 
 document.addEventListener("DOMContentLoaded", function() {
-
+  vid_ctx = createHiddenCanvas("hidden_canvas");
   video = document.createElement('video');
   document.body.appendChild(video);
 
@@ -136,5 +137,28 @@ video.addEventListener('loadeddata', function() {
 
   };
 
-
 })
+
+function readVideo(_samplesize){
+  var samplesize = _samplesize | 20;
+  vid_ctx.drawImage(video, 0, 0, w, h);
+  var imgData = vid_ctx.getImageData(0, 0, w, h);
+  var data = []
+    var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+
+    for(var x = 0; x < w; x += samplesize) {
+
+        for(var y = 0; y < h; y += samplesize){
+
+          var pos = (x + y * w);
+          var b = (sourceBuffer32[pos] >> 16) & 0xff;
+          var g = (sourceBuffer32[pos] >> 8) & 0xff;
+          var r = (sourceBuffer32[pos] >> 0) & 0xff;
+
+          data.push({red: r, green: g, blue: b, brightness: brightness(r, g, b)});
+
+        }
+    }
+
+    return data;
+}

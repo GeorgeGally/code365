@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/video.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 1;
+ctx.lineCap = "round";
+var grid = new Grid (30, 20);
+grid.sides = []
+for (var i = 0; i < grid.length; i++) {
+  grid.sides[i] = 2;
+}
+
+var counter = 0;
+//console.log(grid);
+function draw(){
+  ctx.background(205);
+  if(frameCount%10 == 0) {
+  for (var i = 0; i < grid.num_items_vert; i++) {
+    var pos = i*grid.num_items_horiz + counter;
+    var s = Math.round(map(mapSound(i/2, grid.num_items_vert), 0, 255, 0, 6));
+
+    if(s == 4) {
+      //console.log(counter * 30 + counter);
+      grid.sides[pos ] = 3;
+      // grid.sides[30] = 3;
+      // grid.sides[60] = 3;
+      // grid.sides[90] = 3;
+    } else if(s == 5) {
+      grid.sides[pos] = 4;
+    } else if(s == 6) {
+      grid.sides[pos] = 5;
+    } else {
+      grid.sides[pos] = 2;
+    }
+  }
+  counter = (counter + 1)%30;
+  }
+  for (var i = 0; i < grid.length; i++) {
+    var sides = grid.sides[i];
+    myPolygon(grid.x[i],grid.y[i], sides, grid.spacing_x/2.2);
+    // ctx.fillStyle = "white";
+    // ctx.fillPolygon(grid.x[i],grid.y[i], sides, grid.spacing_x/6);
+    // ctx.strokeStyle = "black";
+    // ctx.strokePolygon(grid.x[i],grid.y[i], sides, grid.spacing_x/6);
+  }
+  //ctx.fillStyle = "red";
+  //ctx.fillRect(grid.x[counter] - grid.spacing_x/2, h - grid.spacing_x/4, grid.spacing_x, grid.spacing_x/4);
+
+
+}
+
+function myPolygon(x, y, sides, size){
+ Xcenter = x;
+ Ycenter = y;
+
+ctx.fillStyle = "black";
+
+ctx.moveTo (Xcenter +  size * Math.cos(i), Ycenter +  size *  Math.sin(i));
+ for (var i = 1; i <= sides; i += 2) {
+    ctx.beginPath();
+
+    ctx.lineTo (Xcenter + size * Math.cos(i * 2 * Math.PI / sides), Ycenter + size * Math.sin(i * 2 * Math.PI / sides));
+
+    ctx.lineTo (Xcenter + size * Math.cos((i+1) * 2 * Math.PI / sides), Ycenter + size * Math.sin((i+1) * 2 * Math.PI / sides));
+    ctx.lineTo (Xcenter, Ycenter);
+    // ctx.stroke();
+    ctx.closePath();
+    ctx.fill();
+
+  }
+  ctx.strokeStyle = "black";
+
+  ctx.moveTo (Xcenter +  size * Math.cos(0), Ycenter +  size *  Math.sin(0));
+  for (var i = 1; i <= sides; i += 1) {
+     ctx.lineTo (Xcenter + size * Math.cos(i * 2 * Math.PI / sides), Ycenter + size * Math.sin(i * 2 * Math.PI / sides));
+   }
+  ctx.stroke();
+}
+
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

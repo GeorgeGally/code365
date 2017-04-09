@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+ <script type="text/javascript" src="../js/d3.js"></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+<body>
+
+
+<script>
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+var url = "../data/twiz.csv";
+ctx.strokeStyle = rgba(0,0,0,0.1);
+var movement = [];
+var x1 = y1 = z1 = 0;
+var x2 = y2 = z2 = 0;
+var FOV = 250;
+var oldX = 0;
+var oldY = 0;
+var max_balls = 500;
+var balls = [];
+// just loading and fixing twiz data from textfile
+
+d3.csv(url, function(error, data) {
+    //console.log(data);
+    movement = data;
+    //console.log(movement[0]);
+    for (var i = 0; i < data.length; i++) {
+    	movement[i]['x1'] = data[i]['x1'].substr(14);
+    	//console.log(data[0]);
+
+    	for (var j = 0; j < data[i]['z1'].length; j++) {
+    		if (data[i]['z1'].charAt(j) == "	") {
+    		  //console.log("xx: " + data[i]['z1'].substr(j))
+    		  movement[i]['x2'] = data[i]['z1'].substr(j).trim();
+          movement[i]['z1'] = data[i]['z1'].substr(0, j-1);
+
+    		  break;
+    		}
+    	}
+    }
+
+  console.log(movement[0]);
+
+});
+
+
+var counter = 0;
+function draw(){
+	if (movement.length > 0) {
+		makeMovement(movement[counter]);
+		counter = (counter + 1)%movement.length;
+	}
+
+}
+
+ctx.background(0);
+
+function makeMovement(data){
+
+  ctx2.background(0, 0.1);
+  ctx.clearRect(0,0,w, h);
+	ctx.fillStyle = "red";
+  scale = FOV/(data['z2']+FOV);
+  scale = clamp(scale, -1000, 1000)
+
+  if (data['x2'] !=undefined) {
+  x3d = map(data['x2'] * scale, -300, 300, 0, w);
+  y3d = map(data['y2'] * scale, -100, 100, 0, h);
+	x1 = tween(x1, x3d, 40);
+	y1 = tween(y1, y3d, 40);
+  }
+	//z1 = tween(z1, map(data['z1'], -1, 1, -100, 100), 40);
+  //console.log(data['y2'] * scale);
+    //ctx.fillStyle = "white";
+  x2 = tween(x2, map(data['x1'], -180, 180, 0, 360), 140);
+  y2 = tween(y2, map(data['y1'], -180, 180, 0, 360), 140);
+  z2 = tween(z2, data['z2'], 40);
+
+  x2 = x1 + Math.cos(radians(z2))* 150;
+  y2 = y1 + Math.sin(radians(z2))* 150;
+  //ctx.line(x1, y1, x2, y2);
+  //if (oldX != 0) {
+
+  // } else {
+  //
+  ctx.strokeStyle = rgba(255,0.8);
+  ctx.line(oldX, oldY, x1, y1);
+
+  if (dist(oldX,oldY, x2 , y2)>10)
+  {
+    addBalls(x2, y2);
+    ctx2.strokeStyle = rgba(255,0.8);
+    ctx2.strokeEllipse(x2, y2, 60*scale, 60*scale);
+  }
+
+  oldX = x2;
+  oldY = y2;
+
+  ctx2.fillStyle = rgba(180, 0, 0, 0.1);
+  ctx2.fillEllipse(x1, y1, 40*scale, 40*scale);
+  ctx2.fillEllipse(x2, y2, 40*scale, 40*scale);
+
+  ctx2.fillStyle = rgba(255,0.8);
+  ctx2.fillEllipse(x2, y2, 8, 8);
+
+  ctx2.fillEllipse(x1, y1, 10, 10);
+
+
+    for (var i = 0; i < balls.length; i++) {
+       update(balls[i]);
+       render(balls[i]);
+    }
+
+
+}
+
+
+function Particle(_x, _y){
+  this.x = _x;
+  this.y = _y;
+  this.sz = random(5, 10);
+  this.speedx = random(-2, 2);
+  this.speedy = random(-8, 2);
+  this.colour = rgb(255);
+  this.b = 0;
+}
+
+
+function addBalls(_x, _y){
+  var _b = new Particle(_x, _y)
+  balls.push(_b);
+  //console.log(balls.length);
+  if (balls.length > max_balls) {
+    balls.splice(0,1);
+  }
+}
+
+
+
+function render(_b){
+  ctx2.fillStyle = _b.colour;
+  ctx2.fillEllipse(_b.x, _b.y, _b.sz, _b.sz);
+}
+
+
+function update(_b){
+  _b.x += _b.speedx;
+  _b.y += _b.speedy;
+  _b.speedy += 0.1;
+  if (_b.sz > 1) {
+    _b.sz -= 0.05;
+  }
+
+  if (_b.y > h) {
+    _b.speedy *= -0.7;
+  }
+
+}
+
+
+</script>
+</body>

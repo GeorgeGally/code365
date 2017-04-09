@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+ <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/video.js"></script>
+ <script language="javascript" src="../js/vector.js"></script>
+ <script language="javascript" src="../js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+// SETUP WAVES CLASS
+
+
+var grid_w = 180;
+var grid_h = 5;
+
+var mirror1 = true;
+var mirror2 = true;
+ctx.lineCap = 'round';
+
+// var colours = new colourPool()
+// 	.add("#FBA83F", 0.9)
+// 	.add("#E84004", 0.9)
+// 	.add("#CCD9AC", 0.9)
+// 	.add("#BFFFCB", 0.6)
+// 	.add("#D8DEC5", 0.6)
+// 	.add("#FBA83F", 0.6)
+// 	.add("#E84004")
+// 	.add("#CCD9AC");
+
+var colours = new colourPool()
+	    .add("#FFFFFF", 0.9)
+	    .add("#DDDDDD", 0.5)
+	    .add("#000000", 0.4)
+	    .add("#00616F", 0.4)
+	    // .add("#333333", 0.6)
+	    // .add("#FF3300")
+	    // .add("#FF6600");
+
+
+var blocksize = 16;
+var ammt = 6;
+
+
+ctx.background(0);
+function draw(){
+  ctx.drawImage(video, 0, 0, w, h);
+  ammt = map(mouseX, 0, w, 0, 255);
+  blocksize = map(mouseY, 0, h, 5, 100);
+  //theshhold = function(blocksize, ammt ,flip)
+  ctx.theshhold(blocksize, ammt);
+  mirror();
+  //mirror(2);
+}
+
+
+
+
+</script>
+
+</body>
+</html>

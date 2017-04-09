@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/quicksettings_white.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+ctx.lineWidth = 1;
+
+var options = {
+  blocksize: 20,
+  max_lines: 8,
+  fill: "#fff",
+  stroke: "#000"
+}
+
+var x = w/2;
+var y = h/2;
+ctx.background(0);
+var hue = 0;
+
+var x_offset = 0;
+var y_offset = 0;
+
+function draw(){
+
+  ctx.globalCompositeOperation = "screen";
+  // ctx.strokeStyle = rgba(255, 0.1);
+  hue = Math.abs(Math.sin(frameCount/1500)) * 360
+  ctx.strokeStyle = hsl(hue, 60, 10);
+  x_offset = Math.cos(frameCount/100);
+  y_offset = Math.sin(frameCount/803);
+  x = w/2 + Math.sin(frameCount/200) * (w/4*x_offset);
+  y = h/2 + Math.sin(frameCount/400) * (h/4*y_offset);
+  ctx.HstrokeEllipse(x, y, 200,200);
+}
+
+
+
+
+//// QuickSettings
+// QuickSettings.useExtStyleSheet();
+// var settings = QuickSettings.create(w-200, 30, "Settings");
+// //
+// settings.setGlobalChangeHandler(draw);
+// // // settings.addRange(title, min, max, value, step, callback);
+// //settings.addRange("blocksize", 10, 100, 20, 1);
+// settings.bindRange("blocksize", 10, 100, 20, 1, options);
+// settings.bindRange("max_lines", 1, 20, 5, 1, options);
+// settings.bindColor("fill", "#ffffff", options);
+// settings.bindColor("stroke", "#000000", options);
+// // settings.addRange("Grid Horiz", 2, 100, 20, 1, grid.createGrid);
+// // settings.hideControl("Settings");
+// // //settings.collapse();
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

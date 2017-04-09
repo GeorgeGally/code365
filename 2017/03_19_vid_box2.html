@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/video.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/quicksettings_white.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var blocksize = 30;
+var grix_w = Math.round(w/blocksize);
+var grix_h = Math.round(h/blocksize);
+
+ctx.lineWidth = 1;
+
+var grid = new Grid (grix_w, grix_h);
+
+grid.sides = [];
+grid.r = [];
+for (var i = 0; i < grid.length; i++) {
+  grid.sides[i] = 1;
+  grid.r[i] = randomInt(4)*90;
+}
+
+var counter = 0;
+var data = [];
+var sides = 0;
+
+
+var options = {
+  blocksize: 20,
+  max_lines: 8,
+  fill: "#fff",
+  stroke: "#000"
+}
+
+function draw(){
+
+  ctx.background(0);
+  if(video != undefined) data = readVideo(options.blocksize);
+  var c = 0;
+  for(var x = 0; x < w; x += options.blocksize) {
+
+      for(var y = 0; y < h; y += options.blocksize){
+  // for (var i = 0; i < grid.length; i++) {
+  //
+    if (data[c] !=undefined ) sides = options.max_lines - Math.round(map(data[c].brightness, 0, 100, 0, options.max_lines));
+    // console.log(sides);
+    ctx.save();
+    ctx.translate(x, y);
+  //   ctx.rotateDeg(grid.r[i]);
+    Block(0, 0, options.blocksize, sides);
+    ctx.restore();
+
+
+  c++;
+  }
+}
+}
+
+
+
+function Block(startx, starty, block_size, num_stripes){
+
+  ctx.fillStyle = options.fill;
+  ctx.strokeStyle = options.stroke;
+
+  startx -= this.block_size/2;
+  starty -= this.block_size/2;
+  this.block_size = block_size;
+  this.rot = 0;
+  this.spacing = block_size/num_stripes;
+  this.stripes = [];
+  var count = 0;
+
+  for (var x1 = 0; x1 < this.block_size; x1+=this.spacing) {
+    this.stripes[count] = new Stripes(x1, 0, this.block_size, this.block_size-x1);
+    count++;
+  }
+
+  for (var y1 = 0; y1 < this.block_size; y1+=this.spacing) {
+    this.stripes[count] = new Stripes(0, y1, this.block_size-y1, this.block_size);
+    count++;
+  }
+
+  function Stripes(x1, y1, x2, y2) {
+    this.x1 = x1 || 0;
+    this.y1 = y1 || 0;
+    this.x2 = x2 || 0;
+    this.y2 = y2 || 0;
+  }
+
+  this.drawStripes = function(){
+    ctx.fillRect(startx, starty, this.block_size, this.block_size);
+    for (var i = 0; i < this.stripes.length; i++) {
+      ctx.line(startx + this.stripes[i].x1, starty + this.stripes[i].y1, startx + this.stripes[i].x2, starty + this.stripes[i].y2);
+    }
+    ctx.strokeRect(startx, starty, this.block_size, this.block_size);
+  }
+
+  this.drawStripes();
+}
+
+
+//// QuickSettings
+QuickSettings.useExtStyleSheet();
+var settings = QuickSettings.create(w-200, 30, "Settings");
+//
+settings.setGlobalChangeHandler(draw);
+// // settings.addRange(title, min, max, value, step, callback);
+//settings.addRange("blocksize", 10, 100, 20, 1);
+settings.bindRange("blocksize", 10, 100, 20, 1, options);
+settings.bindRange("max_lines", 1, 20, 5, 1, options);
+settings.bindColor("fill", "#ffffff", options);
+settings.bindColor("stroke", "#000000", options);
+// settings.addRange("Grid Horiz", 2, 100, 20, 1, grid.createGrid);
+// settings.hideControl("Settings");
+// //settings.collapse();
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

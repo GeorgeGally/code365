@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/three.min.js"></script>
+<script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+
+<script>
+var ctx = createCanvas("canvas1");
+
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+
+var particles = [];
+var num_particles = 100;
+var plane = [];
+
+var radius = 5;
+var dir = 1;
+var r = 0;
+var spin = true;
+var max_size = 4;
+
+var geometry = new THREE.SphereGeometry( 2, 28, 22, 30 );
+geometry.dynamic = true;
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+var drawOutput = new Array(1024);
+var bass_counter = randomInt(num_particles);
+var mids_counter = randomInt(num_particles);
+var highs_counter = randomInt(num_particles);
+var size = width / 4;//size fo the circle
+
+
+
+
+for (var i = 0; i < num_particles; i++) {
+addParticle(i);
+}
+
+renderer.setClearColor( 0xf3f3f3 );
+camera.position.z = 100;
+camera.near = 60;
+camera.far  = 155;
+
+controls = new THREE.OrbitControls( camera, renderer.domElement );
+controls.enableDamping = true;
+controls.dampingFactor = 0.25;
+controls.enableZoom = false;
+
+function draw() {
+
+  if (chance(2000)) {
+    dir *=-1;
+    num_particles++;
+    addParticle(plane.length)
+  }
+
+  if (chance(800)) {
+    renderer.setClearColor( 0x000000 );
+  }
+
+  if (chance(150)) {
+    var c =  Math.round(Sound.getMidsVol(0,255));
+    renderer.setClearColor("rgb("+c+","+c+","+c+")",1);
+  }
+  if (chance(400)) {
+    c = rgb(189, 218, 229, 1)
+    renderer.setClearColor(c);
+  }
+
+  drawParticles();
+
+
+  scene.rotation.z+= 0.01;
+
+  highs_counter = (highs_counter + 0.4)%num_particles;
+  mids_counter = (mids_counter + 0.4)%num_particles;
+  bass_counter = (bass_counter + 0.4)%num_particles;
+
+  r = r+ 0.1 * dir;
+
+  if (r > 100 ) r = 0;
+  if (r < 0 ) r = 100;
+
+  renderer.render( scene, camera );
+
+};
+
+
+function addParticle(i){
+  plane[i] = new THREE.Mesh( geometry, dMaterial );
+  scene.add( plane[i] );
+  var angle = distributeAngles(i, num_particles);
+  plane[i].position.x = Math.cos(angle) * radius;
+  plane[i].position.y = Math.sin(angle) * radius;
+  plane[i].position.z = 0;
+  plane[i].start = new Vector(plane[i].position.x, plane[i].position.y,plane[i].position.z);
+  plane[i].scale.x = plane[i].scale.y = plane[i].scale.y = 1;
+  plane[i].s = 1;
+  plane[i].s2 = 1;
+}
+
+
+function drawParticles(){
+  if (chance(2000)) max_size = 2;
+  if (chance(2000)) max_size = 8;
+  if (chance(2000)) max_size = 4;
+  if (chance(2000)) {
+    spin = !spin;
+  }
+  for (var i = 0; i < num_particles; i++) {
+
+  if (Sound.volume > 0) {
+    if (spin) {
+      plane[i].position.x = tween(plane[i].position.x, Math.cos(r/200*i) * (i), 10);
+      plane[i].position.y = tween(plane[i].position.y, Math.sin(r/200*i) * (i), 10);
+    } else {
+      var s = 8.11 - Sound.getMidsVol(0.1,8);
+      plane[i].position.x = tween(plane[i].position.x, Math.sin(r/200*i) * (i/s),20);
+      plane[i].position.y = tween(plane[i].position.y, Math.cos(r/200*i) * (i/s),20);
+    }
+
+    var s = 8.11 - Sound.getMidsVol(0.1,8);
+    plane[i].position.z = tween(plane[i].position.z, Math.cos(r/200*i) * (i/s),20);
+
+  }
+  plane[i].s = tween(plane[i].s, Sound.mapSound(i, num_particles, 0.01, max_size), 2);
+
+  if (Math.round(bass_counter) == i) plane[i].s = Sound.getBassVol(0.01,max_size);
+  if (Math.round(mids_counter) == i) plane[i].s = Sound.getMidsVol(0.01,max_size);
+  if (Math.round(highs_counter) == i) plane[i].s = Sound.getHighsVol(0.01,max_size);
+
+  plane[i].scale.x = plane[i].scale.y = plane[i].scale.z = plane[i].s;
+
+}
+
+
+  if ((r < 50 && r > 60) || (r> 90 && r<99)) {
+  scene.rotation.x = tween(scene.rotation.x , scene.rotation.x  + random(0.1),5);
+  scene.rotation.y += 0.01;
+
+  }
+
+
+
+
+}
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+</html>

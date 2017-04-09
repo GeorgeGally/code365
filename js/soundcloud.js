@@ -244,9 +244,10 @@ this.directStream = function(direction){
 function mapSound(_me, _total){
 
   // HACK TO BECAUSE HIGHER VALUES NEVER HAVE DATA
-  var new_me = Math.floor(_me / _total * 110);
+  //var new_me = Math.floor(_me / _total * 100);
   //console.log(_total + " _me: "+ _me + " new_me: "+ new_me);
-  //var new_me = Math.floor(map(_me, 0, _total, 0, 256));
+  var half_fft = 256/2;
+  var new_me = Math.floor(map(_me, 0, _total, 0, half_fft));
   return audioChannelVolume[new_me];
 }
 
@@ -355,7 +356,7 @@ function createAudioElement(audio_name){
 // player UI
 
 var ui = function(loader) {
-    console.log(loader);
+    //console.log(loader);
     // update the track and artist into in the controlPanel
     var artistLink = document.createElement('a');
     artistLink.setAttribute('href', loader.sound.user.permalink_url);

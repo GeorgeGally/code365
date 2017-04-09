@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/video.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var grid = new Grid (10, 7);
+grid.sides = []
+for (var i = 0; i < grid.length; i++) {
+  grid.sides[i] = 4;
+}
+console.log(grid);
+function draw(){
+  ctx.background(245);
+  if(chance(10)) grid.sides[randomInt(grid.length)] = 3;
+  for (var i = 0; i < grid.length; i++) {
+    var sides = grid.sides[i];
+    myPolygon(grid.x[i],grid.y[i], sides, grid.spacing_x/2.2);
+    ctx.fillStyle = "white";
+    ctx.fillPolygon(grid.x[i],grid.y[i], sides, grid.spacing_x/6);
+    ctx.strokeStyle = "black";
+    ctx.strokePolygon(grid.x[i],grid.y[i], sides, grid.spacing_x/6);
+  }
+
+  // myPolygon(w/2, h/2, 8, 100);
+  // myPolygon(w/4 + w/2, h/2, 10, 100);
+  ctx.restore();
+}
+
+function myPolygon(x, y, sides, size){
+ Xcenter = x;
+ Ycenter = y;
+ ctx.fillStyle = "black";
+ ctx.strokeStyle = "black";
+ctx.moveTo (Xcenter +  size * Math.cos(i), Ycenter +  size *  Math.sin(i));
+ for (var i = 1; i <= sides; i += 2) {
+    ctx.beginPath();
+
+
+    ctx.lineTo (Xcenter + size * Math.cos(i * 2 * Math.PI / sides), Ycenter + size * Math.sin(i * 2 * Math.PI / sides));
+
+    ctx.lineTo (Xcenter + size * Math.cos((i+1) * 2 * Math.PI / sides), Ycenter + size * Math.sin((i+1) * 2 * Math.PI / sides));
+    ctx.lineTo (Xcenter, Ycenter);
+    ctx.stroke();
+
+    ctx.fill();
+
+  }
+  ctx.moveTo (Xcenter +  size * Math.cos(0), Ycenter +  size *  Math.sin(0));
+  for (var i = 1; i <= sides; i += 1) {
+     ctx.lineTo (Xcenter + size * Math.cos(i * 2 * Math.PI / sides), Ycenter + size * Math.sin(i * 2 * Math.PI / sides));
+   }
+  ctx.stroke();
+}
+
+
+</script>
+
+</body>
+</html>

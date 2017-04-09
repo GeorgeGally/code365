@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+ <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/video.js"></script>
+ <script language="javascript" src="../js/vector.js"></script>
+ <script language="javascript" src="../js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createHiddenCanvas("canvas2");
+
+// SETUP WAVES CLASS
+
+
+var grid_w = 180;
+var grid_h = 5;
+
+var mirror1 = true;
+var mirror2 = true;
+ctx.lineCap = 'round';
+
+
+var blocksize = 10;
+var ammt = 6;
+
+
+
+
+function draw(){
+  ctx2.drawImage(video, 0, 0, w, h);
+  // ammt = map(mouseX, 0, w, 0, 255);
+  // blocksize = map(mouseY, 0, h, 5, 100);
+  // theshhold = function(blocksize, ammt ,flip)
+  // ctx.theshhold(blocksize, ammt);
+  ctx.background(0);
+  ctx.drawImage(video, 0, 0, w, h);
+  // var imgData=ctx2.getImageData(0,0,w,h);
+  // var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+  //
+  // for (var y = 0; y < h; y+= blocksize) {
+  //   for (var x = 0; x < w; x+= blocksize) {
+  //     var pos = (x + y * w);
+  //     var b = (sourceBuffer32[pos] >> 16) & 0xff;
+  //     var g = (sourceBuffer32[pos] >> 8) & 0xff;
+  //     var r = (sourceBuffer32[pos] >> 0) & 0xff;
+  //     // r = sticky(r, ammt);
+  //     // g = sticky(g, ammt);
+  //     // b = sticky(b, ammt);
+  //     //var brt = brightness(r, g, b);
+  //     //var sz =  map(brt, 0, 200, 0, blocksize);
+  //     ctx.fillStyle = rgb(r, g, b);
+  //     //ctx.fillStyle = rgb(200, 0, 0);
+  //     ctx.fillEllipse(x, y, blocksize, blocksize);
+  //
+  // }
+  // }
+
+  //
+  //ctx.mirror(1);
+  mirror(2);
+  mirror();
+  //ctx.mirror(3);
+}
+
+
+
+
+</script>
+
+</body>
+</html>

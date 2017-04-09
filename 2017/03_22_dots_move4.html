@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+      <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="../js/creative_coding.js"></script>
+
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/vector_particles.js"></script>
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+<body style="background: #efefef">
+
+<script>
+var videoctx = createCanvas('video1');
+var videocanvas = document.getElementById('video1');
+var ctx = createCanvas('canvas1');
+var samplesize = 15;
+var radius = 200;
+var grid = new Grid(50, 1);
+var engine = new particleEngine(grid.length, grid);
+var mode = 1;
+var sin_up = false;
+
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+  var c = random(225);
+  p.c = rgba(random(225), c, c, 1);
+}
+
+function drawLine(){
+  mode = 1;
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+  p.target.x = p.start.x;
+  p.target.y = p.start.y;
+}
+}
+
+function drawCircle(){
+  mode = 2;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    p.target.x = w/2 + Math.cos(p.angle) * radius;
+    p.target.y = h/2 + Math.sin(p.angle) * radius;
+  }
+}
+
+function drawSin(){
+  mode = 3;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    p.target.x = p.start.x;
+    p.target.y = h/2 + Math.cos(p.angle + frameCount/100) * radius/2;
+  }
+}
+
+function drawRings(){
+  mode = 4;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    p.target.x = w/2;
+    p.target.y = h/2;
+    p.target_sz = 20 + p.me * 5;
+  }
+}
+
+
+function drawUpDown(){
+  console.log("drawUpDown");
+  mode = 5;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    p.target.x = p.start.x;
+    p.target.y = h/2 + h/2*Math.sin(frameCount/100) + Math.cos(p.angle + frameCount/100) * radius/2;
+  }
+}
+
+
+
+function draw(){
+
+  ctx.background(245, 0.06);
+
+
+
+  if (chance(900)) drawLine();
+  if (chance(900)) drawCircle();
+  if (chance(900)) drawSin();
+  if (chance(900)) drawRings();
+  if (chance(900)) drawUpDown();
+  if (chance(900)) sin_up != sin_up;
+
+    for (var i = engine.particles.length - 1; i >= 0; i--) {
+
+    p = engine.particles[i];
+
+    moveParticle(p);
+    drawParticle(p);
+  }
+
+  mirror()
+
+  }
+
+
+function moveParticle(p){
+  if (sin_up) {
+    hh = h/2;
+  } else {
+    hh = h/2 + Math.sin(frameCount/100) * h/4;
+  }
+  if (mode == 3 || mode == 5) {
+    p.target.y = hh + Math.cos(p.angle + frameCount/20) * radius/2;
+  }
+  // if (mode == 5) {
+  //   p.target.y = h/2 + h/2*Math.sin(frameCount/100) + Math.cos(p.angle + frameCount/100) * radius/2;
+  // }
+
+  if (mode != 4) {
+
+    p.sz = Math.sin(p.angle + frameCount/20) * 20;
+  }
+  //if (p.alpha<1) p.alpha+=0.0019999;
+  p.pos.x = tween(p.pos.x, p.target.x, 20);
+  p.pos.y = tween(p.pos.y, p.target.y, 20);
+  //p.pos.x += p.speed.x;
+  //p.pos.y += p.speed.y;
+  p.target_sz = mapSound(p.me, engine.particles.length);
+  p.sz = tween(p.sz, p.target_sz, 20);
+
+}
+
+
+function drawParticle(p){
+
+  //DISTRIBUTED MAPPED SOUND VALUE
+			var s = mapSound(p.me, engine.particles.length);
+			p.speed.x = tween(p.speed.x, map(s, 0, 255, 0, 2), 5);
+			var arc =  p.speed.x * Math.PI;
+
+			p.angle += p.speed.x/2;
+			ctx.translate(p.pos.x, p.pos.y);
+			ctx.rotate(radians(p.angle));
+
+			// DRAW ARCS
+			ctx.strokeStyle = p.c;
+      //ctx.strokeStyle = rgb(0);
+			ctx.lineWidth = map(s, 0, 255, 0, 3);
+			// ctx.beginPath();
+			// ctx.arc(p.x, p.y, p.sz/2, -arc/2, arc/2);
+			// ctx.stroke();
+			//ctx.translate(p.x, p.y);
+			ctx.line(0, 0, p.pos.x+s, 0);
+			ctx.rotate(radians(-p.angle));
+			ctx.translate(-p.pos.x, -p.pos.y);
+
+  if (mode == 4) {
+  ctx.strokeStyle = rgb(0);
+  //ctx.strokeStyle = p.c;
+  ctx.HstrokeEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+} else {
+  ctx.fillStyle = p.c;
+  ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+}
+
+}
+
+
+</script>
+  <script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+
+</html>

@@ -15,7 +15,13 @@ var particleEngine = function(_num_particles, _grid){
 	  var cc = hsl(m, 96, 60);
 
 		if (_grid != undefined) {
-			this.addParticle(_grid[i].x, _grid[i].y, cc, i);
+			// hack for old grid
+			if(_grid[i] != undefined){
+				this.addParticle(_grid[i].x, _grid[i].y, cc, i);
+			} else {
+				this.addParticle(_grid.x[i], _grid.y[i], cc, i);
+			}
+
 		} else {
 			this.addParticle(w/2, h/2, cc, i);
 		}
@@ -30,20 +36,14 @@ var particleEngine = function(_num_particles, _grid){
 
 
 this.addParticle = function(_x, _y, _colour, _me){
-	//if (_x === undefined) {
+
 		_x = _x || w/2;
-	//}
-
-	//if (_y === undefined) {
 		_y = _y || h/2;
-	//}
-	//if (_colour === undefined) {
 		_colour = _colour || "black";
-	//}
-	//if (_me === undefined) {
 		_me = _me || this.particles.length;
-	//}
 
+
+	var angle = radians(distributeAngles(_me, _num_particles));
 	var particle = {
 		position: new Vector(_x, _y),
 		pos: new Vector(_x, _y),
@@ -61,12 +61,15 @@ this.addParticle = function(_x, _y, _colour, _me){
 		//parent: null,
 		r: 0,
 		sz: 5,
+		orig_sz: 5,
+		target_sz: 5,
 		size: 5,
 		on: true,
 		isSpring: false,
 		spring: 0.03,
 		friction: 0.98,
-		angle: radians((2.2*_me)%360)
+		angle: angle,
+		engine: []
 	}
 
 	this.particles.push(particle);

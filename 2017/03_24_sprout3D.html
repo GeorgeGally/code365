@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/three.min.js"></script>
+<script language="javascript" src="../js/Detector.js"></script>
+<!-- <script language="javascript" src="../js/three_setup.js"></script> -->
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 70, aspect, 0.1, 1000 );
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+
+camera.position.z = 80;
+camera.near = 50;
+camera.far  = 95;
+
+
+// var ctx = createCanvas("canvas1");
+var block_size = 20;
+var rect_size = 60;
+var frameRate = 60;
+var number_of_balls = 15;
+var maxballs = 1500;
+var balls = [];
+var motion = [];
+
+for (var i = 0; i < number_of_balls; i++) {
+  addBall();
+}
+
+
+function addBall(_x, _y){
+
+  radius =  1;
+  var geometry = new THREE.SphereGeometry( radius, 20, 42, 12 );
+  var sphere = new THREE.Mesh( geometry, dMaterial );
+  sphere.position.x = 0;
+  sphere.position.y = 0;
+  sphere.position.z = -20;
+  sphere.vx =  0;
+  sphere.name = balls.length + 1;
+  sphere.vy = random(1,3);
+  sphere.speed = new Vector(random(-0.1, 0.1), random(-0.1, 0.1), 0.05);
+  scene.add( sphere );
+
+
+  balls.push(sphere);
+  if (balls.length > maxballs) removeBall();
+}
+
+function removeBall(){
+  var b = balls[0];
+
+  //console.log(b);
+  scene.remove( b );
+  //scene.remove(scene.getObjectByName(id));
+  balls.splice(0,1);
+
+
+  //console.log(balls.length);
+}
+
+function update(){
+
+  //for (var i = 0; i < number_of_balls; i++) {
+    addBall(w/2, h/2);
+  //}
+
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+
+    b.position.x += b.speed.x;
+    b.position.y += b.speed.y;
+    b.position.z += b.speed.z;
+    // we adjust the hit area because shere is drawn from the centre
+    if (b.position.x > 5 - b.size/2  || b.position.x < b.size/2  ) {
+      b.speed.x = b.speed.x *-1;
+    }
+
+    if (b.position.y > 5 - b.size/2 || b.position.y < b.size/2 ) {
+      b.speed.y = b.speed.y *-1;
+    }
+
+  } // end for loop
+
+}
+
+
+
+
+
+function draw(){
+
+  update();
+
+
+  for (var i = 0; i < balls.length; i++) {
+    b = balls[i];
+
+    // ctx.fillStyle = b.c;
+    // ctx.fillRect( b.position.x,  b.position.y, b.size, b.size);
+
+  }
+
+renderer.render( scene, camera );
+
+  //pixelate(10);
+} // end draw
+
+
+
+
+</script>
+<!-- <script language="javascript" src="js/motion_detection.js"></script> -->
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ 	<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ 	<script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+  <script language="javascript" src="../js/three.min.js"></script>
+  <script language="javascript" src="../js/Detector.js"></script>
+  <script language="javascript" src="../js/three_setup.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var h, color, sprite, size;
+var plane;
+var materials = [];
+var particles;
+var particle_count = 160;
+
+var url = "../data/twiz.csv";
+
+d3.csv(url, function(error, data) {
+    //console.log(data);
+    movement = data;
+    //console.log(movement[0]);
+    for (var i = 0; i < data.length; i++) {
+    	movement[i]['x1'] = data[i]['x1'].substr(14);
+    	//console.log(data[0]);
+
+    	for (var j = 0; j < data[i]['z1'].length; j++) {
+    		if (data[i]['z1'].charAt(j) == "	") {
+    		  //console.log("xx: " + data[i]['z1'].substr(j))
+    		  movement[i]['x2'] = data[i]['z1'].substr(j).trim();
+          movement[i]['z1'] = data[i]['z1'].substr(0, j-1);
+
+    		  break;
+    		}
+    	}
+    }
+
+  console.log(movement[0]);
+
+});
+
+
+
+function init() {
+
+	//scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+  //var geometry = new THREE.SphereGeometry( 25, 35, 48, 18 );
+  var geometry = new THREE.BoxGeometry(120,120,10,1);
+  geometry.dynamic = true;
+
+  var dMaterial = new THREE.MeshDepthMaterial();
+  dMaterial.shading = THREE.SmoothShading;
+  plane = new THREE.Mesh( geometry, dMaterial );
+  scene.add( plane );
+
+	renderer.setClearColor( 0xf7f7f7 );
+	//particles = new THREE.PointCloud( geometry, materials );
+
+}
+
+
+
+var counter = 0;
+
+function draw() {
+	// scene.rotation.y += (mouseX - windowHalfX ) * 0.0002;
+	//scene.rotation.y += 0.002;
+	//camera.position.x += ( mouseX - windowHalfX - camera.position.x ) * 0.85;
+	//camera.position.y += ( - mouseY - windowHalfY - camera.position.y ) * 0.45;
+	//camera.lookAt( scene.position );
+
+  if (movement.length > 0) {
+    makeMovement(movement[counter]);
+    counter = (counter + 1)%movement.length;
+  }
+
+
+	//particles.geometry.verticesNeedUpdate = true;
+	renderer.render( scene, camera );
+
+}
+
+var x = 0;
+var y = 0;
+var z = 0;
+
+var rx = 0;
+var ry = 0;
+var rz = 0;
+
+function makeMovement(data){
+  if (data['x1'] !=undefined) {
+  var points = xyz(data['x1'],data['y1'],data['z1'],data['x1'],data['y1'],data['z1']);
+  //console.log(x3d);
+  x = tween(x, data['x1']*2000, 40);
+  y = tween(y, data['y1']*2000, 40);
+  z = tween(z, data['z1']*2000, 40);
+
+  rx = tween(rx, data['x2']*1, 40);
+  ry = tween(ry, data['y2']*1, 40);
+  rz = tween(rz, data['z2']*1, 40);
+
+  plane.position.x = x;
+  plane.position.y = y;
+  plane.position.z = z;
+
+  plane.rotation.x = radians(rx);
+  plane.rotation.y = radians(ry);
+  plane.rotation.z = radians(rz);
+
+}
+}
+
+
+</script>
+ <!-- <script language="javascript" src="../js/soundcloud.js"></script> -->
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+    <script language="javascript" src="../js/creative_coding.js"></script>
+
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body style="background: #efefef">
+
+<script>
+var videoctx = createCanvas('video1');
+var videocanvas = document.getElementById('video1');
+var ctx = createCanvas('canvas1');
+var samplesize = 15;
+var engine = new particleEngine();
+var maxParticles = 1500;
+
+var video = document.createElement('video');
+    video.src = "assets/haah1.m4v";
+    video.load();
+    video.play();
+
+//make your video canvas
+// var videocanvas = document.createElement('canvas');
+// var videocanvasctx = videocanvas.getContext('2d');
+
+
+
+//set its size
+// videocanvas.width = 640;
+// videocanvas.height = 360;
+
+// videocanvasctx.fillStyle = "#000000";
+// videocanvasctx.fillRect(0,0,640,360);
+
+function draw(){
+    //check for vid data
+    // console.log(videoctx.width);
+    if(video.readyState === video.HAVE_ENOUGH_DATA && videocanvas.width > 0){
+      //draw video to canvas starting from upper left corner
+
+      // videoctx.drawImage(video, 0, 0, 640*2.02, 360*2.02);
+      // videoctx.drawImage(video, 0, 0, 640, 360);
+
+      if (chance(50)) brightSpark();
+      // videoctx.drawImage(video, 0, 0, w, h);
+      // videoctx.pixelate(40);
+    }
+
+    for (var i = engine.particles.length - 1; i >= 0; i--) {
+
+    p = engine.particles[i];
+    //console.log(p);
+    if(p.pos.x!=0 && p.pos.y!=0) {
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.c;
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+
+    if (p.alpha<1) p.alpha+=0.0019999;
+
+    if (p.sz<0.005) { p.pos.x = p.start.x+random(-4,4); p.y = p.start.y+random(-4,4);
+      p.sz = 3;
+      p.speed.x = random(-2,2);
+      p.speed.y =  random(-2,2);
+    }
+    p.pos.x += p.speed.x;
+    p.pos.y += p.speed.y;
+    p.sz *= p.reduce;
+  }
+  };
+
+  if(engine.particles.length > maxParticles) engine.particles.shift();
+
+}
+
+
+function brightSpark(){
+  videoctx.drawImage(video, 0, 0, w, h);
+  //console.log(videocanvas.width);
+  //imgData = ctx.getImageData(0, 0, video.width, video.height).data;
+  var imgData = videoctx.getImageData(0,0,w,h);
+  //console.log(imgData);
+
+  var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+
+  for(var x = 0; x < w; x += samplesize) {
+      for(var y = 0; y < h; y += samplesize) {
+
+        var pos = (x + y * w);
+        var b = (sourceBuffer32[pos] >> 16) & 0xff;
+        var g = (sourceBuffer32[pos] >> 8) & 0xff;
+        var r = (sourceBuffer32[pos] >> 0) & 0xff;
+        //var brt = brightness(r, g, b);
+
+        if(r > 50) {
+          var c = rgb(r, g, b);
+          addParticle(x,y,c);
+        }
+
+      }
+  }
+
+
+  // for (var y = 0; y < h; y+=samplesize) {
+  //    for (var x = 0; x < w; x+=samplesize) {
+  //     var pt = (y * w + x)*4;
+  //     var fBrightness;
+  //     fBrightness = (0.3*imgData[pt] + 0.59*imgData[pt+1] + 0.11*imgData[pt+2]);
+  //     //console.log(fBrightness);
+  //     var c = rgb(fBrightness);
+  //     if(fBrightness > 10) {
+  //       addParticle(x,y,c);
+  //     }
+  //
+  //    }
+  // }
+
+  //ctx.clearRect(0,0,w,h);
+}
+
+function addParticle(x,y,c){
+  //console.log(x);
+  x += (posNeg()*random(samplesize));
+  y += (posNeg()*random(samplesize));
+  engine.addParticle(x,y,c);
+  var p = engine.last;
+  p.sz = 3;
+  p.reduce =  random(0.8, 0.9999);
+  p.alpha = 0.05;
+  // speedx: random(-1,1),
+  // speedy: random(-1,1)
+}
+
+
+
+</script>
+
+</body>
+
+</html>

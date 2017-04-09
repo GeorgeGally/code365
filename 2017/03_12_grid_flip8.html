@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+ <script language="javascript" src="../js/canvas.js"></script>
+ <script language="javascript" src="../js/vector.js"></script>
+ <script language="javascript" src="../js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+
+// SETUP WAVES CLASS
+
+
+var grid_w = 180;
+var grid_h = 5;
+
+var mirror1 = true;
+var mirror2 = true;
+ctx.lineCap = 'round';
+
+// var colours = new colourPool()
+// 	.add("#FBA83F", 0.9)
+// 	.add("#E84004", 0.9)
+// 	.add("#CCD9AC", 0.9)
+// 	.add("#BFFFCB", 0.6)
+// 	.add("#D8DEC5", 0.6)
+// 	.add("#FBA83F", 0.6)
+// 	.add("#E84004")
+// 	.add("#CCD9AC");
+
+var colours = new colourPool()
+	    .add("#FFFFFF", 0.9)
+	    .add("#DDDDDD", 0.9)
+	    .add("#000000", 0.6)
+	    .add("#00616F", 0.6)
+	    // .add("#333333", 0.6)
+	    // .add("#FF3300")
+	    // .add("#FF6600");
+
+
+var grid = new Grid(grid_w, grid_h);
+var engine = new particleEngine(grid_w * grid_h, grid);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+	ctx.strokeStyle = rgba(0,0,0,0.8);
+	p.radius = 150;
+	p.rot = 0;
+  var c = random(55);
+  var cc = rgb(c);
+  if(chance(10)) cc = rgb(255);
+  //p.c = cc;
+  p.c = colours.get();
+  p.speedx =  posNeg()*2;
+  p.speedy =  random(-20,20);
+  p.sz =  p.radius + p.me*random(10,30);
+}
+
+var engine2 = new particleEngine(50);
+for (var i = 0; i < engine2.particles.length; i++) {
+  var p = engine2.particles[i];
+  p.position.x = random(w);
+  p.position.y = random(h);
+  p.c = "white";
+}
+
+var engine3 = new particleEngine(50);
+for (var i = 0; i < engine2.particles.length; i++) {
+  var p = engine3.particles[i];
+  p.position.x = random(w);
+  p.position.y = random(h);
+  p.c = colours.get();
+}
+
+
+
+
+function moveParticles(){
+
+		for (var i = 0; i < engine.particles.length; i++) {
+
+			p = engine.particles[i];
+			var s = mapSound(p.me, engine.particles.length);
+			p.speedx = tween(p.speedx, map(s, 0, 255, 1, 5), 2);
+			p.angle += p.speedx;
+      drawParticle(p);
+
+		};
+
+
+
+}
+
+
+function drawParticle(p){
+  ctx.save();
+  ctx.translate(p.pos.x, p.pos.y);
+  ctx.rotateDegrees(p.angle);
+  var s = mapSound(p.me, engine.particles.length);
+  // ctx.fillStyle = "black";
+  // ctx.fillEllipse(0, 0, 8, 8);
+  ctx.strokeStyle = p.c;
+  if(s > 150) ctx.strokeStyle = rgb(255);
+  //if(s > 220) ctx.strokeStyle = rgb(0);
+  ctx.lineWidth = map(s, 0, 255, 4, 22);
+  ctx.line(0, 0, w/4, h/4);
+  ctx.restore();
+}
+
+ctx.background(255);
+function draw(){
+	//ctx.background(255);
+  moveParticles();
+	// ctx.mirror();
+  // ctx.mirror(2);
+  engine2.moveParticles();
+  engine3.moveParticles();
+  //pixelate(10,2);
+  for (var i = 0; i < engine2.particles.length; i++) {
+    p2 = engine2.particles[i];
+    p3 = engine3.particles[i];
+    // ctx.strokeStyle = p.c;
+    // ctx.lineWidth = 4;
+    // ctx.strokeRect(p2.position.x, p2.position.y, 180, 180);
+    //ctx.fillStyle = "white";
+    ctx.fillStyle = p2.c;
+    //ctx.fillEllipse(p2.pos.x, p2.pos.y, 8, 8);
+    ctx.cross(p2.pos.x, p2.pos.y, 20, 60);
+    ctx.fillStyle = p3.c;
+    //ctx.fillStyle = "red";
+    // ctx.cross(p3.pos.x, p3.pos.y, 20, 60);
+    ctx.fillPolygon(p3.pos.x, p3.pos.y, 3, 40);
+  }
+  ctx.mirror(2);
+  if (mirror1) ctx.mirror();
+  if(chance(100)) mirror1 = !mirror1;
+  //strobe(20, 255);
+  ctx.fillStyle = "white";
+  triangulate(10);
+  ctx.mirror(2);
+  ctx.mirror();
+}
+
+
+
+
+</script>
+ <script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>
