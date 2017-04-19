@@ -245,50 +245,6 @@ function Mode4(){
 
 }
 
-function Mode5(){
-  ctx.lineWidth = 2;
-  if (chance(300)) dir = posNeg();
-  if (audioChannelVolume[50]>0) rotation = dir * audioChannelVolume[50];
-
-  c = tween(c, 40+map(audioChannelVolume[40], 0, 100, 0, 80), 10);
-  ctx.strokeStyle = rgba(0,0,0,1);
-
-  if (chance(500)) out_on = !out_on;
-  if (chance(200)) out_on = false;
-  if (chance(500)) all_on = !all_on;
-  if (chance(300)) center_on = !center_on;
-
-  for (var i = 0; i < particles.length; i++) {
-    p =particles[i];
-    var me = Math.floor(p.me*360/particles.length);
-    p.angle += radians(rotation/120);
-    p.radius = tween(p.radius, map(audioChannelVolume[p.me], 0, 80, c, 100), 2);
-
-
-    var s = mapSound(i, particles.length)/10;
-    p.sz = tween(p.sz, map(p.radius, 0, 100, 0, 30), 12);
-    p.x = (out) * Math.cos(p.angle);
-    p.y = (out) * Math.sin(p.angle);
-    // console.log(out);
-    var linepos = new Vector((out - p.sz/2) * Math.cos(p.angle),
-  (out - p.sz/2) * Math.sin(p.angle));
-    var linepos2 = new Vector(c/2 * Math.cos(p.angle), c/2* Math.sin(p.angle));
-    ctx.strokeStyle = rgba(255);
-    ctx.line(linepos2.x, linepos2.y, linepos.x, linepos.y);
-
-    ctx.fillStyle = rgb(255);
-
-    ctx.HstrokeEllipse(p.x, p.y, p.sz, p.sz);
-    if (p.on) ctx.fillEllipse(p.x, p.y, p.sz-20, p.sz-20);
-
-    };
-
-
-    ctx.HstrokeEllipse(0, 0, c, c);
-    if (center_on) ctx.HfillEllipse(0, 0, c-20, c-20);
-}
-
-
 
 
 
