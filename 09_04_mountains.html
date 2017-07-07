@@ -10,12 +10,12 @@
 <script language="javascript" src="js/jquery-1.10.1.min.js"></script>
 <script src="js/chance.js"></script>
 <script src="js/Tone.js"></script>
-<script type="text/javascript" src="js/share.js"></script> 
+<script type="text/javascript" src="js/share.js"></script>
 <script>
 
 var reverb = new Tone.JCReverb(0.8).connect(Tone.Master);
 var pingPong = new Tone.PingPongDelay("2n", 0.8).toMaster();
-var delay = new Tone.FeedbackDelay(0.9); 
+var delay = new Tone.FeedbackDelay(0.9);
 
 // var synth = new Tone.PolySynth(6, Tone.MonoSynth).toMaster();
 // var synth = new Tone.PolySynth(3, Tone.MonoSynth).toMaster();
@@ -47,7 +47,7 @@ for (var i = 0; i < map_levels; i++) {
 
 
 function initialize() {
-  
+
   console.log("initialize");
 
   var mapProp = {
@@ -56,33 +56,33 @@ function initialize() {
     disableDefaultUI: true,
     mapTypeId:google.maps.MapTypeId.SATELLITE
   };
-  
+
   map=new google.maps.Map(document.getElementById("map"),mapProp);
 
   resizeMapDiv();
 
-  google.maps.event.addListener(map, 'tilesloaded', function(){
-      cancel = false;
-      getImage();
-      getCenter();
-  });
-  
-  google.maps.event.addDomListener(map, 'drag', function(){
-      cancel = true;
-      $("#c").fadeOut();  
-  });
-  
-  google.maps.event.addDomListener(map, 'zoom', function(){
-      cancel = true;
-    $("#c").fadeOut();  
-  });
+  // google.maps.event.addListener(map, 'tilesloaded', function(){
+  //     cancel = false;
+  //     getImage();
+  //     getCenter();
+  // });
 
-  google.maps.event.addDomListener(map, 'click', 
-    function(){
-      cancel = true;
-    $("#c").fadeOut();  
-  });
-  
+  // google.maps.event.addDomListener(map, 'drag', function(){
+  //     cancel = true;
+  //     $("#c").fadeOut();
+  // });
+
+  // google.maps.event.addDomListener(map, 'zoom', function(){
+  //     cancel = true;
+  //   $("#c").fadeOut();
+  // });
+  //
+  // google.maps.event.addDomListener(map, 'click',
+  //   function(){
+  //     cancel = true;
+  //   $("#c").fadeOut();
+  // });
+
 }
 
 
@@ -118,7 +118,7 @@ The earth as a song. RGB values are mapped to chords, and brightness effects the
 I've been doing quite a lot of experiements in manipulating maps. After quite a bit of trial and error I finally settled for the following process (and yes, 'settled' being the operative word): <br><br>I wait for all the map tiles to be loaded in (trick here is to use 'tilesloaded' map event), then take a snapshop of the div using the <a href="http://html2canvas.hertzen.com/">html2canvas</a> library. It's a bit slow as the images need to be saved to the server, but it works. I then pass that snapshot as an image into the canvas, analyize the pixels and then am able to manipulate them as I like. Still a bit buggy when titles don't load properly. So be it.<br><br>
 Music is generated using the amazing <a href="https://github.com/Tonejs/Tone.js">Tone.js</a>.<br>
 
-<br><br><br><br>Handmade by: <a href="index.html">Radarboy</a> 
+<br><br><br><br>Handmade by: <a href="index.html">Radarboy</a>
 
 </div>
 
@@ -148,7 +148,7 @@ Music is generated using the amazing <a href="https://github.com/Tonejs/Tone.js"
   ctx.background(220)
 ;
   // function setup(){
-  //   initialize(); 
+  //   initialize();
   // }
 
 resizeMapDiv = function () {
@@ -171,18 +171,18 @@ function getImage(){
   var comp=transform.split(",") //split up the transform matrix
   var mapleft=parseFloat(comp[4]) //get left value
   var maptop=parseFloat(comp[5])  //get top value
-  
+
   $(".gm-style>div:first>div").css({ //get the map container. not sure if stable
     "transform":"none",
     "left":mapleft,
     "top":maptop,
   })
-  
+
   var screenshot = {};
   //latlng = map.getCenter().toUrlValue();
 
   html2canvas($('#map'), {
-    
+
     //"logging": true,
     "proxy":"scripts/proxy.php",
     // useCORS: true,
@@ -190,11 +190,11 @@ function getImage(){
 
       var img = new Image();
       img.src = canvas.toDataURL("image/png");
-      
+
       img.onload = function() {
-          
+
           img.onload = null;
-          $("#c").fadeIn(); 
+          $("#c").fadeIn();
           ctx.drawImage(img, 0, 0, window.innerWidth,window.innerHeight);
           $(".gm-style>div:first>div").css({ left:0, top:0, "transform":transform });
           if (cancel == false) { getParticles(img); }
@@ -213,26 +213,26 @@ function getColours(){
   var bright = [];
   var j = 0;
   numOfAreas = 1;
-  numOfValues = 1; 
-   
-  var imgData=ctx.getImageData(0,0,w,h); 
-   
+  numOfValues = 1;
+
+  var imgData=ctx.getImageData(0,0,w,h);
+
   for(var y = 0; y < h; y += blocksize) {
 
     for(var x = 0; x < w; x += blocksize) {
-               
+
       var pos = (x + y * w);
       var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
       var b = (sourceBuffer32[pos] >> 16) & 0xff;
       var g = (sourceBuffer32[pos] >> 8) & 0xff;
-      var r = (sourceBuffer32[pos] >> 0) & 0xff; 
+      var r = (sourceBuffer32[pos] >> 0) & 0xff;
       var hsl = rgbToHsl(r,g,b);
       bright[j] = brightness(r,g,b);
       col[j] =  [r,g,b];
       j++;
 
     }
-    
+
   }
 
   var cc = [col, bright];
@@ -247,22 +247,22 @@ var pos = [];
 
 
 function getParticles(image){
-    
+
     $('#loading_holder').fadeOut();
     ctx.font="15px Courier";
     col = getColours();
     //ctx.globalCompositeOperation = "multiply";
     triangulate(blocksize,blocksize, 0.99);
     pixelate(blocksize);
-    // 
+    //
     // ctx.fillStyle=rgb(0,0,0);
     // ctx.fillRect(0,0,w,h);
-    
+
     var j = 0;
     synth.triggerAttackRelease("C4", "8n");
-    
+
     for(var y = 0; y < h; y += blocksize) {
-  
+
       for(var x = 0; x < w; x += blocksize){
 
           x2 = x;
@@ -289,23 +289,23 @@ function nearestCity(lat, lng){
 
   var url = 'http://api.geonames.org/findNearbyPlaceNameJSON?lat=' + lat + '&lng=' + lng + '&radius=300&maxRows=1&username=radarboy';
    $.ajax({
-      url: url,  
+      url: url,
       success:function(data) {
         //var place = jQuery.parseJSON(data);
         for (key in data.geonames) {
           var place = data.geonames[key];
           console.log(place.name);
-          
+
           if (place.name == undefined || place.name == null) {
-            $("#city").text("Now playing: Middle of nowhere");          
-          } else {  
+            $("#city").text("Now playing: Middle of nowhere");
+          } else {
             $("#city").text("Now playing: " + place.name + ", " + place.countryName);
           }
 
         }
       }
    });
-  
+
 }
 
 
@@ -351,7 +351,7 @@ function playSong(){
       synth.triggerAttackRelease([r, g, b], col[1][timer_counter]/30);
 
     if (timer_counter >= song.length-1) {
-        
+
         timer_counter = 0;
         cancel = true;
         $("#c").fadeOut();
@@ -362,10 +362,10 @@ function playSong(){
     ctx2.fillStyle = rgba(0, 0, 0, 0.3);
     ctx2.fillRect(pos[timer_counter][0],pos[timer_counter][1], blocksize, blocksize);
     timer_counter ++;
-    setTimeout(function(){ 
-    timer(); }, 
+    setTimeout(function(){
+    timer(); },
     (100-col[1][timer_counter])*30);
-    
+
   }
 
 }

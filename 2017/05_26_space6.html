@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+   <script src="../js/maptastic.min.js"></script>
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background: #000">
+
+<script>
+
+var ctx = createCanvas("canvas2");
+ctx.font = '8px Courier';
+var grid_w = 20;
+var grid_h = 100;
+var grid = createGrid(grid_w, grid_h);
+var mode = 0;
+
+var blocks = new particleEngine(grid.length-1);
+var row = 0;
+for (var i = 0; i < blocks.particles.length; i++) {
+  var b = blocks.particles[i];
+  b.position = new Vector(grid[i].x, grid[i].y);
+  b.speed = new Vector(0, -5);
+  b.c = rgb(0);
+  // b.c =  (i%2 == 0) ? rgb(0): rgb(255);
+  b.w = w/grid_w;
+  b.h = h/grid_h;
+  b.s = 0;
+  b.txt = "";
+}
+
+function draw(){
+  ctx.background(0);
+  blocks.draw();
+  for (var i = 0; i < blocks.particles.length; i++) {
+    var b = blocks.particles[i];
+    if(b.pos.y > h - 2) {
+      b.txt = ""
+    }
+    var _s = Mic.mapSound(b.me, blocks.particles.length, 20, 100);
+    b.txt += _s;
+    if (b.txt.length > 20) b.txt = "";
+
+    if(b.pos.y > h - 120) {
+
+      //b.speed.y = _s/80 * -1;
+      if(_s < 80) {
+        b.c = rgb(255);
+      } else if(_s < 200) {
+          b.c = rgb(_s);
+      } else {
+        b.c = rgb(255, 0, 0);
+      }
+    }
+
+    if (chance(1000)) mode = randomInt(2);
+    //if (mode == 0) {
+    //ctx.centreFillRect(b.position.x, b.position.y, b.w-1, b.h-1);
+      //ctx.fillText(b.txt, b.pos.x+1 -100, b.pos.y);
+    // } else {
+    if (chance(100)) b.on = !b.on;
+
+    //if (chance(20))
+    ctx.fillStyle = b.c;
+    ctx.fillText(b.txt, b.pos.x+1 -50, b.pos.y);
+
+    ctx.fillStyle = rgb(255);
+    if (b.on) ctx.fillRect(b.position.x-50, b.position.y, b.w-1, b.h-1);
+    b.pos.y-=1;
+  }
+}
+Maptastic("canvas2");
+
+</script>
+<script language="javascript" src="../js/mic.js"></script>
+</body>
+
+</html>

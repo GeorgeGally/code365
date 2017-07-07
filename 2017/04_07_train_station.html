@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/video.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var contexts = createMultipleCanvases(2);
+var ctx = contexts[0];
+var ctx2 = contexts[1];
+var block_size = 10;
+
+var img, s_img;
+var inverse, sound;
+
+var engine = new particleEngine(100, 40);
+engine.border = false;
+engine.spring = true;
+
+var ratio_w = 0;
+var ratio_h = 0;
+
+
+for (var i = 0; i < engine.length; i++) {
+  ctx.fillStyle = "white";
+  var p = engine.particles[i];
+  p.speed = new Vector(0,0);
+}
+
+
+function draw() {
+
+  ctx.background(0);
+  var old_X = 0;
+  var old_Y = 0;
+  var c = video.colours(engine.grid);
+  //if (chance(500)) console.log(c);
+  for (var i = 0; i < engine.length; i++) {
+    var p = engine.particles[i];
+    //var b = brightness(c[i].r, c[i].g, c[i].b, engine.grid.spacing.y) - engine.grid.spacing.y/2;
+    //p.target.y = p.start.y + b;
+    // p.target.y = p.start.y + random(-10, 10)
+  }
+
+  // for (var y = 0; y < h; y+= engine.grid.spacing.y) {
+  //
+  //   for (var x = 0; x < engine.grid.width; x+=engine.grid.spacing.x) {
+  //     ctx.fillStyle = "red";
+  //     ctx.fillRect(x, y, 5, 5);
+  //
+  //   }
+  //
+  // }
+
+  for (var i = 0; i < c.length; i++) {
+    var g = engine.grid;
+    var cc = c[i];
+    var b = brightness(cc.r, cc.g, cc.b, engine.grid.spacing.y) - engine.grid.spacing.y/2;
+    ctx.fillStyle = rgb(cc.r, cc.g, cc.b);
+    //ctx.fillStyle = rgb(cc.r, cc.g, cc.b);
+    //ctx.fillStyle = "red";
+    // ctx.fillRect(engine.grid.x[i], cc.y, 15, 15);
+    ctx.fillRect(cc.y, cc.y, 15, 15);
+    // var p = engine.particles[i];
+    // p.target.y = b;
+  }
+  // for (var y = 0; y < engine.grid.height; y += engine.grid.spacing.y) {
+  //   old_X = 0;
+  //   for (var x = 0; x < engine.grid.width; x += engine.grid.spacing.x) {
+  //
+  //     var pos = x + y * w;
+  //     var r = buffer[pos] >> 0 & 0xff;
+  //     var g = buffer[pos] >> 8 & 0xff;
+  //     var b = buffer[pos] >> 16 & 0xff;
+  //
+  //     var bb = Math.round(brightness(r,g,b))*1.5;
+  //     ctx.line(w-old_X, old_Y, w-x, y-bb);
+  //     old_X = x;
+  //     old_Y = y-bb;
+  //   }
+  //
+  // }
+  engine.update();
+  //moveParticles();
+  //drawParticles();
+}
+
+
+function getPointColour(pos){
+  var r = buffer[pos] >> 0 & 0xff;
+  var g = buffer[pos] >> 8 & 0xff;
+  var b = buffer[pos] >> 16 & 0xff;
+  var bb = Math.round(brightness(r,g,b))*1.5;
+  return {r: r, g: g, b: b, brightness: bb}
+}
+
+
+function moveParticles() {
+  ratio_w = w/video.width;
+  ratio_h = h/video.height;
+  for (var i = 0; i < engine.length; i++) {
+    var p = engine.particles[i];
+    // var pos = (ratio_w * p.start.x) + (ratio_h * p.start.y) * video.width;
+    // var c = getPointColour(pos);
+    //console.log(c.brightness);
+    //p.target.y = p.start.y - c.brightness;
+    //p.target.y = p.start.y - randomCardinal(100);
+    //if (p.me == 1000) console.log(p.target.y);
+  }
+  engine.update();
+
+}
+
+function drawParticles(){
+  for (var i = 0; i < engine.length; i++) {
+    ctx.fillStyle = "white";
+    var p = engine.particles[i];
+    ctx.fillEllipse(p.pos.x, p.pos.y, 5, 5);
+  }
+}
+
+
+
+</script>
+
+<script language="javascript" src="../js/motion_detection.js"></script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+
+</html>

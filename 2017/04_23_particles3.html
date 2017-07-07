@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/engine.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<script>
+
+var ctx = createCanvas("canvas1");
+
+
+
+function draw() {
+  ctx.background(255);
+  ctx.fillStyle = rgba(0, 0.9);
+
+  if(chance(100)) {
+    engine.showParticles(randomInt(200), false);
+    resizeParticles();
+  }
+  engine.update();
+  //engine.draw();
+  for (var i = 0; i < engine.length; i++) {
+    var p = engine.particles[i];
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+  }
+
+}
+
+
+function resizeParticles(){
+
+  for (var i = 0; i < engine.length; i++) {
+    var sz = sticky(random(20, 60),20);
+    var p = engine.particles[i];
+    p.sz = sz;
+  }
+}
+
+</script>
+
+
+</body>
+
+</html>

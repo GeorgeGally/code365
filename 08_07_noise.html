@@ -13,7 +13,7 @@
 	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -35,7 +35,7 @@ var acc = [];
 var noisy = .007;
 
 function draw() {
-  
+
   //fill(255, 255,255, 2);
   //background(255, 255, 255, 0.000001);
  // rect(-1, -1, 701, 701);
@@ -62,7 +62,7 @@ function draw() {
 
     if(pos[i].x < 0 || pos[i].y < 0 || pos[i].x > w || pos[i].y > h){
       pos[i].x = random(0, w);
-      pos[i].y = random(0, 7h00);
+      pos[i].y = random(0, h);
       vel[i].x = 0;
       vel[i].y = 0;
     }

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script src="../js/aframe.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<!-- <script src="../js/aframe-sun-sky.min.js"></script> -->
+
+</head>
+<body>
+<script>
+var ctx = createHiddenCanvas("canvas1");
+//var ctx = createCanvas("canvas1");
+canvas.style.zIndex = 100;
+w = canvas.width = 600;
+h = canvas.height = 600;
+
+</script>
+
+  <a-scene>
+
+    <a-assets>
+      <img id="my-texture" src="../img/textures/concrete3.jpg">
+    </a-assets>
+
+    <a-sky  src="#canvas1" rotation="0 0 0"></a-sky>
+    <!-- <a-sky src="puydesancy.jpg" rotation="0 -130 0"></a-sky> -->
+      <!-- <a-cylinder id="box1" position="10 10.5 12" normal-texture-offset="0 1" metalness="0.26" segments-height="52" segments-width="40" radius="3" height="10" material="src: #my-texture"> color="#efefef"></a-sphere> -->
+        <!-- <a-plane position="0 -1.5 0" width="25" height="15" rotation="-80"></a-plane> -->
+      <a-entity position="0 -1 -40">
+        <a-camera></a-camera>
+      </a-entity>
+    </a-scene>
+
+<script>
+
+var engine = new particleEngine(1);
+w = canvas.width = 2000;
+canvas.style.left = "-2000px";
+
+var img = new Image();
+img.src = "../img/textures/concrete3.jpg";
+//var ctx2 = createCanvas("canvas2");
+
+//ctx2.font="12px Arial";
+var stripe_height = h;
+var data = [120, 100, 60, 50, 20, 100];
+var names = ["Furniture", "Bananas", "Sculptures", "Motor Vehicles and parts", "Coal", "Others"];
+
+
+var grid = new Grid(200,1);
+
+var engine = new particleEngine(grid.length, grid);
+//console.log(engine.particles);
+
+var total = 0;
+
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.sz = grid.spacing_x;
+  //p.sz = map(data[i], 0, 450, 0, w);
+  p.pos.x = random(w);
+  p.pos.y = 0;
+  total += p.sz;
+
+
+  p.c = rgba(sticky(random(150, 255),20), 0.8);
+}
+
+//engine.last.pos.x = -new_spacing;
+var highlight = false;
+function draw(){
+  ctx.drawImage(img, 0, 0, w, h);
+  //box1.setAttribute('rotation', {x: rotation.x+=0, y: rotation.y+=0.1, z: rotation.z-=0});
+  ctx.background(0, 0.6)
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+
+    p.pos.x += 1;
+    if (p.pos.x > w) p.pos.x = grid.spacing_x;
+
+    ctx.fillStyle = p.c;
+    ctx.fillRect(p.pos.x, p.pos.y, p.sz, stripe_height);
+    //ctx.fillRect(p.pos.x, 680, p.sz, stripe_height);
+
+    if (i == 0) {
+      ctx.fillStyle = "red";
+      ctx.fillRect(sticky(p.pos.x,1), p.pos.y, 5, stripe_height);
+      //ctx.fillRect(sticky(p.pos.x,1), p.pos.y + stripe_height , 5, stripe_height);
+    }
+
+
+
+
+
+  }
+
+  ctx.fillStyle = "red";
+  ctx.fillRect(sticky(engine.particles[0].pos.x,1), p.pos.y, 3, stripe_height);
+  drawBar()
+}
+
+
+function drawBar(){
+  ctx.fillStyle = "red";
+  var counter = map(engine.particles[0].pos.x, 0, 20000000, 0, w);
+  var ww = map(engine.particles[0].pos.x, 0, w, 0, 20000000)
+  ctx.fillRect(0, h-180, engine.particles[0].pos.x, 10);
+  ctx.fillStyle = "#fff";
+  ctx.fillText(Math.floor(ww) + " containers are at sea today", engine.particles[0].pos.x + 20, h - 170);
+}
+
+</script>
+
+
+</body>
+
+</html>

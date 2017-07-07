@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+    <script language="javascript" src="../js/creative_coding.js"></script>
+
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/three.min.js"></script>
+
+  <script language="javascript" src="../js/threejs/CanvasRenderer.js"></script>
+  <script language="javascript" src="../js/threejs/Projector.js"></script>
+  <script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body style="background: #333">
+
+<script>
+var engine = new particleEngine(20);
+
+var ctx = createHiddenCanvas('canvas1');
+var canvas = document.getElementById('canvas1');
+
+// canvas.width = 640;
+// canvas.height = 360;
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+
+var block_size = 120;
+var boxes = [];
+
+var blocks_x = Math.round(width/block_size);
+var blocks_y = Math.round(height/block_size);
+
+console.log(blocks_x);
+console.log(blocks_y);
+
+var x_offset = blocks_x * block_size/2;
+var y_offset = blocks_y * block_size/2;
+
+var geometry;
+var i, j, ux, uy, ox, oy, geometry;
+
+ux = 1 / blocks_x;
+uy = 1 / blocks_y;
+
+xsize = w / blocks_x;
+ysize = h / blocks_y;
+
+var texture = new THREE.Texture(canvas);
+
+
+//var camera = new THREE.PerspectiveCamera( 70, aspect, 0.1, 1000 );
+camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 2, 2000 );
+
+//var renderer = new THREE.CanvasRenderer();
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+    //renderer.setClearColor( 0xefffff );
+    renderer.setClearColor( "#efefef" );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+
+    var block_gap = block_size;
+
+
+    var texture = new THREE.VideoTexture(canvas);
+
+    var material = new THREE.MeshBasicMaterial( { map: texture } );
+    material.map.minFilter = THREE.LinearFilter;
+
+    //material.shading = THREE.SmoothShading;
+    //scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+    controls = new THREE.OrbitControls( camera, renderer.domElement );
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.25;
+    controls.enableZoom = false;
+
+    camera.position.z = 800;
+    // camera.near = 20;
+    // camera.far  = 950;
+    //scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+    //var grid = new THREE.Object3d();
+
+    var num = 0;
+
+    for (var y = 0; y < blocks_y; y++) {
+
+      for (var x = 0; x < blocks_x; x++) {
+
+
+      ox = x;
+			oy = y;
+
+      geometry = new THREE.BoxGeometry( block_gap, block_gap, block_gap);
+      geometry.dynamic = true;
+
+      change_uvs( geometry, ux, uy, ox, oy );
+
+        var pos = x+y*x;
+        boxes[num] = new THREE.Mesh( geometry, material );
+
+        var xx = (x * block_size) - x_offset;
+        var yy = (y * block_size) - y_offset;
+
+        //boxes[num].start = new THREE.Vector3();
+        //boxes[num].target = new THREE.Vector3();
+        boxes[num].position.x = xx;
+        boxes[num].position.y = yy;
+        boxes[num].position.z = -10;
+        if(chance(2)) boxes[num].visible = false;
+        boxes[num].target = boxes[num].start = new THREE.Vector3(xx, yy, -10);
+        scene.add( boxes[num] );
+        num++;
+
+      }
+
+    }
+
+    //console.log(boxes.length);
+    //scene.add(grid);
+    scene.target_rotation = new THREE.Vector3();
+    scene.target_rotation = scene.rotation;
+
+    //var grid = new Grid(blocks_x, blocks_y);
+    var engine = new particleEngine(blocks_x, blocks_y);
+    var particles = engine.particles;
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      p.sz = 6;
+      p.start_sz = 6;
+      if(chance(2)) p.on = false;
+    }
+    var animate = false;
+
+function draw(){
+
+      ctx.background(0);
+      ctx.fillStyle = "white";
+      ctx.strokeStyle = "white";
+      if (chance(500)) animate = !animate;
+
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+        //if(chance(1000)) p.target.x = sticky(random(w),engine.grid.spacing_x) + engine.grid.spacing_x/2;
+        if (animate) {
+          //ctx.fillStyle = "red";
+          p.sz = 2 * p.start_sz + Math.sin(frameCount/60) * 10;
+          ctx.centreStrokeRect(p.pos.x, p.pos.y, p.sz*2, p.sz*2);
+        } else {
+          ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+        }
+        p.pos.x = tween(p.pos.x, p.target.x, 100);
+        p.pos.y = tween(p.pos.y, p.target.y, 100);
+        p.pos.z = tween(p.pos.z, p.target.z, 100);
+        //if(p.on)
+
+      }
+
+      for (var i = 0; i < boxes.length; i++) {
+        var b = boxes[i];
+        if(chance(1000)) b.target.x = sticky(random(-250, 250),block_size);
+        if(chance(1000)) b.target.y = sticky(random(-250, 250),block_size);
+        if(chance(1000)) b.target.z = sticky(random(-250, 250),block_size);
+        b.position.x = tween(b.position.x, b.target.x, 10);
+        b.position.y = tween(b.position.y, b.target.y, 10);
+        b.position.z = tween(b.position.z, b.target.z, 10);
+      }
+
+      //if (chance(600))
+      scene.target_rotation.y += 0.001;
+      scene.rotation.y = tween(scene.rotation.y, scene.target_rotation.y, 20);
+
+      renderer.clear();
+      renderer.render(scene, camera);
+}
+
+
+
+function change_uvs( geometry, unitx, unity, offsetx, offsety ) {
+
+  var faceVertexUvs = geometry.faceVertexUvs[ 0 ];
+
+  for ( var i = 0; i < faceVertexUvs.length; i ++ ) {
+
+    var uvs = faceVertexUvs[ i ];
+
+    for ( var j = 0; j < uvs.length; j ++ ) {
+
+      var uv = uvs[ j ];
+
+      uv.x = ( uv.x + offsetx ) * unitx;
+      uv.y = ( uv.y + offsety ) * unity;
+
+    }
+
+  }
+
+}
+
+
+function getColours(){
+
+  //hidden_ctx.drawImage(video,0,0,video.width, video.height);
+	sample = ctx.getImageData(0, 0, w, h);
+
+	var buffer = new Uint32Array(sample.data.buffer);
+
+  var num = 0;
+
+  for (var y = 0; y < blocks_y; y++) {
+
+        for (var x = 0; x < blocks_x; x++) {
+
+			var pos = (x + y * canvas.width) * block_size;
+      var r = buffer[pos] >> 0 & 0xff;
+			var g = buffer[pos] >> 8 & 0xff;
+			var b = buffer[pos] >> 16 & 0xff;
+
+      // var r1 = buffer[pos] >> 0 & 0xff;
+      // var g1 = buffer[pos] >> 8 & 0xff;
+      // var b1 = buffer[pos] >> 16 & 0xff;
+
+      // var pos2 = x + resolution/2 + (y + resolution/2) * canvas.width;
+			// var r2 = buffer[pos2] >> 0 & 0xff;
+			// var g2 = buffer[pos2] >> 8 & 0xff;
+			// var b2 = buffer[pos2] >> 16 & 0xff;
+      //
+      // var r = (r1 + r2) / 2;
+      // var g = (g1 + g2) / 2;
+      // var b = (b1 + b2) / 2;
+
+
+      var bright = brightness(r,g,b);
+      var bb = 31 - map(brightness(r,g,b), 0, 100, 0, 30);
+      // boxes[num].scale.z = bb;
+      boxes[num].position.z = bb/2;
+      boxes[num].scale.z = bb;
+
+      num++;
+
+    }
+  }
+
+}
+
+
+</script>
+
+</body>
+
+</html>

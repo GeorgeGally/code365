@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+<meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var hidden_ctx = createCanvas("canvas2");
+
+var particles = [];
+var colours = ["#0EBFE9", "orange", "red"];
+
+var old_red = [];
+var old_green = [];
+var old_blue = [];
+var sensitivity = 20;
+var pixelsize = 20;
+var maxballs = 2000;
+
+
+function draw(){
+  ctx.background(0);
+  videoshit();
+  //if (mouseMoved) addBall(mouseX, mouseY);
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    moveBall(p);
+    drawBall(p);
+    if (p.sz < 0.2) particles.splice(i, 1);
+  }
+
+}
+
+function videoshit(){
+  hidden_ctx.drawImage(video, 0,0, w, h);
+  sample = hidden_ctx.getImageData(0,0,w,h);
+
+  //console.log(sample.data);
+
+  ctx.fillStyle = rgba(255, 0.3);
+  for (var y = 0; y < h; y+= pixelsize) {
+    for (var x = 0; x < w; x+= pixelsize) {
+    var pos = (x  + y * w) * 4;
+    var r = sample.data[pos];
+    var g = sample.data[pos+1];
+    var b = sample.data[pos+2];
+    if (!old_red[pos]) old_red[pos] = r;
+    //ctx.fillStyle = rgba(r, g, b);
+    //ctx.fillRect(x, y, pixelsize-1, pixelsize-1);
+    if(Math.abs(r - old_red[pos]) > sensitivity) {
+      var c = rgb(r,g,b);
+      addBall(x, y, c)
+    }
+    old_red[pos] = r;
+    old_green[pos] = g;
+    old_blue[pos] = b;
+    }
+  }
+}
+
+
+function addBall(x, y, c){
+var ball = {
+  x: x,
+  y: y,
+  speed_x: random(-4,4),
+  speed_y: random(-5,2),
+  sz: 10,
+  c: c
+}
+particles.push(ball);
+if(particles.length > maxballs) particles.splice(0,1);
+}
+
+
+function drawBall(b){
+    ctx.fillStyle = b.c;
+    ctx.fillEllipse(b.x, b.y, b.sz, b.sz);
+}
+
+function moveBall(b){
+  b.x = b.x + b.speed_x;
+  b.y = b.y + b.speed_y;
+  b.sz *= 0.99;
+  b.speed_y += 0.2;
+  // if (b.x < b.sz/2 || b.x > w - b.sz/2) {
+  //   b.speed_x = b.speed_x * -1;
+  // }
+  // if (b.y < b.sz/2 || b.y > h - b.sz/2) {
+  //   b.speed_y = b.speed_y * -1;
+  // }
+
+}
+
+
+</script>
+
+</body>
+
+</html>

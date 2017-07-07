@@ -1,11 +1,13 @@
 
+function Video(){
+
 var video;
-var vid_ctx;
+var hidden_ctx;
 var showBgImg = false;
 var showVideo = false;
 
 document.addEventListener("DOMContentLoaded", function() {
-  vid_ctx = createHiddenCanvas("hidden_canvas");
+  hidden_ctx = createHiddenCanvas("hidden_canvas");
   video = document.createElement('video');
   document.body.appendChild(video);
 
@@ -141,8 +143,8 @@ video.addEventListener('loadeddata', function() {
 
 function readVideo(_samplesize){
   var samplesize = _samplesize | 20;
-  vid_ctx.drawImage(video, 0, 0, w, h);
-  var imgData = vid_ctx.getImageData(0, 0, w, h);
+  hidden_ctx.drawImage(video, 0, 0, w, h);
+  var imgData = hidden_ctx.getImageData(0, 0, w, h);
   var data = []
     var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
 
@@ -162,3 +164,34 @@ function readVideo(_samplesize){
 
     return data;
 }
+
+var colour_array = [];
+var down_sample = 2;
+
+this.colours = function (grid){
+  //console.log(grid);
+  colour_array = [];
+  hidden_ctx.drawImage(video,0,0, grid.width, grid.height);
+  sample = hidden_ctx.getImageData(0, 0, grid.width, grid.height);
+  var buffer = new Uint32Array(sample.data.buffer);
+  //console.log(grid.spacing.x);
+  for (var y = 0; y < h; y+= Math.floor(grid.spacing.y)) {
+
+    for (var x = 0; x < grid.width; x+= Math.floor(grid.spacing.x)) {
+    // for (var i = 0; i < grid.length; i++) {
+      // var x = grid.x[i];
+      // var y = grid.y[i];
+      var pos = x + y * w;
+      var r = buffer[pos] >> 0 & 0xff;
+      var g = buffer[pos] >> 8 & 0xff;
+      var b = buffer[pos] >> 16 & 0xff;
+      var c = {r: r, g: g, b: b, x: x, y: y};
+      colour_array.push(c);
+    }
+  }
+  	return colour_array;
+  }
+
+}
+
+var video = new Video();

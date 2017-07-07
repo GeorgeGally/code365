@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<!-- <script language="javascript" src="../js/midi.js"></script> -->
+<!-- <script language="javascript" src="../js/raw_video.js"></script> -->
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body style = "background: #000;">
+
+<script>
+
+//var ctx = createHiddenCanvas("canvas1");
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var buffer;
+
+var pixel_size = 10;
+
+var wall = new particleEngine(3,3, 330, 330);
+var matrixes = wall.particles;
+for (var i = 0; i < matrixes.length; i++) {
+  var m = matrixes[i];
+  m.pixels = [];
+  var pixels = new particleEngine(9,9, 100, 100, m.pos.x, m.pos.y);
+  m.pixels = pixels;
+}
+
+
+
+function draw(){
+  ctx.background(0);
+  for (var i = 0; i < matrixes.length; i++) {
+    var m = matrixes[i];
+    // var c =  randomColour();
+    // ctx.fillStyle = c;
+    // ctx.centreFillRect(m.pos.x, m.pos.y, 20, 20);
+    for (var j = 0; j < m.pixels.length; j++) {
+      var p = m.pixels.particles[j];
+      var c =  randomColour();
+      ctx.fillStyle = "red";
+      //ctx.fillStyle = c;
+      ctx.fillEllipse(p.pos.x, p.pos.y, pixel_size, pixel_size);
+    }
+  }
+
+  var imgData = ctx.getImageData(0,0,w,h);
+  buffer = new Uint32Array(imgData.data.buffer);
+
+  //buffer = ctx.getImageData(0,0,w,h).data;
+  //jbuffer = new Uint8ClampedArray(imgData.data);
+
+  for (var i = 0; i < matrixes.length; i++) {
+    var m = matrixes[i];
+    for (var j = 0; j < m.pixels.length; j++) {
+      var p = m.pixels.particles[j];
+      var c = sample(p.pos.x, p.pos.y);
+      ctx2.fillStyle = c;
+      ctx2.fillEllipse(p.pos.x, p.pos.y, 3, 3);
+    }
+  }
+
+  //console.log(imgData);
+  // for (var y = 0; y < h; y+= 10) {
+  //   for (var x = 0; x < w; x+= 10) {
+  //     var c = sample(x + 1, y + 1);
+  //     ctx2.fillStyle = c;
+  //     ctx2.fillRect(x, y, 3, 3);
+  //   }
+  // }
+}
+
+
+// function sample(x, y) {
+//         // var ammt = Math.round(mouseX/100);
+//         var pos = Math.round((x + y * w)*4);
+//         //console.log(buffer[pos]);
+//         var r = buffer[pos];
+//         var g = buffer[pos+1];
+//         var b = buffer[pos+2];
+//         ctx2.fillStyle = rgb(r,g,b)
+//         ctx2.fillEllipse(x, y, 3, 3);
+//         return rgb(r,g,b);
+// }
+
+
+function sample(x, y) {
+        //var ammt = Math.round(mouseX/100);
+         var pos = (x + y * w);
+         var b = (buffer[pos] >> 16) & 0xff;
+         var g = (buffer[pos] >> 8) & 0xff;
+         var r = (buffer[pos] >> 0) & 0xff;
+        //  r = sticky(r, ammt);
+        //  g = sticky(g, ammt);
+        //  b = sticky(b, ammt);
+         return rgb(r,g,b);
+}
+
+
+
+</script>
+
+<!-- <script language="javascript" src="../js/soundcloud_new.js"></script> -->
+</body>
+
+</html>

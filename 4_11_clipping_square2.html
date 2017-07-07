@@ -12,7 +12,7 @@
 	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+
 <script>
 // was getting annoyed with the same track playing, so changed soundcloud function to play random track
 var ctx = createCanvas("canvas1");
@@ -28,11 +28,11 @@ var t_size = 150;
 var top_offset = 0;
 
 for (var i = 0; i < num_particles; i+=1) {
-		
+
 		//var x = 2*Math.cos(radians(i*angle))*radius;
     	var x = random(w);
     	var y = random(h);
-    	
+
 		addParticle(x, y, cols[i%5], i);
 };
 
@@ -65,34 +65,16 @@ function draw(){
 	ctx.fillStyle = rgb(0);
 	drawParticles();
 	ctx.restore();
-	
+
 
 
 	// ctx.lineWidth = 4;
 	// ctx.strokeStyle = "#ffffff";
 	// ctx.HstrokeEllipse(w/2, h/2, 400, 400);
 
-	
+
 	ctx.fillStyle = "#000";
 	ctx.lineWidth = 1;
-
-	// TOP
-	// ctx.save();
-	// ctx.eqDownFillTriangle(w/2, h/2 - t_size/4, t_size);
-	// ctx.clip();
-	// drawParticles();
-	// ctx.restore();
-	// ctx.strokeStyle = "#fff";
-	// ctx.eqDownTriangle(w/2+3, h/2 - t_size/4, t_size);
-
-	// // LEFT
-	// ctx.save();
-	// ctx.eqTriangle(s1 + w/2-t_size/2-21, top_offset + h/2, t_size);
-	// ctx.clip();
-	// drawParticles();
-	// ctx.restore();
-	// ctx.strokeStyle = "#fff";
-	// ctx.eqTriangle(s1 + w/2-t_size/2-21, top_offset + h/2, t_size);
 
 	// MIDDLE
 
@@ -107,36 +89,6 @@ function draw(){
 	ctx.fillStyle = cols[randomInt(4)];
 	drawParticles();
 	ctx.restore();
-
-	// ctx.strokeStyle = "#fff";
-	// ctx.eqTriangle(w/2, top_offset + h/2, t_size);
-
-	// BOTTOM
-	// ctx.save();
-	// ctx.eqTriangle(w/2, h/2 + t_size/2 -15, t_size);
-	// ctx.clip();
-	// drawParticles();
-	// ctx.restore();
-	// ctx.strokeStyle = "#fff";
-	// ctx.eqTriangle(w/2, h/2 + t_size/2 -15, t_size);
-
-	// BOTTOM LEFT
-	// ctx.save();
-	// ctx.eqDownTriangle(w/2-t_size/2-20, top_offset + h/2 + t_size, t_size);
-	// ctx.clip();
-	// drawParticles();
-	// ctx.restore();
-	// ctx.strokeStyle = "#fff";
-	// ctx.eqDownTriangle(w/2-t_size/2-20, top_offset + h/2 + t_size, t_size);
-
-	// BOTTOM RIGHT
-	// ctx.save();
-	// ctx.eqDownTriangle(w/2+t_size/2+26, top_offset + h/2 + t_size, t_size);
-	// ctx.clip();
-	// drawParticles();
-	// ctx.restore();
-	// ctx.strokeStyle = "#fff";
-	// ctx.eqDownTriangle(w/2+t_size/2+26, top_offset + h/2 + t_size, t_size);
 
 
 }
@@ -170,9 +122,9 @@ function drawParticles(){
 }
 
 function moveParticles(){
-	
+
 	for (var i = 0; i < particles.length; i++) {
-		
+
 		p = particles[i];
 		p.sz = map(audioChannelVolume[p.me%100],0,100, -3, 5);
 

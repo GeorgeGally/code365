@@ -22,9 +22,9 @@
 var ctx = createHiddenCanvas("canvas1");
 var canvas = document.getElementById('canvas1');
 //var ctx = createCanvas("canvas1");
-canvas.style.zIndex = 100;
-canvas.width = width = w = 1024;
-canvas.height = height = h = 1024;
+//canvas.style.zIndex = 100;
+// canvas.width = width = w = 1024;
+// canvas.height = height = h = 1024;
 var circs = [];
 var r = width/2-10;
 ctx.lineWidth = 1;
@@ -71,12 +71,9 @@ function draw() {
   ctx.background(0);
 
   ctx.fillStyle = "#ffffff";
- ctx.fillRect(0, 0, w, h);
- ctx.strokeStyle = "#000000";
-// }
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = "#000000";
 
-//ctx.fillStyle = "#ffffff"
-//ctx.fillRect(0, 0, w, h)
 for (var i=0; i<circs.length; i++){
 
  var p = circs[i];
@@ -177,9 +174,25 @@ function init() {
         }
 
     }
+    console.log(geometry);
+  //   geometry.faceVertexUvs[0] = [];
+   //
+  //  for(var i = 0; i < geometry.faces.length; i++){
+   //
+  //       // set new coordinates, all faces will have same mapping.
+  //       geometry.faceVertexUvs[0].push([
+  //       new THREE.Vector2( 0,0 ),
+  //       new THREE.Vector2( 0,1 ),
+  //       new THREE.Vector2( 1,1),
+   //
+  //       ]);
+  //   }
+
+
 
     texture = new THREE.Texture(canvas);
     texture.needsUpdate = true;
+
     var material = new THREE.MeshLambertMaterial({ map: texture,
       overdraw: true,
         //polygonOffset: true,
@@ -187,19 +200,14 @@ function init() {
         //polygonOffsetFactor: 1,
         color: 0xeeeeee});
     material.shading = THREE.FlatShading;
+    material.map.minFilter = THREE.LinearFilter;
 
-
-    // material = new THREE.MeshLambertMaterial({
-    //     polygonOffset: true,
-    //     polygonOffsetUnits: 1,
-    //     polygonOffsetFactor: 1,
-    //     color: 0xdddddd,
-    //
-    // });
     material.shading = THREE.FlatShading;
     renderer.setClearColor( "#d7d7d7");
 
     var sphere = new THREE.Mesh( geometry, material );
+
+
     wireSphere = new THREE.Mesh(
          geometry,
          new THREE.MeshBasicMaterial({ color: "#d7d7d7", wireframe: true })

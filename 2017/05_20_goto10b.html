@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+eet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #f3f3f3">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+ctx.font="15px Monospace";
+var engine = new particleEngine(100, 60);
+
+for (var i = 0; i < engine.length; i++) {
+  var p = engine.particles[i];
+  if(chance(2)) {
+    p.txt = "\\";
+  } else {
+    p.txt = "/";
+  }
+  p.speed.x = 0;
+  p.speed.y = -4;
+  p.tween = true;
+}
+
+function draw(){
+ctx.background(0);
+engine.update();
+for (var i = 0; i < engine.length; i++) {
+  var p = engine.particles[i];
+  ctx.fillStyle = "white";
+  p.target.y += p.speed.y
+  ctx.fillText(p.txt, p.pos.x, p.pos.y);
+}
+}
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

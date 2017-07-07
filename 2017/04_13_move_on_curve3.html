@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.font="16px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/train_data.csv';
+var engine = new particleEngine(0);
+var balls = new particleEngine(50);
+balls.edges = false;
+for (var i = 0; i < balls.length; i++) {
+  var b = balls.particles[i];
+  b.speed.y = 1;
+  b.speed.x = random(0.1, 10)/20;
+  b.sz = random(1, 4);
+}
+engine.last.pos.x = -10;
+engine.border = false;
+var pos = {x:0, y: h/2};
+var posy = 30;
+ctx.lineWidth = 2;
+
+var spacing = 40;
+var offset = 40;
+
+var pts = [];
+for (var i = 1; i < w +20; i+= spacing) {
+  engine.add(i, h/2 + random(-offset, offset));
+  //pts.push({x: i, y: h/2 + random(-offset, offset)});
+}
+
+var counter = 0;
+ctx.background(0);
+ctx.strokeStyle="white";
+
+
+function draw() {
+
+  ctx.background(0);
+
+  var orange = balls.particles[0];
+
+  for (var i = 1; i < engine.length; i++) {
+  //for (var i = 1; i < pts.length; i++) {
+  var p = engine.particles[i];
+  var p2 = engine.particles[i-1];
+
+    //ctx.line(p2.pos.x, p2.pos.y, p.pos.x, p.pos.y);
+
+    for (var j = 0; j < balls.length; j++) {
+      var b = balls.particles[j];
+      moveBalls(b, p, p2);
+      b.pos.x = (b.pos.x + b.speed.x) % w;
+    }
+
+
+
+
+  }
+
+
+
+  //ctx.line(pos.x, 0, pos.x, h);
+  orange.pos.x = (orange.pos.x + 1) % w;
+  if (chance(100)) generateCurve();
+  //balls.update();
+}
+
+
+function generateCurve(){
+  for (var i = 1; i < engine.length-1; i++) {
+    var p = engine.particles[i];
+    p.pos.y = h/2 + random(-offset, offset);
+  }
+}
+
+function moveBalls(orange, p, p2){
+
+  if (orange.pos.x >= p2.pos.x && orange.pos.x < p.pos.x) {
+  var dx = p.pos.x - p2.pos.x;
+  var dy = p.pos.y - p2.pos.y;
+
+  var tx = p.pos.x - orange.pos.x,
+         ty = p.pos.y - orange.pos.y,
+         dist = Math.sqrt(tx*tx+ty*ty),
+         rad = Math.atan2(ty,tx),
+         angle = rad/Math.PI * 180;;
+         velX = (tx/dist)*1;
+         velY = (ty/dist)*4;
+
+  orange.pos.y += velY;
+
+  ctx.fillStyle="orange";
+  ctx.fillEllipse(orange.pos.x, orange.pos.y , b.sz, b.sz);
+  //drawBalls();
+
+  }
+
+
+}
+
+function drawBalls(){
+  for (var i = 0; i < balls.length; i++) {
+    var b = balls.particles[i];
+    ctx.fillStyle="red";
+    ctx.fillEllipse(b.pos.x, b.pos.y , 10, 10);
+  }
+}
+
+
+</script>
+
+</body>
+
+</html>

@@ -12,7 +12,7 @@
 	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+
 <script>
 // was getting annoyed with the same track playing, so changed soundcloud function to play random track
 var ctx = createCanvas("canvas1");
@@ -28,11 +28,11 @@ var t_size = 120;
 var top_offset = -100;
 
 for (var i = 0; i < num_particles; i+=1) {
-		
+
 		//var x = 2*Math.cos(radians(i*angle))*radius;
     	var x = random(w);
     	var y = random(h);
-    	
+
 		addParticle(x, y, cols[i%5], i);
 };
 
@@ -49,12 +49,12 @@ function draw(){
 
 	// TOP
 	ctx.save();
-	ctx.eqDownFillTriangle(w/2, h/2 - t_size/2-t_size/3, t_size);
+	ctx.fillEqTriangle(w/2, h/2 - t_size/2-t_size/3, t_size, 1);
 	ctx.clip();
 	drawParticles();
 	ctx.restore();
 	ctx.strokeStyle = "#fff";
-	ctx.eqDownTriangle(w/2, h/2 - t_size/2-40, t_size);
+	ctx.fillEqTriangle(w/2, h/2 - t_size/2-40, t_size, 1);
 
 	// LEFT
 	ctx.save();
@@ -86,21 +86,21 @@ function draw(){
 
 	// BOTTOM LEFT
 	ctx.save();
-	ctx.eqDownTriangle(w/2-t_size/2-20, top_offset + h/2 + t_size, t_size);
+	ctx.fillEqTriangle(w/2-t_size/2-20, top_offset + h/2 + t_size, t_size, 1);
 	ctx.clip();
 	drawParticles();
 	ctx.restore();
 	ctx.strokeStyle = "#fff";
-	ctx.eqDownTriangle(w/2-t_size/2-20, top_offset + h/2 + t_size, t_size);
+	ctx.fillEqTriangle(w/2-t_size/2-20, top_offset + h/2 + t_size, t_size, 1);
 
 	// BOTTOM RIGHT
 	ctx.save();
-	ctx.eqDownTriangle(w/2+t_size/2+20, top_offset + h/2 + t_size, t_size);
+	ctx.fillEqTriangle(w/2+t_size/2+20, top_offset + h/2 + t_size, t_size, 1);
 	ctx.clip();
 	drawParticles();
 	ctx.restore();
 	ctx.strokeStyle = "#fff";
-	ctx.eqDownTriangle(w/2+t_size/2+20, top_offset + h/2 + t_size, t_size);
+	ctx.fillEqTriangle(w/2+t_size/2+20, top_offset + h/2 + t_size, t_size, 1);
 
 }
 
@@ -133,9 +133,9 @@ function drawParticles(){
 }
 
 function moveParticles(){
-	
+
 	for (var i = 0; i < particles.length; i++) {
-		
+
 		p = particles[i];
 		p.sz = map(audioChannelVolume[p.me%100],0,150, 0, 4);
 

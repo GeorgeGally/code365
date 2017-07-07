@@ -1,74 +1,112 @@
+// GLOBALS
+var mouseSpeedX = 0,
+mouseSpeedX = 0,
+mouseX = 0,
+mouseY = 0,
+lastMouseX = 0,
+lastMouseY = 0,
+oldMouseX = 0,
+oldMouseY = 0,
+frameRate = 60,
+frameCount = 0,
+frameNumber = 0,
+lastUpdate = Date.now(),
+mouseDown = false,
+mouseMoved = false;
+var counter = 0;
 var TWO_PI = Math.PI * 2;
 //loadScript('../js/fx.js', done);
 
-function done(){
-  console.log("done")
-}
 
 var p = CanvasRenderingContext2D.prototype;
 
 
-p.mirror = function(_side){
 
-  var side = _side || 1;
-  var input = ctx.getImageData(0, 0, w, h);
-  var output = ctx.createImageData(w, h);
-  var inputData = input.data;
-  var outputData = output.data
-   // loop
-   if (side ==1) {
-   for (var y = 0; y < h-1; y += 1) {
-       for (var x = 0; x < w/2; x += 1) {
-         // RGB
-         var i = (y*w + x)*4;
-         var flip = (y*w + (w/2 - x))*4;
-         for (var c = 0; c < 4; c += 1) {
-            outputData[i+c] = inputData[flip+c];
-         }
-       }
-   }
-   this.putImageData(output, w/2, 0);
-  } else {
-    for (var y = 0; y < h/2; y += 1) {
-      for (var x = 1; x < w; x += 1) {
-        var i = (y*w + x)*4;
-        var flip = ((h/2-y)*w + x)*4;
-        for (var c = 0; c < 4; c += 1) {
-          outputData[i+c] = inputData[flip+c];
+function rgb(r, g, b, a) {
+
+ return getColour(r, g, b, a);
+
+};
+
+function rgba(r, g, b, a) {
+  return getColour(r, g, b, a);
+};
+
+function hsl(h, s, l) {
+  return 'hsl('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%)';
+};
+
+function hsla(h, s, l, a) { return 'hsla('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%, '+clamp(a,0,1)+')';};
+
+function brightness(r, g, b, _scale){
+      var scale = _scale || 100;
+      return Math.floor(rgbToHsl(r, g, b)[2]*scale);
+};
+
+function rgbToHsl(r, g, b){
+    r /= 255, g /= 255, b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h, s, l = (max + min) / 2;
+
+    if(max == min){
+        h = s = 0; // achromatic
+    }else{
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max){
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
         }
-      }
+        h /= 6;
     }
-    this.putImageData(output, 0, h/2);
-  }
+
+    return [h, s, l];
+}
+
+function hexToRgb(hex) {
+    // Expand shorthand form (e.g. '03F') to full form (e.g. '0033FF')
+    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+        return r + r + g + g + b + b;
+    });
+
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
+function hslToRgb(h, s, l){
+    var r, g, b;
+
+    if(s == 0){
+        r = g = b = l; // achromatic
+    }else{
+        var hue2rgb = function hue2rgb(p, q, t){
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
 
 
-p.colour = function (r, g, b, a){
-  'use strict';
-  this.fillStyle = this.getColour(r, g, b, a);
-};
 
-// p.fill = function (r, g, b, a) {
-//   'use strict';
-//   this.fillStyle = this.getColour(r, g, b, a);
-// }
-
-p.lineStyle = function (r, g, b, a){
-  'use strict';
-  this.strokeStyle = this.getColour(r, g, b, a);
-};
-
-p.lineColour = function (r, g, b, a){
-  'use strict';
-  this.strokeStyle = this.getColour(r, g, b, a);
-};
-
-p.colourName = function (c){
-  'use strict';
-  this.fillStyle = c;
-};
-
-p.getColour = function (r, g, b, a){
+function getColour(r, g, b, a){
   'use strict';
   var c;
 
@@ -82,22 +120,57 @@ p.getColour = function (r, g, b, a){
 
   } else if (g == undefined) {
 
-    c = rgb(r, r, r);
+   return 'rgb('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+')';
 
-  } else if (b == undefined && a == undefined) {
+  } else if (b == undefined) {
 
-    c = rgba(r, r, r, g);
+    return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(g,0,1)+')';
 
-  } else if (a == undefined) {
+  } else if (a == undefined){
 
-    c = rgb(r, g, b);
+  return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', 1)';
 
   } else {
 
-    c = rgba(r, g, b, a);
+    return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', '+clamp(a,0,1)+')';
 
-  }
+ }
+  // } else if (g == undefined) {
+  //
+  //   c = rgb(r, r, r);
+  //
+  // } else if (b == undefined && a == undefined) {
+  //
+  //   c = rgba(r, r, r, g);
+  //
+  // } else if (a == undefined) {
+  //
+  //   c = rgb(r, g, b);
+  //
+  // } else {
+  //
+  //   c = rgba(r, g, b, a);
+  //
+  // }
   return(c);
+};
+
+
+
+p.colour = function (r, g, b, a){
+  'use strict';
+  this.fillStyle = getColour(r, g, b, a);
+};
+
+
+p.lineStyle = function (r, g, b, a){
+  'use strict';
+  this.strokeStyle = getColour(r, g, b, a);
+};
+
+p.lineColour = function (r, g, b, a){
+  'use strict';
+  this.strokeStyle = getColour(r, g, b, a);
 };
 
 
@@ -155,6 +228,16 @@ p.Hellipse = function(x, y, width, height) {
  //this.closePath();
 };
 
+
+p.Lellipse = function(x, y, width, height) {
+ if (height == undefined) { height = width; }
+ this.beginPath();
+ for(var i=0;i<Math.PI*2;i+=Math.PI/8) {
+ this.lineTo(x+(Math.cos(i)*width/2), y+(Math.sin(i)*height/2));
+ }
+ //this.closePath();
+};
+
 p.fillEllipse = function(x, y, width, height) {
  if (height == undefined) height = width;
  this.ellipse(x,y,width, height);
@@ -169,6 +252,14 @@ p.HfillEllipse = function(x, y, width, height) {
  this.beginPath();
 };
 
+p.LfillEllipse = function(x, y, width, height) {
+ if (height == undefined) height = width;
+ this.Lellipse(x,y,width, height);
+ this.fill();
+ this.beginPath();
+};
+
+
 p.strokeEllipse = function(x, y, width, height) {
  if (height == undefined) height = width;
  this.ellipse(x,y,width, height);
@@ -179,6 +270,13 @@ p.strokeEllipse = function(x, y, width, height) {
 p.HstrokeEllipse = function(x, y, width, height) {
  if (height == undefined) { height = width; }
  this.Hellipse(x,y,width, height);
+ this.stroke();
+ this.beginPath();
+};
+
+p.LstrokeEllipse = function(x, y, width, height) {
+ if (height == undefined) { height = width; }
+ this.Lellipse(x,y,width, height);
  this.stroke();
  this.beginPath();
 };
@@ -281,6 +379,31 @@ p.eqDownTriangle = function(x, y, sz, down) {
  this.translate(-x, -y);
 }
 
+p.fillEqTriangle = function(x, y, sz, down) {
+  if (!down) {
+    this.fillTriangle(x, y - sz, x + sz, y + sz/2, x - sz, y + sz/2);
+ } else {
+   this.save();
+   this.translate(x, y);
+   this.rotate(radians(180));
+   this.fillTriangle(0, -sz, sz, sz/2, -sz, sz/2);
+   this.restore();
+ }
+}
+
+p.strokeEqTriangle = function(x, y, sz, down) {
+  if (!down) {
+    this.strokeTriangle(x, y - sz, x + sz, y + sz/2, x - sz, y + sz/2);
+} else {
+    this.save();
+    this.translate(x, y);
+    this.rotate(radians(180));
+    this.strokeTriangle(x0, -sz, sz, sz/2, -sz, sz/2);
+    this.restore();
+}
+}
+
+
 p.eqFillTriangle = function(x, y, sz, down) {
  this.fillTriangle(x, y - sz, x + sz, y + sz/2, x - sz, y + sz/2);
 }
@@ -289,16 +412,20 @@ p.eqTriangle = function(x, y, sz, down) {
  this.triangle(x, y - sz, x + sz, y + sz/2, x - sz, y + sz/2);
 }
 
+p.eqStrokeTriangle = function(x, y, sz, down) {
+ this.strokeTriangle(x, y - sz, x + sz, y + sz/2, x - sz, y + sz/2);
+}
+
 
 p.background = function (r, g, b, a){
-  var c = this.getMyCurrentFill();
- this.fillStyle = this.getColour(r, g, b, a);
+  var c = this.getCurrentFill();
+ this.fillStyle = getColour(r, g, b, a);
  this.fillRect(0, 0, w, h);
  this.fillStyle = c;
 
 };
 
-p.getMyCurrentFill = function() {
+p.getCurrentFill = function() {
   //console.log(ctx.fillStyle);
   var r = parseInt(this.fillStyle.substring(1,3), 16);
   var g = parseInt(this.fillStyle.substring(3,5), 16);
@@ -329,128 +456,7 @@ p.rotateDeg = function(deg){
 
 
 
-function xyz(px, py, pz, pitch, roll, yaw) {
 
-    var cosa = Math.cos(yaw);
-    var sina = Math.sin(yaw);
-
-    var cosb = Math.cos(pitch);
-    var sinb = Math.sin(pitch);
-
-    var cosc = Math.cos(roll);
-    var sinc = Math.sin(roll);
-
-    var Axx = cosa*cosb;
-    var Axy = cosa*sinb*sinc - sina*cosc;
-    var Axz = cosa*sinb*cosc + sina*sinc;
-
-    var Ayx = sina*cosb;
-    var Ayy = sina*sinb*sinc + cosa*cosc;
-    var Ayz = sina*sinb*cosc - cosa*sinc;
-
-    var Azx = -sinb;
-    var Azy = cosb*sinc;
-    var Azz = cosb*cosc;
-
-    x = Axx*px + Axy*py + Axz*pz;
-    y = Ayx*px + Ayy*py + Ayz*pz;
-    z = Azx*px + Azy*py + Azz*pz;
-
-    return {x:x, y:y, z:z};
-}
-
-
-function rgb(r, g, b) {
-
- if (g == undefined) g = r;
- if (b == undefined) b = r;
- return 'rgb('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+')';
-
-};
-
-function rgba(r, g, b, a) {
-  if (g == undefined) {
-   return 'rgb('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+')';
- } else if (b == undefined) {
-    return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(g,0,1)+')';
-  } else if (a == undefined){
-  return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', 1)';
-} else {
-return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', '+clamp(a,0,1)+')';
- }
-};
-
-function hsl(h, s, l) {
-  return 'hsl('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%)';
-};
-
-function hsla(h, s, l, a) { return 'hsla('+h+', '+clamp(s,0,100)+'%, '+clamp(l,0,100)+'%, '+clamp(a,0,1)+')';};
-
-function brightness(r, g, b, _scale){
-      var scale = _scale || 100;
-      return Math.floor(rgbToHsl(r, g, b)[2]*scale);
-};
-
-function rgbToHsl(r, g, b){
-    r /= 255, g /= 255, b /= 255;
-    var max = Math.max(r, g, b), min = Math.min(r, g, b);
-    var h, s, l = (max + min) / 2;
-
-    if(max == min){
-        h = s = 0; // achromatic
-    }else{
-        var d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch(max){
-            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-            case g: h = (b - r) / d + 2; break;
-            case b: h = (r - g) / d + 4; break;
-        }
-        h /= 6;
-    }
-
-    return [h, s, l];
-}
-
-function hexToRgb(hex) {
-    // Expand shorthand form (e.g. '03F') to full form (e.g. '0033FF')
-    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
-        return r + r + g + g + b + b;
-    });
-
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
-}
-
-function hslToRgb(h, s, l){
-    var r, g, b;
-
-    if(s == 0){
-        r = g = b = l; // achromatic
-    }else{
-        var hue2rgb = function hue2rgb(p, q, t){
-            if(t < 0) t += 1;
-            if(t > 1) t -= 1;
-            if(t < 1/6) return p + (q - p) * 6 * t;
-            if(t < 1/2) return q;
-            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-            return p;
-        }
-
-        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        var p = 2 * l - q;
-        r = hue2rgb(p, q, h + 1/3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1/3);
-    }
-
-    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-}
 
 
 function random(min, max) {
@@ -473,6 +479,12 @@ function randomInt(min, max) {
   return Math.floor(Math.random() * (max+1-min)) +min;
 }
 
+function randomSticky(min, max, c) {
+  clamper = c || max;
+  return sticky(random(min, max), clamper);
+}
+
+
 function randomWhole(min, max) {
   return posNeg() * random(min, max);
 }
@@ -481,10 +493,20 @@ function randomWholeInt(min, max) {
   return posNeg() * randomInt(min, max);
 }
 
-function randomColour(){
-  var r = randomInt(255);
-  var g = randomInt(255);
-  var b = randomInt(255);
+function randomCardinal(min, max) {
+  return posNeg() * random(min, max);
+}
+
+function randomCardinalInt(min, max) {
+  return posNeg() * randomInt(min, max);
+}
+
+
+function randomColour(_sticky){
+  var sticky = _sticky || 1
+  var r = randomSticky(255, sticky);
+  var g = randomSticky(255, sticky);
+  var b = randomSticky(255, sticky);
   return rgb(r,g,b);
 }
 
@@ -522,6 +544,35 @@ function tween(pos, target, speed){
  return pos;
 }
 
+function tweenOut(pos, target, duration , speed){
+  var diff = target - pos;
+  speed = speed || 5;
+  return pos + diff * (1 - Math.pow(1 - (1 / duration), speed));
+}
+
+function tweenIn(pos, target, duration , speed){
+  var diff = target - pos;
+  speed = speed || 5;
+  return pos + diff * Math.pow(1 / duration, speed);
+  //return pos + diff * (1 - Math.pow(0 - (1 / duration), speed));
+}
+
+function fancyTween(type) {
+  // t: current time, b: begInnIng value, c: change In value, d: duration
+
+	//def: 'easeOutQuad',
+  this.easeInQuad = function(x, t, b, c, d) {
+		return c*(t/=d)*t + b;
+	}
+	this.easeOutQuad = function (x, t, b, c, d) {
+		return -c *(t/=d)*(t-2) + b;
+	}
+  this.easeInSine = function (x, t, b, c, d) {
+		return -c * Math.cos(t/d * (Math.PI/2)) + c + b;
+	}
+}
+
+
 function chance(value){
  if (random(value) > value-1) return true;
 }
@@ -531,6 +582,7 @@ function posNeg(){
 }
 
 function sticky(num, clamper){
+  clamper = clamper | 1;
   return Math.round(num/clamper)*clamper;
 }
 
@@ -736,12 +788,12 @@ function colourPool(){
     if (_weight == undefined) _weight = 1;
     this.colour_list.push(_colour);
     this.weights.push(_weight);
-    this.pool  = this.generateWeighedList(this.colour_list, this.weights);
+    this.colours  = this.generateWeighedList(this.colour_list, this.weights);
     return this;
   }
 
   this.get = function(){
-    return this.pool[randomInt(this.pool.length-1)];
+    return this.colours[randomInt(this.colours.length-1)];
   }
 
   this.generateWeighedList = function(list, weight) {
@@ -762,6 +814,36 @@ function colourPool(){
   };
 
   return this;
+}
+
+function xyz(px, py, pz, pitch, roll, yaw) {
+
+    var cosa = Math.cos(yaw);
+    var sina = Math.sin(yaw);
+
+    var cosb = Math.cos(pitch);
+    var sinb = Math.sin(pitch);
+
+    var cosc = Math.cos(roll);
+    var sinc = Math.sin(roll);
+
+    var Axx = cosa*cosb;
+    var Axy = cosa*sinb*sinc - sina*cosc;
+    var Axz = cosa*sinb*cosc + sina*sinc;
+
+    var Ayx = sina*cosb;
+    var Ayy = sina*sinb*sinc + cosa*cosc;
+    var Ayz = sina*sinb*cosc - cosa*sinc;
+
+    var Azx = -sinb;
+    var Azy = cosb*sinc;
+    var Azz = cosb*cosc;
+
+    x = Axx*px + Axy*py + Axz*pz;
+    y = Ayx*px + Ayy*py + Ayz*pz;
+    z = Azx*px + Azy*py + Azz*pz;
+
+    return {x:x, y:y, z:z};
 }
 
 
@@ -871,6 +953,10 @@ function createGrid(_gw, _gh, _w, _h){
 }
 
 
+///////////////////////////////////////////
+//////////////// G R I D //////////////////
+///////////////////////////////////////////
+
 function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _starty){
 
   if (_num_items_horiz == undefined) _num_items_horiz = 1;
@@ -886,20 +972,28 @@ function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _sta
 
   this.start = {x: _startx || 0 , y: _starty || 0};
 
-  this.grid_w = _grid_w || window.innerWidth;
-  this.grid_h = _grid_h || window.innerHeight;
+  this.grid_w = _grid_w || w;
+  this.grid_h = _grid_h || h;
 
+  this.width = _grid_w || w;
+  this.height = _grid_h || h;
+  this.centre = {x: this.start.x + this.width/2, y: this.start.y + this.height/2}
+  this.grid = [];
+  this.edge = [];
   this.x = [];
   this.y = [];
+  this.rows = [];
+  this.cols = [];
+  this.pos = [];
 
   this.add = function(_horiz, _vert) {
 
     this.num_items_horiz += _horiz || 1;
     this.num_items_vert += _vert || 1;
 
-    this.spacing_x = this.grid_w / this.num_items_horiz;
-    this.spacing_y = this.grid_h / this.num_items_vert;
-
+    this.spacing_x = this.width / this.num_items_horiz;
+    this.spacing_y = this.height / this.num_items_vert;
+    this.spacing = new Vector(this.spacing_x, this.spacing_y);
     this.createGrid();
 
     return this;
@@ -915,17 +1009,53 @@ function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _sta
   }
 
   this.createGrid = function() {
+    var r = 0;
+    this.spacing_x = this.width / this.num_items_horiz;
+    this.spacing_y = this.height / this.num_items_vert;
+    this.spacing = new Vector(this.spacing_x, this.spacing_y);
+    // console.log(this.start.x);
+    // console.log(this.width);
+    this.cols = [];
 
-    for (var _y = 0; _y < this.num_items_vert; _y++) {
+    for (var y = 0; y < this.num_items_vert; y++) {
 
-      for (var _x = 0; _x < this.num_items_horiz; _x++) {
+      var c = 0;
+      var row = [];
+      //this.cols[y] = [];
+      var yy = y * this.spacing_y + this.spacing_y/2 + this.start.y;
 
-        this.x.push(_x*this.spacing_x+ this.spacing_x/2);
-        this.y.push(_y*this.spacing_y+ this.spacing_y/2);
+
+      for (var x = 0; x < this.num_items_horiz; x++) {
+
+        var edge = false;
+        var xx = x * this.spacing_x + this.spacing_x/2 + this.start.x;
+
+        //console.log(this.start.y);
+        // see if it's a point on the outside
+        if ((y == this.start.y || y == this.num_items_vert) && (x == this.start.x || x == this.num_items_horiz ) ) {
+          edge = true;
+        }
+
+        this.x.push(xx);
+        this.y.push(yy);
+        this.pos.push({row: r, col: c, x: xx, y: yy});
+        row.push({x: xx, y: yy});
+
+        this.edge.push(edge);
+        this.grid.push({row: y, col: x, x: xx, y: yy, edge: edge});
+        c++;
 
       }
+
+      this.cols[y] = {x: this.x[y], y: yy};
+      this.rows[r] = {row: r, items: this.num_items_horiz, pos: row};
+      r++;
+      //console.log(row);
     };
+    //console.log(this.rows);
     this.length = this.num_items_vert * this.num_items_horiz;
+    this.grid.push({row: this.rows, col: this.cols});
+
   }
 
   this.add(_horiz, _vert);
@@ -938,9 +1068,75 @@ function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _sta
 
 ////// EFFECTS
 
+p.drawText = function (_options){
+	if (_options.background === undefined) _options.background = "none";
+
+	options = {
+		fontSize: 	_options.fontSize 	|| 20,
+		blockSize: 	_options.blockSize 	|| 12,
+		background: _options.background,
+		colourType: _options.colourType || "all"
+	}
+
+	//console.log(options);
+
+  	this.font= options.fontSize + "px Courier";
+
+    var col = [];
+    var j = 0;
+
+    var imgData = this.getImageData(0,0,w,h);
+    console.log(imgData);
+    for(var x = 0; x < w; x += options.blockSize) {
+
+        for(var y = 0; y < h; y += options.blockSize) {
+
+            var pos = (x + y * w);
+            var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+            var b = (sourceBuffer32[pos] >> 16) & 0xff;
+            var g = (sourceBuffer32[pos] >> 8) & 0xff;
+            var r = (sourceBuffer32[pos] >> 0) & 0xff;
+
+						if (options.colourType == "red") {
+							col.push(rgb(r, 0, 0));
+						} else if (options.colourType == "green") {
+							col.push(rgb(0, r, 0));
+						} else if (options.colourType == "blue") {
+							col.push(rgb(0, 0, r));
+						} else {
+							col.push(rgb(r,g,b));
+						}
+
+        }
+
+    }
+		//console.log(options.background);
+
+		if (options.background == "none") {
+			this.background(250);
+		} else {
+			this.background(options.background);
+		}
+
+
+    var j = 0;
+    for(var x = 0; x < w; x += options.blockSize) {
+
+				for(var y = 0; y < h; y += options.blockSize) {
+
+            this.fillStyle = col[j];
+            this.fillText("*", x, y);
+            j++;
+        }
+    }
+
+}
+
 p.pixelate = function (blocksize) {
 
   if (blocksize == undefined) blocksize = 20;
+  blocksize = Math.round(blocksize);
+
   var imgData=this.getImageData(0,0,w,h);
 
   this.clearRect(0,0,w,h);
@@ -1217,6 +1413,18 @@ function triangulate(grid_w, grid_h, alpha) {
 }
 
 
+// text utilities
+
+function addZero(d){
+  if (d < 10) {
+    return "0" + d;
+  } else {
+    return d;
+  }
+}
+
+
+
 // MIRROR THE CANVAS
 
 function mirror(_side){
@@ -1265,6 +1473,39 @@ function mirror(_side){
 }
 
 
+p.mirror = function(_side){
+
+  var side = _side || 1;
+  var input = ctx.getImageData(0, 0, w, h);
+  var output = ctx.createImageData(w, h);
+  var inputData = input.data;
+  var outputData = output.data
+   // loop
+   if (side ==1) {
+   for (var y = 0; y < h-1; y += 1) {
+       for (var x = 0; x < w/2; x += 1) {
+         // RGB
+         var i = (y*w + x)*4;
+         var flip = (y*w + (w/2 - x))*4;
+         for (var c = 0; c < 4; c += 1) {
+            outputData[i+c] = inputData[flip+c];
+         }
+       }
+   }
+   this.putImageData(output, w/2, 0);
+  } else {
+    for (var y = 0; y < h/2; y += 1) {
+      for (var x = 1; x < w; x += 1) {
+        var i = (y*w + x)*4;
+        var flip = ((h/2-y)*w + x)*4;
+        for (var c = 0; c < 4; c += 1) {
+          outputData[i+c] = inputData[flip+c];
+        }
+      }
+    }
+    this.putImageData(output, 0, h/2);
+  }
+}
 
 // function mirror(_side){
 //   var side = _side || 1;
@@ -1325,75 +1566,25 @@ function removeClass(el, className) {
 }
 
 
-function ScaleImage(srcwidth, srcheight, targetwidth, targetheight, fLetterBox) {
 
-    var result = { width: 0, height: 0, fScaleToTargetWidth: true };
-
-    if ((srcwidth <= 0) || (srcheight <= 0) || (targetwidth <= 0) || (targetheight <= 0)) {
-        return result;
-    }
-
-    // scale to the target width
-    var scaleX1 = targetwidth;
-    var scaleY1 = (srcheight * targetwidth) / srcwidth;
-
-    // scale to the target height
-    var scaleX2 = (srcwidth * targetheight) / srcheight;
-    var scaleY2 = targetheight;
-
-    // now figure out which one we should use
-    var fScaleOnWidth = (scaleX2 > targetwidth);
-    if (fScaleOnWidth) {
-        fScaleOnWidth = fLetterBox;
-    }
-    else {
-       fScaleOnWidth = !fLetterBox;
-    }
-
-    if (fScaleOnWidth) {
-        result.width = Math.floor(scaleX1);
-        result.height = Math.floor(scaleY1);
-        result.fScaleToTargetWidth = true;
-    }
-    else {
-        result.width = Math.floor(scaleX2);
-        result.height = Math.floor(scaleY2);
-        result.fScaleToTargetWidth = false;
-    }
-    result.targetleft = Math.floor((targetwidth - result.width) / 2);
-    result.targettop = Math.floor((targetheight - result.height) / 2);
-
-    return result;
-}
 
 
 
 var mousePressed = 0;
 var mouseReleased = 0;
+var mouseDown = 0;
+
 document.onmousedown = function() {
   mousePressed = 1;
-  //window.mousePressed();
+  mouseDown = 1;
 }
 document.onmouseup = function() {
   mousePressed = 0;
   mouseReleased = 1;
-  //window.mouseup();
+  mouseDown = 0;
 }
 
-var mouseSpeedX = 0,
-mouseSpeedX = 0,
-mouseX = 0,
-mouseY = 0,
-lastMouseX = 0,
-lastMouseY = 0,
-oldMouseX = 0,
-oldMouseY = 0,
-frameRate = 60,
-frameCount = 0,
-frameNumber = 0,
-lastUpdate = Date.now(),
-mouseDown = false,
-mouseMoved = false;
+
 
 function loop() {
 
@@ -1445,10 +1636,6 @@ function loop() {
 }());
 
 
-
-
-function init() {
-
 window.addEventListener('mousemove', function(e) {
   oldMouseX = mouseX;
   oldMouseY = mouseY;
@@ -1456,10 +1643,14 @@ window.addEventListener('mousemove', function(e) {
   mouseY = e.clientY;
   mouseSpeedX = mouseX - oldMouseX;
   mouseSpeedY = mouseX - oldMouseX;
-  lastMouseX = oldMouseX = mouseX;
-  lastMouseY = oldMouseY = mouseY;
+  // lastMouseX = oldMouseX = mouseX;
+  // lastMouseY = oldMouseY = mouseY;
   mouseMoved = true;
 });
+
+function init() {
+
+
 
 window.addEventListener('mousedown', function(e){mouseDown =true; if(typeof onMouseDown == 'function') onMouseDown() ;});
 window.addEventListener('mouseup', function(e){mouseDown = false;if(typeof onMouseUp == 'function') onMouseUp()  ;});
@@ -1470,6 +1661,67 @@ loop();
 }
 
 window.addEventListener('load',init);
+
+
+///////////////// UTILITIES
+
+function ScaleImage(srcwidth, srcheight, targetwidth, targetheight, fLetterBox) {
+
+    var result = { width: 0, height: 0, fScaleToTargetWidth: true };
+
+    if ((srcwidth <= 0) || (srcheight <= 0) || (targetwidth <= 0) || (targetheight <= 0)) {
+        return result;
+    }
+
+    // scale to the target width
+    var scaleX1 = targetwidth;
+    var scaleY1 = (srcheight * targetwidth) / srcwidth;
+
+    // scale to the target height
+    var scaleX2 = (srcwidth * targetheight) / srcheight;
+    var scaleY2 = targetheight;
+
+    // now figure out which one we should use
+    var fScaleOnWidth = (scaleX2 > targetwidth);
+    if (fScaleOnWidth) {
+        fScaleOnWidth = fLetterBox;
+    }
+    else {
+       fScaleOnWidth = !fLetterBox;
+    }
+
+    if (fScaleOnWidth) {
+        result.width = Math.floor(scaleX1);
+        result.height = Math.floor(scaleY1);
+        result.fScaleToTargetWidth = true;
+    }
+    else {
+        result.width = Math.floor(scaleX2);
+        result.height = Math.floor(scaleY2);
+        result.fScaleToTargetWidth = false;
+    }
+    result.targetleft = Math.floor((targetwidth - result.width) / 2);
+    result.targettop = Math.floor((targetheight - result.height) / 2);
+
+    return result;
+}
+
+
+// date utils
+
+function getDayOfWeek(_date){
+var d = new Date(_date);
+var weekday = new Array(7);
+weekday[0] =  "Sunday";
+weekday[1] = "Monday";
+weekday[2] = "Tuesday";
+weekday[3] = "Wednesday";
+weekday[4] = "Thursday";
+weekday[5] = "Friday";
+weekday[6] = "Saturday";
+
+return weekday[d.getDay()];
+}
 
 
 // loadscript utility

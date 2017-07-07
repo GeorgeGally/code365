@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+    <script language="javascript" src="../js/creative_coding.js"></script>
+
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/vector_particles.js"></script>
+  <script language="javascript" src="../js/three.min.js"></script>
+
+  <script language="javascript" src="../js/threejs/CanvasRenderer.js"></script>
+  <script language="javascript" src="../js/threejs/Projector.js"></script>
+  <script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body style="background: #333">
+
+<script>
+var engine = new particleEngine(20);
+
+var ctx = createHiddenCanvas('canvas1');
+var canvas = document.getElementById('canvas1');
+
+// canvas.width = 640;
+// canvas.height = 360;
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+
+var block_size = 4;
+var boxes = [];
+var resolution = 60;
+var resolution_x = (width)/resolution;
+var resolution_y = (height)/resolution;
+
+var x_offset = (resolution_x *block_size)/2;
+var y_offset = (resolution_y *block_size)/2;
+
+var geometry;
+var texture = new THREE.Texture(canvas);
+
+
+//var camera = new THREE.PerspectiveCamera( 70, aspect, 0.1, 1000 );
+camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 2, 2000 );
+
+//var renderer = new THREE.CanvasRenderer();
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+    //renderer.setClearColor( 0xefffff );
+    renderer.setClearColor( "#000000" );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+
+    var block_gap = block_size;
+    geometry = new THREE.BoxGeometry( block_gap, block_gap, block_gap);
+    geometry.dynamic = true;
+    var texture1 = [new THREE.Vector2(0, .666), new THREE.Vector2(.5, .666), new THREE.Vector2(.5, 1), new THREE.Vector2(0, 1)];
+    var texture = new THREE.VideoTexture(canvas, w/100, h/4);
+    var material = new THREE.MeshBasicMaterial( { map: texture } );
+    //material.shading = THREE.SmoothShading;
+    //scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+    controls = new THREE.OrbitControls( camera, renderer.domElement );
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.25;
+    controls.enableZoom = false;
+
+    camera.position.z = 100;
+    //camera.near = 20;
+    //camera.far  = 95;
+    //scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+    //var grid = new THREE.Object3d();
+
+    var num = 0;
+
+    for (var y = 0; y < resolution_y; y++) {
+
+      for (var x = 0; x < resolution_x; x++) {
+
+        var pos = x+y*x;
+        boxes[num] = new THREE.Mesh( geometry, material );
+
+        var xx = (x * block_size) - x_offset;
+        var yy = (y * block_size) - y_offset;
+
+        boxes[num].position.x = xx;
+        boxes[num].position.y = yy;
+        boxes[num].position.z = -10;
+        scene.add( boxes[num] );
+        num++;
+
+      }
+
+    }
+
+    //console.log(boxes.length);
+    //scene.add(grid);
+
+
+function draw(){
+
+      ctx.background(250);
+      ctx.fillStyle = "red";
+      var x = width/2 + Math.sin(frameCount/10)*width/2;
+      ctx.fillRect(x, 0, x, h);
+      var y = height/2 + Math.cos(frameCount/10)*height/2;
+      // var x = w/2 + Math.sin(frameCount/10)*w/2;
+      ctx.fillStyle = "orange";
+      ctx.fillEllipse(x, y, 100, 100);
+      if (boxes.length>0) getColours();
+      //texture.needsUpdate = true;
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.format = THREE.RGBFormat;
+      renderer.autoClear = false;
+
+      ctx.fillStyle = "black";
+      ctx.fillEllipse(w/2, h/2, x/2, x/2);
+      renderer.clear();
+      renderer.render(scene, camera); //Same as how you always render a 3js scene
+}
+
+
+
+
+function getColours(){
+
+  //hidden_ctx.drawImage(video,0,0,video.width, video.height);
+	sample = ctx.getImageData(0, 0, w, h);
+	var buffer = new Uint32Array(sample.data.buffer);
+
+  var num = 0;
+
+	for (var y = canvas.height; y > 0 ; y-=resolution) {
+
+		for (var x = canvas.width; x > 0 ; x-=resolution) {
+
+			var pos = x + y * canvas.width;
+			var r1 = buffer[pos] >> 0 & 0xff;
+			var g1 = buffer[pos] >> 8 & 0xff;
+			var b1 = buffer[pos] >> 16 & 0xff;
+
+      var pos2 = x + resolution/2 + (y + resolution/2) * canvas.width;
+			var r2 = buffer[pos2] >> 0 & 0xff;
+			var g2 = buffer[pos2] >> 8 & 0xff;
+			var b2 = buffer[pos2] >> 16 & 0xff;
+
+      var r = (r1 + r2) / 2;
+      var g = (g1 + g2) / 2;
+      var b = (b1 + b2) / 2;
+
+
+      var bright = brightness(r,g,b);
+      var bb = map(brightness(r,g,b), 0, 100, 1, 10);
+      // boxes[num].scale.z = bb;
+      boxes[num].scale.z = bb;
+      num++;
+
+    }
+  }
+
+}
+
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+ctx2.font="10px Arial";
+var grid = new particleEngine(10, 10);
+
+var hit_dist = 140;
+var sz = 5;
+var tween_speed = 10;
+
+ctx.font="12px Arial";
+
+console.log(grid);
+
+for (var i = 0; i < grid.length; i++) {
+  var g = grid.particles[i];
+  var g2 = grid.particles[i];
+  g.sz = sz;
+  g.start_sz = sz;
+  if(chance(4)) {
+    g.on = true;
+    g.open = false;
+  } else {
+    g.on = false;
+    g.open = true;
+
+  }
+}
+
+function draw() {
+  ctx.background(0);
+  ctx2.clearRect(0, 0, w, h);
+  ctx.fillStyle = "white";
+  ctx2.fillStyle = "black";
+
+  if (chance(50)) newPosX()
+  //if (chance(50)) newPosY()
+  //if (chance(50)) shuffleGrid();
+  moveGrid();
+  drawGrid();
+
+}
+
+function newPosX(){
+  var chosen_row = randomInt(grid.grid.rows.length-1);
+  //chosen_row = 1
+  var row = grid.grid.rows[chosen_row];
+
+  console.log("new row: " + chosen_row);
+  console.log(grid.grid.rows);
+  var y = row.pos[0].y;
+  var x = w;
+  var rows = grid.grid.rows.length+1;
+
+  //var num_cols = grid.grid.num_items_vert + 1;
+  grid.add(x, y);
+  var p = grid.last;
+  p.row = chosen_row;
+  //console.log(p.row);
+  p.target.x = x;
+  p.target.y = y;
+  var pos = {x: x, y: y};
+  var pp = {pos: pos};
+  var new_length = row.pos.length;
+  //row.pos[row.pos.length] = pp;
+  // wanted to insert in middle
+  var middle = Math.round(row.pos.length/2);
+  row.pos.insert(middle, pp);
+  console.log("new_length: " + new_length);
+  var count = 0;
+  var spacing = w/(new_length);
+  for (var i = 0; i < grid.particles.length; i++) {
+    var g = grid.particles[i];
+
+    if (g.row == chosen_row) {
+      //console.log(g.row);
+      g.target.x = count * spacing + spacing/2;
+      //console.log(g.target.x);
+      count++;
+    }
+
+  }
+
+}
+
+
+Array.prototype.insert = function ( index, item ) {
+    this.splice( index, 0, item );
+};
+
+function newPosY(){
+
+  var chosen_col = randomInt(grid.grid.cols.length-1);
+  chosen_col = 1
+  var col = grid.grid.cols[chosen_col];
+  console.log(col);
+  console.log("new col: " + chosen_col);
+  //console.log(grid.grid.cols);
+  var y = h;
+  var x = col.x;
+  var cols = grid.grid.cols.length+1;
+
+  //var num_cols = grid.grid.num_items_vert + 1;
+  grid.add(x, y);
+  var p = grid.last;
+  p.col = chosen_col;
+  //console.log(p.row);
+  p.target.x = x;
+  p.target.y = y;
+  var pos = {x: x, y: y};
+  //var pp = {pos: pos};
+  var new_length = grid.grid.cols.length;
+  //row.pos[row.pos.length] = pp;
+  // wanted to insert in middle
+  var middle = Math.round(grid.grid.cols.length/2);
+  grid.grid.cols.insert(middle, pos);
+  console.log("new_length: " + new_length);
+  var count = 0;
+  var spacing = w/(new_length);
+  for (var i = 0; i < grid.particles.length; i++) {
+    var g = grid.particles[i];
+
+    if (g.col == chosen_col) {
+      //console.log(g.row);
+      g.target.y = count * spacing + spacing/2;
+      //console.log(g.target.x);
+      count++;
+    }
+
+  }
+}
+
+function shuffleGrid(){
+  // if (chance(5)) newPosX()
+  // for (var i = 0; i < grid.length; i++) {
+  //   var g = grid.particles[i];
+  //   if (Math.round(g.pos.x) == Math.round(g.target.x) && Math.round(g.pos.y) == Math.round(g.target.y) && chance(10)) newPosX(g);
+  //   if (Math.round(g.pos.x) == Math.round(g.target.x) && Math.round(g.pos.y) == Math.round(g.target.y) && chance(10)) newPosY(g);
+  //   }
+}
+
+
+function moveGrid(){
+  for (var i = 0; i < grid.length; i++) {
+    var g = grid.particles[i];
+    g.pos.x = tween(g.pos.x, g.target.x, tween_speed);
+    g.pos.y = tween(g.pos.y, g.target.y, tween_speed);
+  }
+}
+
+function drawGrid(){
+  for (var i = 0; i < grid.length; i++) {
+    var g = grid.particles[i];
+
+    //if(g.on) {
+    //     if (Math.round(g.pos.x) == Math.round(g.target.x) && Math.round(g.pos.y) == Math.round(g.target.y)) {
+    //   ctx.fillStyle = rgba(255);
+    //   ctx.fillEllipse(g.target.x, g.target.y, g.sz*2, g.sz*2);
+    // } else {
+      ctx.fillStyle = "white";
+      //ctx.fillText(g.me, g.pos.x, g.pos.y + 20);
+      ctx.LfillEllipse(g.pos.x, g.pos.y, g.sz, g.sz);
+    //y}
+
+    // for (var j = i+1; j < grid.length-1; j++) {
+    //   var g2 = grid.particles[j];
+    //   if (dist(g.pos.x, g.pos.y, g2.pos.x, g2.pos.y) < 60) {
+    //     //console.log("obj");
+    //     ctx.strokeStyle = "white";
+    //     ctx.line(g.pos.x, g.pos.y, g2.pos.x, g2.pos.y)
+    //     ctx.fillStyle = "red";
+    //     ctx.fillEllipse(g2.pos.x, g2.pos.y, 4, 4);
+    //     // ctx.fillStyle = "red";
+    //     // ctx.fillEllipse(g.pos.x, g.pos.y, g.sz, g.sz);
+    //   }
+    // }
+  }
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>

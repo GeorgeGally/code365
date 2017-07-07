@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.font = '8px Courier';
+var grid_w = 100;
+var grid_h = 30;
+var grid = createGrid(grid_w, grid_h);
+var mode = 0;
+
+var blocks = new particleEngine(grid.length-1);
+var row = 0;
+for (var i = 0; i < blocks.particles.length; i++) {
+  var b = blocks.particles[i];
+  b.position = new Vector(randomSticky(w,10), grid[i].y);
+  b.speed = new Vector(0, -2);
+  b.c = rgb(0);
+  // b.c =  (i%2 == 0) ? rgb(0): rgb(255);
+  b.w = w/grid_w;
+  b.h = h/grid_h;
+  b.s = 0;
+  b.txt = "";
+}
+ctx.background(0);
+
+function draw(){
+  ctx.background(0);
+  blocks.draw();
+  for (var i = 0; i < blocks.particles.length; i++) {
+    var b = blocks.particles[i];
+    if(b.pos.y > h - 2) {
+      b.txt = ""
+    }
+
+    if (b.txt.length > 20) b.txt = "";
+
+    if(b.pos.y > h - 40) {
+      var _s = sticky(Mic.mapSound(b.me, blocks.particles.length, 20, 100), 10);
+      b.txt += _s;
+    b.speed.y = (2 + _s/40) * -1;
+    //  if(_s < 80) {
+        //b.c = rgb(150);
+        //b.on = !b.on;
+      // } else if(_s < 200) {
+      //     b.c = rgb(_s);
+      //} else {
+        //b.c = rgb(255, 0, 0);
+          // b.c = rgb(_s);
+          b.c = rgb(255);
+    //  }
+    }
+
+    if (chance(1000)) mode = randomInt(2);
+    //if (mode == 0) {
+    //ctx.centreFillRect(b.position.x, b.position.y, b.w-1, b.h-1);
+      //ctx.fillText(b.txt, b.pos.x+1 -100, b.pos.y);
+    // } else {
+    if (chance(100)) b.on = !b.on;
+
+    //
+    ctx.fillStyle = b.c;
+
+  //   if (b.on) {
+  //   ctx.fillText(Math.round(_s), b.pos.x+1 -50, b.pos.y);
+  // } else {
+    ctx.fillRect(b.pos.x, b.pos.y, 4, 2);
+  //}
+    //ctx.fillStyle = rgb(0);
+
+
+  }
+}
+
+
+</script>
+<script language="javascript" src="../js/mic.js"></script>
+</body>
+
+</html>

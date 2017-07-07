@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/engine.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<script>
+
+var ctx = createCanvas("canvas1");
+engine.border = true;
+console.log(engine.grid);
+
+function draw() {
+  ctx.background(255, 0.05);
+  ctx.fillStyle = rgba(0, 0.9);
+
+  if(chance(100)) {
+    engine.showParticles(randomInt(200), false);
+    resizeParticles();
+  }
+  engine.update();
+  //engine.draw();
+  for (var i = 0; i < engine.length; i++) {
+    var p = engine.particles[i];
+    var g = engine.grid.pos[i];
+    ctx.fillStyle = "black";
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+    ctx.fillStyle = "red";
+    ctx.fillEllipse(g.x, g.y, 10, 10);
+
+  }
+
+}
+
+
+function moveParticles(p){
+  p.target.x += p.speed.x;
+  p.target.y += p.speed.y;
+}
+
+var springs = 0;
+
+function resizeParticles(){
+  if (chance(2)) springs = !springs;
+  console.log(springs);
+  for (var i = 0; i < engine.length; i++) {
+    var sz = sticky(random(20, 60),20);
+    var p = engine.particles[i];
+    p.target_sz = sz;
+    p.speed.x = random(-2, 2);
+    p.speed.y = random(-2, 2);
+    p.tween = false;
+    p.bounce = false;
+    p.isSpring = springs;
+  }
+}
+
+</script>
+
+
+</body>
+
+</html>

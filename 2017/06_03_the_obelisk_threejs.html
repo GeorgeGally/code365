@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>WebGL 3D Model Viewer Using three.js</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script language="javascript" src="../js/creative_coding.js"></script>
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/particle_engine.js"></script>
+    <script src="../js/three.js"></script>
+    <script src="../js/Detector.js"></script>
+    <script src="../js/threejs/controls/OrbitControls.js"></script>
+    <script src="../js/threejs/OBJLoader.js"></script>
+    <!-- <script src="MTLLoader.js"></script> -->
+    <script language="javascript" src="../js/threejs/CanvasRenderer.js"></script>
+    <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+
+    <script>
+    var ctx = createHiddenCanvas('canvas1');
+    var canvas = document.getElementById('canvas1');
+        if (!Detector.webgl) {
+            Detector.addGetWebGLMessage();
+        }
+
+        var container;
+        var circs = [];
+
+        var camera, controls, scene, renderer;
+        var texture, lighting, ambient, keyLight, fillLight, backLight;
+
+        var windowHalfX = window.innerWidth / 2;
+        var windowHalfY = window.innerHeight / 2;
+
+        init();
+
+        var j = 0;
+        var r = width/2-10;
+        for (var _y= 10; _y < h-10; _y+=10){
+
+          for (var _x= 10; _x<w-10; _x+=r){
+
+            var circle =  {
+              r: r,
+              me: j,
+              x: _x,
+              y: _y,
+              myfill: rgb(255, 255, 255)
+            }
+            circs.push(circle);
+          }
+
+          j++;
+          //console.log(j)
+         }
+
+
+
+
+        function init() {
+
+            container = document.createElement('div');
+            document.body.appendChild(container);
+
+            /* Camera */
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+            camera.position.x = 2;
+            camera.position.y = 0.4;
+            camera.position.z = -3.3;
+
+            /* Scene */
+
+            scene = new THREE.Scene();
+            lighting = false;
+
+            ambient = new THREE.AmbientLight(0xffffff, 1.0);
+            scene.add(ambient);
+
+            keyLight = new THREE.DirectionalLight(new THREE.Color('hsl(30, 100%, 75%)'), 1.0);
+            keyLight.position.set(-100, 0, 100);
+
+            fillLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 100%, 75%)'), 0.75);
+            fillLight.position.set(100, 0, 100);
+
+            backLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            backLight.position.set(100, 0, -100).normalize();
+
+        /* Model */
+
+        var manager = new THREE.LoadingManager();
+        manager.onProgress = function ( item, loaded, total ) {
+          console.log( item, loaded, total );
+        };
+
+        var loader = new THREE.OBJLoader( manager );
+        loader.load( '../models/washington.obj', function ( geometry ) {
+        // var loader = new THREE.JSONLoader( manager );
+        // loader.load( '../models/oblisk.json', function ( geometry ) {
+          console.log(geometry);
+          var geo = geometry;
+          //geo.computeFaceNormals();
+
+        texture = new THREE.VideoTexture(canvas);
+        // texture.mapping = THREE.UVMapping;
+        // texture.mapping = THREE.CubeReflectionMapping;
+        //   texture.warpS = THREE.RepeatWrapping;
+        //   texture.warpT = THREE.RepeatWrapping;
+        var material = new THREE.MeshBasicMaterial( { map: texture } );
+        material.map.minFilter = THREE.LinearFilter;
+        //material.map.magFilter = THREE.NearestFilter;
+
+        var mesh = new THREE.Mesh(geometry, material);
+
+        geometry.scale.x = 1.9;
+        geometry.scale.y = 1.9;
+        geometry.scale.z = 1.9;
+
+        scene.add(mesh);
+        })
+
+      // model
+      // var loader = new THREE.OBJLoader( manager );
+      // loader.load( '../models/obeliskblend3.obj', function ( object ) {
+      //   object.scale.x = 1.9;
+      //   object.scale.y = 1.9;
+      //   object.scale.z = 1.9;
+      //   object.rotation.y = 90;
+      //   object.position.y = -1;
+      //   object.castShadow = true;
+      //   // console.log(object);
+      //   var geo = object.children[0];
+      //   console.log(geo);
+      //   texture = new THREE.VideoTexture(canvas);
+      //   // texture.mapping = THREE.UVMapping;
+      //   // texture.mapping = THREE.CubeReflectionMapping;
+      //   // texture.warpS = THREE.RepeatWrapping;
+      //   // texture.warpT = THREE.RepeatWrapping;
+      //   //texture.needsUpdate = true;
+      //
+      //   var material = new THREE.MeshBasicMaterial( { map: texture } );
+      //   material.shading = THREE.SmoothShading;
+      //   material.map.minFilter = THREE.LinearFilter;
+      //   material.map.magFilter = THREE.NearestFilter;
+      //   setMaterial(object, material);
+      //   var testingMesh = new THREE.Mesh(geo, material);
+      //   scene.add(testingMesh);
+      //
+      //   var testGeo = new THREE.BoxGeometry(10, 10, 10);
+      //   var testMat = new THREE.MeshBasicMaterial();
+      //   testMat.map = texture;
+      //   var testMesh = new THREE.Mesh(testGeo, testMat);
+      //   // scene.add(testMesh);
+      // })
+
+      /* Renderer */
+
+      renderer = new THREE.WebGLRenderer();
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(new THREE.Color("hsl(0, 0%, 10%)"));
+
+      container.appendChild(renderer.domElement);
+
+      /* Controls */
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.25;
+      controls.enableZoom = false;
+
+      /* Events */
+
+      window.addEventListener('resize', onWindowResize, false);
+      window.addEventListener('keydown', onKeyboardEvent, false);
+
+    }
+
+    // var setMaterial = function(object, material) {
+    //   //object.material = material;
+    //   //object.children[0].material.materials[0]
+    //
+    //     for (var i = 0; i < object.children[0].material.materials.length; i++) {
+    //     //for (var i = 0; i < object.children[0].length; i++) {
+    //       //setMaterial(object.children[i], material);
+    //       object.children[0].material.materials[i] = material;
+    //       //object.children[i].material = material;
+    //     }
+    //
+    // }
+
+        function onWindowResize() {
+
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+        }
+
+        function onKeyboardEvent(e) {
+
+            if (e.code === 'KeyL') {
+
+                lighting = !lighting;
+
+                if (lighting) {
+
+                    ambient.intensity = 0.25;
+                    scene.add(keyLight);
+                    scene.add(fillLight);
+                    scene.add(backLight);
+
+                } else {
+
+                    ambient.intensity = 1.0;
+                    scene.remove(keyLight);
+                    scene.remove(fillLight);
+                    scene.remove(backLight);
+
+                }
+
+            }
+
+        }
+
+
+        function draw(){
+
+          ctx.background(0, 0, 0);
+        //   // ctx.fillStyle = "red";
+        //   // ctx.fillRect(0, 0, w/4, h/4)
+        //   ctx.strokeStyle = "red";
+        //   ctx.lineWidth = 1;
+        //   var yy = h/2 + Math.sin(frameCount/10) * h/2;
+        //   ctx.line(0, yy, w, yy)
+        // //   for (var i=0; i<circs.length; i++){
+        // //
+        // //     var p = circs[i];
+        // //     vol = Sound.mapSound(i, circs.length, 0, 5);
+        // //     p.r = vol;
+        // //
+        // //     // if (red) {
+        // //     //   ctx.fillStyle= rgb(2*vol, 0, 0);
+        // //     // } else {
+        // //     ctx.fillStyle= rgb(255-vol);
+        // //     p.y -= 0.1;
+        // //     if(p.y < 0) p.y = h;
+        // //     //console.log(p);
+        // //     // ctx.fillRect(p.x, p.y, r, vol);
+        // //     ctx.fillRect(0, p.y, w, vol/10);
+        // // }
+        // //scene.rotation.y+=0.01;
+        // //console.log(camera.position);
+        ctx.background(0, 0, 0);
+        // ctx.fillStyle = "red";
+        // ctx.fillRect(0, 0, w/4, h/4)
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 1;
+        var yy = h/2 + Math.sin(frameCount/10) * h/2;
+        ctx.line(0, yy, w, yy)
+        texture.needsUpdate = true;
+        controls.update();
+
+        renderer.render(scene, camera);
+
+    }
+
+
+    </script>
+ <script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+</html>

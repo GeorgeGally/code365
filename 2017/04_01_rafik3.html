@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<title>Code365</title>
+<head>
+
+    <meta charset="utf-8">
+
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="../js/creative_coding.js"></script>
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/vector_particles.js"></script>
+
+
+    <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var block_size = 120;
+var maxballs = 500;
+var balls = [];
+var engine = new particleEngine();
+//ctx.lineWidth = 0.1;
+var gridx = 20;
+var gridy = 1;
+var number_of_balls = gridx * gridy;
+var grid = new Grid(gridx, gridy);
+
+var data = [20, 60, 20, 80, 40, 40, 100];
+var total = 360;
+
+var colours = new colourPool()
+    .add('#FFFFFF', 3)
+    .add('#ECECEC', 2)
+    .add('#CCCCCC', 2)
+    .add('#333333', 1)
+    .add('#0095a8', 4)
+    .add('#00616f', 4)
+    .add('#FF3300')
+    .add('#FF6600')
+    ;
+
+
+console.log(grid);
+for (var i = 0; i < number_of_balls; i++) {
+  engine.addParticle(grid.x[i] , grid.y[i], rgb(0), i);
+  var p = engine.last;
+  //console.log(p);
+  p.speed = new Vector(0, random(-5,-1));
+  p.sz = sticky(data[randomInt(data.length-1)], 20);
+  total += p.sz;
+  // p.pos.x = grid.x[i];
+  // p.pos.y = grid.y[i];
+  //p.c = colours.get();
+  // console.log(c);
+  p.c = rgba(randomInt(255), random(1));
+  p.c2 = colours.get();
+}
+
+var particles = engine.particles;
+//console.log(particles);
+
+ctx.background(0);
+
+function update(){
+
+  particles = engine.particles;
+  for (var i = 0; i < particles.length; i++) {
+    p = particles[i];
+    shiftMe(p);
+    p.pos.x += 1;
+    if (p.pos.x>w) p.pos.x = -p.sz;
+  } // end for loop
+
+}
+
+
+function draw(){
+
+  ctx.background(0);
+
+  update();
+  //engine.moveParticles();
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = particles[i];
+    ctx.strokeStyle = "white";
+    ctx.line(p.pos.x, 0, p.pos.x, h);
+    ctx.fillStyle = p.c;
+    ctx.fillRect(p.pos.x, p.pos.y - block_size/2, p.sz, block_size);
+  }
+
+  highlight();
+
+  //pixelate();
+}
+
+function shiftMe(p){
+  for (var i = p.me+1; i < engine.particles.length; i++) {
+    var p2 = engine.particles[i];
+    if (p.pos.x < p2.pos.x+p2.sz) p.pos.x +=0.1;
+  }
+}
+
+var x = random(w/4, w/2 + w/4);
+var highlight_colour = colours.get();
+function highlight(){
+  ctx.fillStyle = highlight_colour;
+  ctx.fillRect(x, 0, 200, h);
+}
+
+</script>
+
+
+</body>
+
+</html>

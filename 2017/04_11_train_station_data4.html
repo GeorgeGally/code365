@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+ctx2.font="12px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/train_data.csv';
+var engine = new particleEngine(0);
+engine.border = false;
+engine.last.pos.x = -100;
+var movements = [];
+var sticker = 20;
+var max = 6;
+
+d3.csv(url, function(error, data) {
+
+  if (error) console.log(error);
+
+  movements = data;
+
+  // for (var i = 0; i < data.length; i++) {
+  //
+  //   var d = data[i]
+  // }
+
+
+});
+
+////////////////
+
+var counter = 0;
+var bar_ht = 5;
+var max_wi = 0;
+var max_wo = 0;
+var max_ei = 0;
+var max_eo = 0;
+
+var start_time = Date.now(); // set starttime
+console.log(start_time);
+
+var wi = wo = ei = eo = 0;
+var wi_bar = wo_bar = ei_bar = eo_bar = 0;
+var left_margin = 10;
+
+
+function draw() {
+
+  ctx.background(0, 0.05);
+  if (movements.length > 0) {
+
+    var d = movements[counter];
+    //console.log(d.minuut);
+
+    ctx.fillStyle = "#0f94c7";
+
+    drawGraphs(d);
+
+    addParticles(d);
+
+
+  }
+
+  counter++;
+  engine.update();
+  drawParticles();
+
+
+
+}
+
+function drawParticles(){
+  for (var i = engine.particles.length-1; i >=0; i--) {
+    p = engine.particles[i];
+    ctx.fillStyle = p.c;
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+    if(p.pos.x > w || p.pos.x < 0) {
+      engine.delete(p.me)
+    }
+  }
+}
+
+function addParticles(d){
+  // West_in
+    engine.add(1, sticky(random(h), sticker));
+    var p = engine.last;
+    p.dir.x = 1;
+    //p.sz = d.West_in;
+    p.c = "white";
+    p.sz = map(d.West_in, 0, 60, 1, max);
+    //p.target.x = -10;
+    p.tween = false;
+    p.speed.x = (11 - p.sz)/2;
+    p.speed.y = 0;
+
+  // West_uit
+    engine.add(w, sticky(random(h), sticker));
+    var p = engine.last;
+    p.dir.x = -1;
+    p.c = "white";
+    p.sz = map(d.West_uit, 0, 60, 1, max);
+    //p.sz = d.West_uit/5;
+    p.tween = false;
+    p.speed.x = (11 - p.sz)/2;
+    p.speed.y = 0;
+
+    // West_in
+    engine.add(1, sticky(random(h), sticker));
+    var p = engine.last;
+    p.dir.x = 1;
+    p.c = "white";
+    p.sz = map(d.Oost_in, 0, 60, 1, max);
+    //p.target.x = -10;
+    p.tween = false;
+    p.speed.x = (11 - p.sz)/2;
+    p.speed.y = 0;
+
+    // West_uit
+    engine.add(w, sticky(random(h), sticker));
+    var p = engine.last;
+    p.dir.x = -1;
+    p.c = "white";
+    p.sz = map(d.Oost_uit, 0, 60, 1, max);
+    p.tween = false;
+    p.speed.x = (11 - p.sz)/2;
+    p.speed.y = 0;
+}
+
+function drawGraphs(d){
+
+  ctx2.clearRect(0, 0, w, h);
+  ctx2.fillStyle = "black";
+  ctx2.fillRect(left_margin, h-170, 120, 15);
+  ctx2.fillStyle = "white";
+
+  ctx2.fillText(d.datum + " " + addZero(d.uur) + ":" + addZero(d.minuut), left_margin + 2, h - 160);
+
+  var wi = map(d.West_in, 0, 200, 0, w/4);
+  wi_bar = tween(wi_bar, wi, 40);
+  if (wi > max_wi) max_wi = wi;
+  ctx2.fillStyle = "white";
+  ctx2.fillRect(left_margin, h-140, max_wi, bar_ht);
+  ctx2.fillStyle = "#0f94c7";
+  ctx2.fillRect(left_margin, h-140, wi, bar_ht);
+  ctx2.fillStyle = "white";
+  ctx2.fillText(d.West_in, left_margin, h-120);
+
+  var wo = map(d.West_uit, 0, 200, 0, w/4);
+  wo_bar = tween(wo_bar, wo, 40);
+  if (wo > max_wo) max_wo = wo;
+  ctx2.fillStyle = "white";
+  ctx2.fillRect(left_margin, h-110, max_wo, bar_ht);
+  ctx2.fillStyle = "#0f94c7";
+  ctx2.fillRect(left_margin, h-110, d.West_uit, bar_ht);
+  ctx2.fillStyle = "white";
+  ctx2.fillText(d.West_uit, left_margin, h-90);
+
+  var ei = map(d.Oost_in, 0, 200, 0, w)/4;
+  ei_bar = tween(ei_bar, ei, 40);
+  if (ei > max_ei) max_ei = ei;
+  ctx2.fillStyle = "white";
+  ctx2.fillRect(left_margin, h-80, max_ei, bar_ht);
+  ctx2.fillStyle = "#0f94c7";
+  ctx2.fillRect(left_margin, h-80, ei, bar_ht);
+  ctx2.fillStyle = "white";
+  ctx2.fillText(d.Oost_in, left_margin, h-60);
+
+  var eo = map(d.Oost_uit, 0, 200, 0, w/4);
+  eo_bar = tween(eo_bar, eo, 40);
+  if (eo > max_eo) max_eo = eo;
+  ctx2.fillStyle = "white";
+  ctx2.fillRect(left_margin, h-50, max_eo, bar_ht);
+  ctx2.fillStyle = "#0f94c7";
+  ctx2.fillRect(left_margin, h - 50, ei, bar_ht);
+  ctx2.fillStyle = "white";
+  ctx2.fillText(d.Oost_uit, left_margin, h - 30);
+  counter = (counter + 1);
+
+}
+
+
+</script>
+
+</body>
+
+</html>

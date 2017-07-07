@@ -58,7 +58,7 @@ for (var _y= 10; _y < h-10; _y+=10){
 
 var scene = new THREE.Scene();
 var aspect = window.innerWidth / window.innerHeight;
-var camera = new THREE.PerspectiveCamera( 70, aspect, 1, 1000 );
+var camera = new THREE.PerspectiveCamera( 70, aspect, 1, 2000 );
 //camera = new THREE.PerspectiveCamera(70, width / height, 1, 1000);
 var d=0, t=0;
 
@@ -176,7 +176,7 @@ function Mode2(){
 }
 
 
-var settings = QuickSettings.create();
+var settings = QuickSettings.create(0, 100);
 // QuickSettings.useExtStyleSheet();
 settings.setGlobalChangeHandler(draw);
 //settings.addRange(title, min, max, value, step, callback);

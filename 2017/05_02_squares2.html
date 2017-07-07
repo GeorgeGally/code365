@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(0);
+ctx.lineWidth = 2;
+
+var num_stripes = 10;
+var blocksize = 50;
+
+var grid_w = Math.round(w/blocksize);
+var grid_h = Math.round(h/blocksize);
+var grid = createGrid(grid_w, grid_h, w, h);
+var block_size = w/grid_w;
+//var start = new Vector(200,200);
+
+var blocks = [];
+for (var i = 0; i < grid.length; i++) {
+  blocks[i] = new Block(block_size);
+}
+
+
+//console.log(grid);
+
+function draw() {
+
+  ctx.background(255);
+  ctx.strokeStyle = rgb(0);
+  for (var i = 0; i < grid.length; i++) {
+    blocks[i].drawBlock(grid[i].x, grid[i].y);
+  }
+
+}
+
+
+function Block(block_size){
+  this.block_size = block_size;
+  this.pos = [];
+  this.spacing = 8;
+  var count = 0;
+
+  for (var x1 = 0; x1 < this.block_size; x1+=this.spacing) {
+
+  for (var y1 = 0; y1 < this.block_size; y1+=this.spacing) {
+      if (chance(2)) {
+        this.pos.push(1);
+      } else {
+        this.pos.push(0);
+      }
+
+  }
+}
+
+
+ this.drawBlock = function (xx, yy){
+  var c = 0;
+  for (var x = 0; x < this.block_size-4; x+=this.spacing) {
+
+  for (var y = 0; y < this.block_size-4; y+=this.spacing) {
+    c++;
+    if (this.pos[c] == 1) {
+      ctx.fillStyle = "black";
+      ctx.fillRect(xx + x - this.block_size/2, yy + y - this.block_size/2, this.spacing, this.spacing);
+    }
+  }
+}
+}
+
+}
+
+
+</script>
+
+</body>
+
+</html>

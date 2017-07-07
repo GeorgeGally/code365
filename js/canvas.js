@@ -24,6 +24,13 @@ function createCanvas(_canvas_name){
 	return ctx;
 }
 
+function createMultipleCanvases(num){
+	var contexts = []
+	for (var i = 0; i < num; i++) {
+		contexts[i] = createCanvas("canvas" + (i+1));
+	}
+	return contexts;
+}
 
 function createGLCanvas(canvas_name){
 	canvas = document.createElement('canvas');
@@ -34,20 +41,25 @@ function createGLCanvas(canvas_name){
 	canvas.style.top = "0px";
 	body.appendChild(canvas);
 	var gl = canvas.getContext('webgl');
-	if (!gl) var gl = canvas.getContext('experimental-webgl');
+	if (!gl) var gl = canvas.getContext('webgl') || canvas.getContext("experimental-webgl");
 	resize(canvas_name);
 	window.addEventListener("resize", resize, false);
 	return gl;
 }
 
-function resize(){
+function reFitCanvas(_w, _h){
+	canvas.width = width = w = _w;
+	canvas.height = height = h = _h;
+}
+
+
+function resize(w, h){
 	var c = document.getElementsByTagName('canvas');
 	width = w = window.innerWidth;
 	height = h = window.innerHeight;
 	for(var i = 0; i < c.length; i++) {
 		c[i].width = width;
 		c[i].height = height;
-
 	}
 	//console.log("resize: " + w +":" + h);
 }

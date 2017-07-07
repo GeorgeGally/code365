@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<!-- <script language="javascript" src="../js/midi.js"></script> -->
+<!-- <script language="javascript" src="../js/raw_video.js"></script> -->
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body style = "background: #000;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+
+function draw(){
+
+          ctx.background(0, 0, 0);
+          // ctx.fillStyle = "red";
+          // ctx.fillRect(0, 0, w/4, h/4)
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 1;
+          var yy = h/2 + Math.sin(frameCount/10) * h/2;
+          ctx.line(0, yy, w, yy)
+          }
+    </script>
+</body>
+
+</html>

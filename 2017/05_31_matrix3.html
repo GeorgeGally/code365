@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<!-- <script language="javascript" src="../js/midi.js"></script> -->
+<!-- <script language="javascript" src="../js/raw_video.js"></script> -->
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body style = "background: #000;">
+
+<script>
+
+var ctx = createHiddenCanvas("canvas1");
+//var ctx = createCanvas("canvas1");
+var pixels = createCanvas("canvas1");
+reFitCanvas(800, 600);
+var sourceBuffer32;
+
+// hardcoding the sizes of the rings
+var matrix_rings = [70, 50, 30, 10];
+//10, 30, 50, 70, 90, 110, 130, 150, 170, 220, 230, 250, 270, 290
+var wall_rings = [290, 270, 250, 230, 170, 150, 130, 110, 90, 70, 50, 30, 10];
+var ring_number = 0;
+
+
+
+// SETUP THE WALL AND MATRIX
+var wall = new particleEngine(3,3, 300, 300, w/2 - w/8, h/2 - h/8);
+var NUM_MATRIXES = wall.particles.length;
+
+for (var i = 0; i < wall.particles.length; i++) {
+  var p = wall.particles[i];
+  p.matrix = new particleEngine(8, 8, 80, 80, p.pos.x-40, p.pos.y-40);
+}
+
+
+
+function draw(){
+  sensitivity = 20;
+  ctx.background(0, 0.5);
+
+  var imgData=ctx.getImageData(0,0,w,h);
+  sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+  gridOn("grey");
+  //matrixOn(randomInt(8), "red");
+  var sz = Math.sin(frameCount/10) * 250;
+  ctx.fillStyle = "red";
+  ctx.fillEllipse(w/2, h/2, sz, sz);
+  // if(frameCount%10 == 0) {
+  // ring_number = (ring_number + 1)%rings.length;
+  // //console.log(ring_number);
+  // }
+  //soundRectiveWallRing("red");
+  soundRectiveMatrixRing(1, "red");
+  soundRectiveMatrixRing(4, "red");
+  soundRectiveMatrixRing(7, "red");
+  //wallRingOn(11, "red");
+  //matrixRingOn(randomInt(NUM_MATRIXES-1), randomInt(matrix_rings.length), "red")
+
+  drawWall();
+
+}
+
+
+
+// ANIMATIONS
+
+//matrixRingOn(m, n, c)
+function soundRectiveMatrixRing(m, c, trail){
+  // var s = Math.round(Sound.mapVolume(0, NUM_MATRIXES));
+  var s = Math.round(map(Sound.vol, 0, 200, 0, matrix_rings.length));
+
+  //console.log(s);
+  if (trail) {
+    for (var i = 0; i < s; i++) {
+      matrixRingOn(m, i, c);
+    }
+  } else {
+      matrixRingOn(m, s, c);
+  }
+}
+
+function soundRectiveWallRing(c, trail){
+  // var s = Math.round(Sound.mapVolume(0, NUM_MATRIXES));
+  var s = Math.round(map(Sound.vol, 0, 200, 0, NUM_MATRIXES));
+
+  //console.log(s);
+  if (trail) {
+    for (var i = 0; i < s; i++) {
+      wallRingOn(i, c);
+    }
+  } else {
+      wallRingOn(s, c);
+  }
+}
+
+
+// TURN ON UTILITIES
+
+function wallRingOn(n, c){
+  ctx.lineWidth = 10;
+  ctx.strokeStyle = c;
+  ctx.centreStrokeRect(wall.grid.centre.x, wall.grid.centre.y, wall.grid.width-wall_rings[n], wall.grid.height-wall_rings[n]);
+
+}
+
+// turn on an individual matrix ring
+function matrixRingOn(m, n, c){
+  ctx.lineWidth = 10;
+  ctx.strokeStyle = c;
+  var matrix = wall.particles[m].matrix;
+  ctx.centreStrokeRect(matrix.grid.centre.x, matrix.grid.centre.y, matrix.grid.width-matrix_rings[n], matrix.grid.height-matrix_rings[n]);
+}
+
+// TURN ON WHOLE GRID OR MATRIX
+
+function gridOn(c){
+    ctx.fillStyle = c;
+    ctx.centreFillRect(wall.grid.centre.x, wall.grid.centre.y, wall.grid.width, wall.grid.height);
+}
+
+function matrixOn(n, c){
+    var p = wall.particles[n].matrix;
+    //console.log(p);
+    ctx.fillStyle = c;
+    ctx.centreFillRect(p.grid.centre.x, p.grid.grid.y, p.grid.width, p.grid.height);
+}
+
+
+
+function flashingBoxes(){
+  ctx.lineWidth = 12;
+  for (var i = 0; i < wall.particles.length; i++) {
+    var p = wall.particles[i];
+    var s = sticky(Sound.mapSound(i, NUM_MATRIXES * 3), 10);
+    var c = hsl(255 - s*2, 80, 60);
+    ctx.strokeStyle = c;
+    ctx.fillStyle = rgb(255 - s*2, 0, 0);
+    ctx.centreFillRect(p.pos.x, p.pos.y, s/2, s/2);
+    ctx.centreStrokeRect(p.pos.x, p.pos.y, 60, 60);
+
+  }
+}
+
+
+
+/////////////////////////////////////////////////////////////
+
+// samples the drawing space and pushes it to the pixel space
+function drawWall(engine, grid_w, _grid_h){
+  pixels.clearRect(0,0,w,h);
+  for (var i = 0; i < wall.particles.length; i++) {
+    var p = wall.particles[i];
+    var c = sample(p.pos.x, p.pos.y);
+    for (var j = 0; j < p.matrix.particles.length; j++) {
+      var p2 = p.matrix.particles[j];
+      p2.c = sample(p2.pos.x, p2.pos.y);
+      pixels.fillStyle = p2.c;
+      pixels.fillEllipse(p2.pos.x, p2.pos.y, 5, 5);
+    }
+  }
+}
+
+
+// sample the whole art area to a single matrix
+function drawMatrix(n){
+
+    p = wall.particles[n];
+    var matrix = wall.particles[n].matrix;
+    var ratio = {
+      x: width/matrix.grid.width,
+      y: height/matrix.grid.height,
+        }
+
+    for (var j = 0; j < p.matrix.particles.length; j++) {
+      var p2 = p.matrix.particles[j];
+      p2.c = sample(p2.pos.x, p2.pos.y);
+      pixels.fillStyle = p2.c;
+      pixels.fillEllipse(p2.pos.x, p2.pos.y, 5, 5);
+    }
+
+}
+
+// helper function to sample a point on the drawing space
+
+function sample(x, y) {
+        var ammt = Math.round(mouseX/100);
+         var pos = (x + y * w);
+         var b = (sourceBuffer32[pos] >> 16) & 0xff;
+         var g = (sourceBuffer32[pos] >> 8) & 0xff;
+         var r = (sourceBuffer32[pos] >> 0) & 0xff;
+         r = sticky(r, ammt);
+         g = sticky(g, ammt);
+         b = sticky(b, ammt);
+         return rgb(r,g,b);
+}
+
+
+
+</script>
+
+<!-- <script language="javascript" src="js/motion_detection.js"></script> -->
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+    <script language="javascript" src="../js/creative_coding.js"></script>
+
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/three.min.js"></script>
+
+  <script language="javascript" src="../js/timeliner.js"></script>
+  <script language="javascript" src="../js/threejs/CanvasRenderer.js"></script>
+  <script language="javascript" src="../js/threejs/Projector.js"></script>
+  <script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body style="background: #333">
+
+<script>
+var engine = new particleEngine(20);
+
+var ctx = createCanvas('canvas1');
+var canvas = document.getElementById('canvas1');
+canvas.style.zindex = 100;
+var boxes = [];
+
+var target = {
+	x: 0,
+	y: 0,
+	z: 0,
+  // pos_x: 0,
+  // pos_y: 0,
+  pos_z: 550
+};
+
+var timeliner;
+document.addEventListener("DOMContentLoaded", function(){
+  // Handler when the DOM is fully loaded
+
+timeliner = new Timeliner(target);
+  timeliner.addLayer('x');
+  timeliner.addLayer('y');
+  timeliner.addLayer('z');
+  // timeliner.addLayer('pos_x');
+  // timeliner.addLayer('pos_y');
+  timeliner.addLayer('pos_z');
+});
+
+
+    var animate = true;
+
+    // x = 0;
+    // y = 0;
+    // z = 0;
+
+function draw(){
+
+  ctx.background(0);
+  ctx.fillStyle = rgba(255, 0.5);
+  ctx.strokeStyle = "white";
+
+  for (var i = 0; i < 140; i++) {
+    ctx.fillRect(random(w), 0, random(2), h);
+  }
+
+
+      //threeShuffle(showMainBlock);
+      //threeLine();
+      //square();
+      //twistBlock(1, 0, 0);
+      var b = boxes[randomInt(boxes.length-1)];
+      twistIndivBlock(b, 20, 0, 0);
+
+
+      // {
+      //  if (chance(600)) changeCamera();
+      //};
+      pivot.rotation.x = target.x;
+      pivot.rotation.y = target.y;
+      pivot.rotation.z = target.z;
+      // pivot.position.x = target.pos_x;
+      // pivot.position.y = target.pos_z;
+      camera.position.z = target.pos_z;
+      //camera.lookAt(scene)
+      tweenBlocks();
+      //console.log(boxes.length);
+      renderer.clear();
+      renderer.render(scene, camera);
+}
+
+
+
+
+
+///// THREE STUFF
+
+
+///////////////// ANIMATIONS
+
+function changeCamera(){
+  console.log("changeCamera");
+  var from = {
+         x: pivot.rotation.x,
+         y: pivot.rotation.y,
+         z: pivot.rotation.z
+     };
+
+  var to = {
+         x: radians(randomSticky(360, 45)),
+         y: radians(randomSticky(360, 45)),
+         z: 0
+     };
+
+     var tween = new TWEEN.Tween(from)
+                .to(to, 600)
+                .easing(TWEEN.Easing.Linear.None)
+                .onUpdate(function () {
+                  pivot.rotation.set(this.x, this.y, this.z);
+                  //pivot.lookAt(new THREE.Vector3(0, 0, 0));
+                })
+                .onComplete(function () {
+                  //pivot.lookAt(new THREE.Vector3(0, 0, 0));
+                })
+                .start();
+        //});
+
+  // scene.target_rotation.x = sticky(random(-100,100), 45);
+  //pivot.target_rotation = new THREE.Vector3(radians(random(50)), 0,0);
+}
+
+function twistIndivBlock(b, x, y, z){
+  y = y | 0;
+  z = z | 0;
+  //threeShowAll();
+  var all_done = false;
+  //for (var i = 0; i < boxes.length; i++) {
+    //var b = boxes[i];
+
+    if(chance(50)) {
+      b.target_rotation.x += x;
+      b.target_rotation.y += y;
+      b.target_rotation.z += z;
+    }
+  //}
+}
+
+
+function twistBlock(x, y, z){
+  y = y | 0;
+  z = z | 0;
+  threeShowAll();
+  var all_done = false;
+  for (var i = 0; i < boxes.length; i++) {
+    var b = boxes[i];
+
+    if(chance(50)) {
+      b.target_rotation.x += x;
+      b.target_rotation.y += y;
+      b.target_rotation.z += z;
+    }
+  }
+}
+
+function threeShuffle(doThis){
+  threeShowAll();
+  var all_done = false;
+  for (var i = 0; i < boxes.length; i++) {
+    var b = boxes[i];
+
+    if(chance(550)) {
+      b.target.x = 1;
+      b.target.y = 1;
+      b.target.z = 1;
+
+      //if (i == 0) b.target_scale.x = b.target_scale.y = b.target_scale.z = 2;
+    }
+
+      if (b.position.x < 1.01 && b.position.x > -1.01 && b.position.y < 1.01 && b.position.y > -1.01 && b.position.z < 1.01) {
+
+        all_done = true;
+      } else {
+        all_done = false;
+      }
+
+  }
+  if (all_done == true) {
+      threeHideAll()
+      if(doThis) doThis();
+
+  }
+
+}
+
+
+function threeLine(doThis){
+  threeShowAll();
+  var all_done = false;
+  for (var i = 0; i < boxes.length; i++) {
+    var b = boxes[i];
+
+    if(chance(50)) {
+      b.target.x = 1;
+      //b.target.y = 1;
+      //b.target.z = 1;
+
+      //if (i == 0) b.target_scale.x = b.target_scale.y = b.target_scale.z = 2;
+    }
+
+      if (b.position.x < 1.001 && b.position.x > -1.001) {
+
+        all_done = true;
+      } else {
+        all_done = false;
+      }
+
+  }
+  if (all_done == true) {
+      threeHideAll();
+      if(doThis) doThis();
+
+  }
+
+}
+
+function threeShowAll(){
+  for (var i = 0; i < boxes.length; i++) {
+    var b = boxes[i];
+    b.visible = true;
+  }
+}
+
+
+function threeHideAll(){
+  for (var i = 0; i < boxes.length; i++) {
+    var b = boxes[i];
+    b.visible = false;
+  }
+}
+
+
+function showMainBlock(){
+  main_block.visible = true;
+  main_block.scale = new THREE.Vector3(0.01, 0.01, 0.01);
+  main_block.target_scale = new THREE.Vector3(3, 3, 3);
+}
+
+
+
+
+function square(){
+  var x = 0, y = 0, z = 0;
+  for (var i = 0; i < boxes.length; i++) {
+    var b = boxes[i];
+    b.start.x = b.target.x = b.target.x = ( block_size * -3 ) / 2 + x * block_size;
+    b.start.y = b.target.y = ( block_size * -3 ) / 2 + y * block_size;
+    b.start.z = b.target.z = ( block_size * -3 ) / 2 + z * block_size;
+
+    x++;
+
+    if(x>3) {
+      x = 0;
+      y++;
+    }
+    if(y>3) {
+      y = 0;
+      z++;
+    }
+    if (z > 3) animate = false;
+  }
+  }
+
+
+
+function moveParticles(){
+
+  p.pos.x = tween(p.pos.x, p.target.x, 100);
+  p.pos.y = tween(p.pos.y, p.target.y, 100);
+  p.pos.z = tween(p.pos.z, p.target.z, 100);
+
+}
+
+
+
+function circleMove(){
+for (var i = 0; i < boxes.length; i++) {
+  var b = boxes[i];
+  if(chance(100)) b.target.x = Math.cos(i) * 300;
+  if(chance(100)) b.target.y = Math.sin(i) * 300;
+  if(chance(100)) b.target_scale.x = b.target_scale.y = b.target_scale.z = 0.4;
+  //if(chance(1000)) b.target.z = sticky(random(-250, 250),block_size);
+
+}
+}
+
+function shuffle(){
+  for (var i = 0; i < boxes.length; i++) {
+    var b = boxes[i];
+    if(chance(1000)) b.target.x = sticky(random(-250, 250),block_size);
+    if(chance(1000)) b.target.y = sticky(random(-250, 250),block_size);
+    if(chance(1000)) b.target.z = sticky(random(-250, 250),block_size);
+  }
+}
+
+
+function change_uvs( geometry, unitx, unity, offsetx, offsety ) {
+
+  var faceVertexUvs = geometry.faceVertexUvs[ 0 ];
+
+  for ( var i = 0; i < faceVertexUvs.length; i ++ ) {
+
+    var uvs = faceVertexUvs[ i ];
+
+    for ( var j = 0; j < uvs.length; j ++ ) {
+
+      var uv = uvs[ j ];
+
+      uv.x = ( uv.x + offsetx ) * unitx;
+      uv.y = ( uv.y + offsety ) * unity;
+
+    }
+
+  }
+
+}
+
+
+
+
+
+
+
+
+</script>
+<script language="javascript" src="../js/three_matrix_setup.js"></script>
+
+</body>
+
+</html>

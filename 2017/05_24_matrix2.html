@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<!-- <script language="javascript" src="../js/raw_video.js"></script> -->
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body style = "background: #000;">
+
+<script>
+
+var ctx = createHiddenCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+reFitCanvas(800, 600);
+var sourceBuffer32;
+var block_size = 5;
+
+var maxballs = 30500;
+var wall = new particleEngine(8,6);
+//var particles = engine.particles;
+var motion = [];
+var cratio = 255/h;
+
+for (var i = 0; i < wall.particles.length; i++) {
+  var p = wall.particles[i];
+  p.matrix = new particleEngine(8,8, 80, 80, p.pos.x-40, p.pos.y-40);
+}
+
+function draw(){
+  sensitivity = 20;
+  ctx.background(0, 0.5);
+  ctx.fillStyle = "red";
+  ctx.centreFillRect(w/2, h/2, Math.sin(frameCount/50) * w, Math.sin(frameCount/50) * h);
+  //ctx.pixelate(80);
+  var imgData=ctx.getImageData(0,0,w,h);
+  sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+
+  ctx2.clearRect(0,0,w,h);
+  for (var i = 0; i < wall.particles.length; i++) {
+    var p = wall.particles[i];
+    var c = rgb(randomInt(255), 0, 0);
+    colourGrid(p.matrix, c);
+    for (var j = 0; j < p.matrix.particles.length; j++) {
+      var p2 = p.matrix.particles[j];
+      p2.c = sample(p2.pos.x, p2.pos.y);
+      ctx2.fillStyle = p2.c;
+      ctx2.fillEllipse(p2.pos.x, p2.pos.y, 5, 5);
+  }
+  }
+  //ctx.drawImage(video, 0, 0, w, h);
+
+  var pix = map(mouseY, 0, h, 10, 100);
+  var p = map(mouseX, 0, w, 0, 200);
+
+  //var pix = 37;
+  //var p = 180;
+
+  if (mouseDown) {
+    console.log(Math.floor(pix) + " : " + Math.floor(p));
+  }
+
+
+}
+
+
+
+
+
+
+function sample(x, y) {
+        var ammt = Math.round(mouseX/100);
+         var pos = (x + y * w);
+         var b = (sourceBuffer32[pos] >> 16) & 0xff;
+         var g = (sourceBuffer32[pos] >> 8) & 0xff;
+         var r = (sourceBuffer32[pos] >> 0) & 0xff;
+         r = sticky(r, ammt);
+         g = sticky(g, ammt);
+         b = sticky(b, ammt);
+         return rgb(r,g,b);
+}
+
+function squares(engine, grid_w, _grid_h){
+  var start_x = 0;
+  var end_x = grid_w;
+  var start_y = 0;
+  var end_y = grid_h;
+  for (var i = 0; i < grid_w; i++) {
+    for (var j = 0; j < grid_h; j++) {
+    //array[i]
+    }
+  }
+  // 11111111
+  // 10000001
+  // 10000001
+  // 10000001
+  // 10000001
+  // 10000001
+  // 10000001
+  // 11111111
+
+  // 00000000
+  // 01111110
+  // 01000010
+  // 01000010
+  // 01000010
+  // 01000010
+  // 01111110
+  // 00000000
+
+  // 00000000
+  // 00000000
+  // 00111100
+  // 00100010
+  // 00100010
+  // 00111100
+  // 00000000
+  // 00000000
+
+  // 00000000
+  // 00000000
+  // 00000000
+  // 00011000
+  // 00011000
+  // 00000000
+  // 00000000
+  // 00000000
+
+}
+
+
+function colourGrid(_engine, _c){
+  for (var i = 0; i < _engine.particles.length; i++) {
+    p = _engine.particles[i];
+    p.c = _c;
+  }
+}
+
+function update(){
+
+  motion = motionDetection(block_size);
+  //ctx.drawImage(video, 0,0, w, h);
+
+  for (var i = 0; i < motion.length; i++) {
+    m = motion[i];
+    engine.addParticle(w - m.x+random(-4,4), m.y+random(-4,4), random(80));
+    //if (chance(10)) engine.addParticle(w - m.x+random(-4,4), m.y+random(-4,4), random(80));
+
+    engine.last.size = block_size*0.6;
+    engine.last.speed = new Vector(posNeg*random(2), random(-6,2));
+    //console.log(engine.last);
+    if (engine.particles.length > maxballs) {
+      engine.removeParticle();
+    }
+  }
+  //particles = engine.particles;
+  for (var i = 0; i < particles.length; i++) {
+    b = particles[i];
+    b.speed.x += random(-0.1, 0.1);
+    if(b.speed.y>0) {
+      b.speed.y += 2.9;
+    } else {
+      b.speed.y += 1.9;
+    }
+    b.pos.x += b.speed.x;
+    b.pos.y += b.speed.y;
+    //b.size *= 0.95;
+    b.size -= 0.06;
+    //b.alpha -= 0.5;
+    //if (i == 3) console.log(b.pos.x);
+    // we adjust the hit area because shere is drawn from the centre
+    if (b.pos.x > w  || b.pos.x < 0 || b.pos.y > h || b.pos.y < 0 || b.size < 1.5 || b.size> 35) {
+      engine.removeParticle(i);
+    }
+
+
+  }
+
+}
+
+
+
+
+</script>
+
+<!-- <script language="javascript" src="js/motion_detection.js"></script> -->
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+
+</html>

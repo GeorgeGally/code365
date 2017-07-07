@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.font="16px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/train_data.csv';
+var engine = new particleEngine(0);
+engine.border = false;
+var movements = [];
+var sticker = 10;
+var max = 6;
+var pos = {x:0, y: h/2};
+var posy = 30;
+ctx.lineWidth = 2;
+
+var spacing = 20;
+var spacingy = 60;
+var offset = 40;
+
+var pts = [];
+for (var i = 0; i < w; i+= spacing) {
+  pts.push({x: i, y: h/2 + random(-offset, offset)});
+}
+
+console.log(pts);
+
+ctx.strokeStyle="black";
+////////////////
+
+var counter = 0;
+var x = 0;
+var y = h/2;
+ctx.background(0);
+var start_time = Date.now(); // set starttime
+console.log(start_time);
+
+var xold = 0;
+var yold = 30;
+
+
+ctx.strokeStyle="white";
+
+
+function draw() {
+
+  ctx.background(0);
+  for (var i = 1; i < pts.length; i++) {
+
+    var p = pts[i];
+    var p2 = pts[i-1];
+    ctx.line(p.x, p.y, p2.x, p2.y);
+
+    if (pos.x >= p2.x && pos.x < p.x) {
+
+    var pt = getLineXYatPercent(p2, p, spacing);
+
+    var per = percentageOfSegment(p2, pos.x, spacing)
+
+    // ctx.fillStyle="blue";
+    // ctx.fillEllipse(pt.x, pt.y, 10, 10);
+
+    var dx = p.x - p2.x;
+    var dy = p.y - p2.y;
+
+
+    var tx = p.x - pos.x,
+           ty = p.y - pos.y,
+           dist = Math.sqrt(tx*tx+ty*ty),
+           rad = Math.atan2(ty,tx),
+           angle = rad/Math.PI * 180;;
+           velX = (tx/dist)*1;
+           velY = (ty/dist)*4;
+
+    pos.y += velY;
+    //console.log(pos.y);
+    // var dx = mouseX - w/2;
+    // var dy = mouseY - h/2;
+    var angle = Math.atan2(dy, dx);
+    //console.log(degrees(angle));
+    //var angleDeg = Math.atan2(v2.y - v1.y, v2.x - v1.x) * 180 / Math.PI
+
+    xx = p2.x - Math.cos(angle);
+    yy = p.y + Math.cos(angle) + Math.sin(angle);
+
+    //y = speed * cos(a)
+    //yy = (p.y + p2.y)/2;
+    ctx.fillStyle="orange";
+    ctx.fillEllipse(pos.x, pos.y , 10, 10);
+    // ctx.fillStyle="red";
+    // ctx.fillEllipse(xx, yy, 10, 10);
+
+    }
+
+
+  }
+
+
+
+
+  ctx.line(pos.x, 0, pos.x, h);
+  pos.x = (pos.x + 1) % w;
+
+
+  // var p = getLineXYatPercent(startPt,endPt, segmet_length)
+  // console.log(p);
+
+}
+
+
+
+
+function getDirection(x,y){
+    return degrees(Math.atan2(y, x));
+}
+
+
+
+function percentageOfSegment(start, pos, segmet_length){
+  //console.log(pos);
+  var percentage = (pos.x - start.x)/segmet_length;
+  return percentage;
+}
+
+
+function getLineXYatPercent(startPt,endPt, segmet_length) {
+    var dx = endPt.x-startPt.x;
+    var dy = endPt.y-startPt.y;
+    var X = startPt.x + dx;
+    var Y = startPt.y + dy;
+    return( {x:X,y:Y} );
+}
+
+
+</script>
+
+</body>
+
+</html>

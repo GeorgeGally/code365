@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.font = '9px Courier';
+var grid_w = 8;
+var grid_h = 120;
+var mode = 0;
+
+var blocks = new particleEngine(grid_w, grid_h);
+var row = 0;
+for (var i = 0; i < blocks.particles.length; i++) {
+  var b = blocks.particles[i];
+  b.speed = new Vector(0, -2);
+  b.dir.y = 1;
+  b.c = rgb(255);
+  // b.c =  (i%2 == 0) ? rgb(0): rgb(255);
+  b.w = w/grid_w;
+  b.h = h/grid_h;
+  b.s = 0;
+  b.txt = "";
+}
+
+function draw(){
+  ctx.background(0);
+  blocks.update();
+  for (var i = 0; i < blocks.particles.length; i++) {
+    var b = blocks.particles[i];
+    if(b.pos.y > h - 2) {
+      b.txt = ""
+    }
+    var _s = Mic.mapSound(b.me, blocks.particles.length, 2, 100);
+    b.txt += _s;
+    if (b.txt.length > 20) b.txt = "";
+
+    if(b.pos.y > h - 20) {
+      b.speed.y = map(_s/10, 0.2, 10, 1, 4) * -1;
+      if(_s < 20) {
+        b.c = rgb(20);
+      } else if(_s < 90) {
+          b.c = rgb(255);
+      } else {
+        b.c = rgb(255, 0, 0);
+      }
+    }
+    ctx.fillStyle = b.c;
+    if (chance(1000)) mode = randomInt(2);
+    //if (mode == 0) {
+      ctx.centreFillRect(b.pos.x, b.pos.y, b.w-1, b.h-1);
+      //ctx.fillText(b.txt, b.pos.x+1 -100, b.pos.y);
+    // } else {
+    //   if (chance(100)) ctx.centreFillRect(b.position.x, b.position.y, b.w-1, b.h-1);
+    //   ctx.fillText(b.txt, b.pos.x+1 -100, b.pos.y);
+    // }
+
+  }
+}
+
+
+</script>
+<script language="javascript" src="../js/mic.js"></script>
+</body>
+
+</html>

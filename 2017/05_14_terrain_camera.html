@@ -1,0 +1,425 @@
+
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>three.js webgl - dynamic procedural terrain</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+		<script language="javascript" src="../js/creative_coding.js"></script>
+		<script language="javascript" src="../js/canvas.js"></script>
+		<script language="javascript" src="../js/three.min.js"></script>
+		<script language="javascript" src="../js/threejs/CanvasRenderer.js"></script>
+	  <script language="javascript" src="../js/threejs/Projector.js"></script>
+	  <script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+		<!-- <script language="javascript" src="../js/timeliner.js"></script> -->
+
+		<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+	</head>
+
+	<body>
+		<script>
+
+		//var timeliner;
+		document.addEventListener("DOMContentLoaded", function(){
+		  // Handler when the DOM is fully loaded
+
+		// timeliner = new Timeliner(target);
+		//   timeliner.addLayer('x');
+		//   timeliner.addLayer('y');
+		//   timeliner.addLayer('z');
+		  // timeliner.addLayer('pos_x');
+		  // timeliner.addLayer('pos_y');
+		  //timeliner.addLayer('pos_z');
+		});
+
+		var ctx = createCanvas("canvas1");
+		var canvas = document.getElementsByTagName("canvas")[0];
+		var vertexDist = 100;
+				var numOfVertices = 100;
+				var camSpeed = 100;
+				var curRotation = 0;
+				var rotMultiplier = 1.5;
+				var mouseVector = new THREE.Vector3(-1, 1.2, 0);
+				var clock = new THREE.Clock(true);
+				var deltaTime;
+				var onfocus = true;
+				var lastCamSection = new THREE.Vector2(0, 0);
+				var checkCameraTimer = 0.0;
+				var rUp = true;
+				var gUp = true;
+				var bUp = true;
+
+				var particles;
+				var groundMat = new THREE.MeshBasicMaterial({color: 0xdddddd, wireframe: false});
+				groundMat = new THREE.MeshLambertMaterial({
+						polygonOffset: true,
+						polygonOffsetUnits: 1,
+						polygonOffsetFactor: 1,
+						color: 0xdddddd,
+
+				});
+				groundMat.shading = THREE.FlatShading;
+				//
+
+				//groundMat.shading = THREE.SmoothShading;
+				//var groundMat = new THREE.MeshLambertMaterial({color: 0xefefef, emissive: 0x555555, wireframe: false});
+				var groundsEnum = Object.freeze({NW: 0, N: 1, NE: 2, W: 3, C: 4, E: 5, SW: 6, S: 7, SE: 8});
+				var groundGeoms = [	new THREE.Geometry(),
+								new THREE.Geometry(),
+								new THREE.Geometry(),
+								new THREE.Geometry(),
+								new THREE.Geometry(),
+								new THREE.Geometry(),
+								new THREE.Geometry(),
+								new THREE.Geometry(),
+								new THREE.Geometry()];
+				var groundMeshes = [ new THREE.Mesh(),
+								new THREE.Mesh(),
+								new THREE.Mesh(),
+								new THREE.Mesh(),
+								new THREE.Mesh(),
+								new THREE.Mesh(),
+								new THREE.Mesh(),
+								new THREE.Mesh(),
+								new THREE.Mesh()];
+
+				//***********************************************
+
+				var raycaster = new THREE.Raycaster();
+				var renderer = new THREE.WebGLRenderer();
+				renderer.setSize(w, h);
+				document.body.appendChild(renderer.domElement);
+				var scene = new THREE.Scene();
+
+				var camera = new THREE.Object3D(); camera.position.set(0,0,0); camera.fov = 20;
+				var camChild = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+				camera.add(camChild);
+				var light = new THREE.DirectionalLight();
+        light.position.set(10,10,10);
+				scene.add(light);
+				renderer.setClearColor( "#d7d7d7");
+				init();
+
+
+				function init(){
+
+					camChild.position.y = 130;
+					camChild.rotation.x = - Math.PI * 10 / 180;
+
+					//var ambLight = new THREE.AmbientLight( 0xaaaaaa );
+					//var dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+					//pointLight = new THREE.PointLight(0xffffff, 1.0, 300);
+					//dirLight.position.set(1,2,2).normalize();
+
+
+					//canvas.addEventListener('mousemove', );
+
+					updateGround(groundsEnum.C);
+
+					groundMeshes[groundsEnum.C].position.set(0, 0, 0);
+
+					//scene.fog = new THREE.Fog(0x000000, 1, 2000);
+					//scene.add(pointLight);
+					//scene.add(dirLight);
+					//scene.add(ambLight);
+
+					window.addEventListener('resize', function(){
+						renderer.setSize(w, h);
+						updateFooter();
+					});
+
+					window.addEventListener('pageshow', function() {
+						onfocus = true;
+					});
+
+					window.addEventListener('focus', function() {
+						onfocus = true;
+					});
+
+					window.addEventListener('blur', function() {
+						onfocus = false;
+					});
+				}
+
+				function updateGround(groundPos){
+					if(groundPos == groundsEnum.C){
+						for(var curGround = 0; curGround < groundGeoms.length; curGround++){
+
+							//update geometry
+							//** i goes along x axis, j - along z axis
+							// insert vertices
+							for (var i = - numOfVertices / 2; i < numOfVertices / 2 + 1; i++ ){
+								for(var j = - numOfVertices / 2; j < numOfVertices / 2 + 1; j++){
+									var vertex;
+									if(j == numOfVertices / 2 || j == - numOfVertices / 2){
+										vertex =  new THREE.Vector3(i * vertexDist, ((105293 % i) + (231 % i) + (15430 % i) + (3423 % i) + (9420 % i)) % 100, j * vertexDist);
+									}
+									else if(i == numOfVertices / 2 || i == - numOfVertices / 2){
+										vertex = new THREE.Vector3(i * vertexDist, ((105293 % j) + (231 % j) + (15430 % j) + (3423 % j) + (9420 % j)) % 100, j * vertexDist);
+									}
+									else{
+										vertex = new THREE.Vector3(i * vertexDist, Math.random() * 100, j * vertexDist);
+									}
+									groundGeoms[curGround].vertices.push(vertex);
+								}
+							}
+
+							//insert faces
+							for (var i = 0; i < numOfVertices; i++ ){
+								for(var j = 0; j < numOfVertices; j++){
+									groundGeoms[curGround].faces.push(new THREE.Face3(i * (numOfVertices + 1) + j, i * (numOfVertices + 1) + j + 1, (i + 1) * (numOfVertices + 1) + j));
+									groundGeoms[curGround].faces.push(new THREE.Face3((i + 1) * (numOfVertices + 1) + j, i * (numOfVertices + 1) + j + 1, (i + 1) * (numOfVertices + 1) + j + 1));
+								}
+							}//**/
+
+							groundGeoms[curGround].computeFaceNormals();
+
+
+							//update mesh
+							groundMeshes[curGround] = new THREE.Mesh(groundGeoms[curGround], groundMat);
+							if(curGround % 3 == 0){
+								groundMeshes[curGround].position.x = groundMeshes[groundsEnum.C].position.x - (vertexDist * numOfVertices);
+							}
+							else if (curGround % 3 == 2){
+								groundMeshes[curGround].position.x = groundMeshes[groundsEnum.C].position.x + (vertexDist * numOfVertices);
+							}
+							else{
+								groundMeshes[curGround].position.x = groundMeshes[groundsEnum.C].position.x;
+							}
+
+							if(curGround < 3){
+								groundMeshes[curGround].position.z = groundMeshes[groundsEnum.C].position.z + (vertexDist * numOfVertices);
+							}
+							else if (curGround < 6){
+								groundMeshes[curGround].position.z = groundMeshes[groundsEnum.C].position.z;
+							}
+							else{
+								groundMeshes[curGround].position.z = groundMeshes[groundsEnum.C].position.z - (vertexDist * numOfVertices);
+							}
+
+							scene.add(groundMeshes[curGround]);
+						}
+					}
+
+					else if(groundPos == groundsEnum.N){
+						var tmpMeshes = [groundMeshes[groundsEnum.SW], groundMeshes[groundsEnum.S], groundMeshes[groundsEnum.SE]];
+						groundMeshes[groundsEnum.SW] = groundMeshes[groundsEnum.W];
+						groundMeshes[groundsEnum.S] = groundMeshes[groundsEnum.C];
+						groundMeshes[groundsEnum.SE] = groundMeshes[groundsEnum.E];
+						groundMeshes[groundsEnum.W] = groundMeshes[groundsEnum.NW];
+						groundMeshes[groundsEnum.C] = groundMeshes[groundsEnum.N];
+						groundMeshes[groundsEnum.E] = groundMeshes[groundsEnum.NE];
+						groundMeshes[groundsEnum.NW] = tmpMeshes[0];
+						groundMeshes[groundsEnum.NW].position.set(groundMeshes[groundsEnum.C].position.x - vertexDist * numOfVertices, 0, groundMeshes[groundsEnum.C].position.z + vertexDist * numOfVertices);
+						groundMeshes[groundsEnum.N] = tmpMeshes[1];
+						groundMeshes[groundsEnum.N].position.set(groundMeshes[groundsEnum.C].position.x, 0, groundMeshes[groundsEnum.C].position.z + vertexDist * numOfVertices);
+						groundMeshes[groundsEnum.NE] = tmpMeshes[2];
+						groundMeshes[groundsEnum.NE].position.set(groundMeshes[groundsEnum.C].position.x + vertexDist * numOfVertices, 0, groundMeshes[groundsEnum.C].position.z + vertexDist * numOfVertices);
+					}
+					else if(groundPos == groundsEnum.S){
+						var tmpMeshes = [groundMeshes[groundsEnum.NW], groundMeshes[groundsEnum.N], groundMeshes[groundsEnum.NE]];
+						groundMeshes[groundsEnum.NW] = groundMeshes[groundsEnum.W];
+						groundMeshes[groundsEnum.N] = groundMeshes[groundsEnum.C];
+						groundMeshes[groundsEnum.NE] = groundMeshes[groundsEnum.E];
+						groundMeshes[groundsEnum.W] = groundMeshes[groundsEnum.SW];
+						groundMeshes[groundsEnum.C] = groundMeshes[groundsEnum.S];
+						groundMeshes[groundsEnum.E] = groundMeshes[groundsEnum.SE];
+						groundMeshes[groundsEnum.SW] = tmpMeshes[0];
+						groundMeshes[groundsEnum.SW].position.set(groundMeshes[groundsEnum.C].position.x - vertexDist * numOfVertices, 0, groundMeshes[groundsEnum.C].position.z - vertexDist * numOfVertices);
+						groundMeshes[groundsEnum.S] = tmpMeshes[1];
+						groundMeshes[groundsEnum.S].position.set(groundMeshes[groundsEnum.C].position.x, 0, groundMeshes[groundsEnum.C].position.z - vertexDist * numOfVertices);
+						groundMeshes[groundsEnum.SE] = tmpMeshes[2];
+						groundMeshes[groundsEnum.SE].position.set(groundMeshes[groundsEnum.C].position.x + vertexDist * numOfVertices, 0, groundMeshes[groundsEnum.C].position.z - vertexDist * numOfVertices);
+					}
+					else if(groundPos == groundsEnum.E){
+						var tmpMeshes = [groundMeshes[groundsEnum.NW], groundMeshes[groundsEnum.W], groundMeshes[groundsEnum.SW]];
+						groundMeshes[groundsEnum.NW] = groundMeshes[groundsEnum.N];
+						groundMeshes[groundsEnum.W] = groundMeshes[groundsEnum.C];
+						groundMeshes[groundsEnum.SW] = groundMeshes[groundsEnum.S];
+						groundMeshes[groundsEnum.N] = groundMeshes[groundsEnum.NE];
+						groundMeshes[groundsEnum.C] = groundMeshes[groundsEnum.E];
+						groundMeshes[groundsEnum.S] = groundMeshes[groundsEnum.SE];
+						groundMeshes[groundsEnum.NE] = tmpMeshes[0];
+						groundMeshes[groundsEnum.NE].position.set(groundMeshes[groundsEnum.C].position.x + vertexDist * numOfVertices, 0, groundMeshes[groundsEnum.C].position.z + vertexDist * numOfVertices);
+						groundMeshes[groundsEnum.E] = tmpMeshes[1];
+						groundMeshes[groundsEnum.E].position.set(groundMeshes[groundsEnum.C].position.x + vertexDist * numOfVertices, 0, groundMeshes[groundsEnum.C].position.z);
+						groundMeshes[groundsEnum.SE] = tmpMeshes[2];
+						groundMeshes[groundsEnum.SE].position.set(groundMeshes[groundsEnum.C].position.x + vertexDist * numOfVertices, 0, groundMeshes[groundsEnum.C].position.z - vertexDist * numOfVertices);
+					}
+					else if(groundPos == groundsEnum.W){
+						var tmpMeshes = [groundMeshes[groundsEnum.NE], groundMeshes[groundsEnum.E], groundMeshes[groundsEnum.SE]];
+						groundMeshes[groundsEnum.NE] = groundMeshes[groundsEnum.N];
+						groundMeshes[groundsEnum.E] = groundMeshes[groundsEnum.C];
+						groundMeshes[groundsEnum.SE] = groundMeshes[groundsEnum.S];
+						groundMeshes[groundsEnum.N] = groundMeshes[groundsEnum.NW];
+						groundMeshes[groundsEnum.C] = groundMeshes[groundsEnum.W];
+						groundMeshes[groundsEnum.S] = groundMeshes[groundsEnum.SW];
+						groundMeshes[groundsEnum.NW] = tmpMeshes[0];
+						groundMeshes[groundsEnum.NW].position.set(groundMeshes[groundsEnum.C].position.x - vertexDist * numOfVertices, 0, groundMeshes[groundsEnum.C].position.z + vertexDist * numOfVertices);
+						groundMeshes[groundsEnum.W] = tmpMeshes[1];
+						groundMeshes[groundsEnum.W].position.set(groundMeshes[groundsEnum.C].position.x - vertexDist * numOfVertices, 0, groundMeshes[groundsEnum.C].position.z);
+						groundMeshes[groundsEnum.SW] = tmpMeshes[2];
+						groundMeshes[groundsEnum.SW].position.set(groundMeshes[groundsEnum.C].position.x - vertexDist * numOfVertices, 0, groundMeshes[groundsEnum.C].position.z - vertexDist * numOfVertices);
+					}
+				}
+
+				function rotateCamera(e){
+					//if(!onfocus){
+						//return;
+					//}
+					console.log(e);
+					//mouseVector: x is for rotation, y is for speed
+					mouseVector = new THREE.Vector3((4 * (mouseX/width) - 2)/50, 3 + (4 - 2 * (mouseY / height))/50, 0);
+					curRotation = - mouseVector.x;
+					camera.children[0].updateProjectionMatrix();
+				}
+
+				function moveCamera(){
+					//if(!onfocus){
+						//return;
+					//}
+					var curSpeed = camSpeed * (mouseVector.y - 1);
+					camera.translateZ(-curSpeed * deltaTime);
+					//camera.rotation.x = 10;
+					camera.rotation.y += curRotation * deltaTime * rotMultiplier;
+					camera.children[0].rotation.z = curRotation / 10;
+					camera.children[0].fov = curSpeed / camSpeed * 10 + 20;
+					//camera.children[0].position.set(0, 120, -camera.children[0].fov * 15);
+
+					var mouseClone = mouseVector.clone();
+					mouseClone.setY(mouseVector.y - 2.75);
+
+					raycaster.setFromCamera(mouseClone.clone(), camera.children[0]);
+					var intersections = raycaster.intersectObjects(	scene.children );
+
+					// if(intersections.length){
+					// 	var point = intersections[0].point;
+					// 	pointLight.distance = camera.position.distanceTo(point) / 4;
+					// 	pointLight.intensity = camera.position.distanceTo(point) / 3000;
+					// 	pointLight.position.set(pointLight.position.x + (point.x - pointLight.position.x) / 5, 150, pointLight.position.z + (point.z - pointLight.position.z) / 5);
+					// }
+					// else{
+					// 	pointLight.intensity = 0;
+					// }
+					camera.updateMatrixWorld();
+				}
+
+				function changeGroundColor(){
+					//if(!onfocus){
+						//return;
+					//}
+					console
+					if(groundMat.color.r > 1){
+						rUp = false;
+					}
+					else if(groundMat.color.r < 0){
+						rUp = true;
+					}
+
+					if(groundMat.color.g > 1){
+						gUp = false;
+					}
+					else if(groundMat.color.g < 0){
+						gUp = true;
+					}
+
+					if(groundMat.color.b > 1){
+						bUp = false;
+					}
+					else if(groundMat.color.b < 0){
+						bUp = true
+					}
+					groundMat.color.g += (Math.random() % 0.03) * (gUp?1:(-1));
+					groundMat.color.r += (Math.random() % 0.03) * (rUp?1:(-1));
+					groundMat.color.b += (Math.random() % 0.03) * (bUp?1:(-1));
+				}
+
+				function checkCameraLocation(){
+
+					var camPos = camera.position.clone();
+					var camSectionX = Math.floor(camPos.x / (vertexDist * numOfVertices) + 0.5);
+					var camSectionZ = Math.floor(camPos.z / (vertexDist * numOfVertices) + 0.5);
+
+					if(camSectionZ > lastCamSection.y){
+						console.log("going north");
+						updateGround(groundsEnum.N);
+					}
+					else if(camSectionZ < lastCamSection.y){
+						console.log("going south");
+						updateGround(groundsEnum.S);
+					}
+					if(camSectionX > lastCamSection.x){
+						console.log("going east");
+						updateGround(groundsEnum.E);
+					}
+					else if(camSectionX < lastCamSection.x){
+						console.log("going west");
+						updateGround(groundsEnum.W);
+					}
+
+					lastCamSection.set(camSectionX, camSectionZ);
+				}
+
+
+
+var target = {
+	x: 0,
+	y: 0,
+	z: 0,
+  // pos_x: 0,
+  // pos_y: 0,
+  //pos_z: 550
+};
+
+
+
+				function draw(){
+					//console.log(onfocus);
+					//console.log(deltaTime);
+					//if(!onfocus){
+					//	deltaTime = 0.0;
+					//	clock.running = false;
+					//	clock.getDelta();
+					//	requestAnimationFrame( animate );
+					//	return;
+					//}
+					clock.running = true;
+
+					deltaTime = clock.getDelta();
+					//the translateZ method works in object space, no need to calculate camera's direction
+					if(mouseMoved) rotateCamera();
+					// scene.position.x = target.x;
+					// scene.rotation.y = target.y;
+					camera.        position.set = (camera.children[0].position.x, camera.children[0].position.y, target.z*10);
+
+					camera.children[0].rotation.set(target.x, target.y, target.z*10);
+					moveCamera();
+					checkCameraTimer += (deltaTime < 0.3)?deltaTime:0.0;
+					if(checkCameraTimer > 1.0){
+						checkCameraLocation(); //to see if updating the terrain is necessary
+						checkCameraTimer = 0.0;
+					}
+					//changeGroundColor();
+
+					//requestAnimationFrame( animate );
+					render();
+				}
+
+				function render(){
+					renderer.render(scene, camera.children[0]);
+				}
+
+				window.onload = updateFooter();
+
+				function updateFooter(){
+					canvas.focus();
+					onfocus = true;
+				};
+
+		</script>
+
+	</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ITP lights</title>
+
+<script language="javascript" src="../data/lights.js"></script>
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+<script language="javascript" src="../js/maptastic.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background:#000">
+
+<audio id="audio1" src="../sounds/click.mp3" controls preload="auto" autobuffer></audio>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var audio=document.getElementById("audio1");
+//console.log(data);
+
+var place = [];
+var room = 0;
+var vals = 0.0;
+
+ctx.font="16px Arial";
+//ctx2.textAlign = "center";
+var engine = new particleEngine();
+engine.delete(0);
+// var audio = new Audio('sounds/single.aif');
+var x = document.getElementById("myAudio");
+
+//for (var i = 0; i < data.length; i++) {
+  var d = data[room];
+  // place[i].name = d.name;
+  // place[i].data = d.data.data;
+  //console.log("========= " + d.name);
+  var min = 100000000000;
+  var max = 0;
+  for (var j = 0; j < d.data.data.length; j++) {
+    var d2 = d.data.data[j];
+    //console.log(d2.Lights);
+    if (d2.Lights > max) max = d2.Lights;
+    if (d2.Lights < min || d2.Lights != 0) min = d2.Lights;
+    //console.log(max);
+  }
+//}
+console.log(min);
+console.log(max);
+
+var target_elec = 0;
+var room = 1;
+var counter = 0;
+var pos = 1;
+var old_value = 0;
+function draw(){
+
+	ctx.background(0);
+  //engine.update();
+  if (data.length > 0) {
+
+      d = data[room];
+    var spawnTime = frameCount/5;
+    var array_number = Math.round(spawnTime%data.length);
+    var elec = d.data.data[array_number].Lights;
+    var dt = d.data.data[array_number].x;
+    var formatted_date = getDate(dt);
+    var sz = map(elec, min, max, 1, 20);
+    var mapped_elec = map(elec, 0, 0.9, 0, w);
+    //target_elec = tween(target_elec, mapped_elec, 10);
+    //console.log(sz);
+
+      if (old_value != array_number) {
+      audio.play();
+      for (var i = 0; i < sz; i++) {
+        engine.add(0, h/2 + pos * h/2);
+
+      engine.add(0, h/2 + pos * h/2);
+      //pos*=-1;
+      //console.log(elec);
+      engine.last.sz = sz;
+      engine.last.pos.x = random(-20);
+      engine.last.pos.y = 0;
+      }
+        }
+      old_value = array_number;
+    drawParticles();
+
+  }
+
+
+
+}
+
+
+function moveParticle(p){
+  p.pos.x += p.sz/5;
+  //console.log(p.sz);
+  if (p.pos.x > w) engine.delete(p.me);
+}
+
+
+function drawParticles(){
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    moveParticle(p)
+    ctx.fillStyle = rgb(255);
+    ctx.fillRect(p.pos.y, p.pos.x, h, 1);
+  }
+}
+
+function getDate(dt){
+	var date = new Date(dt)
+	var day = date.getDate();
+	var monthIndex = date.getMonth();
+	var month = monthNames[monthIndex];
+	var hour = date.getHours() + 8;
+	var min = date.getMinutes();
+	if (hour > 23) hour -= 24;
+	if (hour < 10) hour = "0" + hour;
+	if (min < 10) min = "0" + min;
+  return day + " " + month + " " + hour + ":" + min
+	//$('#date').html(day + " " + month + " " + hour + ":" + min);
+}
+
+
+/////// UTILS
+
+
+
+
+
+
+var monthNames = [
+    "January", "February", "March",
+    "April", "May", "June", "July",
+    "August", "September", "October",
+    "November", "December"
+];
+
+var configObject = {
+	autoSave: false,
+	autoLoad: false,
+	// onchange: myChangeHandler,
+	layers: ["canvas1"]
+};
+
+Maptastic(configObject);
+
+</script>
+
+</body>
+</html>

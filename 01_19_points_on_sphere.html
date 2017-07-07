@@ -12,7 +12,7 @@
 	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -60,11 +60,11 @@ function addParticle(_x, _y, _colour, _me){
 
 function moveParticles(){
 	for (var i = 0; i < particles.length; i++) {
-		
-		p = particles[i]; 
-		p.angle += radians(p.speedx); 
+
+		p = particles[i];
+		p.angle += radians(p.speedx);
 		p.sz = map(audioChannelVolume[Math.floor(p.me)],0,100, 20, 50);
-		
+
 		x = w/2 + p.x + (p.sz/2+radius) * Math.cos(p.angle);
 		y = h/2 + p.y + (p.sz/2+radius) * Math.sin(p.angle);
 

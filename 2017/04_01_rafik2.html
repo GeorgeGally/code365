@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<title>Code365</title>
+<head>
+
+    <meta charset="utf-8">
+
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="../js/creative_coding.js"></script>
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/vector_particles.js"></script>
+
+
+    <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var block_size = 120;
+var maxballs = 500;
+var balls = [];
+var engine = new particleEngine();
+
+var gridx = 20;
+var gridy = 1;
+var number_of_balls = gridx * gridy;
+var grid = new Grid(gridx, gridy);
+
+var data = [20, 60, 20, 80, 40, 40, 100];
+var total = 360;
+
+console.log(grid);
+for (var i = 0; i < number_of_balls; i++) {
+  engine.addParticle(grid.x[i] , grid.y[i], rgb(0), i);
+  var p = engine.last;
+  //console.log(p);
+  p.speed = new Vector(0, random(-5,-1));
+  p.sz = sticky(data[randomInt(data.length-1)], 20);
+  total += p.sz;
+  // p.pos.x = grid.x[i];
+  // p.pos.y = grid.y[i];
+  p.c = rgb(randomInt(255));
+}
+
+var particles = engine.particles;
+//console.log(particles);
+
+ctx.background(0);
+
+function update(){
+
+  particles = engine.particles;
+  for (var i = 0; i < particles.length; i++) {
+    p = particles[i];
+    p.pos.x += 1;
+    if (p.pos.x>w) p.pos.x = -p.sz;
+  } // end for loop
+
+}
+
+
+function draw(){
+
+  ctx.background(0);
+  update();
+  //engine.moveParticles();
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = particles[i];
+    ctx.strokeStyle = "white";
+    ctx.line(grid.x[i], 0, grid.x[i], h);
+    ctx.fillStyle = p.c;
+    ctx.fillRect(p.pos.x, p.pos.y - block_size/2, p.sz, block_size);
+  }
+  //pixelate();
+}
+
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+<body>
+<script>
+
+var ctx = createCanvas("canvas1");
+engine.border = true;
+//console.log(engine.grid);
+
+var mode = 1;
+
+function draw() {
+  ctx.background(255);
+  ctx.fillStyle = rgba(0, 0.9);
+
+  if(chance(300)) {
+    resizeParticles();
+  }
+  engine.update();
+  //engine.draw();
+  for (var i = 0; i < engine.length; i++) {
+    var p = engine.particles[i];
+    var g = engine.grid.pos[i];
+    ctx.fillStyle = "black";
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+
+    //ctx.fillStyle = "red";
+
+    if (mode == 0) {
+    ctx.line(g.x, g.y, p.pos.x, p.pos.y);
+    ctx.fillEllipse(g.x, g.y, 10, 10);
+  } else if (mode == 2) {
+    //connections(p, i);
+    //drawConnections(i);
+    p.target_sz = map(mapSound(i, engine.length*2), 0, 100, 4, 40);
+    //console.log(i);
+    p.angle += 0.1;
+  } else if (mode == 1) {
+    ctx.fillStyle = "white";
+    ctx.fillEllipse(p.pos.x, p.pos.y, map(mapSound(i, engine.length*2), 0, 100, 4, 40));
+  }
+}
+}
+
+
+function drawConnections(_particle_number) {
+
+  // loop through all the particles again
+  for (var j = 0; j < engine.particles.length; j++) {
+    b1 = engine.particles[_particle_number];
+    b2 = engine.particles[j];
+
+    // check the distances between the two particles
+    // and draw a line between them
+    //if they're less than a certain distance
+    if (dist(b1.x, b1.y, b2.x, b2.y) <= 50) {
+        ctx.lineStyle = rgb(0);
+        ctx.line(b1.x, b1.y, b2.x, b2.y);
+    }
+}
+}
+
+// function connections(p, num){
+//   for (var j = num+1; j < engine.particles.length-1; j++) {
+//     var p2 = engine.particles[j];
+//     //console.log(p2.pos);
+//     if (dist(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y) < 50) {
+//       ctx.line(p2.pos.x, p2.pos.y, p.pos.x, p.pos.y);
+//     }
+//   }
+// }
+
+
+
+function moveParticles(p){
+  p.target.x += p.speed.x;
+  p.target.y += p.speed.y;
+}
+
+var springs = 0;
+
+function resizeParticles(){
+
+  mode = randomInt(2);
+  if (mode == 2) {
+    engine.showParticles(randomInt(5, 50), true);
+  } else {
+    engine.showParticles(randomInt(5, 50), false);
+  }
+
+
+  //if (chance(2)) springs = !springs;
+  console.log(springs);
+  for (var i = 0; i < engine.length; i++) {
+
+    var p = engine.particles[i];
+
+    if (mode == 1) {
+      var sz = 20;
+        p.pos.x = w/2;
+        p.pos.y = h/2;
+        p.speed.x = random(-2, 2);
+        p.speed.y = random(-2, 2);
+    } else if (mode == 2) {
+        var sz = 20;
+        p.pos.x = w/2;
+        p.pos.y = h/2;
+        p.speed.x = 0;
+        p.speed.y = 0;
+    } else {
+      var sz = randomSticky(20, 60,20);
+    }
+
+
+    p.target_sz = sz;
+    // if (springs) {
+    //   p.pos.x = w/2;
+    //   p.pos.y = h/2;
+    // }
+
+    p.tween = false;
+    p.bounce = false;
+    p.isSpring = springs;
+  }
+}
+
+</script>
+
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+
+</html>

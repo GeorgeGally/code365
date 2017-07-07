@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<script language="javascript" src="../js/three.min.js"></script>
+<script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #f3f3f3">
+
+<script>
+
+var ctx = createHiddenCanvas("canvas1");
+var canvas = document.getElementById('canvas1');
+//var ctx = createCanvas("canvas1");
+canvas.style.zIndex = 100;
+canvas.width = width = w = 1024;
+canvas.height = height = h = 1024;
+var circs = [];
+var r = width/2-10;
+ctx.lineWidth = 1;
+var j = 0;
+var vol = 0;
+var speed = 2;
+var down = true;
+var num_particles = 1;
+var rotate_block = false;
+var mode = 0;
+
+for (var _y= 10; _y < h-10; _y+=10){
+
+  for (var _x= 10; _x<w-10; _x+=r){
+
+    var circle =  {
+      r: r,
+      me: j,
+      x: _x,
+      y: _y,
+      myfill: rgb(255, 255, 255)
+    }
+    circs.push(circle);
+  }
+
+  j++;
+  //console.log(j)
+ }
+
+
+
+/////////////////////////////////////
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 70, aspect, 1, 2000 );
+//camera = new THREE.PerspectiveCamera(70, width / height, 1, 1000);
+var d=0, t=0;
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true, alpha: true});
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+var sz = 6;
+var geometry = new THREE.BoxGeometry( sz, sz, sz);
+geometry.dynamic = true;
+
+texture = new THREE.Texture(canvas);
+texture.needsUpdate = true;
+var material = new THREE.MeshBasicMaterial({ map: texture });
+material.shading = THREE.SmoothShading;
+material.map.minFilter = THREE.LinearFilter;
+
+var big_box = new THREE.Mesh( geometry, material );
+
+big_box.position.z = 25;
+big_box.position.x = 0;
+big_box.position.y = 0;
+// big_box.scale.x = big_box.scale.y = big_box.scale.z = 6;
+big_box.start = new Vector(big_box.position.x, big_box.position.y, big_box.position.z);
+big_box.target_position = new Vector(big_box.position.x, big_box.position.y, big_box.position.z);
+big_box.target_rotation = new Vector(big_box.rotation.x, big_box.rotation.y, big_box.rotation.z);
+// big_box.position.normalize();
+// big_box.position.multiplyScalar( Math.random() * 20 + 15 );
+// big_box.s = 1;
+// big_box.counter = random(-18,18);
+// big_box.s2 = 1;
+// big_box.me = i%3;
+
+scene.add( big_box);
+
+///////////////
+
+
+var scale_factor = 1;
+var red = false;
+
+controls = new THREE.OrbitControls( camera, renderer.domElement );
+controls.enableDamping = true;
+controls.dampingFactor = 0.25;
+controls.enableZoom = false;
+
+camera.position.z = 30;
+
+camera.target_rotation = new THREE.Euler().copy( camera.rotation );;
+camera.target_position = new THREE.Euler().copy( camera.position );;
+camera.target_position.set(camera.position.x, camera.position.y, camera.position.z)
+
+
+console.log(camera.target_position);
+
+var cz = camera.position.z;
+
+var block_size = 1;
+
+//var grid = new Grid(40, 30)
+var engine = new particleEngine(40, 30);
+var boxes = [];
+
+var num = 0;
+
+/////// SETUP A MATRIX OF CUBES
+var i, j, ux, uy, ox, oy;
+
+ux = 1 / engine.grid.grid_w;
+uy = 1 / engine.grid.grid_h;
+var box_group = new THREE.Group();
+box_group.target = box_group.start = new THREE.Vector3(xx, yy, -20);
+box_group.target_scale = box_group.scale = new THREE.Vector3(0.1, 0.1, 0.1);
+box_group.target_rotation = new THREE.Vector3(box_group.rotation.x, box_group.rotation.y, box_group.rotation.z);
+box_group.visible = false;
+
+for (var i = 0; i < engine.length; i++) {
+
+  var p = engine.particles[i];
+  ox = p.x;
+  oy = p.y;
+
+  geometry = new THREE.BoxGeometry( block_size, block_size, block_size);
+  geometry.dynamic = true;
+
+  change_uvs( geometry, ux, uy, ox, oy );
+
+    //var pos = x+y*x;
+    boxes[num] = new THREE.Mesh( geometry, material );
+
+    var xx = (ox * block_size);
+    var yy = (oy * block_size);
+
+    //boxes[num].start = new THREE.Vector3();
+    //boxes[num].target = new THREE.Vector3();
+    boxes[num].position.x = xx;
+    boxes[num].position.y = yy;
+    boxes[num].position.z = -10;
+
+    //if(chance(2)) boxes[num].visible = false
+    boxes[num].target = boxes[num].start = new THREE.Vector3(xx, yy, -10);
+    boxes[num].target_scale = boxes[num].scale = new THREE.Vector3(0.1, 0.1, 0.1);
+    boxes[num].target_rotation = new THREE.Vector3(boxes[num].rotation.x, boxes[num].rotation.y, boxes[num].rotation.z);
+    //boxes[num].visible = false;
+    box_group.add( boxes[num] );
+    num++;
+
+}
+
+scene.add(box_group);
+
+// big_box.visible = false;
+// box_group.visible = true;
+
+
+///////////////////////////////////// END SETUP
+
+
+function draw() {
+  ctx.background(0);
+  ctx.drawImage(video, 0, 0, w, h);
+//   //if(chance(1500)) red = !red;
+//   //if (chance(200))camera.target_rotation.x += radians(90);
+//
+//   for (var i=0; i<circs.length; i++){
+//
+//     var p = circs[i];
+//     vol = map(mapSound(i, circs.length), 0, 200, 0, 5);
+//     p.r = vol;
+//
+//
+//
+//     if (red) {
+//       ctx.fillStyle= rgb(2*vol, 0, 0);
+//     } else {
+//       ctx.fillStyle= rgb(255-vol);
+//     }
+//
+// //    if (mode == 1) {
+//       ctx.fillRect(p.x, p.y, r, vol);
+//     //  } else {
+//     // ctx.fillRect(random(w), 0, vol, h);
+//     // }
+//
+//
+//   }
+  if (mode == 4) {
+    var b = boxes[randomInt(boxes.length-1)];
+    twistIndivBlock(b, radians(45), 0, 0);
+  }
+
+
+  texture.needsUpdate = true;
+
+  tweenCamera();
+  if (rotate_block == true) big_box.target_rotation.y +=0.01;
+  renderer.render( scene, camera );
+}
+
+
+//////////////// end draw ////////////////////
+
+
+function twistIndivBlock(b, x, y, z){
+  y = y | 0;
+  z = z | 0;
+  //threeShowAll();
+  var all_done = false;
+  //for (var i = 0; i < boxes.length; i++) {
+    //var b = boxes[i];
+
+    if(chance(10)) {
+      b.target_rotation.x += x;
+      b.target_rotation.y += y;
+      b.target_rotation.z += z;
+    }
+  //}
+}
+
+function tweenBlocks(){
+  //for (var i = 0; i < boxes.length; i++) {
+
+    var b = box_group;
+
+    b.position.x = tween(b.position.x, b.target.x, 20);
+    b.position.y = tween(b.position.y, b.target.y, 20);
+    b.position.z = tween(b.position.z, b.target.z, 20);
+
+    b.scale.x = tween(b.scale.x, b.target_scale.x, 20);
+    b.scale.y = tween(b.scale.y, b.target_scale.y, 20);
+    b.scale.z = tween(b.scale.z, b.target_scale.z, 20);
+
+    b.rotation.x = tween(b.rotation.x, b.target_rotation.x, 20);
+    b.rotation.y = tween(b.rotation.y, b.target_rotation.y, 20);
+    b.rotation.z = tween(b.rotation.z, b.target_rotation.z, 20);
+
+    for (var i = 0; i < boxes.length; i++) {
+
+      var b = boxes[i];
+
+      b.position.x = tween(b.position.x, b.target.x, 20);
+      b.position.y = tween(b.position.y, b.target.y, 20);
+      b.position.z = tween(b.position.z, b.target.z, 20);
+
+      b.scale.x = tween(b.scale.x, b.target_scale.x, 20);
+      b.scale.y = tween(b.scale.y, b.target_scale.y, 20);
+      b.scale.z = tween(b.scale.z, b.target_scale.z, 20);
+
+      b.rotation.x = tween(b.rotation.x, b.target_rotation.x, 20);
+      b.rotation.y = tween(b.rotation.y, b.target_rotation.y, 20);
+      b.rotation.z = tween(b.rotation.z, b.target_rotation.z, 20);
+
+    }
+}
+
+function moveBlocks(x, y, z){
+  y = y | 0;
+  z = z | 0;
+  threeShowAll();
+  var all_done = false;
+//  for (var i = 0; i < boxes.length; i++) {
+    var b = box_group;
+
+    //if(chance(50)) {
+      b.target.x = x;
+      b.target.y = y;
+      b.target.z = z;
+    //}
+  //}
+}
+
+
+//console.log(camera.target_rotation);
+function tweenCamera(){
+    camera.rotation.x = tween(camera.rotation.x, camera.target_rotation.x, 40);
+    camera.rotation.y = tween(camera.rotation.y, camera.target_rotation.y, 40);
+    camera.rotation.z = tween(camera.rotation.z, camera.target_rotation.z, 40);
+    //
+    camera.position.set = (tween(camera.position.x, camera.target_position.x, 40),
+    tween(camera.position.y, camera.target_position.y, 40),
+    camera.position.z = tween(camera.position.z, camera.target_position.z, 40));
+
+    //
+    var b = big_box;
+
+    b.position.x = tween(b.position.x, b.target_position.x, 40);
+    b.position.y = tween(b.position.y, b.target_position.y, 40);
+    b.position.z = tween(b.position.z, b.target_position.z, 40);
+
+    b.rotation.x = tween(b.rotation.x, b.target_rotation.x, 40);
+    b.rotation.y = tween(b.rotation.y, b.target_rotation.y, 40);
+    b.rotation.z = tween(b.rotation.z, b.target_rotation.z, 40);
+
+    tweenBlocks();
+}
+
+
+function mode1(){
+  mode = 1;
+  big_box.target_rotation.y = 0;
+  camera.target_position.z = 35;
+  rotate_block = true;
+
+}
+
+
+function mode2(){
+  mode = 2;
+  camera.target_position.z = 30;
+  rotate_block = false;
+  // for (i=0;i<plane.geometry.vertices.length;i++){
+  //   // t = map(audioChannelVolume[i],0,180, 0, 0.8);
+  //   t = map(mapSound(i, plane.geometry.vertices.length),0,180, 0, 0.8);
+  //   plane.geometry.vertices[i].z = tween(plane.geometry.vertices[i].z,t*scale_factor, 20);
+  //
+  // }
+
+  //scene.rotation.y+=0.01;
+
+}
+
+
+function mode3(){
+  threeShowAll();
+}
+
+function mode4(){
+  mode = 4;
+}
+
+
+
+
+function threeShowAll(){
+    big_box.visible = false;
+    box_group.visible = true;
+  // for (var i = 0; i < boxes.length; i++) {
+  //   var b = boxes[i];
+  //   b.visible = true;
+  // }
+}
+
+function threeHideAll(){
+  big_box.visible = true;
+  box_group.visible = false;
+  big_box.target_rotation.y = 0;
+  // }
+}
+
+
+/////////////////////////////
+
+
+function change_uvs( geometry, unitx, unity, offsetx, offsety ) {
+
+  var faceVertexUvs = geometry.faceVertexUvs[ 0 ];
+
+  for ( var i = 0; i < faceVertexUvs.length; i ++ ) {
+
+    var uvs = faceVertexUvs[ i ];
+
+    for ( var j = 0; j < uvs.length; j ++ ) {
+
+      var uv = uvs[ j ];
+
+      uv.x = ( uv.x + offsetx ) * unitx;
+      uv.y = ( uv.y + offsety ) * unity;
+
+    }
+
+  }
+
+}
+
+
+
+
+/////////////// quicksettings
+
+
+var settings = QuickSettings.create();
+// QuickSettings.useExtStyleSheet();
+settings.setGlobalChangeHandler(draw);
+//settings.addRange(title, min, max, value, step, callback);
+settings.addRange("camera.target_position.z", -100, 100, cz, 0.1, function(value) {
+  camera.target_position.z = value;
+  draw();
+});
+settings.addRange("big_box.position.x", -100, 100, 0, 1, function(value) {
+  big_box.target_position.x = value;
+  draw();
+});
+settings.addRange("big_box.position.y", -100, 100, 0, 1, function(value) {
+  big_box.target_position.y = value;
+  draw();
+});
+settings.addRange("big_box.position.z", -100, 100, 0, 1, function(value) {
+  big_box.target_position.z = value;
+  draw();
+});
+
+settings.addRange("small_boxes.position.z", -80, 80, 0, 0.01, function(value) {
+  moveBlocks(0, 0, value);
+  //scene.rotation.x = radians(value);
+  draw();
+});
+settings.addRange("scene.rotation.y", -180, 180, 0, 0.01, function(value) {
+  scene.rotation.y = radians(value);
+  draw();
+});
+settings.addRange("big_box.scale.x", 0.1, 5, 1, 0.1, function(value) {
+  big_box.scale.x = value;
+  draw();
+});
+settings.addRange("big_box.scale.y", 0.1, 5, 1, 0.1, function(value) {
+  big_box.scale.y = value;
+  draw();
+});
+
+settings.addBoolean("rotate", false, function(value) {
+  rotate_block = value;
+  draw();
+});
+
+settings.addButton("Mode1", function(value) {
+mode1();
+})
+settings.addButton("Mode2", function(value) {
+mode2();
+})
+settings.addButton("Mode3", function(value) {
+mode3();
+})
+settings.addButton("Mode4", function(value) {
+mode4();
+})
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

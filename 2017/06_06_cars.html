@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var particles = [];
+var grid_w = 1;
+var grid_h = 1;
+var grid = createGrid(grid_w, grid_h, w/2,h);
+var num_particles = grid_w * grid_h;
+ctx.strokeWeight(1);
+var margin = 100;
+var count = 0;
+
+var url = "../data/NYPD_Motor_Vehicle_Collisions_sample.csv";
+var minXDataPoint = 1000;
+var maxXDataPoint = -1000
+var minYDataPoint = 1000;
+var maxYDataPoint = -1000;
+d3.csv(url, function(data) {
+		//console.log(data);
+		// var minXDataPoint = d3.min(data, function(d) { return d.LATITUDE;});
+  	// var maxXDataPoint = d3.max(data, function(d) { return d.LATITUDE;});
+  	// var minYDataPoint = d3.min(data, function(d) { return d.LONGITUDE;});
+  	// var maxYDataPoint = d3.max(data, function(d) { return d.LONGITUDE;});
+		for (var i = 0; i < data.length; i++) {
+			var d = data[i];
+			//console.log(d.LONGITUDE);
+			if (d.LATITUDE !=0 && d.LATITUDE < minXDataPoint) minXDataPoint = d.LATITUDE;
+			if (d.LATITUDE !=0 && d.LATITUDE > maxXDataPoint) maxXDataPoint = d.LATITUDE;
+			if (d.LONGITUDE !=0 && d.LONGITUDE < minYDataPoint) minYDataPoint = d.LONGITUDE;
+			if (d.LONGITUDE !=0 && d.LONGITUDE > maxYDataPoint) maxYDataPoint = d.LONGITUDE;
+			//
+		}
+
+
+  		var xScale = d3.scale.linear()
+        .domain([minXDataPoint, maxXDataPoint])
+        .range([ 0 + margin, w - margin]);
+
+			var yScale = d3.scale.linear()
+        .domain([minYDataPoint, maxYDataPoint])
+        .range([0 + margin, h - margin]);
+
+			// console.log(minYDataPoint);
+			// console.log(maxYDataPoint);
+			console.log(data.length);
+
+  	for (var i = 0; i < data.length; i++) {
+				var injured = 0, killed = 0;
+				var d = data[i];
+				injured += parseInt(d['NUMBER OF CYCLIST INJURED']);
+				killed += parseInt(d['NUMBER OF CYCLIST KILLED']);
+				injured += parseInt(d['NUMBER OF MOTORIST INJURED']);
+				killed += parseInt(d['NUMBER OF MOTORIST KILLED']);
+				injured += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+				killed += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+				injured += parseInt(d['NUMBER OF PERSONS INJURED']);
+				killed += parseInt(d['NUMBER OF PERSONS KILLED']);
+				//if(d['NUMBER OF CYCLIST INJURED'] > )
+				//console.log(d);
+				// var x = map(d.LATITUDE, minXDataPoint, maxXDataPoint, 0, w);
+				// var y = map(d.LONGITUDE, minYDataPoint, maxYDataPoint, 0, h);
+				var x = map(i, 0, data.length, 0, w);
+				var y = map(injured+killed, 0, 10, 0, h);
+					if (particles.length == 0 || !checkCloseness(i, x, y)) {
+						addParticle(x, y, injured, killed);
+					}
+
+		}
+		console.log(particles.length);
+
+});
+
+
+function checkCloseness(i, x, y){
+	var hit = false;
+	for (var j = i + 1; j < particles.length; j++) {
+		var p = particles[j];
+		var distance = dist(x,y, p.x, p.y);
+
+		if ( distance < p.sz + 4) {
+			p.sz += 0.6;
+			//hit = true;
+			return true;
+		}
+		//if (hit == false) addParticle(x, y);
+	}
+}
+
+
+function draw(){
+
+	ctx.background(255);
+	moveParticles();
+	drawParticles();
+	if (count < particles.length) count+=4;
+}
+
+
+
+function addParticle(_x, _y, injured, killed){
+	//console.log(injured);
+	var particle = {
+		x: _x,
+		y: _y,
+		injured: injured,
+		killed: killed,
+		move: true,
+		// sz: 2 + 2* killed + injured,
+		sz: 2 + 4* killed + 2*injured,
+		me: particles.length
+	}
+
+	particles.push(particle);
+
+}
+
+
+function moveParticles(_i){
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		checkHit(p);
+		if(p.move) p.sz+=0.2;
+	// if (Math.round(p.x/10) == Math.round(p.target_x/10) && Math.round(p.y/10) == Math.round(p.target_y/10) && p.move == true) {
+	// 		p.move = false;
+	// 		console.log("next");
+	//
+	// }
+	// if(p.move) {
+	// 	p.x = tween(p.x, p.target_x, 2);
+	// 	p.y = tween(p.y, p.target_y, 2);
+	// }
+
+
+}
+}
+
+function drawParticles(){
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		ctx.strokeStyle = "#000";
+		ctx.strokeEllipse( p.x, p.y, p.sz-1, p.sz-1);
+		if(p.injured > 0 || p.killed > 0) {
+			ctx.fillStyle = "black";
+			ctx.fillEllipse(p.x, p.y, p.sz/2, p.sz/2);
+		}
+		if(i > 0) ctx.line(p.x, p.y, particles[i-1].x, particles[i-1].y);
+	}
+}
+
+
+function checkHit(p){
+	for (var j = 0; j < particles.length; j++) {
+		var pp = particles[j];
+		if (p.me!=j && dist(p.x, p.y, pp.x, pp.y) < (p.sz/2 + pp.sz/2)) {
+			pp.move = false;
+			p.move = false;
+		}
+	}
+}
+
+</script>
+
+</body>
+</html>

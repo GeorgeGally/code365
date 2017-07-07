@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+
+ctx.lineWidth = 5;
+ctx.linecap = "round";
+
+var counter=0;
+var radius=200;
+var colours=["#379392","#2E4952", "#0BC9C7"];
+var circle_resolution =360;
+var waves_amount=12;
+var wave_height=0.1*radius;
+var sine_pct=0.5; // setting in percantage how big is the part
+var engines = [];
+for (var i = 0; i < 3; i++) {
+  engines[i] = new particleEngine(circle_resolution, 1);
+}
+// var engine = new particleEngine(circle_resolution, 1);
+// var engine = new particleEngine(circle_resolution, 1);
+// var engine = new particleEngine(circle_resolution, 1);
+// var particles = engine.particles;
+for (var j = 0; j < 3; j++) {
+  var particles = engines[j].particles;
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    var pt = degreesToPoint(i, radius);
+    p.pos.x = p.target.x = w/2 + pt.x;
+    p.pos.y = p.target.y = h/2 + pt.y;
+  }
+}
+
+
+function draw() {
+  ctx.background(0);
+
+  // //particles = engine.particles;
+
+  for (var j = 0; j < 3; j++) {
+    engines[j].update();
+    ctx.strokeStyle = colours[j];
+    var particles = engines[j].particles;
+  for (var i = 1; i < particles.length; i++) {
+    var p = particles[i];
+    p.target = generate_points(i, j);
+    ctx.line(p.pos.x, p.pos.y, particles[i-1].pos.x, particles[i-1].pos.y);
+  }
+  particles[0].target = generate_points(0,1);
+  ctx.line(particles[0].pos.x, particles[0].pos.y, particles[particles.length-1].pos.x, particles[particles.length-1].pos.y);
+
+}
+}
+
+function generate_points(i, wave_type){
+
+ //var new_poistions=[];
+ //for (var i = 0; i <=  circle_resolution; i++) {
+  var angle=Math.PI/180*i;
+  var radius_addon=0;
+  var speed_incrementer=frameCount/50;
+
+  if(i<sine_pct*circle_resolution||i==circle_resolution){
+    var smoothing_amount=0.14;
+    var smooth_pct=1;
+    if(i<sine_pct*circle_resolution*smoothing_amount)smooth_pct=i/(sine_pct*circle_resolution*smoothing_amount);
+    if(i>sine_pct*circle_resolution*(1-smoothing_amount)&&i<=sine_pct*circle_resolution)smooth_pct=(sine_pct*circle_resolution-i)/(sine_pct*circle_resolution*smoothing_amount);
+    if(i==circle_resolution)smooth_pct=0;
+
+
+    if(wave_type==1) radius_addon=wave_height*smooth_pct*Math.cos((angle+speed_incrementer)*waves_amount);
+    if(wave_type==0) radius_addon=wave_height*smooth_pct*Math.sin((angle+speed_incrementer)*waves_amount);
+    if(wave_type==2) radius_addon=wave_height*smooth_pct*Math.cos((angle+Math.PI/180*45+speed_incrementer)*waves_amount);
+  }
+
+  var x = w/2 + (radius+radius_addon) * Math.cos(angle+speed_incrementer);
+  var y = wave_type*10 + h/2 + (radius+radius_addon) * Math.sin(angle+speed_incrementer);
+  var z=0;
+
+  //new_poistions.push(new Vector(x, y, z));
+//}
+
+return new Vector(x, y, z);
+}
+
+
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+
+</html>

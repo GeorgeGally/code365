@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+ctx.font="22px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/train_data.csv';
+var engine = new particleEngine(0);
+engine.border = false;
+var movements = [];
+var sticker = 40;
+
+d3.csv(url, function(error, data) {
+
+  if (error) console.log(error);
+
+  movements = data;
+  console.log(movements);
+
+});
+
+
+var counter = 0;
+var bar_ht = 20;
+var max_wi = 0;
+var max_wo = 0;
+var max_ei = 0;
+var max_eo = 0;
+var pos = 0;
+var friction = 0.95;
+var passengers = 0;
+ctx.background(0);
+
+var start_time = Date.now(); // set starttime
+console.log(start_time);
+
+function draw() {
+
+  ctx.background(0, 0.04);
+  //ctx.background(0);
+  ctx2.clearRect(0,0,w,h);
+
+
+  if (movements.length > 0 && counter < movements.length) {
+    var d = movements[counter];
+    pos = map(passengers, 0, 380000, 0, w);
+    ctx2.fillStyle = "white";
+    console.log(addZero(d.uur));
+    ctx2.save();
+    ctx2.translate(w-100, h/2);
+    ctx2.rotateDegrees(-90);
+    ctx2.fillText("SOUTH", 0, 0);
+    ctx2.restore();
+
+    ctx2.fillText(d.datum + " " + addZero(d.uur) + ":" + addZero(d.minuut), pos, h-150);
+    d.West_uit = parseInt(d.West_uit);
+    d.Oost_uit = parseInt(d.Oost_uit);
+    passengers += d.West_uit;
+    passengers += d.Oost_uit;
+    for (var i = 0; i < d.West_uit/10; i++) {
+        addParticle(-1);
+    }
+
+      for (var i = 0; i < d.Oost_uit/10; i++) {
+        addParticle(1);
+      }
+  }
+
+  counter++;
+  //engine.update();
+
+  //
+  for (var i = engine.particles.length-1; i >=0; i--) {
+    p = engine.particles[i];
+    moveParticle(p);
+    // ctx.fillStyle = rgba(255, 0.4);
+    ctx.fillStyle = p.c;
+    ctx.LfillEllipse(sticky(p.pos.x,10), sticky(p.pos.y,10), p.sz, p.sz);
+    if(p.pos.x > w || p.sz < 0.1) {
+      engine.delete(p.me)
+    }
+  }
+
+  drawGraph();
+}
+
+
+function addParticle(dir){
+  engine.add(1, 1);
+  var p = engine.last;
+  p.dir.x = 1;
+  var y = h/2  + dir * 150
+  p.pos = p.target = new Vector(random(-10,0), y);
+  p.sz = 6;
+  p.vx = 0;
+  p.vy = 0;
+  p.c = rgba(0, random(0, 255), 0, 1);
+}
+
+function moveParticle(p) {
+  p.vx += random(-0.1,0.4);
+  p.vy += random(-0.6,0.6);
+
+  p.vx *= friction;
+  p.vy *= friction;
+  p.target.x += p.vx;
+  p.target.y += p.vy;
+  //p.target.x += random(0.5);
+  if(chance(10)) p.sz -= 0.1;
+  // if(chance(50)) p.target.y += random(-5, 5);
+}
+
+function drawGraph(){
+  //ctx2.clearRect(0, 0, w, h);
+  ctx2.fillStyle = "white";
+  ctx2.fillRect(0, h-180, w, 6);
+  //
+  ctx2.fillText("Central Station passengers exiting", pos, h - 215);
+  ctx2.fillText("Passenger number: " + passengers + ". Expected this month: 380 000", pos, h - 200);
+
+  ctx2.fillStyle = "#0f94c7";
+  ctx2.fillRect(0, h-180, pos, 6);
+
+  //counter+=4;
+}
+
+
+</script>
+
+</body>
+
+</html>

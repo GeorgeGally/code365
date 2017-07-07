@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>video texture</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+
+
+		</style>
+	</head>
+	<body>
+
+
+
+    <script language="javascript" src="../js/creative_coding.js"></script>
+
+<script language="javascript" src="../js/canvas.js"></script>
+		<script src="../js/three.js"></script>
+
+		<script src="../js/threejs/shaders/ConvolutionShader.js"></script>
+		<script src="../js/threejs/shaders/CopyShader.js"></script>
+
+		<script src="../js/threejs/postprocessing/EffectComposer.js"></script>
+		<script src="../js/threejs/postprocessing/RenderPass.js"></script>
+		<script src="../js/threejs/postprocessing/MaskPass.js"></script>
+		<script src="../js/threejs/postprocessing/BloomPass.js"></script>
+		<script src="../js/threejs/postprocessing/ShaderPass.js"></script>
+
+		<script src="../js/Detector.js"></script>
+
+		<video id="video" autoplay loop webkit-playsinline style="display:none">
+			<source src="../img/textures/sintel.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+			<source src="../img/textures/sintel.ogv" type='video/ogg; codecs="theora, vorbis"'>
+		</video>
+
+		<script>
+
+    var ctx = createHiddenCanvas('canvas1');
+    var canvas = document.getElementById('canvas1');
+
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+			var container;
+
+			var camera, scene, renderer;
+
+			var texture, material, mesh;
+
+			var composer;
+
+			var mouseX = 0;
+			var mouseY = 0;
+      var xsize, ysize;
+			var windowHalfX = w / 2;
+			var windowHalfY = h / 2;
+
+			var cube_count,
+
+				meshes = [],
+				materials = [],
+
+				xgrid = 40,
+				ygrid = 30;
+
+			init();
+
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.z = 800;
+
+				scene = new THREE.Scene();
+
+				var light = new THREE.DirectionalLight( 0xffffff );
+				light.position.set( 0.5, 1, 1 ).normalize();
+				scene.add( light );
+
+				renderer = new THREE.WebGLRenderer( { antialias: false } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				//video = document.getElementById( 'video' );
+
+				texture = new THREE.Texture( canvas );
+				texture.minFilter = THREE.LinearFilter;
+				texture.magFilter = THREE.LinearFilter;
+				texture.format = THREE.RGBFormat;
+
+				//
+
+				var i, j, ux, uy, ox, oy,
+					geometry;
+
+				ux = 1 / xgrid;
+				uy = 1 / ygrid;
+
+				xsize = w / xgrid;
+				ysize = h / ygrid;
+
+				var parameters = { color: 0xffffff, map: texture };
+
+				cube_count = 0;
+
+				for ( i = 0; i < xgrid; i ++ )
+				for ( j = 0; j < ygrid; j ++ ) {
+
+					ox = i;
+					oy = j;
+
+					geometry = new THREE.BoxGeometry( xsize, ysize, xsize );
+
+					change_uvs( geometry, ux, uy, ox, oy );
+
+					materials[ cube_count ] = new THREE.MeshLambertMaterial( parameters );
+
+					material = materials[ cube_count ];
+
+					//material.hue = i/xgrid;
+					material.saturation = 0 - j/ygrid;
+
+					//material.color.setHSL( material.hue, material.saturation, 0.5 );
+
+					mesh = new THREE.Mesh( geometry, material );
+
+					mesh.position.x =   ( i - xgrid/2 ) * xsize;
+					mesh.position.y =   ( j - ygrid/2 ) * ysize;
+					mesh.position.z = 0;
+
+					mesh.scale.x = mesh.scale.y = mesh.scale.z = 1;
+
+					scene.add( mesh );
+
+					mesh.dx = 0.001 * ( 0.5 - Math.random() );
+					mesh.dy = 0.001 * ( 0.5 - Math.random() );
+
+					meshes[ cube_count ] = mesh;
+
+					cube_count += 1;
+
+				}
+
+				renderer.autoClear = false;
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+				// postprocessing
+
+				// var renderModel = new THREE.RenderPass( scene, camera );
+				// var effectBloom = new THREE.BloomPass( 1.3 );
+				// var effectCopy = new THREE.ShaderPass( THREE.CopyShader );
+        //
+				// effectCopy.renderToScreen = true;
+
+				// composer = new THREE.EffectComposer( renderer );
+        //
+				// composer.addPass( renderModel );
+				// composer.addPass( effectBloom );
+				// composer.addPass( effectCopy );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				//composer.reset();
+
+			}
+
+			function change_uvs( geometry, unitx, unity, offsetx, offsety ) {
+
+				var faceVertexUvs = geometry.faceVertexUvs[ 0 ];
+
+				for ( var i = 0; i < faceVertexUvs.length; i ++ ) {
+
+					var uvs = faceVertexUvs[ i ];
+
+					for ( var j = 0; j < uvs.length; j ++ ) {
+
+						var uv = uvs[ j ];
+
+						uv.x = ( uv.x + offsetx ) * unitx;
+						uv.y = ( uv.y + offsety ) * unity;
+
+					}
+
+				}
+
+			}
+
+
+			function onDocumentMouseMove(event) {
+
+				mouseX = ( event.clientX - windowHalfX );
+				mouseY = ( event.clientY - windowHalfY ) * 0.3;
+
+			}
+
+			//
+
+
+
+			var h, counter = 1;
+
+			function draw() {
+
+				var time = Date.now() * 0.00005;
+
+				camera.position.x += ( mouseX - camera.position.x ) * 0.05;
+				camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
+
+				camera.lookAt( scene.position );
+
+				for ( i = 0; i < cube_count; i ++ ) {
+
+					material = materials[ i ];
+
+					h = ( 360 * ( material.hue + time ) % 360 ) / 360;
+					material.color.setHSL( h, material.saturation, 0.5 );
+
+				}
+
+				if ( counter % 1000 > 200 ) {
+
+					for ( i = 0; i < cube_count; i ++ ) {
+
+						mesh = meshes[ i ];
+
+						mesh.rotation.x += 10 * mesh.dx;
+						mesh.rotation.y += 10 * mesh.dy;
+
+						mesh.position.x += 200 * mesh.dx;
+						mesh.position.y += 200 * mesh.dy;
+						mesh.position.z += 400 * mesh.dx;
+
+					}
+
+				}
+
+				if ( counter % 1000 === 0 ) {
+
+					for ( i = 0; i < cube_count; i ++ ) {
+
+						mesh = meshes[ i ];
+
+						mesh.dx *= -1;
+						mesh.dy *= -1;
+
+					}
+
+				}
+
+				counter ++;
+
+            ctx.background(random(255),0,0);
+            ctx.fillStyle = "white";
+            var x = width/2 + Math.sin(frameCount/10)*width/2;
+            ctx.fillRect(x, 0, x, h);
+            var y = height/2 + Math.cos(frameCount/10)*height/2;
+            // var x = w/2 + Math.sin(frameCount/10)*w/2;
+            ctx.fillStyle = "orange";
+            ctx.fillEllipse(x, y, 100, 100);
+            //getColours();
+            //texture.needsUpdate = true;
+            // texture.minFilter = THREE.LinearFilter;
+            // texture.magFilter = THREE.LinearFilter;
+            // texture.format = THREE.RGBFormat;
+            // renderer.autoClear = false;
+
+            ctx.fillStyle = "black";
+            ctx.fillEllipse(w/2, h/2, x/2, x/2);
+            renderer.clear();
+            renderer.render(scene, camera); //Same as how you always render a 3js scene
+
+            renderer.clear();
+            //composer.render();
+            renderer.render(scene, camera);
+
+      }
+
+
+
+
+      function getColours(){
+
+        //hidden_ctx.drawImage(video,0,0,video.width, video.height);
+      	sample = ctx.getImageData(0, 0, w, h);
+      	var buffer = new Uint32Array(sample.data.buffer);
+
+        var num = 0;
+
+      	for (var y = canvas.height; y > 0 ; y-=ysize) {
+
+      		for (var x = canvas.width; x > 0 ; x-=xsize) {
+
+      			var pos = x + y * canvas.width;
+      			var r1 = buffer[pos] >> 0 & 0xff;
+      			var g1 = buffer[pos] >> 8 & 0xff;
+      			var b1 = buffer[pos] >> 16 & 0xff;
+
+            var pos2 = x + xsize/2 + (y + ysize/2) * canvas.width;
+      			var r2 = buffer[pos2] >> 0 & 0xff;
+      			var g2 = buffer[pos2] >> 8 & 0xff;
+      			var b2 = buffer[pos2] >> 16 & 0xff;
+
+            var r = (r1 + r2) / 2;
+            var g = (g1 + g2) / 2;
+            var b = (b1 + b2) / 2;
+
+
+            var bright = brightness(r,g,b);
+            var bb = map(brightness(r,g,b), 0, 100, 1, 10);
+            // boxes[num].scale.z = bb;
+            //boxes[num].scale.z = bb;
+            num++;
+
+          }
+        }
+
+      }
+
+
+		</script>
+
+	</body>
+</html>

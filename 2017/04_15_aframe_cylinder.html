@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script src="../js/aframe.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/aframe-sun-sky.min.js"></script>
+
+</head>
+<body>
+<script>
+var ctx = createHiddenCanvas("canvas1");
+//var ctx = createCanvas("canvas1");
+canvas.style.zIndex = 100;
+w = canvas.width = 600;
+h = canvas.height = 600;
+
+</script>
+
+  <a-scene>
+    <a-sun-sky material="sunPosition: -0.2 5 -5"></a-sun-sky>
+      <a-cylinder id="box1" position="10 0.5 10.2" normal-texture-offset="0 1" metalness="0.26" segments-height="52" segments-width="40" radius="1.5" height="2.5" src="#canvas1" color="#efefef"></a-sphere>
+        <a-plane position="0 -1.5 0" width="25" height="15" rotation="-80"></a-plane>
+      <a-entity position="0 -1 4">
+        <a-camera></a-camera>
+      </a-entity>
+    </a-scene>
+
+<script>
+var scene = document.querySelector('a-scene');
+var box;
+var block_size = 1;
+var box1 = document.getElementById('box1');
+var rotation = new Vector(90,45,0);
+var engine = new particleEngine(40);
+var radius = 250;
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.width = randomInt(10);
+  p.angle = distributeAngles(i, engine.particles.length);
+  p.speed.x = random(1,10);
+  getPos(p, radius);
+  //console.log(p);
+}
+
+
+function getPos(p, radius) {
+  p.pos.x = Math.sin(radians(p.angle)) * w/2;
+  p.pos.y = Math.cos(radians(p.angle)) * h/2;
+  //return p;
+}
+
+
+function draw() {
+  ctx.background("#fff");
+  ctx.strokeStyle = "white";
+  box1.setAttribute('rotation', {x: rotation.x+=0, y: rotation.y+=0.1, z: rotation.z-=0});
+  ctx.fillStyle = "black";
+  moveParticles();
+  drawParticles();
+}
+
+
+function moveParticles(){
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i]
+    p.angle += 1;
+
+    getPos(p, radius);
+
+  }
+}
+
+function drawParticles(){
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i]
+    ctx.lineWidth = p.width;
+    //ctx.line(p.pos.x, 0, p.pos.x, h);
+    ctx.HfillEllipse(w/2, h/2, Math.sin(frameCount/100)*w, Math.sin(frameCount/100)*w);
+  }
+}
+
+
+</script>
+
+
+</body>
+
+</html>

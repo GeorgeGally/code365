@@ -35,6 +35,10 @@ var particleEngine = function(_num_particles, _grid){
 	}
 
 
+this.get = function(i){
+	return this.particles[i];
+}
+
 this.addParticle = function(_x, _y, _colour, _me){
 
 		_x = _x || w/2;

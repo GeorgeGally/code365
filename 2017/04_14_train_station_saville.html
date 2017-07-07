@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var block_size = 30;
+
+var ww = 40;
+var hh = 120;
+
+var engine = new particleEngine(ww, hh, w+400, h+800, -200, -400);
+engine.tween_speed = 5;
+engine.border = false;
+
+engine.grid.createGrid();
+engine.tween_speed = 2;
+console.log(engine);
+
+for (var i = 0; i < engine.length; i++) {
+  var p = engine.particles[i];
+  p.speed = new Vector(0,1);
+  p.tween_speed = 8;
+  p.target.y = p.start.y;
+  p.tween = true;
+}
+
+
+var balls = new particleEngine(10, hh);
+balls.border = false;
+for (var i = 0; i < balls.length; i++) {
+  var b = balls.particles[i];
+  b.speed.y = 1;
+  b.speed.x = random(1, 20)/5;
+  b.pos.x = random(w);
+  b.sz = random(2, 8);
+}
+
+
+function draw() {
+
+  hidden_ctx.drawImage(video,0,0,w,h);
+  sample = hidden_ctx.getImageData(0, 0, w, h);
+  //sample = greyscale(sample);
+
+
+  // var buffer = new Uint32Array(sample.data.buffer);
+var buffer = new Uint32Array(sample.data);
+
+  ctx.background(0);
+  ctx2.clearRect(0,0, w, h);
+
+  engine.update();
+  // engine2.update();
+
+
+  for (var i = 0; i < engine.particles.length-1; i++) {
+    var p = engine.particles[i];
+    var p2 = engine.particles[i+1];
+
+    var pos = (Math.floor(p.pos.x) + Math.floor(p.pos.y) * w)*4;
+    var r = buffer[pos];
+    var g = buffer[pos+1];
+    var b = buffer[pos+2];
+    ctx.fillStyle = rgb(r,g,b);
+    var sz = brightness(r,g,b, block_size*2) - block_size;
+    p.target.y = p.start.y + sz;
+
+    if (p.row == p2.row) {
+        ctx.strokeStyle = "white";
+        ctx.line(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y);
+        for (var j = 0; j < balls.length; j++) {
+          var b = balls.particles[j];
+          if (b.row == p.row) {
+            moveBalls(b, p, p2);
+          }
+        }
+      }
+
+  }
+  drawBalls();
+}
+
+function moveBalls(ball, p, p2){
+
+  if (ball.pos.x >= p2.pos.x && ball.pos.x < p.pos.x) {
+    var dx = p.target.x - p2.target.x;
+    var dy = p.target.y - p2.target.y;
+
+  var tx = p.target.x - ball.pos.x,
+      ty = p.target.y - ball.pos.y,
+      dist = Math.sqrt(tx*tx+ty*ty),
+      rad = Math.atan2(ty,tx),
+      angle = rad/Math.PI * 180;;
+      velX = (tx/dist)*1;
+      velY = (ty/dist)*4;
+
+      ball.pos.x += velX + random(0.1);
+      ball.pos.y += velY;
+
+  }
+
+  ball.pos.x = (ball.pos.x + random(0.1))%w;
+  //if (ball.pos.x > w + random(50)) p.pos.x = random(-100);
+}
+
+function drawBalls(){
+  for (var i = 0; i < balls.length; i++) {
+    var b = balls.particles[i];
+    ctx.fillStyle="white";
+    b.sz = map(Math.abs(b.start.y - b.pos.y), 0, engine.grid.spacing_y, 0.5, 4);
+    // ctx.fillEllipse(b.pos.x, b.pos.y , b.sz, b.sz);
+    //ctx.fillRect(b.pos.x, b.pos.y , b.sz, b.sz);
+    ctx.fillRect(b.pos.x, b.pos.y , 4, 4);
+  }
+}
+
+
+function drawGraphs(d){
+
+  ctx2.clearRect(0, 0, w, h);
+  ctx2.fillStyle = "black";
+  ctx2.fillRect(left_margin, h-170, 120, 15);
+  ctx2.fillStyle = "white";
+
+  ctx2.fillText(d.datum + " " + addZero(d.uur) + ":" + addZero(d.minuut), left_margin + 2, h - 160);
+
+  var wi = map(d.West_in, 0, 200, 0, w/4);
+  wi_bar = tween(wi_bar, wi, 40);
+  if (wi > max_wi) max_wi = wi;
+  ctx2.fillStyle = "white";
+  ctx2.fillRect(left_margin, h-140, max_wi, bar_ht);
+  ctx2.fillStyle = "#0f94c7";
+  ctx2.fillRect(left_margin, h-140, wi, bar_ht);
+  ctx2.fillStyle = "white";
+  ctx2.fillText(d.West_in, left_margin, h-120);
+
+  var wo = map(d.West_uit, 0, 200, 0, w/4);
+  wo_bar = tween(wo_bar, wo, 40);
+  if (wo > max_wo) max_wo = wo;
+  ctx2.fillStyle = "white";
+  ctx2.fillRect(left_margin, h-110, max_wo, bar_ht);
+  ctx2.fillStyle = "#0f94c7";
+  ctx2.fillRect(left_margin, h-110, d.West_uit, bar_ht);
+  ctx2.fillStyle = "white";
+  ctx2.fillText(d.West_uit, left_margin, h-90);
+
+  var ei = map(d.Oost_in, 0, 200, 0, w)/4;
+  ei_bar = tween(ei_bar, ei, 40);
+  if (ei > max_ei) max_ei = ei;
+  ctx2.fillStyle = "white";
+  ctx2.fillRect(left_margin, h-80, max_ei, bar_ht);
+  ctx2.fillStyle = "#0f94c7";
+  ctx2.fillRect(left_margin, h-80, ei, bar_ht);
+  ctx2.fillStyle = "white";
+  ctx2.fillText(d.Oost_in, left_margin, h-60);
+
+  var eo = map(d.Oost_uit, 0, 200, 0, w/4);
+  eo_bar = tween(eo_bar, eo, 40);
+  if (eo > max_eo) max_eo = eo;
+  ctx2.fillStyle = "white";
+  ctx2.fillRect(left_margin, h-50, max_eo, bar_ht);
+  ctx2.fillStyle = "#0f94c7";
+  ctx2.fillRect(left_margin, h - 50, ei, bar_ht);
+  ctx2.fillStyle = "white";
+  ctx2.fillText(d.Oost_uit, left_margin, h - 30);
+  counter = (counter + 1);
+
+}
+
+
+
+</script>
+<!-- <script language="javascript" src="../js/motion_detection.js"></script> -->
+</body>
+
+</html>

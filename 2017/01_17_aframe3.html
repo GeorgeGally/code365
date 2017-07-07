@@ -8,7 +8,7 @@
 <script language="javascript" src="../js/canvas.js"></script>
 <script language="javascript" src="../js/vector.js"></script>
 <script language="javascript" src="../js/vector_particles.js"></script>
-<script language="javascript" src="../js/video.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
 <script src="../js/aframe.js"></script>
 <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
 <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
@@ -26,14 +26,16 @@
 
 <script>
 var scene = document.querySelector('a-scene');
-var block_size = 10;
+var block_size = 20;
 var boxes = [];
-var resolution = 5;
+var resolution = 10;
 var resolution_x = 320/resolution;
 var resolution_y = 240/resolution;
-var block_size = 0.10;
+var block_size = 0.20;
 var x_offset = -1*(resolution_x * block_size)/2;
 var y_offset = -1*(resolution_y * block_size)/2+1.4;
+
+hidden_ctx = createHiddenCanvas("canvas2");
 
 function setup(){
 var num = 0;
@@ -86,7 +88,7 @@ function getColours(){
 			var b = buffer[pos] >> 16 & 0xff;
 
       var bright = brightness(r,g,b);
-      var bb = map(brightness(r,g,b), 0, 100, 1, 30);
+      var bb = map(brightness(r,g,b), 0, 100, 1, 20);
       var c = rgb(r,g,b);
       var c = rgb(r,r,r);
       boxes[num].setAttribute('scale', {x: 1, y: 1, z: bb});

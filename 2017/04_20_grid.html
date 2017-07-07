@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+ctx2.font="10px Arial";
+var grid = new particleEngine(20, 15);
+var engine = new particleEngine(5, 1);
+var hit_dist = 140;
+var sz = 12;
+
+console.log(grid);
+
+for (var i = 0; i < grid.length; i++) {
+  var g = grid.particles[i];
+  g.sz = sz;
+  g.start_sz = sz;
+  if(chance(5)) {
+    g.on = false;
+  } else {
+    g.on = true;
+  }
+}
+
+function draw() {
+  ctx.background(0);
+  ctx2.clearRect(0, 0, w, h);
+  ctx.fillStyle = "white";
+  ctx2.fillStyle = "black";
+
+
+
+  moveGrid();
+  drawGrid();
+
+}
+
+function newPosX(p){
+  var new_horiz = randomInt(grid.grid.num_items_horiz);
+  var g = grid.particles[new_horiz];
+  if(g.on == false) p.target.x = g.target.x;
+}
+
+function newPosY(p){
+  var new_vert = randomInt(grid.grid.num_items_vert);
+  var g = grid.particles[new_vert];
+  if(g.on == false) p.target.y = g.target.y;
+}
+
+
+function moveGrid(){
+  for (var i = 0; i < grid.length; i++) {
+    var g = grid.particles[i];
+    g.pos.x = tween(g.pos.x, g.target.x, 20);
+    g.pos.y = tween(g.pos.y, g.target.y, 20);
+    if (g.pos.x == g.target.x && g.pos.y == g.target.y && chance(1500)) newPosX(g);
+    if (g.pos.y == g.target.y && g.pos.x == g.target.x && chance(1500)) newPosY(g);
+  }
+}
+
+function drawGrid(){
+  for (var i = 0; i < grid.length; i++) {
+    var g = grid.particles[i];
+    //ctx2.fillEllipse(g.pos.x, g.pos.y, sz-2, sz-2);
+    if(g.on) ctx.fillEllipse(g.pos.x, g.pos.y, g.sz, g.sz);
+    //if (g.sz > g.start_sz) g.sz = tween(g.start_sz, g.sz, 35);
+    //g.sz-= 2;
+  }
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>

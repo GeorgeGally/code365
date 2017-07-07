@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+
+<!-- <script language="javascript" src="../js/physics2.js"></script> -->
+<script language="javascript" src="../js/three.min.js"></script>
+<script src="../js/cannon.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" /> -->
+ </head>
+ <body style="background: #fff">
+
+<script>
+var ctx = createCanvas("canvas1");
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+var num_particles = 390;
+var box = [];
+var timeStep=1/60;
+var d=0, t=0;
+
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+
+document.body.appendChild( renderer.domElement );
+
+//var geometry = new THREE.SphereGeometry( random(1, 4), 18, 18, 2 );
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+
+world = new CANNON.World();
+world.gravity.set(0,0,0);
+world.broadphase = new CANNON.NaiveBroadphase();
+world.solver.iterations = 10;
+
+
+
+for (var i = 0; i < num_particles; i++) {
+  var b = box[i];
+  var sz = random(1, 8);
+  var geometry = new THREE.BoxGeometry( sz, sz, sz );
+  geometry.dynamic = true;
+  b = new THREE.Mesh( geometry, dMaterial );
+
+  scene.add( b );
+  b.rotation.z += (i * Math.PI);
+  // plane[i].position.x = random(-15,15);
+  b.position.x = random(-70, 70);
+  b.position.y = random(-52,1);
+  b.position.z = random(12);
+  b.useQuaternion = true;
+  b.s = 1;
+  body = new CANNON.Body({
+    mass: sz/10
+  });
+  shape = new CANNON.Box(new CANNON.Vec3(1,1,1));
+  mass = 1;
+  //mesh.position.x = b.position.x;
+  //mesh.position.y = b.position.y;
+  // mesh.position.z = b.position.z;
+  // mesh.quaternion.x = b.quaternion.x;
+  // mesh.quaternion.y = b.quaternion.y;
+  // mesh.quaternion.z = b.quaternion.z;
+  // mesh.quaternion.w = b.quaternion.w;
+  body.addShape(shape);
+  body.angularVelocity.set(0,0.1,0);
+  body.angularDamping = 0.5;
+  world.addBody(body);
+
+
+}
+
+
+camera.position.z = 80;
+camera.near = 20;
+camera.far  = 95;
+
+function draw() {
+
+  //world.step(timeStep);
+  t+=.0001
+  d+=.01
+  for (var i = 0; i < num_particles; i++) {
+  b = box[i];
+  //updatePhysics(b);
+  // b.s = tween(b.s, map(mapSound(i, num_particles), 0, 150, 0.8, 2.4), 5);
+  // b.scale.x = b.s;
+  // b.scale.y = b.s;
+  // b.scale.z = b.s;
+
+  }
+
+  // scene.rotation.x+= 0.01;
+  // scene.rotation.y += 0.01;
+
+  renderer.render( scene, camera );
+};
+
+function updatePhysics(b) {
+         // Step the physics world
+
+         // Copy coordinates from Cannon.js to Three.js
+         mesh.position.copy(b.position);
+         mesh.quaternion.copy(b.quaternion);
+     }
+
+
+</script>
+<!-- <script language="javascript" src="../js/soundcloud.js"></script> -->
+</body>
+</html>

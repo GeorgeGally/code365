@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.font="16px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/train_data.csv';
+var engine = new particleEngine(0);
+engine.border = false;
+var movements = [];
+var sticker = 40;
+
+d3.csv(url, function(error, data) {
+
+  if (error) console.log(error);
+
+  movements = data;
+
+  //
+  // for (var i = 0; i < data.length; i++) {
+  //
+  //   var d = data[i];
+  //   //console.log(d);
+  //   //addFakeParticle(d);
+  //
+  //
+  //
+  //
+  // }
+
+
+});
+
+
+
+
+
+////////////////
+
+var counter = 0;
+var bar_ht = 20;
+var max_wi = 0;
+var max_wo = 0;
+var max_ei = 0;
+var max_eo = 0;
+
+var start_time = Date.now(); // set starttime
+console.log(start_time);
+
+function draw() {
+
+  ctx.background(0, 0.2);
+  if (movements.length > 0) {
+    var d = movements[counter];
+      //console.log(d.minuut);
+
+
+      ctx.fillStyle = "#0f94c7";
+      if(d.minuut < 10) d.minuut = "0" + d.minuut;
+      if(d.uur < 10) d.uur = "0" + d.uur;
+      ctx.fillText(d.datum + " " + d.uur + ":"+ d.minuut, 50, h-50);
+
+      //barGraphs(d);
+
+        engine.add(10, sticky(random(h), sticker));
+        var p = engine.last;
+        p.dir.x = 1;
+        p.sz = d.West_in;
+        //p.target.x = -10;
+        p.tween = false;
+        p.speed.x = random(5,15);
+        p.speed.y = 0;
+
+      // east in
+        engine.add(w, sticky(random(h), sticker));
+        var p = engine.last;
+        p.dir.x = -1;
+        p.sz = d.West_uit/5;
+        p.tween = false;
+        p.speed.x = random(5,15);
+        p.speed.y = 0;
+
+  }
+
+  counter++;
+  engine.update();
+
+
+  for (var i = engine.particles.length-1; i >=0; i--) {
+    p = engine.particles[i];
+    ctx.fillStyle = rgba(255, 0.8);
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+    if(p.pos.x > w || p.pos.x < 0) {
+      engine.delete(p.me)
+    }
+  }
+
+}
+
+function barGraphs(d){
+
+  var wi = map(d.West_in, 0, 200, 0, w);
+  if (wi > max_wi) max_wi = wi;
+  ctx.fillStyle = "red";
+  ctx.fillRect(0, 100, max_wi, bar_ht);
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 100, wi, bar_ht);
+  ctx.fillText(d.West_in, 50, 80);
+
+  var wo = map(d.West_uit, 0, 200, 0, w);
+  if (wo > max_wo) max_wo = wo;
+  ctx.fillStyle = "red";
+  ctx.fillRect(0, 200, max_wo, bar_ht);
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 200, d.West_uit, bar_ht);
+  ctx.fillText(d.West_uit, 50, 180);
+
+  var ei = map(d.Oost_in, 0, 200, 0, w);
+  if (ei > max_ei) max_ei = ei;
+  ctx.fillStyle = "red";
+  ctx.fillRect(0, 300, max_ei, bar_ht);
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 300, ei, bar_ht);
+  ctx.fillText(d.Oost_in, 50, 280);
+
+  var eo = map(d.Oost_uit, 0, 200, 0, w);
+  if (eo > max_eo) max_eo = eo;
+  ctx.fillStyle = "red";
+  ctx.fillRect(0, 400, max_eo, bar_ht);
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 400, ei, bar_ht);
+  ctx.fillText(d.Oost_uit, 50, 380);
+  counter = (counter + 1)
+}
+
+
+</script>
+
+</body>
+
+</html>

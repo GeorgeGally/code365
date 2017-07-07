@@ -13,7 +13,7 @@
 </head>
 
 <body style="background: #fff">
-   
+
 <script>
 
 // GLOBALS
@@ -28,7 +28,7 @@ var radius = 1;
 var d=0, t=0;
 
 
-// setup 3D environment 
+// setup 3D environment
 var scene = new THREE.Scene();
 var aspect = window.innerWidth / window.innerHeight;
 var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
@@ -74,7 +74,7 @@ var freq1 = 100;
 var freq2 = 62;
 
 audio.play = function () {
-    
+
     if(clock.tick){
       freq1 = bufferFreq * 1 + osc2.sinewave(bufferFreq * changeThis) * osc3.sinewave(0.185);
       //freq1 = bufferFreq*osc2.sinewave(bufferFreq * changeThis)*10;
@@ -86,7 +86,7 @@ audio.play = function () {
     var wave2 = osc.sinewave(freq2)*15;
 
     //wave = filter.lopass(wave * vol, 0.3);
-    this.output = (wave + wave2)*vol;
+    this.output = (wave + wave2)*0.002;
 
     drawOutput[frameCount % num_particles] = (Math.round(wave + wave2)/20)*3;
 
@@ -107,7 +107,7 @@ camera.far  = 155;
 var show = 10;
 
 function draw() {
-  
+
   drawParticles();
 
   //scene.rotation.z+= 0.01;
@@ -159,7 +159,7 @@ var scale = 1;
 function drawParticles(){
 
    if (show < num_particles) show+=0.1;
-    
+
     if (chance(500)) {
         scale = random(0.6, 20);
         changeThis = random(5);
@@ -170,9 +170,9 @@ function drawParticles(){
       sphere[i].position.x = Math.cos(r*i) * (i);
       sphere[i].position.y = Math.sin(r*i) * (i);
       sphere[i].position.z = Math.sin(frameCount/1000) * (-i);
-      
+
       if(drawOutput[i]) sphere[i].s = tween(sphere[i].s, drawOutput[i], 25);
-      
+
       sphere[i].s = scale;
       sphere[i].scale.x = sphere[i].scale.y = sphere[i].scale.z = sphere[i].s;
 

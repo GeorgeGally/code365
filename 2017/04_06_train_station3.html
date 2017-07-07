@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var block_size = 10;
+ctx2.font="60px Arial";
+var maxballs = 5500;
+var engine = new particleEngine(0, 0);
+var particles = engine.particles;
+var motion = [];
+var pix = block_size/2;
+var p = 40;
+
+var grid_particles = new particleEngine(20, h/block_size);
+
+
+function update(){
+  sensitivity = 20;
+  motion = motionDetection(block_size);
+  // ctx.drawImage(video, 0,0, w, h);
+  // ctx.posterize(pix, p);
+
+  for (var i = 0; i < motion.length; i++) {
+    m = motion[i];
+
+    var x = m.pos.x;
+    var y = sticky(m.pos.y, block_size)
+
+    engine.add(x, y, rgb(255));
+
+    var p = engine.last;
+    p.sz = 5- brightness(m.c.r, m.c.g, m.c.b, 5);
+    p.dir = posNeg();
+    // if(x < w/2 - random(50)) {
+    //   p.dir = -1;
+    // } else {
+    //   p.dir = 1;
+    // }
+    p.speed.y = 0;
+    //if(chance(5)) p.speed.y = random(-5, 5);
+    p.speed.x = random(1, 10);
+    // if (i == 10) {
+    //   //p.c = "#0f94c7";
+    //   p.sz = 12;
+    // }
+    //p.pos.y = sticky(p.pos.y, block_size);
+    if (engine.particles.length > maxballs) {
+      engine.delete(p.me);
+    }
+  }
+  //particles = engine.particles;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = particles[i];
+
+    p.pos.x += (p.dir * p.speed.x);
+    //p.pos.y += (p.dir * p.speed.y);
+
+    p.sz -= 0.08;
+    //if (i == 3) console.log(b.pos.x);
+    // we adjust the hit area because shere is drawn from the centre
+    if (p.pos.x > w  || p.pos.x < 0 || p.pos.y > h || p.pos.y < 0 || p.sz < 0.2 ) {
+      engine.delete(p.me);
+    }
+
+    //engine.update();
+  }
+
+}
+
+
+function draw(){
+
+  //ctx.drawImage(video, 0, 0, w, h);
+  ctx.background(0);
+  //ctx2.clearRect(0,0,w,h);
+  update();
+  drawParticles();
+  //drawLines();
+  drawGraph();
+}
+
+var counter = 0;
+
+
+function drawLines(){
+  for (var i = 1; i < grid_particles.length; i++) {
+    var g = grid_particles.get(i);
+    var y = 0;
+    for (var i = 0; i < engine.length; i++) {
+      var p = engine.get(i);
+      if(hittestBall(p, g)) {
+        y = p.sz;
+      }
+    }
+
+    ctx.fillStyle = "white";
+
+  }
+}
+
+
+function drawParticles(){
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    ctx.fillStyle = p.c;
+    ctx.fillRect(sticky(p.pos.x,10), p.pos.y, p.sz, p.sz);
+  }
+}
+
+
+function drawGraph(){
+  var pos = map(counter, 0, 380000, 0, w);
+  ctx2.clearRect(0, 0, w, h);
+  ctx2.fillStyle = "white";
+  ctx2.fillRect(0, h-180, w, 6);
+  ctx2.fillStyle = "#0f94c7";
+  ctx2.fillText("Passenger number: " + counter + ". Expected: 380 000", pos, h - 200);
+  //ctx2.fillStyle = "green";
+  //ctx2.fillText();
+
+  ctx2.fillRect(0, h-180, pos, 6);
+  counter+=4;
+}
+
+
+</script>
+
+<script language="javascript" src="../js/motion_detection.js"></script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+
+</html>

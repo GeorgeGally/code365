@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(20, 1);
+var particles = engine.particles;
+ctx.lineWidth = 2;
+
+
+for (var i = 0; i < particles; i++) {
+  var p = particles[i];
+}
+
+function draw() {
+
+  ctx.background(0);
+  engine.update();
+  ctx.fillStyle = rgba(255, 0.2);
+
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    var sz = random(5, 400);
+    p.target_size = sz;
+    //console.log(p.sz);
+    ctx.fillEqTriangle(p.pos.x, p.pos.y - p.sz/2 + 150, p.sz);
+  }
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

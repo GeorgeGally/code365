@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>three.js / cannon.js example</title>
+    <meta charset="utf-8">
+    <script language="javascript" src="../js/three.min.js"></script>
+    <script src="../js/cannon.js"></script>
+    <script src="../js/creative_coding.js"></script>
+    <style>
+      * {
+        margin:0;
+        padding:0
+      }
+      body {
+        overflow:hidden;
+      }
+    </style>
+  </head>
+  <body>
+
+    <script>
+      var world, mass, body, shape, timeStep=1/60,
+         camera, scene, renderer, geometry, material, mesh;
+
+         var num_particles = 390;
+         var box = [];
+         var timeStep=1/60;
+
+      initThree();
+      initCannon();
+
+      function initCannon() {
+          world = new CANNON.World();
+          world.gravity.set(0,0,0);
+          world.broadphase = new CANNON.NaiveBroadphase();
+          world.solver.iterations = 10;
+          var solver = new CANNON.GSSolver();
+
+          world.defaultContactMaterial.contactEquationStiffness = 1e9;
+          world.defaultContactMaterial.contactEquationRelaxation = 4;
+
+          physicsMaterial = new CANNON.Material("slipperyMaterial");
+          var physicsContactMaterial = new CANNON.ContactMaterial(physicsMaterial,
+                                                                        physicsMaterial,
+                                                                        0.0, // friction coefficient
+                                                                        0.3  // restitution
+                                                                        );
+                // We must add the contact materials to the world
+        world.addContactMaterial(physicsContactMaterial);
+
+          shape = new CANNON.Box(new CANNON.Vec3(1,1,1));
+          mass = 1;
+          body = new CANNON.Body({
+            mass: 1
+          });
+          body.addShape(shape);
+          body.velocity.set(0,-1,0);
+          body.angularDamping = 0.5;
+          world.addBody(body);
+      }
+      function initThree() {
+          scene = new THREE.Scene();
+          var aspect = window.innerWidth / window.innerHeight;
+          //camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+          camera = new THREE.PerspectiveCamera( 80, aspect, 1, 300 );
+          camera.position.z = 5;
+          scene.add( camera );
+          geometry = new THREE.BoxGeometry( 2, 2, 2 );
+          var material = new THREE.MeshDepthMaterial();
+          material.shading = THREE.SmoothShading;
+          //material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
+          mesh = new THREE.Mesh( geometry, material );
+          scene.add( mesh );
+          renderer = new THREE.WebGLRenderer();
+          renderer.setSize( window.innerWidth, window.innerHeight );
+          document.body.appendChild( renderer.domElement );
+      }
+
+
+      function updatePhysics() {
+          // Step the physics world
+          world.step(timeStep);
+          // Copy coordinates from Cannon.js to Three.js
+          mesh.position.copy(body.position);
+          mesh.quaternion.copy(body.quaternion);
+      }
+      function draw() {
+        updatePhysics();
+        renderer.render( scene, camera );
+      }
+    </script>
+  </body>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var block_size = 30;
+
+var ww = 60;
+var hh = 220;
+
+var engine = new particleEngine(ww, hh, w+400, h+800, -200, -400);
+engine.tween_speed = 10;
+engine.border = false;
+
+var engine2 = new particleEngine(1, hh);
+engine.grid.createGrid();
+engine.tween_speed = 100;
+console.log(engine);
+
+for (var i = 0; i < engine.length; i++) {
+  var p = engine.particles[i];
+  p.speed = new Vector(0,1);
+  p.tween_speed = 8;
+  p.target.y = p.start.y;
+  p.tween = true;
+}
+
+for (var i = 0; i < engine2.length; i++) {
+  var p = engine2.particles[i];
+  p.speed.x = 0;
+  p.speed.y = 1;
+  p.tween_speed = randomInt(60, 300);
+  p.pos.x = 0;
+  p.target.x = w + 100;
+  p.dir = 1;
+
+}
+
+
+
+function draw() {
+
+  hidden_ctx.drawImage(video,0,0,w,h);
+  sample = hidden_ctx.getImageData(0, 0, w, h);
+  //sample = greyscale(sample);
+
+
+  // var buffer = new Uint32Array(sample.data.buffer);
+var buffer = new Uint32Array(sample.data);
+
+  ctx.background(0, 0.5);
+  ctx2.clearRect(0,0, w, h);
+
+  engine.update();
+  // engine2.update();
+
+
+  // for (var i = 0; i < engine.grid.length; i++) {
+  for (var i = 0; i < engine.particles.length-1; i++) {
+    var p = engine.particles[i];
+    var p2 = engine.particles[i+1];
+    //var pos = Math.round((p.row * engine.grid.spacing.x) + (p.col * engine.grid.spacing.y) * w)*4;
+
+    var pos = (Math.floor(p.pos.x) + Math.floor(p.pos.y) * w)*4;
+
+    // var r = buffer[pos] >> 0 & 0xff;
+    // var g = buffer[pos] >> 8 & 0xff;
+    // var b = buffer[pos] >> 16 & 0xff;
+      var r = buffer[pos];
+      var g = buffer[pos+1];
+      var b = buffer[pos+2];
+      ctx.fillStyle = rgb(r,g,b);
+      var sz = brightness(r,g,b, block_size*2) - block_size;
+      p.target.y = p.start.y + sz;
+
+      //ctx.fillEllipse(p.pos.x, p.pos.y, block_size/2, block_size/2)
+
+      if (p.row == p2.row) {
+        ctx.strokeStyle = "white";
+        ctx.line(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y);
+      }
+
+  }
+
+}
+
+</script>
+<script language="javascript" src="../js/motion_detection.js"></script>
+</body>
+
+</html>

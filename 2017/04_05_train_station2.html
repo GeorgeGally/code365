@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var block_size = 10;
+
+var maxballs = 1500;
+var engine = new particleEngine(0);
+var particles = engine.particles;
+var motion = [];
+var pix = block_size/2;
+var p = 40;
+var grid = new Grid(100, 60);
+
+function update(){
+
+  motion = motionDetection(block_size);
+  // ctx.drawImage(video, 0,0, w, h);
+  // ctx.posterize(pix, p);
+
+  for (var i = 0; i < motion.length; i++) {
+    m = motion[i];
+    var y = sticky(m.pos.y, 20)
+    engine.addParticle(m.pos.x + random(-block_size/2,block_size/2), y, rgba(m.c.r/1.2, m.c.b, m.c.g, 0.4));
+    var p = engine.last;
+    p.sz = brightness(m.c.r, m.c.g, m.c.b, 10);
+    
+    p.speed.y = 0;
+    p.speed.x = random(3, 10);
+    p.pos.y = sticky(p.pos.y, block_size);
+    //p.speed = new Vector(random(-0.1,0.1), random(-1,0));
+    //console.log(engine.last);
+    if (engine.particles.length > maxballs) {
+      engine.removeParticle();
+    }
+  }
+  //particles = engine.particles;
+  for (var i = 0; i < particles.length; i++) {
+    b = particles[i];
+
+    b.pos.x += b.speed.x;
+    b.pos.y += b.speed.y;
+    b.size *= 0.95;
+    //if (i == 3) console.log(b.pos.x);
+    // we adjust the hit area because shere is drawn from the centre
+    if (b.pos.x > w  || b.pos.x < 0 || b.pos.y > h || b.pos.y < 0 || b.size < 1 ) {
+      engine.removeParticle(i);
+    }
+
+
+  } // end for loop
+
+}
+
+
+function draw(){
+
+  //ctx.drawImage(video, 0, 0, w, h);
+  ctx.background(0, 0.2);
+  //ctx2.clearRect(0,0,w,h);
+  update();
+  drawParticles();
+  drawLines();
+
+}
+
+function drawLines(){
+  for (var i = 0; i < grid.length; i++) {
+    ctx.fillStyle = "black";
+    ctx.fillEllipse(grid.x[i],grid.y[i], 10, 10);
+  }
+}
+
+function drawParticles(){
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    ctx.fillStyle = p.c;
+    ctx.fillStyle = "white";
+    ctx.strokeStyle = rgba(255, 0.1);
+    //ctx.lineWeight = 0.2;
+    ctx.line(p.pos.x, p.pos.y, w, p.pos.y);
+
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+  }
+}
+
+
+
+</script>
+
+<script language="javascript" src="../js/motion_detection.js"></script>
+<!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.font="14px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/train_data.csv';
+var engine = new particleEngine(0);
+engine.border = false;
+var movements = [];
+
+d3.csv(url, function(error, data) {
+
+  if (error) console.log(error);
+
+  movements = data;
+
+});
+
+
+
+
+
+////////////////
+
+var counter = 0;
+var bar_ht = 5;
+var max_wi = 0;
+var max_wo = 0;
+var max_ei = 0;
+var max_eo = 0;
+
+
+function draw() {
+
+  ctx.background(0);
+  drawParticles();
+  if (movements.length > 0) {
+    var d = movements[counter];
+      //console.log(max_wo);
+
+      moveParticles(d);
+      drawGraphs(d);
+
+  }
+  engine.update();
+  ctx.fillStyle = "white";
+
+
+
+}
+
+
+function moveParticles(d){
+  // add west in
+  for (var i = 0; i < d.West_in; i++) {
+    engine.add(10, sticky(random(h),10));
+    var p = engine.last;
+    p.dir.x = 1;
+    //p.target.x = -10;
+    p.tween = false;
+    p.speed.x = random(5,15);
+    p.speed.y = 0;
+  }
+
+  // east in
+  for (var i = 0; i < d.Oost_in; i++) {
+    engine.add(w, sticky(random(h),10));
+    var p = engine.last;
+    p.dir.x = -1;
+    p.tween = false;
+    p.speed.x = random(5,15);
+    p.speed.y = 0;
+  }
+}
+
+function drawParticles(){
+  for (var i = engine.particles.length-1; i >=0; i--) {
+    p = engine.particles[i];
+    //var c = map(p.me, engine.particles.length-1, 0, 100);
+    //console.log(c);
+    ctx.fillStyle = rgb(50 + p.me/10);
+    ctx.fillRect(p.pos.x, p.pos.y, 4, 8);
+    if(p.pos.x > w || p.pos.x < 0) {
+      engine.delete(p.me)
+    }
+  }
+}
+
+var wi = wo = ei = eo = 0;
+var wi_bar = wo_bar = ei_bar = eo_bar = 0;
+var left_margin = 10;
+
+function drawGraphs(d){
+
+  ctx.fillStyle = "black";
+  ctx.fillRect(left_margin, h-175, 150, 20);
+  ctx.fillStyle = "white";
+
+  ctx.fillText(d.datum + " " + addZero(d.uur) + ":" + addZero(d.minuut), left_margin + 2, h - 160);
+
+  var wi = map(d.West_in, 0, 200, 0, w/4);
+  wi_bar = tween(wi_bar, wi, 40);
+  if (wi > max_wi) max_wi = wi;
+  ctx.fillStyle = "white";
+  ctx.fillRect(left_margin, h-140, max_wi, bar_ht);
+  ctx.fillStyle = "#0f94c7";
+  ctx.fillRect(left_margin, h-140, wi, bar_ht);
+  ctx.fillStyle = "white";
+  ctx.fillText(d.West_in, left_margin, h-120);
+
+  var wo = map(d.West_uit, 0, 200, 0, w/4);
+  wo_bar = tween(wo_bar, wo, 40);
+  if (wo > max_wo) max_wo = wo;
+  ctx.fillStyle = "white";
+  ctx.fillRect(left_margin, h-110, max_wo, bar_ht);
+  ctx.fillStyle = "#0f94c7";
+  ctx.fillRect(left_margin, h-110, d.West_uit, bar_ht);
+  ctx.fillStyle = "white";
+  ctx.fillText(d.West_uit, left_margin, h-90);
+
+  var ei = map(d.Oost_in, 0, 200, 0, w)/4;
+  ei_bar = tween(ei_bar, ei, 40);
+  if (ei > max_ei) max_ei = ei;
+  ctx.fillStyle = "white";
+  ctx.fillRect(left_margin, h-80, max_ei, bar_ht);
+  ctx.fillStyle = "#0f94c7";
+  ctx.fillRect(left_margin, h-80, ei, bar_ht);
+  ctx.fillStyle = "white";
+  ctx.fillText(d.Oost_in, left_margin, h-60);
+
+  var eo = map(d.Oost_uit, 0, 200, 0, w/4);
+  eo_bar = tween(eo_bar, eo, 40);
+  if (eo > max_eo) max_eo = eo;
+  ctx.fillStyle = "white";
+  ctx.fillRect(left_margin, h-50, max_eo, bar_ht);
+  ctx.fillStyle = "#0f94c7";
+  ctx.fillRect(left_margin, h - 50, ei, bar_ht);
+  ctx.fillStyle = "white";
+  ctx.fillText(d.Oost_uit, left_margin, h - 30);
+  counter = (counter + 1);
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

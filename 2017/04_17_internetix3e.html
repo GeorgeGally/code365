@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<title>Internetix</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<script>
+
+
+var engine;
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+ctx2.font="10px Arial";
+ctx2.textAlign = "right";
+var url = '../data/internetix.csv';
+var min = new Vector(1000000, 1000000);
+var max = new Vector(-1000000, -1000000);
+
+
+
+var count = 20;
+var skip = 2;
+var connections = false;
+var created = "";
+ctx.background(0);
+ctx2.background(0);
+
+
+var history_url = "../data/internetix.csv";
+var registrations_url = "../data/internetix_registrations.csv";
+
+
+var people = [];
+var people2 = [];
+var movements = [];
+
+d3.csv(registrations_url, function(error, data) {
+
+  engine = new particleEngine(data.length);
+  //console.log(data);
+  for (var i = 0; i < data.length; i++) {
+    var d = data[i];
+    var p = engine.particles[i];
+    var id = d.id;
+    people[id] = d;
+    people[id].on = true;
+    people[id].me = i;
+    people[id].on_txt = false;
+    people[id].pos = new Vector(w/2, h/2);
+    people[id].target = new Vector(w/2, h/2);
+    people[id].old = new Vector(w/2, h/2);
+    people2[i] = people[id];
+
+    if(d.gender == "male") {
+        //people2[i].c = "#27AAE1";
+        people[id].c = "#27AAE1";
+    } else {
+        //people2[i].c = "#EC008C";
+        people[id].c = "#EC008C";
+    }
+  }
+
+
+  //console.log(people);
+  addGraph(history_url);
+})
+
+
+
+
+function draw(){
+  ctx2.clearRect(0, 0, w, h);
+  if (count < movements.length-1) {
+    //ctx.background(0, 0.03);
+    registerMovements(count);
+    if (chance(5)) count+=skip;
+    if (chance(100)) connections = !connections;
+  }
+
+  if(engine != undefined) {
+    ctx2.font="14px Arial";
+    for (var i = 0; i < people2.length; i++) {
+
+      var p2 = people2[i];
+      var p = people[p2.id];
+
+      moveParticle(p);
+      drawParticle(p);
+
+    }
+    if (connections) showConnection("Favourite Modie Genre: Comedy")
+  }
+
+}
+
+
+function moveParticle(p){
+  p.pos.x = tween(p.pos.x, p.target.x, 50);
+  p.pos.y = tween(p.pos.y, p.target.y, 50);
+}
+
+
+
+
+function drawParticle(p){
+
+    p.sz = 1;
+    ctx.fillStyle = rgba(255, 0.3);
+    if (p.on) {
+
+
+      ctx.LfillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+
+      //
+      ctx3.strokeStyle = rgba(200, 0, 0, 1);
+
+      //ctx3.line(p.pos.x, p.pos.y, p.old.x, p.old.y);
+    if (p.movie_genre == "Comedy" && connections) {
+      drawConnections(p);
+      ctx2.fillStyle = rgba(200, 0, 0, 0.1)
+      var sz = 12 + Math.sin((p.me + frameCount)/10)*25
+      ctx2.LfillEllipse(p.pos.x, p.pos.y, sz, sz);
+      ctx2.fillStyle = "white";
+      ctx2.fillText(p.firstname, p.pos.x, p.pos.y + 20);
+    }
+      ctx2.fillStyle = p.c;
+      ctx2.fillEllipse(p.pos.x, p.pos.y, 5, 5);
+
+  }
+  //p.old = p.pos;
+}
+
+
+
+
+
+
+
+function drawConnections(p){
+  ctx2.strokeStyle = "red";
+  for (var i = p.me+1; i < people2.length-1; i++) {
+    var p2 = people2[i];
+    var pp = people[p2.id];
+    if (p.movie_genre == "Comedy" && pp.movie_genre == "Comedy") {
+      ctx2.line(p.pos.x, p.pos.y, pp.pos.x, pp.pos.y);
+    }
+  }
+}
+
+
+function registerMovements(count){
+  for (var i = 0; i < skip; i++) {
+    var m = movements[count+i];
+
+    var p = people[m.registration_id];
+    var x = map(m.lng, min.x, max.x, -w/4, w + w*0.25);
+    var y = map(m.lat, min.y, max.y, -h/4, h + h*0.25);
+
+    p.target.x = x;
+    p.target.y = y;
+
+    p.on = true;
+    showTime(m);
+  }
+  created = "";
+  count+= skip;
+}
+
+
+
+function addGraph(history_url) {
+
+  d3.csv(history_url, function(error, data) {
+    //console.log(data);
+    movements = data;
+    for (var i = 0; i < movements.length; i++) {
+      var m = movements[i];
+      //console.log(m.lat);
+      if(m.lat > max.y) max.y = m.lat;
+      if(m.lat < min.y) min.y = m.lat;
+
+      if(m.lng > max.x) max.x = m.lng;
+      if(m.lng < min.x) min.x = m.lng;
+
+    }
+  })
+
+}
+
+
+function showTime(m){
+  ctx2.fillStyle = "black";
+  ctx2.fillRect(w-220, h-120, 200, 50);
+  ctx2.fillStyle = "white";
+  ctx2.font="16px Arial";
+  ctx2.fillText(m.created, w-200, h-100);
+  created = m.created;
+}
+
+
+function showConnection(n){
+  ctx2.fillStyle = "black";
+  ctx2.fillRect(w-220, h-240, 200, 50);
+  ctx2.fillStyle = "white";
+  ctx2.font="16px Arial";
+  ctx2.fillText(n, w-200, h-200);
+}
+
+
+</script>
+
+
+</body>
+
+</html>

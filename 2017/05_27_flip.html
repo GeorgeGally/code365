@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
+<script language="javascript" src="../js/greensock/TweenMax.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(10,10);
+var spacing = engine.grid.spacing;
+for (var i = 0; i < engine.length; i++) {
+  var p = engine.particles[i];
+  p.c = rgb(255);
+  p.sz = spacing.y-1;
+}
+
+function draw(){
+  sensitivity = 60;
+  ctx.background(0);
+  hidden_ctx.drawImage(video, 0, 0, w, h);
+  var imgData = hidden_ctx.getImageData(0,0,w,h);
+  var buffer = new Uint32Array(imgData.data.buffer);
+  //console.log(buffer);
+  //engine.grid.spacing.x
+  var motion = motionDetection(30);
+  //console.log(m);
+  for (var j = 0; j < motion.length; j++) {
+  var m = motion[j];
+  ctx.fillStyle = rgb(m.c.r, m.c.g, m.c.b);
+  ctx.fillEllipse(m.pos.x, m.pos.y, 20, 20);
+}
+  //   for (var i = 0; i < engine.length; i++) {
+  //     var p = engine.particles[i];
+  //     for (var j = 0; j < motion.length; j++) {
+  //       var m = motion[j];
+  //       if (m.pos.x> p.pos.x && m.pos.x < p.pos.x + spacing.x &&
+  //     m.pos.y > p.pos.y && m.pos.y < p.pos.y + spacing.y) {
+  //         ctx.fillStyle = rgb(m.c.r, m.c.g, m.c.b);
+  //         ctx.fillEllipse(m.pos.x, m.pos.y, 20, 20);
+  //           flip(p);
+  //       }
+  //
+  //   }
+  // }
+  //
+  //
+  // for (var i = 0; i < engine.length; i++) {
+  //   var p = engine.particles[i];
+  //
+  //
+  //     //console.log(m);
+  //
+  //
+  //
+  //   //if (chance(500))
+  //   // ctx.fillStyle = p.c;
+  //   //var c = sampleColour(buffer, p.pos.x, p.pos.y);
+  //   //ctx.fillStyle = rgb(c.r, c.g, c.b);
+  //   ctx.fillRect(p.pos.x - spacing.x/2 , p.pos.y - p.sz/2, spacing.x-1, p.sz);
+  //   }
+
+}
+
+
+function flip(p){
+  //console.log(p);
+  ctx.fillStyle = rgb(100);
+  if (!TweenMax.isTweening( p )) {
+  var tween1 = TweenMax.to(p, 0.3, {
+    sz:0,
+    //ease: Elastic.easeInOut,
+    ease: Power1.easeInOut,
+    colorProps: rgb(200, 0, 0)}, {
+      //colorProps: rgb(255)
+    })
+  //var tween2 = TweenLite.to(p, 0.3, {c: rgb(100)})
+  var tween3 = TweenMax.to(p, 0.5, {sz: spacing.y-1, delay: 0.4,
+  //colorProps: rgb(100)
+})
+  //var tween3 = TweenLite.to(p, 0.5, {c, delay: 0.4})
+}
+}
+// function open(p){
+//   ctx.fillStyle = "white";
+// }
+//
+// function close(p){
+//   ctx.fillStyle = rgb(100);
+// }
+
+
+function sampleColour (_buffer, _x, _y) {
+
+    var pos = Math.round(_x + _y * w);
+    //console.log(pos);
+    var r = (_buffer[pos] >> 0) & 0xff;
+    var g = (_buffer[pos] >> 8) & 0xff;
+    var b = (_buffer[pos] >> 16) & 0xff;
+    return {r: r, g: g, b: b};
+
+}
+
+
+</script>
+<script language="javascript" src="../js/motion_detection.js"></script>
+</body>
+
+</html>

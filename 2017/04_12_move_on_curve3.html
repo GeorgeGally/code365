@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.font="16px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/train_data.csv';
+var engine = new particleEngine(0);
+engine.border = false;
+var movements = [];
+var sticker = 10;
+var max = 6;
+var pos = 0;
+var posy = 30;
+ctx.lineWidth = 4;
+
+var spacing = 60;
+var spacingy = 60;
+
+var pts = [];
+for (var i = 0; i < w; i+= spacing) {
+  pts.push({x: i, y: h/2 + random(-20, 20)});
+}
+
+console.log(pts);
+
+ctx.strokeStyle="black";
+////////////////
+
+var counter = 0;
+var x = 0;
+var y = h/2;
+ctx.background(255);
+var start_time = Date.now(); // set starttime
+console.log(start_time);
+
+var xold = 0;
+var yold = 30;
+
+function draw() {
+
+  //ctx.background(0, 0.05);
+  for (var i = 1; i < pts.length; i++) {
+
+    var p = pts[i];
+    var p2 = pts[i-1];
+
+    if (pos >= p2.x && pos < p.x) {
+      x = p.x;
+      var angle = getDirection(pos, p.y + posy);
+      // var xx = (pos - p2.x)/spacing;
+      var xx = pos + Math.sin(angle)*(p.x - pos);
+      var yy = posy + Math.cos(angle)*(p2.y - h/2);
+      //console.log(angle);
+      y = (p.y + p2.y)/2;
+    }
+
+    //ctx.line(p.x, p.y, p2.x, p2.y);
+  }
+
+  ctx.fillStyle="black";
+  ctx.lineStyle="black";
+  //ctx.fillEllipse(xx, yy, 2, 2);
+  ctx.line(xx, yy, xold, yold);
+  xold = xx;
+  yold = yy;
+
+  pos = (pos + 1);
+  if (pos > w) {
+    posy = (posy + spacingy);
+    pos = 0;
+  }
+
+}
+
+
+function getDirection(x,y){
+    return degrees(Math.atan2(y, x));
+}
+
+</script>
+
+</body>
+
+</html>

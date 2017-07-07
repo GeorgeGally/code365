@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+
+ctx.lineWidth = 5;
+ctx.linecap = "round";
+
+var colours=["#379392","#2E4952", "#0BC9C7"];
+
+var waves_amount = 12;
+
+var engine = new particleEngine(waves_amount, 1);
+var particles = engine.particles;
+
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+
+}
+
+function draw() {
+  ctx.background(0);
+
+    engine.update();
+
+  for (var i = 0; i < particles.length; i++) {
+
+    var p = particles[i];
+    p.target_sz = mapSound(i, particles.length * 2);
+    ctx.fillStyle = rgba(255, 0.1);
+    ctx.beginPath();
+    ctx.moveTo(p.pos.x, p.pos.y);
+
+    if (p.pos.x < w/2) {
+      ctx.lineTo(w *2 +  + p.sz, -h - p.sz);
+      ctx.lineTo(w *2 +  + p.sz, h * 2 + p.sz);
+    } else {
+      ctx.lineTo(-w-p.sz, -h -  p.sz);
+      ctx.lineTo(-w-p.sz, h * 2  + p.sz);
+    }
+    ctx.lineTo(p.pos.x, p.pos.y);
+
+    ctx.closePath();
+    ctx.fill();
+   }
+
+
+}
+
+
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+
+</html>

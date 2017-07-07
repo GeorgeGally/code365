@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(20, 1);
+var particles = engine.particles;
+ctx.lineWidth = 2;
+var d = 1;
+
+for (var i = 0; i < particles; i++) {
+  var p = particles[i];
+}
+
+function draw() {
+
+  ctx.background(0);
+  engine.update();
+  ctx.strokeStyle = rgba(255);
+  ctx.moveTo(0, h/2);
+  ctx.beginPath();
+  for (var i = 1; i < particles.length; i++) {
+    var p = particles[i];
+    var sz = d * mapSound(i, particles.length*2);
+    moveTo(particles[i-1].pos.x, particles[i-1].pos.y)
+    // ctx.bezierCurveTo(particles[i-1].pos.x,particles[i-1].pos.y, p.pos.x + engine.grid.spacing.x/2,h/2 + sz, p.pos.x, p.pos.y );
+    ctx.bezierCurveTo(
+      p.pos.x, h/2 + sz,
+      p.pos.x, h/2 - sz,
+      p.pos.x, p.pos.y );
+    ctx.stroke();
+    d *= -1;
+
+  }
+
+
+}
+
+
+
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+
+</html>
