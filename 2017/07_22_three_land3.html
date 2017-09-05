@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+ <script language="javascript" src="../js/canvas.js"></script>
+ <script language="javascript" src="../js/url.js"></script>
+ <script language="javascript" src="../js/physics2.js"></script>
+<script src='http://jeromeetienne.github.io/threex.terrain/examples/vendor/three.js/build/three-min.js'></script>
+<script src='http://jeromeetienne.github.io/threex.terrain/threex.terrain.js'></script>
+<script src='http://jeromeetienne.github.io/threex.terrain/examples/vendor/three.js/examples/js/SimplexNoise.js'></script>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+//////////////////////
+
+var renderer  = new THREE.WebGLRenderer({
+    antialias : true
+  });
+/* Let's get this to render on the entire screen dimension */
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  renderer.setClearColor(0xf3f3f3);
+/* Add it to HTML */
+  document.body.appendChild( renderer.domElement );
+  var onRenderFcts= [];
+  var scene = new THREE.Scene();
+  var camera  = new THREE.PerspectiveCamera(25, window.innerWidth /    window.innerHeight, 0.01, 1000);
+/* Played around a lot with camera positions, liked this setup the most */
+  camera.position.z = 15;
+  camera.position.y = 2;
+/* Let's get some fog in here for the part in the back */
+  scene.fog = new THREE.Fog(0x000, 0, 45);
+
+  (function(){
+    // add a ambient light
+    var light = new THREE.AmbientLight( 0x202020 )
+    scene.add( light )
+    // add a light in front
+    var light = new THREE.DirectionalLight('white', 5)
+    light.position.set(0.5, 0.0, 2)
+    scene.add( light )
+    // add a light behind
+    var light = new THREE.DirectionalLight('white', 0.75*2)
+    light.position.set(-0.5, -0.5, -2)
+    scene.add( light )
+  })()
+
+  var heightMap = THREEx.Terrain.allocateHeightMap(260,260);
+
+  THREEx.Terrain.simplexHeightMap(heightMap)
+  var geometry  = THREEx.Terrain.heightMapToPlaneGeometry(heightMap)
+  THREEx.Terrain.heightMapToVertexColor(heightMap, geometry)
+/* Wireframe built-in color is white, no need to change that */
+  var material  = new THREE.MeshBasicMaterial({
+    //wireframe: true
+  });
+
+  geometry.dynamic = true;
+  var mesh  = new THREE.Mesh( geometry, material );
+
+  scene.add( mesh );
+  mesh.lookAt(new THREE.Vector3(0,1,0));
+
+  var s = [];
+  for (i=0; i<mesh.geometry.vertices.length; i++) {
+  s[i] = 0.1;
+  }
+
+/* Let's get some nice terrain */
+  mesh.scale.y  = 3.5;
+  mesh.scale.x  = 3;
+  mesh.scale.z  = 0.20;
+  mesh.scale.multiplyScalar(10);
+  mesh.rotation.y = 0.02;
+/* Slowly spin it around so that it doesn't look bland */
+  onRenderFcts.push(function(delta, now){
+    mesh.rotation.z += 0.02 * delta;
+  })
+  onRenderFcts.push(function(){
+    renderer.render( scene, camera );
+  })
+
+  var lastTimeMsec= 0;
+  var t = 0;
+  var d = 0;
+
+  requestAnimationFrame(function animate(nowMsec){
+    requestAnimationFrame( animate );
+    t+=.0001;
+    d+=.001;
+    lastTimeMsec  = lastTimeMsec || nowMsec-1000/60
+    var deltaMsec = Math.min(200, nowMsec - lastTimeMsec)
+    lastTimeMsec  = nowMsec;
+    //if (chance(10)) camera.rotation.y +=0.1;
+    for (i=0;i < mesh.geometry.vertices.length;i++){
+
+      if (frameCount> 10) {
+      s[i] = map(audioChannelVolume[i%80], 0, 150, 0, 20);
+      //if (i== 0) console.log(s[i])
+      }
+      var p = mesh.geometry.vertices[i];
+      p.z = Math.sin(t*i+d)*Math.cos(i+d*t)*s[i]/50;
+    }
+
+    mesh.geometry.verticesNeedUpdate=true;
+    frameCount++;
+    onRenderFcts.forEach(function(onRenderFct){
+      onRenderFct(deltaMsec/1000, nowMsec/1000)
+    })
+  })
+</script>
+<script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/mic.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createHiddenCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var engine = new particleEngine(120, 1);
+var particles = engine.particles;
+var pos_counter = 0;
+//console.log(engine.grid);
+
+function setup(){
+  wall = new pixelGrid(114, 46);
+  //wall.shape = "square";
+  pixels = wall.pixels;
+  console.log(wall);
+  engine.border = true;
+  engine.edge = true;
+
+for (var i = 0; i < particles.length; i++) {
+  var p = particles[i];
+  p.c = rgb(0);
+  //p.pos.x = random(w);
+  //p.pos.y = random(h);
+  p.target_sz = 30;
+  p.speed.x = random(0);
+  p.speed.y = 10;
+  p.tween_speed = 20;
+  p.c = randomGrey();
+}
+}
+
+function draw(){
+
+  ctx.background(0);
+
+  ctx.fillStyle = rgb(0, 0.8);
+  ctx.strokeStyle = rgb(255, 0.8);
+  ctx.lineWidth = 5;
+  ctx.moveTo(0, h/2);
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    var ht = 100 + Math.sin(i/6 + frameCount/2) * 200;
+    //p.target.y =  h/2 + Math.sin(i/2 + frameCount/10) * ht;
+    p.target.y =  h/2 + Mic.mapSound(i, particles.length * 2, 0, 200);
+    ctx.arc(p.pos.x, p.pos.y, 3, 0, Math.PI * 2, false);
+    //ctx.lineTo(p.pos.x, p.pos.y);
+    //ctx.LfillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+  }
+  ctx.lineTo(w, h/2);
+  // ctx.fill();
+  ctx.stroke();
+  ctx.closePath();
+  //if(frameCount%30 == 0) pos_counter++;
+  engine.update();
+
+  ctx.fillStyle = "black";
+  ctx.centreFillRect (w/2, h/2, 210, 210);
+  ctx.fillStyle = "white";
+  var offset = 5;
+  ctx.fillTriangle(w/2 - 100 - offset, h/2 -100 - offset, w/2 + 100 - offset, h/2 - 100 -offset, w/2 - 100 - offset, h/2 + 100 - offset);
+  ctx.fillTriangle(w/2 + 100 + offset, h/2 - 100 + offset, w/2 + 100 + offset, h/2  + 100 + offset, w/2 - 100 + offset, h/2 + 100 + offset);
+  // ctx.fillStyle = "white";
+  // ctx.fillEllipse (w/2, h/2, 200, 200);
+
+  // ctx.fillEllipse (w/2, h/2, 200-40, 200-40);
+
+  //engine.draw();
+  //wall.draw(ctx2, ctx);
+}
+
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+
+
+
+</script>
+<script language="javascript" src="../js/pixel_grid.js"></script>
+</body>
+
+</html>

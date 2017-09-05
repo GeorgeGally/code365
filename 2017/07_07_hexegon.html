@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(100, 10);
+var colours = new colourPool()
+.add('#FFFFFF', 2)
+.add('#508104', 6)
+.add('#9e8e01', 3)
+.add('#f3b800', 3)
+.add('#db8200', 3)
+.add('#b64201', 3)
+
+
+engine.randomize();
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  // p.c = rgba(random(195), random(120, 205), random(20), 0.8);
+  p.c = colours.get();
+  if(chance(20)) p.c = rgba(255, 0.8);
+  if(chance(20)) p.c = rgba(200, 200, 0, 0.8);
+  p.angle = random(360);
+  p.sz = 20 + map(p.pos.y, 0, h, 10, 100);
+}
+
+
+
+function draw(){
+
+  ctx.background(255, 0.6);
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    ctx.fillStyle = p.c;
+    ctx.save();
+    ctx.translate(p.pos.x, p.pos.y);
+    ctx.rotate(p.angle);
+    ctx.fillPolygon(0, 0, 6, p.sz);
+    ctx.restore();
+  }
+
+
+  //mirror();
+}
+
+
+</script>
+ <script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <!-- <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+ <body>
+
+<script>
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var engine = new particleEngine(100, 10);
+var colours = new colourPool()
+.add(rgba(255, 1), 4)
+.add(rgba(80, 129, 4, 1), 6)
+.add(rgba(158, 142, 1, 1), 2)
+.add(rgba(243, 184, 0, 1), 2)
+.add(rgba(219, 130, 0, 1), 1)
+.add(rgba(182, 66, 1, 1), 1)
+
+console.log(hexToRgb("#b64201"));
+
+var points = [{x:75, y:150}],
+    r = 50, //radius of the hexagon
+    n = 6, // number of sides in the hexagon
+    x,
+    y;
+
+ctx.lineWidth = 1;
+//ctx.lineCap = 'round';
+ctx.strokeStyle = "white";
+
+for (var y = 0; y < 20; y++) {
+  for (var x = 0; x < 10; x++) {
+    if(chance(3)) {
+
+    var c = colours.get();
+
+    ctx.fillStyle = "white";
+    ctx.save();
+    var spacing = 4;
+    if(y%2 == 0) {
+      drawPoly(x * r * 3, y * (r - 7));
+      ctx.clip();
+      for (var i = 0; i < 40; i++) {
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = c;
+        ctx.line(x * r * 3 - r, y * (r - 7) + i* spacing - r, x * r * 3 + r, y * (r - 7)+i* spacing - 2.5 * r);
+      }
+    } else {
+      drawPoly(x * (r * 3) - (r * 1.5), y * (r - 7));
+      ctx.clip();
+      for (var i = 0; i < 40; i++) {
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = c;
+        ctx.line(x * (r * 3) - (r * 1.5) - r, y * (r - 7) + i* spacing - r, x * (r * 3) - (r * 1.5) + r, y * (r - 7)+i* spacing - 2.5 * r);
+      }
+    }
+    //ctx.fillEllipse(x * r, y *r, r, r);
+
+
+    ctx.restore();
+  }
+
+  }
+}
+
+
+function drawPoly(_x, _y){
+  ctx.fillPolygon(_x, _y, n, r);
+  ctx.closePath();
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = "white";
+  ctx.strokePolygon(_x, _y, n, r);
+}
+
+function miniHex(x, y, rr){
+
+  for (var yy = 0; yy < 5; yy++) {
+    for (var xx = 0; xx < 5; xx++) {
+      var c = colours.get();
+      ctx.fillStyle = "red";
+      if(y%2 == 0) {
+        ctx.fillPolygon(x * r * 3 + xx * rr * 3, y * (r - 7) + yy * (rr - 7), n, rr);
+      } else {
+        ctx.fillPolygon(x * (r * 3) - (r * 1.5) + xx * (rr * 3) - (rr * 1.5), y * (r - 7) + yy * (rr - 7), n, rr)
+      }
+    }
+
+  }
+}
+
+
+
+</script>
+ <!-- <script language="javascript" src="../js/soundcloud.js"></script> -->
+</body>
+</html>

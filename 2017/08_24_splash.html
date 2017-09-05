@@ -1,0 +1,276 @@
+
+<html>
+
+<head>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+    <script language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.min.js"></script>
+      <script language="javascript" src="https://rawgit.com/google/liquidfun/master/liquidfun/Box2D/lfjs/liquidfun.js"></script>
+  <!-- <script language="javascript" src="../js/stats.js"></script> -->
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+
+<!-- <script language="javascript" src="../js/p5.js"></script> -->
+<script language="javascript" src="../js/matter.min.js"></script>
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<body>
+
+
+<script type="text/javascript">
+
+var ctx = createCanvas('canvas');
+var meta_context = createCanvas('meta_canvas');
+
+var grid = [];
+
+function setup(){
+  wall = new pixelGrid(120, 60);
+}
+
+if (typeof Object.extend !== 'function') {
+    Object.extend = function (d, s) {
+        for (var k in s) {
+            if (s.hasOwnProperty(k)) {
+                var v = s[k];
+                if (d.hasOwnProperty(k) && typeof d[k] === "object" && typeof v === "object") {
+                    Object.extend(d[k], v);
+                } else {
+                    d[k] = v;
+                }
+            }
+        }
+        return d;
+    };
+}
+
+
+function Particle() {
+    this.type = 0;
+    this.x = 0;
+    this.y = 0;
+    this.vx = 0;
+    this.vy = 0;
+    this.px = 0;
+    this.py = 0;
+    this.radius = 0;
+    this.canvas = null;
+// }
+// Particle.prototype = {
+//     constructor: Particle,
+    this.init = function (properties) {
+        Object.extend(this, properties);
+        var ncanvas = document.createElement('canvas'),
+            ncontext = ncanvas.getContext('2d');
+        ncanvas.height = ncanvas.width = this.radius * 2;
+        var grad = ncontext.createRadialGradient(this.radius, this.radius, 1, this.radius, this.radius, this.radius);
+        grad.addColorStop(0, this.color + ',1)');
+        grad.addColorStop(1, this.color + ',0)');
+        ncontext.fillStyle = rgb(0);
+        ncontext.beginPath();
+        ncontext.arc(this.radius, this.radius, this.radius, 0, Math.PI * 2, true);
+        ncontext.closePath();
+        ncontext.fill();
+        this.px = this.x;
+        this.py = this.y;
+        this.canvas = ncanvas;
+    };
+
+    this.update = function () {
+        var g = grid[Math.round(this.y / spacing) * num_x + Math.round(this.x / spacing)];
+        if (g) g.close[g.length++] = this;
+
+        this.vx = this.x - this.px;
+        this.vy = this.y - this.py;
+
+        this.influence = 2;
+
+        if (mouseDown) {
+            var dist_x = this.x - mouseX;
+            var dist_y = this.y - mouseY;
+            var dist = Math.sqrt(dist_x * dist_x + dist_y * dist_y);
+            if (dist < this.radius * this.influence) {
+                var cos = dist_x / dist;
+                var sin = dist_y / dist;
+                this.vx += -cos;
+                this.vy += -sin;
+            }
+        }
+
+        this.vx += gravity_x;
+        this.vy += gravity_y;
+        this.px = this.x;
+        this.py = this.y;
+
+        this.x += this.vx;
+        this.y += this.vy;
+    },
+    this.attract = function () {
+        var force = 0,
+            force_b = 0,
+            cell_x = Math.round(this.x / spacing),
+            cell_y = Math.round(this.y / spacing),
+            close = [];
+        for (var x_off = -1; x_off < 2; x_off++) {
+            for (var y_off = -1; y_off < 2; y_off++) {
+                var index = (cell_y + y_off) * num_x + (cell_x + x_off);
+                var cell = grid[index];
+                if (!cell || !cell.length) {
+                    continue;
+                }
+                for (var a = 0, l = cell.length; a < l; a++) {
+                    var particle = cell.close[a];
+                    if (particle !== this) {
+                        var dfx = particle.x - this.x,
+                            dfy = particle.y - this.y,
+                            distance = Math.sqrt(dfx * dfx + dfy * dfy);
+                        if (distance < spacing) {
+                            var m = 1 - (distance / spacing);
+                            force += m * m;
+                            force_b += (m * m * m) / 2;
+                            particle.m = m;
+                            particle.dfx = (dfx / distance) * m;
+                            particle.dfy = (dfy / distance) * m;
+                            close.push(particle);
+                        }
+                    }
+                }
+            }
+        }
+
+        force = (force - 3) * 0.5; // test this
+
+        for (var i = 0, l = close.length; i < l; i++) {
+            var neighbor = close[i],
+                press = force + force_b * neighbor.m;
+
+            if (this.type != neighbor.type) {
+                press *= 0.65;
+            }
+
+            var dx = neighbor.dfx * press * 0.5,
+                dy = neighbor.dfy * press * 0.5;
+            neighbor.x += dx;
+            neighbor.y += dy;
+            this.x -= dx;
+            this.y -= dy;
+        }
+
+        if (this.x < 0) this.x = 0;
+        if (this.x > width) this.x = width;
+        if (this.y < 0) this.y = 0;
+        if (this.y > height) this.y = height;
+
+    };
+
+    this.draw = function () {
+        meta_context.drawImage(this.canvas, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+    }
+};
+
+function Fluid() {
+    this.particles = [];
+    for (var i = 0; i < num_x * num_y; i++) {
+        grid.push({
+            length: 0,
+            close: []
+        });
+    }
+    for (var i = 0, l = groups.length; i < l; i++) {
+        for (var j = 0, k = groups[i]; j < k; j++) {
+            var particle = new Particle();
+            particle.init({
+                type: i,
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: 30,
+                color: colors[i]
+            })
+            this.particles.push(particle);
+        }
+    }
+
+    this.update = function () {
+        for (var i = 0, l = this.particles.length; i < l; i++) {
+            var particle = this.particles[i];
+            particle.update();
+            particle.attract();
+            particle.draw();
+        }
+    };
+
+    this.render = function () {
+        var image = meta_context.getImageData(0, 0, width, height),
+            data = image.data;
+        for (var i = 0, l = data.length; i < l; i += 4) {
+            if (data[i + 3] < threshold) {
+                data[i + 3] /= 6;
+            }
+        }
+        ctx.putImageData(image, 0, 0);
+    };
+
+};
+
+
+    groups = [200, 200, 200],
+    gravity_x = 0,
+    gravity_y = 1.35,
+    spacing = 45,
+    threshold = 210,
+    colors = [
+        'rgba(90, 140, 250',
+        'rgba(88, 132, 200',
+        'rgba(77, 121, 188'],
+    num_x = Math.round(width / spacing) + 1,
+    num_y = Math.round(height / spacing) + 1,
+    fluid = new Fluid();
+
+function draw() {
+    //requestAnimFrame(run);
+    meta_context.clearRect(0, 0, width, height);
+    for (var i = 0, l = num_x * num_y; i < l; i++) grid[i].length = 0;
+    fluid.update();
+    fluid.render();
+
+    // if (mouseDown) {
+    //     ctx.drawImage(mouse.canvas, mouseX - mouse.canvas.width / 2, mouse.y - mouse.canvas.height / 2);
+    // }
+
+    //wall.draw(ctx, ctx);
+}
+
+(function spazz() {
+    //mouse.down = true;
+    var xP = 500,
+        yP = 250,
+        d = Date.now(),
+        x = width/2 + Math.sin(d/xP) * width/2,
+        y = 3*height/4 + Math.sin(d/yP) * height/8;
+
+    // pull({
+    //     clientX: x,
+    //     clientY: y
+    // });
+    setTimeout(spazz, 4);
+}());
+
+
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+</script>
+
+<script language="javascript" src="../js/pixel_grid.js"></script>
+<script language="javascript" src="../js/pixel_grid.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+
+
+    <script language="javascript" src="../js/creative_coding.js"></script>
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/particle_engine.js"></script>
+    <!-- <script language="javascript" src="../js/raw_video.js"></script> -->
+    <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+    <!-- <script language="javascript" src="../js/stats.js"></script> -->
+    <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+<!-- <div id="stats"></div> -->
+<script>
+
+var ctx = createCanvas("canvas1");
+// var ctx2 = createHiddenCanvas("canvas1");
+var highs_engine = new particleEngine(40, 1);
+var highs_particles = highs_engine.particles;
+
+var mids_engine = new particleEngine(40, 1);
+var mids_particles = mids_engine.particles;
+
+var bass_engine = new particleEngine(40, 1);
+var bass_particles = bass_engine.particles;
+
+
+function draw(){
+
+    ctx.background(0, 0.1);
+    ctx.fillStyle = rgb(255, 0.2);
+    ctx.strokeStyle = rgb(255, 0.1);
+    ctx.beginPath();
+    ctx.moveTo(0,h/2);
+    for (var i = 0; i < highs_particles.length; i++) {
+      var p = highs_particles[i];
+      ctx.fillStyle = rgb(220);
+      var b = map(Sound.mapHighs(i, highs_particles.length), 0, 100, -50, 50);
+      ctx.lineTo(p.pos.x, p.pos.y + b - 20);
+    }
+    ctx.lineTo(w, h/2);
+    ctx.fill();
+    ctx.closePath();
+    ctx.fillStyle = rgb(255, 0.2);
+    ctx.moveTo(0,h/2);
+    for (var i = 0; i < mids_particles.length; i++) {
+      var p = highs_particles[i];
+      var b = Sound.mapMids(i, mids_particles.length);
+      var b = map(Sound.mapHighs(i, mids_particles.length), 0, 100, -50, 50);
+      //ctx.fillEllipse(p.pos.x, p.pos.y + b, 4, 4);
+      ctx.lineTo(p.pos.x, p.pos.y + b - 20);
+    }
+    ctx.lineTo(w, h/2);
+    ctx.fill();
+    ctx.closePath();
+
+    // for (var i = 0; i < mids_particles.length; i++) {
+    //   var p = mids_particles[i];
+    //   ctx.fillStyle = rgb(120);
+    //   var b = Sound.mapMids(i, mids_particles.length);
+    //   // console.log(b);
+    //   ctx.fillEllipse(p.pos.x, p.pos.y + b, 10, 10);
+    // }
+    //
+    for (var i = 0; i < bass_particles.length; i++) {
+      var p = bass_particles[i];
+      ctx.fillStyle = rgb(220, 0, 0);
+      var b = Sound.mapBass(i, bass_particles.length);
+      // console.log(b);
+      ctx.fillEllipse(p.pos.x, p.pos.y + b, 10, 10);
+    }
+
+}
+
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.domElement); stats.domElement.style.position = 'absolute'; stats.domElement.style.bottom = '0px'; requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script); })()
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+</html>

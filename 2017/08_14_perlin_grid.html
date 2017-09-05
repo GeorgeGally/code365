@@ -1,0 +1,122 @@
+
+<html>
+
+<head>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+   <script language="javascript" src="../js/particle_engine.js"></script>
+
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <!-- <script language="javascript" src="../js/stats.js"></script> -->
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <script src="../js/jquery-1.10.1.min.js"></script>
+
+  <script language="javascript" src="../js/matter.min.js"></script>
+
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<body>
+
+
+<script type="text/javascript">
+
+frameRate = 120;
+
+var ctx = createCanvas('canvas1');
+var hidden_ctx = createHiddenCanvas('canvas2');
+
+var engine = new particleEngine(100, 80);
+var particles = engine.particles;
+
+engine.setSpeed(0, 0, 0, 0);
+engine.setSize(2);
+// engine.setAccel(0, 0, 0.05, 0.2);
+// engine.setDir(1, -1);
+
+engine.edge = false;
+engine.border = false;
+engine.reset = true;
+
+var MAXSPEED = 20;
+
+ctx.fillStyle = rgb(255);
+
+function setup(){
+  ctx.background(0);
+}
+
+
+function draw(){
+
+  ctx.background(0, 0.1);
+
+  // var motion = motionDetection();
+  // var l = motion.length;
+  //console.log(l);
+
+  //if(chance(10)) engine.add(random(w), random(h));
+
+  // for (var i = 0; i < l; i++) {
+  //   var m = motion[i];
+  //
+  //   engine.add(w - m.pos.x + random(-10, 10), m.pos.y + random(-10, 10));
+  //   var last = engine.last;
+  //   //last.alpha = 1;
+  //   last.speed = new Vector(0, random(-1, 15));
+  //   last.accel = new Vector(0, random(0.2, 1));
+  //   last.dir = new Vector(1, -1);
+  //   last.sz = random(1, 2);
+  //   //ctx.fillStyle = rgb(255);
+  //   //ctx.fillRect(m.pos.x, m.pos.y, 10, 10)
+  // }
+
+
+
+  for (var i = engine.particles.length-1; i > 0; i--) {
+
+    var p = particles[i];
+    //p.fillStyle = rgba(255,1);
+    //p.speed.y > MAXSPEED ?  p.speed.y += 0.1 : null;
+    //p.accel.y < 1 ? p.accel.y +=0.01 :  1;
+    moveParticle(p);
+    drawParticle(p)
+  }
+
+  engine.update();
+}
+
+
+function moveParticle(p){
+  // p.pos.x += (p.speed.x * p.accel.x);
+  // p.pos.y += (p.speed.y * p.accel.y);
+  p.target.x = p.start.x + Math.sin((p.me + frameCount)/40) * 20;
+  // p.accel.y < 2 ? p.accel.y +=0.02 :  2;
+  // //p.speed.y > MAXSPEED ?
+  // p.speed.y += 0.3;
+  // p.alpha -= 0.01;
+  // p.sz -= 0.3;
+  // if (p.alpha < 0.01 || p.sz < 0.05) engine.delete(p.me);
+  //p.me == 10 ? console.log(p.sz) : null;
+}
+
+function drawParticle(p){
+  ctx.fillStyle = rgba(255, p.alpha);
+  ctx.fillRect(p.pos.x, p.pos.y, p.sz, p.sz);
+}
+
+
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+
+</script>
+
+<!-- <script language="javascript" src="../js/raw_video.js"></script>
+<script language="javascript" src="../js/motion_detection.js"></script> -->
+
+</body>
+</html>

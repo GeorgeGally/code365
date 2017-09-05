@@ -69,9 +69,15 @@ html, body {
   margin: 0;
   height: 100%;
   background: #f7f7f7;
+  font-family: helvetica, arial;
 }
 
-canvas {
+.add-top { margin-top: 20px !important; }
+.half-top { margin-top: 10px !important; }
+.add-bottom { margin-bottom: 20px !important; }
+.half-bottom { margin-bottom: 10px !important; }
+
+canvas, #map {
   position: absolute;
   top: 0;
   left: 0;
@@ -79,6 +85,8 @@ canvas {
   right: 0;
   background-size: cover;
   z-index: 0;
+  transform: transale3d(0,0,0); 
+  -webkit-transform: translate3d(0, 0, 0);
 }
 
 #canvas2 {
@@ -89,6 +97,10 @@ canvas {
   right: 0;
   background-size: cover;
   z-index: 0;
+}
+
+#stats {
+  z-index: 99;
 }
 
 

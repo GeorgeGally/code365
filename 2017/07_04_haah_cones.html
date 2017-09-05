@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+ctx2.font = "bold 20px Arial";
+ctx2.textAlign = "center";
+
+
+var colours = new colourPool();
+colours.add('#fff', 10);
+colours.add('#000', 50);
+var num_circs = 720;
+var engine = new particleEngine(num_circs);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.vol = 0;
+  p.sides = 5;
+  p.grid2 = createGrid(1,20);
+  p.c = rgb(random(255), random(255), random(55));
+  p.c = colours.get();
+}
+
+
+function draw() {
+
+  ctx.background(0);
+  ctx2.clearRect(0,0,w,h);
+  drawCone(w/2,h/2);
+  ctx2.fillStyle = "red";
+  ctx2.fillText("And I will forsake this reality.", w/2, h - 50);
+
+}
+
+
+
+function drawCone(startx, starty){
+  ctx.save();
+  ctx.translate(startx, starty);
+  ctx.rotateDegrees(frameCount/10);
+  for (var i = 0; i < num_circs; i++) {
+    var p = engine.particles[i];
+    var rot = (i/4)%180;
+    ctx.rotateDegrees(rot);
+    ctx.fillStyle = p.c;
+    p.vol = tween(p.vol, mapSound(i+20, num_circs+50), 10);
+    if (p.vol > 180 && i>14 && chance(2)) ctx.fillStyle = rgb(220,0,0);
+    if ((frameCount%num_circs == i && i>2) || i == num_circs-1) ctx.fillStyle = rgb(220,0,0);
+    if (i == num_circs-1) ctx.fillStyle = rgb(0);
+    p.pos.x = tween(p.pos.x, Math.cos(frameCount/80) * 0.5, 15);;
+    p.pos.y = tween(p.pos.y, Math.sin(frameCount/80) * 0.3, 15);;
+    ctx.fillPolygon(- i/1*p.pos.x, - i/2*p.pos.y, p.sides, map(p.vol, 0,255, 200,300) - i*.28);
+    ctx.rotateDegrees(-1*rot);
+  }
+  ctx.restore();
+}
+
+
+</script>
+ <script language="javascript" src="../js/soundcloud.js"></script>
+
+</body>
+
+</html>

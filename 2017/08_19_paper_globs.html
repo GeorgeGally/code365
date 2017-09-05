@@ -1,0 +1,201 @@
+
+<html>
+
+<head>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/paper-full.min.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <script language="javascript" src="../js/mic.js"></script>
+  <!-- <script language="javascript" src="../js/stats.js"></script> -->
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+
+<!-- <script language="javascript" src="../js/p5.js"></script> -->
+<script language="javascript" src="../js/matter.min.js"></script>
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body {
+background: #fff;
+}
+
+#canvas1 {
+   filter: blur(0px), contrast(200%);
+   -webkit-filter: blur(0px) contrast(200%);
+   /*filter:contrast(200%);*/
+}
+</style>
+
+<body>
+
+<script type="text/javascript">
+
+  var ctx = createCanvas("canvas1");
+
+</script>
+
+
+<script type="text/paperscript" canvas="canvas1">
+
+    var values = {
+          friction: 0.8,
+          timeStep: 0.01,
+          amount: 10,
+          mass: 2,
+          count: 0
+        };
+        values.invMass = 1 / values.mass;
+
+        var path, springs;
+        var size = view.size * [0.9, 1];
+
+        var Spring = function(a, b, strength, restLength) {
+            this.a = a;
+            this.b = b;
+            this.restLength = restLength || 80;
+            this.strength = strength ? strength : 0.55;
+            this.mamb = values.invMass * values.invMass;
+        };
+
+        Spring.prototype.update = function() {
+            var delta = this.b - this.a;
+            var dist = delta.length;
+            var normDistStrength = (dist - this.restLength) /
+                    (dist * this.mamb) * this.strength;
+            delta.y *= normDistStrength * values.invMass * 0.2;
+            if (!this.a.fixed)
+                this.a.y += delta.y;
+            if (!this.b.fixed)
+                this.b.y -= delta.y;
+        };
+
+
+        function createPath(strength) {
+
+            var path = new Path({
+                fillColor: 'black'
+            });
+            springs = [];
+            for (var i = 0; i <= values.amount; i++) {
+                var segment = path.add(new Point(i / values.amount, 0.5) * size);
+                var point = segment.point;
+                if (i == 0 || i == values.amount)
+                    point.y = window.innerHeight;
+                point.px = point.x;
+                point.py = point.y;
+                // The first two and last two points are fixed:
+                point.fixed = i < 1 || i > values.amount - 1;
+                if (i > 0 && i < values.amount-1) {
+                    var spring = new Spring(segment.previous.point, point, strength);
+                    springs.push(spring);
+                }
+            }
+            path.position.x -= size.width / 4;
+            // path.position.y = window.innerHeight;
+            return path;
+        }
+
+        function onResize() {
+            if (path)
+            path.remove();
+            size = view.size * [0.9, 1];
+            path = createPath(0.2);
+        }
+
+        function onMouseMove(event) {
+            event.point.x = window.innerWidth/2;
+            if (listening == true && !isNaN(mic)) {
+                event.point.y = findMapping(Mic.getSprectrum(100),300);
+                //event.point.y = mic.getSpectrum(100)*20;
+            }
+            var location = path.getNearestLocation(event.point);
+            var segment = location.segment;
+            var point = segment.point;
+
+            if (!point.fixed && location.distance < size.height / 4) {
+                var y = event.point.y;
+                point.y += (y - point.y) / 6;
+                if (segment.previous && !segment.previous.fixed) {
+                    var previous = segment.previous.point;
+                    previous.y += (y - previous.y) / 24;
+                }
+                if (segment.next && !segment.next.fixed) {
+                    var next = segment.next.point;
+                    next.y += (y - next.y) / 24;
+                }
+            }
+        }
+
+        function draw() {
+            updateWave(path);
+        }
+
+        function updateWave(path) {
+            var force = 1 - values.friction * values.timeStep * values.timeStep;
+            for (var i = 0, l = path.segments.length; i < l; i++) {
+                var point = path.segments[i].point;
+                if (i == 0 || i == path.segments.length-1) {
+
+                    point.y = window.innerHeight;
+                    point.py = point.y;
+                } else {
+                var dy = (point.y - point.py) * force;
+                point.py = point.y;
+                point.y = Math.max(point.y + dy, 0);
+            }
+            }
+
+            for (var j = 0, l = springs.length; j < l; j++) {
+                springs[j].update();
+            }
+            path.smooth();
+        }
+
+        function onKeyDown(event) {
+            if (event.key == 'space') {
+                path.fullySelected = !path.fullySelected;
+                path.fillColor = path.fullySelected ? null : 'black';
+            }
+        }
+
+        // function map(value, min1, max1, min2, max2, clampResult) {
+        //     var returnvalue = ((value-min1) / (max1 - min1) * (max2-min2)) + min2;
+        //     if(clampResult) return clamp(returnvalue, min2, max2);
+        //     else return returnvalue;
+        // };
+
+        // function clamp(value, min, max) {
+        //     if(max<min) {
+        //         var temp = min;
+        //         min = max;
+        //         max = temp;
+        //
+        //     }
+        //     return Math.max(min, Math.min(value, max));
+        // };
+
+
+var hiFreq = 0;
+var loFreq = 1000;
+
+function findMapping(f, max){
+  if (f > hiFreq) hiFreq = f;
+  if (f < loFreq) loFreq = f;
+  return map(f, loFreq,hiFreq, 0, max);
+}
+
+
+</script>
+
+
+
+
+</body>
+</html>

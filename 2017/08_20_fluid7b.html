@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var final_ctx = createCanvas("canvas2");
+var ctx2 = createCanvas("canvas2");
+var img = new Image();
+
+var POINTS = 500;
+var RADIUS = 90;
+var FORCE = 1.5;
+var RESISTANCE = 0.9;
+var MOUSE_RADIUS = 100;
+var CONNECTIONS = POINTS / RADIUS;
+var MIN_SIZE = 20;
+var MAX_SIZE = 80;
+var GRAVITY = 0.1;
+var BLUR = 1.2;
+var CONTRAST = 29;
+
+var bounce_factor = 0.8;
+
+var threshold_res = 4;
+var threshold_ammt = 81;
+
+var pixels, wall;
+
+function setup() {
+wall = new pixelGrid(114, 46);
+//wall.shape = "rect";
+}
+var engine = new particleEngine(0);
+
+$('#canvas1').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' contrast('+ CONTRAST + ')');
+
+function draw() {
+
+  ctx.background(0);
+  ctx2.clearRect(0, 0, w, h);
+  ctx2.shadowColor = rgba(80,80,80, 0.5);
+  ctx2.shadowBlur = 52;
+
+  //if (chance(5)) {
+    addParticle();
+  //}
+  for (var i = 0; i < engine.particles.length; i++) {
+
+    var p = engine.particles[i];
+    update(p);
+    ctx.fillStyle = "white";
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz-1, p.sz-1);
+
+  }
+  ctx2.fillStyle = "black";
+  ctx2.HfillEllipse(w/2, h/2, 200, 200);
+  wall.draw(final_ctx, ctx);
+}
+
+
+function addParticle(){
+  engine.addParticle(w/2, h/2);
+  var last = engine.last;
+  last.resistance = random(RESISTANCE, 0.999999);
+  last.sz = randomInt(MIN_SIZE, MAX_SIZE);
+  last.c = rgb(180-engine.last.sz*6);
+  last.start = new Vector(last.pos.x, last.pos.y);
+  if(engine.particles > 300) engine.particles.splice(0,1);
+}
+
+
+function update(p) {
+
+
+
+    p.acceleration.x += (w/2 - p.pos.x) / p.sz;
+    p.acceleration.y += (h/2 - p.pos.y) / p.sz;
+
+    p.speed.x += p.acceleration.x;
+    p.speed.y += p.acceleration.y;
+    //
+    p.speed.x *= p.resistance;
+    p.speed.y *= p.resistance;
+    // //p.speed.y += GRAVITY;
+    p.pos.x += p.speed.x;
+    p.pos.y += p.speed.y;
+
+    //p.acceleration.y += GRAVITY;
+
+    if (p.pos.y > h) {
+      p.speed.y *= -0.55;
+    }
+
+    p.acceleration.x = 0;
+    p.acceleration.y = 0;
+
+    for (var j = p.me + 1; j < engine.length; j++) {
+        var p2 = engine.particles[j];
+           var dx = p.pos.x - p2.pos.x;
+           var dy = p.pos.y - p2.pos.y;
+           var distance = dist(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y);
+
+           dx /= distance;
+           dy /= distance;
+
+           // FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+
+           var forceX = dx * (FORCE / distance);
+           var forceY = dy * (FORCE / distance);
+           //var forceY = (GRAVITY * p2.sz * p.sz)/ (distance*distance) * p.sz;
+           //console.log(forceY);
+           p.acceleration.x += forceX;
+           p.acceleration.y += forceY;
+
+           p2.acceleration.x -= forceX;
+           p2.acceleration.y -= forceY;
+
+
+   }
+
+
+}
+
+
+
+// SLIDERS
+
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+
+
+settings.addRange("BLUR", 1, 50, BLUR, 0.1, function(value){
+  BLUR = value;
+  $('#canvas1').css('-webkit-filter', 'blur(' + value + 'px)' + ' CONTRAST(13)');
+});
+
+
+
+
+settings.addRange("CONTRAST", 1, 200, CONTRAST, 0.1, function(value){
+  CONTRAST = value;
+  $('#canvas1').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' CONTRAST('+ value+')');
+});
+
+settings.addRange("FORCE", 0, 10, FORCE, 0.1, function(value){
+  FORCE = value;
+});
+
+settings.addRange("RESISTANCE", 0, 1, RESISTANCE, 0.001, function(value){
+  RESISTANCE = value;
+});
+
+
+settings.addRange("GRAVITY", 0, 1, GRAVITY, 0.01, function(value){
+  GRAVITY = value;
+});
+
+settings.addRange("MAX_SIZE", 1, 500, MAX_SIZE, 1, function(value){
+  MAX_SIZE = value;
+});
+
+
+settings.addRange("MIN_SIZE", 1, 500, MIN_SIZE, 1, function(value){
+  MIN_SIZE = value;
+});
+
+</script>
+<script language="javascript" src="../js/pixel_grid.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(2,3);
+var particles = engine.particles;
+var pos_counter = 0;
+console.log(engine.grid);
+
+for (var i = 0; i < particles.length; i++) {
+  var p = particles[i];
+  p.c = rgb(0);
+  p.target_sz = 50;
+  p.trails = [];
+  p.speed.x = 0.1;
+  p.speed.y = 0.1;
+  p.tween_speed = 20;
+}
+
+function draw(){
+
+  ctx.background(0);
+  ctx.strokeStyle = rgb(255);
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    drawTrails(p);
+    ctx.fillStyle = p.c;
+
+      p.target.x = engine.grid.x[(i+pos_counter)%particles.length];
+      p.target.y = engine.grid.y[(i+pos_counter)%particles.length];
+    //}
+
+    //ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+    // ctx.fillEllipse(p.target.x, p.target.y, 10, 10);
+    upDateTrails(p);
+    //p.target_sz = random(10, 20);
+  }
+  if(frameCount%50 == 0) pos_counter++;
+  engine.update();
+}
+
+
+function drawTrails(p){
+
+  for (var j = 0; j < p.trails.length; j++) {
+    var p2 = p.trails[j];
+    ctx.fillStyle = rgb(j * 2);
+    ctx.HfillEllipse(p2.x, p2.y, 200 - j);
+  }
+}
+
+function upDateTrails(p){
+  p.trails.push({x: p.pos.x, y: p.pos.y});
+  if(p.trails.length > 100) p.trails.splice(0,1);
+  //console.log(p.trails);
+}
+
+
+</script>
+
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+
+</html>

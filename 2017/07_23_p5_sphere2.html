@@ -1,0 +1,68 @@
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+
+<script language="javascript" src="../js/p5.js"></script>
+<script language="javascript" src="../js/matter.min.js"></script>
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script type="text/javascript">
+
+var w = window.innerWidth;
+var h = window.innerHeight;
+var hidden;
+var particles = [];
+
+function setup(){
+	createCanvas(w, h, WEBGL);
+	hidden = createGraphics(w, h);
+	hidden.strokeWeight(8);
+for (var i = 0; i < 20; i++) {
+	var speed = random(-5, 5);
+	particles[i] = {
+		x: w/2,
+		y: 0,
+		sz: random(5, h),
+		speed: speed
+	}
+}
+
+}
+
+function draw(){
+	background(235);
+	drawHidden();
+	texture(hidden);
+	rotateX(frameCount * 0.01);
+	rotateZ(frameCount * 0.01);
+	box(220);
+}
+
+
+function drawHidden(){
+	hidden.background(225);
+	for (var i = 0; i < particles.length; i++) {
+		var p = particles[i];
+		p.sz += p.speed;
+		if(p.sz > h || p.sz < 0) p.speed*=-1;
+		hidden.stroke(0);
+		hidden.noFill();
+		hidden.ellipse(w/2, h/2, p.sz, p.sz);
+	}
+
+}
+
+</script>
+
+
+
+
+</body>
+</html>

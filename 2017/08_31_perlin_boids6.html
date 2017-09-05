@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/perlin.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createHiddenCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+var final_ctx = createCanvas("canvas4");
+var ctx3 = createCanvas("canvas3");
+
+var canvas = ctx.canvas;
+
+noise.seed(randomInt(20));
+
+
+
+var scl = 12;
+var xvec, yvec;
+var noiseInc = .1;
+var time = 0;
+var particles = [];
+var flowfield;
+var icon = 1;
+var icon_sz = 200;
+var pixels, wall;
+
+function setup() {
+  //ctx.background(0);
+  ctx.lineWidth = 0.5;
+  ctx.strokeStyle = rgb(255);
+  wall = new pixelGrid(120, 80);
+}
+
+function draw() { // Rotating Vectors
+
+       ctx.background(0, 0.1);
+       ctx3.clearRect(0,0,w, h);
+
+       FlowField();
+       ctx2.drawImage(ctx.canvas, 0, 0, w, h);
+       icons();
+
+       //wall.draw(final_ctx, ctx2);
+}
+
+function FlowField(){
+       xvec = Math.floor((w+50) / scl);
+       yvec = Math.floor((h+50) / scl);
+       flowfield = new Array(xvec * yvec);
+
+       var yNoise = 0;
+       for (var y = 0; y < yvec; y++) {
+              var xNoise = 0;
+              for (var x = 0; x < xvec; x++) {
+                     var vecDirect = noise.perlin3(xNoise, yNoise, time) * 2*(TWO_PI);
+                     //
+                     //vecDirect = map(degrees(vecDirect), -360, 360, 0, 360);
+                     //vecDirect = radians(vecDirect);
+                    //console.log(vecDirect);
+                    //  var dir = p5.Vector.fromAngle(vecDirect);
+                    var dir = vecDirect;
+                     var index = x + y * xvec;
+                     flowfield[index] = dir;
+                     //dir.setMag(3);
+                     xNoise += noiseInc;
+
+                     ctx.save();
+                     ctx.translate(Math.round(x * scl), Math.round(y * scl));
+                    //  ctx.rotate(dir.heading());
+                    ctx.rotate(dir);
+                     ctx.line(0, 0, scl * 3, 0);
+                     ctx.restore();
+              }
+              yNoise += noiseInc;
+              time += .00001;
+       }
+}
+
+
+
+function icons(){
+
+  // ctx3.shadowColor = rgba(80,80,80, 0.5);
+  // ctx3.shadowBlur = 52;
+  ctx3.fillStyle = rgb(0);
+  if(chance(50)) icon = randomInt(1,3);
+  if(icon == 1) ctx3.HfillEllipse(w/2, h/2, icon_sz, icon_sz);
+  if(icon == 2) ctx3.centreFillRect(w/2, h/2, icon_sz, icon_sz);
+  if(icon == 3) ctx3.eqFillTriangle(w/2, h/2, icon_sz/1.7, icon_sz/1.7);
+}
+
+
+
+</script>
+<script language="javascript" src="../js/pixel_grid.js"></script>
+ <!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

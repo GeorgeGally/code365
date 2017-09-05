@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var img = new Image();
+
+var POINTS = 500;
+var RADIUS = 90;
+var FORCE = 4.5;
+var MOUSE_RADIUS = 100;
+var CONNECTIONS = POINTS / RADIUS;
+var MIN_SIZE = 10;
+var MAX_SIZE = 50;
+var gravity = 0.08;
+var bounce_factor = 0.8;
+
+var threshold_res = 4;
+var threshold_ammt = 81;
+
+var blur_ammt = 11;
+var blur_pass = 8;
+var contrast = 79;
+
+var engine = new particleEngine(0);
+
+$('#canvas1').css('-webkit-filter', 'blur(' + blur_ammt + 'px)' + ' contrast('+ contrast + ')');
+
+function draw() {
+
+  ctx.background(250);
+  if (chance(5)) {
+    addParticle();
+  }
+  for (var i = 0; i < engine.particles.length; i++) {
+
+    var p = engine.particles[i];
+    update(p);
+    ctx.fillStyle = p.c;
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz-1, p.sz-1);
+
+  }
+
+
+}
+
+
+function addParticle(){
+  engine.addParticle(w/2, h/2);
+  engine.last.resistance = 0.90;
+  engine.last.sz = randomInt(MIN_SIZE, MAX_SIZE);
+  engine.last.c = rgb(180-engine.last.sz*6);
+  if(engine.particles > 300) engine.particles.splice(0,1);
+}
+
+
+function update(p) {
+
+    p.acceleration.x += (w/2 - p.pos.x) / p.sz;
+    p.acceleration.y += (h/2 - p.pos.y) / p.sz;
+
+    p.speed.x += p.acceleration.x;
+    p.speed.y += p.acceleration.y;
+
+    p.speed.x *= p.resistance;
+    p.speed.y *= p.resistance;
+    p.speed.y += gravity;
+    p.pos.x += p.speed.x;
+    p.pos.y += p.speed.y;
+
+    p.acceleration.x = 0;
+    p.acceleration.y = 0;
+
+    for (var j = p.me + 1; j < engine.length; j++) {
+        var p2 = engine.particles[j];
+           var dx = p.pos.x - p2.pos.x;
+           var dy = p.pos.y - p2.pos.y;
+           var distance = dist(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y);
+
+           dx /= distance;
+           dy /= distance;
+
+           var forceX = dx * (FORCE / distance);
+           var forceY = dy * (FORCE / distance);
+
+           p.acceleration.x += forceX;
+           p.acceleration.y += forceY;
+
+           p2.acceleration.x -= forceX;
+           p2.acceleration.y -= forceY;
+
+          //  if (distance < nBalls / CONNECTIONS) {
+          //      ctx.moveTo(balls[i].x, balls[i].y);
+          //      ctx.lineTo(balls[j].x, balls[j].y);
+          //  }
+
+
+   }
+
+
+}
+
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+// // settings.addRange(title, min, max, value, step, callback);
+settings.addRange("threshold_res", 1, 20, threshold_res, 0.1, function(value){
+  threshold_res = value;
+});
+
+settings.addRange("threshold_ammt", 1, 500, threshold_ammt, 0.1, function(value){
+  threshold_ammt = value;
+});
+
+settings.addRange("blur_ammt", 1, 50, blur_ammt, 1, function(value){
+  blur_ammt = value;
+  $('#canvas1').css('-webkit-filter', 'blur(' + value + 'px)' + ' contrast(13)');
+});
+
+
+
+
+settings.addRange("contrast", 1, 200, contrast, 1, function(value){
+  contrast = value;
+  $('#canvas1').css('-webkit-filter', 'blur(' + blur_ammt + 'px)' + ' contrast('+ value+')');
+});
+
+settings.addRange("FORCE", 0, 10, FORCE, 0.1, function(value){
+  FORCE = value;
+});
+
+
+settings.addRange("MAX_SIZE", 1, 80, MAX_SIZE, 0.1, function(value){
+  MAX_SIZE = value;
+});
+
+
+settings.addRange("MIN_SIZE", 1, 80, MIN_SIZE, 0.1, function(value){
+  MIN_SIZE = value;
+});
+
+</script>
+
+</body>
+
+</html>

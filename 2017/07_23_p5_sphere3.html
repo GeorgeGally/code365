@@ -1,0 +1,86 @@
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+
+<script language="javascript" src="../js/p5.js"></script>
+
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script type="text/javascript">
+
+var w = window.innerWidth;
+var h = window.innerHeight;
+var hidden;
+var particles = [];
+var rot_y = 0;
+
+function setup(){
+	createCanvas(w, h, WEBGL);
+	hidden = createGraphics(w, h);
+	hidden.strokeWeight(8);
+for (var i = 0; i < 80; i++) {
+	var speed = random(-5, 5);
+	particles[i] = {
+		x: random(w),
+		y: 0,
+		sz: random(5, h),
+		sw: random(20),
+		speed: speed
+	}
+}
+
+}
+
+function draw(){
+	background(235);
+	drawHidden();
+	texture(hidden);
+	var b = Sound.getBassVol(0,1);
+	var m = Sound.getMidsVol(0,1);
+	var h = Sound.getHighsVol(0,1);
+	rot_y += b;
+	rotateY(rot_y/100);
+	rotateX(radians(90));
+	//rotateZ(h);
+	box(220);
+}
+
+
+function drawHidden(){
+	hidden.background(225);
+	for (var i = 0; i < particles.length; i++) {
+		var p = particles[i];
+		p.x += p.speed;
+		if(p.x > w || p.x < 0) p.speed*=-1;
+		hidden.stroke(0);
+		hidden.noFill();
+		hidden.strokeWeight(p.sw);
+		hidden.line(p.x, 0, p.x, h);
+	}
+
+}
+
+
+function randomInt(min, max) {
+  if(max===undefined) {
+    max = min;
+    min = 0;
+  }
+  return Math.floor(Math.random() * (max+1-min)) +min;
+}
+
+
+</script>
+
+
+</body>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</html>

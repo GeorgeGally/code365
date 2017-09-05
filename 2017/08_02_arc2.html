@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+
+
+    <script language="javascript" src="../js/creative_coding.js"></script>
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/vector_particles.js"></script>
+    <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var r = 300;
+var rot = 0;
+var arcs = [];
+var num = 10;
+ctx.lineCap="round";
+
+for (var i = 0; i < num; i++) {
+  arcs[i] = 20;
+}
+
+function draw(){
+
+    ctx.background(0, 0.2);
+
+    ctx.save();
+    ctx.translate(w/2, h/2 + 100);
+    ctx.strokeStyle = rgb(255);
+    ctx.fillStyle = rgb(155);
+
+    for (var i = 0; i < num; i++) {
+    ctx.beginPath();
+    var s = Sound.mapSound(i, 20, 0, 90);
+    var n = 10 + Math.sin(frameCount/100 + (i * 50)/100) * 10;
+    ctx.lineWidth = 15;
+    arcs[i] = tween(arcs[i], s, 20);
+    ctx.arc(0, 0, r - i*22, radians(180), radians(180 + arcs[i]));
+    var x = (r - i*22) * Math.cos(radians(180 + arcs[i] + 10));
+    var y = (r - i*22) * Math.sin(radians(180 + arcs[i] + 10));
+    //ctx.fill();
+    ctx.stroke();
+    ctx.fillEllipse(x, y, 15);
+
+    }
+
+    // ctx.fillStyle = "black";
+    //ctx.fillEllipse(0, 0, 20, 20);
+    ctx.restore();
+
+}
+
+</script>
+ <script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+</html>

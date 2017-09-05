@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/toxiclibs.js"></script>
+<script language="javascript" src="../js/jquery-1.6.2.js"></script>
+<script language="javascript" src="../js/simplex-noise.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+ <body style="background: #f7f7f7">
+
+<script>
+
+var ctx4 = createCanvas("canvas4");
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+
+var colours = new colourPool()
+	    .add("#4AB6E4")
+	    .add("#353535")
+	    .add("red")
+	    .add("#71C152")
+	    .add("#000")
+	    .add("#FFFAEE")
+      .add("black");
+
+
+//console.log(colours.get(1));
+
+var text_colour = rgb(160);
+var motorist_colour =  colours.get(0);
+var cyclist_colour = colours.get(2);
+var pedestrian_colour = colours.get(1);
+var injured_colour = colours.get(4);
+var killed_colour = colours.get(6);
+var ok_colour = colours.get(5);
+
+var bar_offset = 0;
+var txt_pos = h-180;
+var bar_height = 30;
+
+
+var seed = window.location.hash.substr(1) || String(Math.random()).split('.')[1]
+var r = random( seed )
+var simplex = new SimplexNoise( r )
+var simplex3 = simplex.noise3D.bind(simplex)
+
+var config = {
+    margin: 0.9,
+    activeLines : 10,
+    line_width: 5,
+    random : random,
+    simplex3 : simplex3,
+    maxAngle : Math.PI * 0.2,
+    lineLength : 5,
+    simplexScale : 0.6,
+    simplexDepthScale : 0.001,
+  }
+
+var x1 = w/2, y1 = h/2;
+var x2 = w/2, y2 = h/2;
+var s = rgb(randomInt(255), randomInt(255), randomInt(255));
+var lines = [];
+var active_lines = [];
+var was_hit, hit, curr_line_width;
+var simplex = new SimplexNoise();
+ctx.moveTo(w/2, h/2);
+ctx.lineCap="round";
+
+// ctx.shadowBlur = 3;
+// ctx.shadowColor = "white";
+ctx.background(0);
+
+
+
+
+var t = 0;
+var count = 0;
+var curve, change;
+var data = [];
+var url = "../data/NYPD_Motor_Vehicle_Collisions-11-6-2017_10_7_2017.csv";
+var minXDataPoint = 1000;
+var maxXDataPoint = -1000
+var minYDataPoint = 1000;
+var maxYDataPoint = -1000;
+
+
+var total_accidents = 0, total_incidents = 0;
+var total_injured = 0, total_deaths = 0, total_ok = 0;
+var total_pedestrians_injured = 0, total_pedestrians_deaths = 0;
+var total_cyclists_injured = 0, total_cyclists_deaths = 0;
+var total_motorists_injured = 0, total_motorists_deaths = 0;
+
+var pedestrian = 0, cyclist = 0, motorist = 0, ok = 0;
+var injured = 0, killed = 0;
+var counter = 0;
+
+
+
+function draw() {
+
+	if(data.length >0 ) {
+  if (chance(20)) {
+    change  = simplex.noise3D(x1, y1, t) * 0.0005;
+  }
+  curve += change;
+  t+= curve;
+
+  x2 = x1, y2 = y1;
+  //var noise = simplex.noise2D(x1, y1);
+  var noise = simplex3(
+    x1 * config.simplexScale,
+    y1 * config.simplexScale,
+    lines.length * config.simplexDepthScale
+  )
+  //console.log(noise);
+  var theta = noise * Math.PI * 2;
+
+
+  //x1+=random(-55,55);
+  x1 = x1 + Math.cos( t ) * config.lineLength;
+  //y1+=random(-55,55);
+  y1 = y1 + Math.sin( t ) * config.lineLength
+  if (x1>w) resetLine();
+  if (x1<0) resetLine();
+  if (y1>h) resetLine();
+  if (y1<0) resetLine();
+
+  if(curr_line_width > 0.2) {
+		curr_line_width -= 0.09;
+	} else {
+		resetLine();
+	}
+
+  ctx.lineWidth = curr_line_width;
+  ctx.strokeStyle = s;
+
+// check self hit
+  selfHit();
+
+  if (!checkHit()) {
+  ctx.line(x1, y1, x2, y2);;
+  var l = {
+    x: x1, y: y1
+  }
+  lines.push(l);
+  }
+}
+}
+
+
+function selfHit(){
+  if (lines.length > 0) {
+
+    for (var i = 1; i < lines.length; i++) {
+
+      hit = checkIntersection(x1, y1, x2, y2, lines[i].x, lines[i].y, lines[i-1].x, lines[i-1].y );
+
+      if (hit!= undefined && hit!= false) {
+        console.log("selfhit");
+        //ctx.strokeStyle = "black";
+        //ctx.line(lines[i].x, lines[i].y, lines[i-1].x, lines[i-1].y);
+        //ctx.strokeStyle = s;
+        resetLine();
+        break;
+      }
+  }
+
+  }
+}
+
+function checkHit(){
+    var is_hit = false;
+    //if (active_lines.length > 0) {
+    for (var j = 0; j < active_lines.length; j++) {
+    var lines2 = active_lines[j];
+    if (lines2.length > 0) {
+    for (var i = 1; i < lines2.length; i++) {
+
+      hit = checkIntersection(x1, y1, x2, y2, lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y );
+
+      if (hit!= undefined && hit!= false) {
+
+        // ctx.strokeStyle = "black";
+        // ctx.line(lines2[i].x, lines2[i].y, lines2[i-1].x, lines2[i-1].y);
+        // ctx.strokeStyle = s;
+        resetLine();
+        is_hit = true;
+        break;
+      }
+  }
+
+  }
+}
+
+return is_hit;
+
+}
+
+function resetLine(){
+	if(data.length >0 && counter < data.length-1) {
+    active_lines.push(lines);
+		var d = data[counter];
+		var x = sticky(map(d.LATITUDE, minXDataPoint, maxXDataPoint, 0, w), 10);
+		var y = sticky(map(d.LONGITUDE, minYDataPoint, maxYDataPoint + 2, 160, h), 10);
+		nextAccident(counter);
+		counter++;
+		//console.log(counter);
+    lines = [];
+    x1 = x;
+    y1 = y;
+    x2 = x1, y2 = y1;
+    curve = random(-0.08, 0.08);
+    //console.log(curve);
+    change = random(-0.02, 0.02);
+    //console.log("change: " + change);
+    if (config.line_width > 0.1) config.line_width -=0.002;
+
+    curr_line_width = config.line_width;
+
+    // s = rgb(randomInt(255), randomInt(255), randomInt(255));
+    s = rgb(randomInt(100,250));
+		}
+}
+
+
+
+d3.csv(url, function(_data) {
+  data = _data;
+  //data.reverse();
+
+		for (var i = 0; i < data.length; i++) {
+			var d = data[i];
+			//console.log(d.LONGITUDE);
+			if (d.LATITUDE !=0 && d.LATITUDE < minXDataPoint) minXDataPoint = d.LATITUDE;
+			if (d.LATITUDE !=0 && d.LATITUDE > maxXDataPoint) maxXDataPoint = d.LATITUDE;
+			if (d.LONGITUDE !=0 && d.LONGITUDE < minYDataPoint && d.LONGITUDE != -42.768513) minYDataPoint = d.LONGITUDE;
+			if (d.LONGITUDE !=0 && d.LONGITUDE > maxYDataPoint) maxYDataPoint = d.LONGITUDE;
+
+		}
+
+			console.log(minYDataPoint);
+			console.log(maxYDataPoint);
+			resetLine();
+});
+
+
+
+function nextAccident(i){
+  injured = 0, killed = 0;
+  pedestrian = 0, cyclist = 0, motorist = 0, ok = 0;
+  var d = data[i];
+  //console.log(d);
+  if(d['NUMBER OF PEDESTRIANS INJURED'] != undefined) {
+    total_pedestrians_injured += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+    pedestrian += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+    injured += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+  }
+  if(d['NUMBER OF PEDESTRIANS KILLED'] != undefined) {
+    total_pedestrians_deaths += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+    pedestrian += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+    killed += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+  }
+
+  if(d['NUMBER OF CYCLIST INJURED'] != undefined) {
+    total_cyclists_injured += parseInt(d['NUMBER OF CYCLIST INJURED']);
+    cyclist += parseInt(d['NUMBER OF CYCLIST INJURED']);
+    injured += parseInt(d['NUMBER OF CYCLIST INJURED']);
+  }
+  if(d['NUMBER OF CYCLIST KILLED'] != undefined) {
+    total_cyclists_deaths += parseInt(d['NUMBER OF CYCLIST KILLED']);
+    cyclist += parseInt(d['NUMBER OF CYCLIST KILLED']);
+    killed += parseInt(d['NUMBER OF CYCLIST KILLED']);;
+  }
+
+  if(d['NUMBER OF MOTORIST INJURED'] != undefined) {
+    total_motorists_injured += parseInt(d['NUMBER OF MOTORIST INJURED']);
+    motorist += parseInt(d['NUMBER OF MOTORIST INJURED']);
+    injured += parseInt(d['NUMBER OF MOTORIST INJURED']);
+  }
+  if(d['NUMBER OF MOTORIST KILLED'] != undefined) {
+    total_motorists_deaths += parseInt(d['NUMBER OF MOTORIST KILLED']);
+    motorist += parseInt(d['NUMBER OF MOTORIST KILLED']);
+    killed += parseInt(d['NUMBER OF MOTORIST KILLED']);
+  }
+
+    // DRAW BARS
+    var pos = map(total_incidents, 0, 2000, 0, w);
+    // ctx3.fillStyle = motorist_colour;
+    // ctx3.fillRect(pos, bar_offset, motorist, bar_height);
+
+    ctx3.fillStyle = cyclist_colour;
+    //ctx3.fillRect(pos + motorist, bar_offset, cyclist, bar_height);
+
+    // ctx3.fillStyle = pedestrian_colour;
+    // ctx3.fillRect(pos + motorist + cyclist, bar_offset, pedestrian, bar_height);
+
+    ctx3.fillStyle = killed_colour;
+    ctx3.fillRect(pos, bar_offset, killed, bar_height);
+
+    ctx3.fillStyle = injured_colour;
+    ctx3.fillRect(pos + killed + injured, bar_offset, injured, bar_height);
+
+
+  total_deaths += killed;
+  total_injured += injured;
+  if(injured == 0 && killed == 0) {
+    ok = 1;
+    total_ok += 1;
+  }
+  total_accidents += 1;
+  total_incidents += (motorist + cyclist + pedestrian);
+
+  var x = sticky(map(d.LATITUDE, minXDataPoint, maxXDataPoint, 0, w), 10);
+  var y = sticky(map(d.LONGITUDE, minYDataPoint, maxYDataPoint, 40, h + 50), 10);
+  //console.log(minYDataPoint);
+  // if(pedestrian> 0 || killed > 0) addParticle(x, y, injured, killed, ok, pedestrian, cyclist, motorist);
+
+}
+
+
+
+</script>
+
+</body>
+</html>

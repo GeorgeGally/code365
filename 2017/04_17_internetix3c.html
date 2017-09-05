@@ -151,6 +151,7 @@ function registerMovements(count){
     // if (p.target.x != p.pos.x && p.target.y != p.pos.y) p.on = true;
     //if (p.target.x != w/2 && p.target.y != h/2)
     p.on = true;
+    p.on_txt = false;
     showTime(m);
   }
   created = "";
@@ -159,7 +160,7 @@ function registerMovements(count){
 
 function drawParticle(p){
   if (chance(800)) p.on_txt = true;
-  //if (chance(100)) p.on_txt = false;
+  if (chance(100)) p.on_txt = false;
     //ctx.fillStyle = "white";
     ctx.fillStyle = rgba(255, 0.07);
     p.sz = dist(p.target.x,p.target.y, p.pos.x,p.pos.y)/10;

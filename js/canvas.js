@@ -9,12 +9,17 @@ height = h = window.innerHeight;
 	// this enables me to have many canvases all positioned on top of eachother at 100% width and height of page
 
 function createCanvas(_canvas_name){
+	// var ww = _w || window.innerWidth;
+	// var hh = _h || window.innerHeight;
 	canvas = document.createElement('canvas');
 	var body = document.querySelector('body');
 	canvas.setAttribute("id", _canvas_name);
 	canvas.style.position = "absolute";
 	canvas.style.left = "0px";
 	canvas.style.top = "0px";
+	// canvas.style.width = ww;
+	// canvas.style.height = hh;
+
 	body.appendChild(canvas);
 	var ctx = canvas.getContext('2d');
 

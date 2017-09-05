@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var MAX = 80;
+var dx = 0, dy = 0;
+
+var vines = [{x: 0, y:0, a: 0, ai: 0, p:[], l: MAX, w: 8}]
+
+
+console.log(vines);;
+
+function draw(){
+
+  ctx.background(50);
+  ctx.save();
+  ctx.translate(w/2, h/2);
+  //console.log(vines.x);
+  update();
+  render();
+  ctx.restore();
+}
+
+function render(){
+  //console.log(vines);
+  ctx.fillEllipse(0,0, 50,50);
+  vines.forEach( v => {
+    if(v.w == 8){
+      ctx.translate(-v.x, -v.y);
+    }
+
+    ctx.strokeStyle = "white";
+    ctx.beginPath();
+    l = v.p.length-1;
+    //console.log(l);
+    for (var i = 1; i < v.p.length; i++) {
+      var p = v.p[i];
+      //console.log(v.p[i-1].y);
+      ctx.line(p.x, p.y, v.p[i-1].x, v.p[i-1].y)
+    }
+      // for (i = l; p = v.p[i]; i--) {
+      //   ctx.lineTo(p.x, p.y);
+      // }
+      // ctx.stroke();
+
+  })
+}
+
+function update(){
+  vines.forEach( v => {
+    dx = Math.cos(v.a) * v.w /2;
+    dy = Math.sin(v.a) * v.w /2;
+    //console.log(dx);
+    v.x += dx;
+    //console.log(v.x);
+    v.y += dy;
+    v.a += v.ai;
+    v.p.splice(0, v.p.length - 60);
+    v.p.push({x: v.x, y: v.y, dx: dx, dy: dy});
+    if(frameCount%30 == 0) {
+      v.ai = random(-0.5, 0.5);
+    }
+    //console.log(v.p);
+  })
+}
+
+
+</script>
+
+<!-- <script language="javascript" src="js/motion_detection.js"></script> -->
+
+</body>
+
+</html>

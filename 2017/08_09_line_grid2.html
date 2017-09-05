@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/perlin.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(80, 1);
+var particles = engine.particles;
+
+var perlin;
+noise.seed(Math.random());
+
+for (var i = 0; i < particles.length; i++) {
+  var p = particles[i];
+  //console.log(p.angle);
+  p.start.x = w/2 + Math.cos(p.angle) * 100;
+  p.start.y = h/2 + Math.sin(p.angle) * 100;
+  //console.log(p.start.y);
+}
+
+var change = 0;
+
+
+console.log(engine.particles);
+
+var theta = noise * Math.PI * 2;
+var noisy = .007;
+
+
+function draw(){
+
+  ctx.background(0);
+
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    // p.pos.y = p.start.y + Math.cos((p.col*5 + i * 3 + frameCount)/120) * (engine.grid.spacing.y*0.5);
+
+    // p.pos.x = p.start.x + Math.sin((2 * p.col + 4 * p.row + frameCount)/(50 + 2 * p.row )) * (engine.grid.spacing.y*0.2);
+    //p.pos.x = p.start.x + 200 + Math.cos((4 * p.row + p.col/2 + frameCount/20)/10) * noise.perlin2(Math.sin(p.row/10 + frameCount/50), noisy);
+    //p.pos.x = p.start.x + Math.cos(p.col/40 + frameCount/20) * 120;
+
+    //p.pos.y = p.start.y + Math.sin((p.row*15 + p.col/2 + frameCount/10)/22) * (engine.grid.spacing.y*0.4)/2;
+    var extra = noise.perlin2((i*2 + frameCount)/20, Math.sin(noisy)) * 50;
+    //console.log(extra);
+    p.pos.x = w/2 + Math.cos(p.angle) * (200 * Math.sin(frameCount/20));
+    p.pos.y = h/2 + Math.sin(p.angle) * (200 * Math.cos(frameCount/50));
+
+    var extra = noise.perlin2((i*2 + frameCount)/20, Math.cos(frameCount/50)) * 50;
+    p.start.x = w/2 + Math.sin(frameCount/20) * (100 * Math.cos(frameCount/30));
+    p.start.y = h/2 + Math.cos(p.angle) * (100 * Math.sin(frameCount/50));
+
+    //p.pos.x = p.start.x - (Math.cos((Math.sin( (p.row + p.col + i*5 + frameCount)/60))) * engine.grid.spacing.y);
+
+    //p.pos.x = p.start.x + 200 * noise.perlin2((p.col/5 + i*2 + frameCount)/200, Math.sin(noisy ));
+    //p.pos.y = p.start.y + 520 * noise.perlin2(Math.cos((p.col*2 + frameCount)/20), Math.sin((p.col*2 + i*5 + frameCount)/100));
+    ctx.strokeStyle = rgb(255);
+    ctx.line(p.pos.x, p.pos.y, p.start.x, p.start.y);
+  }
+  noisy += .007;
+
+  mirror();
+
+}
+
+
+</script>
+
+</body>
+
+</html>

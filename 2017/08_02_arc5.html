@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+
+
+    <script language="javascript" src="../js/creative_coding.js"></script>
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/vector_particles.js"></script>
+    <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var r = 300;
+var rot = 0;
+var arcs = [];
+var num = 10;
+ctx.lineCap="round";
+
+for (var i = 0; i < num; i++) {
+  arcs[i] = 20;
+}
+
+function draw(){
+
+    ctx.background(0);
+
+    ctx.save();
+    ctx.translate(w/2, h/2);
+
+    var s = Sound.getBassVol(20, 250);
+    r = tween(r, s, 10);
+    ctx.rotateDegrees(counter/10);
+    for (var i = 0; i < num; i++) {
+    ctx.beginPath();
+    var s = Sound.mapSound(i, 20, 2, 50);
+    var n = 10 + Math.sin(frameCount/100 + (i * 50)/100) * 10;
+    ctx.lineWidth = 15;
+    ctx.strokeStyle = ctx.fillStyle = hsl((r + i) * 10, 40, 50);
+    arcs[i] = tween(arcs[i], s, 10);
+    ctx.stroke();
+     for (var j = 0; j < 90; j++) {
+       circs(i, j*4, s);
+     }
+
+    }
+
+
+    ctx.restore();
+
+}
+
+function circs(i, offset, s){
+  var x = (r - i*22) * Math.cos(radians(s + 180 + arcs[i] + offset));
+  var y = (r - i*22) * Math.sin(radians(s + 180 + arcs[i] + offset));
+  ctx.fillEllipse(x, y, s/4);
+}
+
+
+</script>
+ <script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+</html>

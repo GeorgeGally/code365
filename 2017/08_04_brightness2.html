@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+
+
+    <script language="javascript" src="../js/creative_coding.js"></script>
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/particle_engine.js"></script>
+    <script language="javascript" src="../js/raw_video.js"></script>
+    <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+    <script language="javascript" src="../js/stats.js"></script>
+    <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+<div id="stats"></div>
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createHiddenCanvas("canvas1");
+var engine = new particleEngine(40, 30);
+var particles = engine.particles;
+var scalefactor = 40;
+
+function setup(){
+video.width = w/scalefactor;
+video.height = h/scalefactor;
+}
+
+function draw(){
+
+    ctx2.drawImage(video, 0, 0, video.width, video.height);
+    var data = ctx2.getImageData(0, 0, video.width, video.height).data;
+    ctx.background(0);
+    for (var y = 0; y < video.height; y++) {
+      for (var x = 0; x < video.width; x++) {
+      // var p = particles[i];
+      var pos = (x + y * video.width) * 4;
+
+      var r = data[pos];
+      var g = data[pos+1];
+      var b = data[pos+2];
+
+      var brt = brightness(r, g, b, engine.grid.spacing.x);
+        //console.log(brt);
+      ctx.fillStyle = rgb(r, g, b);
+      ctx.fillEllipse(x*scalefactor, y*scalefactor, scalefactor, scalefactor);
+    }
+    }
+}
+
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+</script>
+
+</body>
+</html>

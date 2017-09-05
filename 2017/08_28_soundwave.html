@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+ 	<meta charset="utf-8">
+	<title>Soundcloud Viz</title>
+
+	<script src='http://connect.soundcloud.com/sdk.js'></script>
+	<script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+	<script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var flies = [];
+var balls = new particleEngine(22);
+
+for (var i = 0; i < balls.particles.length; i++) {
+    b = balls.particles[i];
+    b.position.x = i*w/balls.particles.length + w/balls.particles.length/2;
+    b.position.y = h/2+100;
+    b.speed.x = 0;
+    b.sz = 30;
+
+    flies[i] = new particleEngine(20);
+    for (var j = 0; j < flies[i].particles.length; j++) {
+        p = flies[i].particles[j];
+        p.position.x = b.position.x;
+        p.position.y = b.position.y;
+        p.sz = 20;
+    }
+}
+
+// FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+function draw(){
+
+    ctx.background(255, 0.3);
+
+    for (var i = 0; i < balls.particles.length; i++) {
+
+        b = balls.particles[i];
+        var s = map(audioChannelVolume[b.me*5], 0, 100, -80, 80);
+        b.position.y =  tween(b.position.y, h/2 + s, 4);
+        ctx.fillStyle = "black";
+        //ctx.fillEllipse(b.position.x, b.position.y, b.sz, b.sz);
+
+        for (var j = 0; j < flies[i].particles.length; j++) {
+
+            p = flies[i].particles[j];
+            ctx.fillStyle = "black";
+            var mouse = b.position;
+            //console.log(mouse)
+            mouse = mouse.subtract(p.position);
+            mouse.setMag(0.8);
+            //console.log(mouse)
+            acceleration = mouse;
+            p.speed = p.speed.add(acceleration);
+            p.position = p.position.add(p.speed);
+            p.speed.limit(8);
+            p.sz = tween(p.sz, p.speed.y * 10, 4)
+            //console.log(p.dist)
+            // ctx.line(p.position.x, p.position.y, mouseX, mouseY);
+            ctx.fillEllipse(p.position.x, p.position.y, p.sz, p.sz);
+
+        }
+
+    }
+
+}
+
+</script>
+ <script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

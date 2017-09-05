@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var engine = new particleEngine(2,2);
+var particles = engine.particles;
+var pos_counter = 0;
+console.log(engine.grid);
+
+// var p  = new Vector(particles[2].target.x, particles[2].target.y);
+// var p2 = new Vector(particles[3].target.x, particles[3].target.y);
+// particles[2].pos = particles[2].target = p2;
+// particles[3].pos = particles[3].target = p;
+function setup(){
+  wall = new pixelGrid(114, 46);
+  pixels = wall.pixels;
+  console.log(wall);
+
+for (var i = 0; i < particles.length; i++) {
+  var p = particles[i];
+  p.c = rgb(0);
+  p.target_sz = 50;
+  p.trails = [];
+  p.speed.x = 0.1;
+  p.speed.y = 0.1;
+  p.tween_speed = 15;
+}
+}
+
+function draw(){
+
+  ctx.background(0);
+  //ctx.strokeStyle = rgb(255);
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    drawTrails(p);
+    ctx.fillStyle = p.c;
+    //ctx.line(p.pos.x, p.pos.y, particles[(i+1)%particles.length].pos.x, particles[(i+1)%particles.length].pos.y)
+    if((i+pos_counter)%particles.length == 0) {
+      p.target.x = engine.grid.x[0];
+      p.target.y = engine.grid.y[0];
+    } else if((i+pos_counter)%particles.length == 1) {
+      p.target.x = engine.grid.x[1];
+      p.target.y = engine.grid.y[1];
+    } else if((i+pos_counter)%particles.length == 2) {
+      p.target.x = engine.grid.x[3];
+      p.target.y = engine.grid.y[3];
+    } else if((i+pos_counter)%particles.length == 3) {
+      p.target.x = engine.grid.x[2];
+      p.target.y = engine.grid.y[2];
+    // } else {
+    //   p.target.x = engine.grid.x[(i+pos_counter)%particles.length];
+    //   p.target.y = engine.grid.y[(i+pos_counter)%particles.length];
+    }
+
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+    // ctx.fillEllipse(p.target.x, p.target.y, 10, 10);
+    upDateTrails(p);
+    //p.target_sz = random(10, 20);
+  }
+  if(frameCount%30 == 0) pos_counter++;
+  engine.update();
+  wall.draw(ctx2, ctx);
+}
+
+
+function drawTrails(p){
+
+  //console.log(p.trails.length);
+  for (var j = 0; j < p.trails.length; j++) {
+    var p2 = p.trails[j];
+    ctx.fillStyle = rgb(255 - j * 5);
+    ctx.HfillEllipse(p2.x, p2.y, 100 - j*2);
+  }
+}
+
+function upDateTrails(p){
+  p.trails.push({x: p.pos.x, y: p.pos.y});
+  if(p.trails.length > 80) p.trails.splice(0,1);
+  //console.log(p.trails);
+}
+
+
+</script>
+<script language="javascript" src="../js/pixel_grid.js"></script>
+</body>
+
+</html>

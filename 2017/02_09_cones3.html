@@ -38,10 +38,10 @@ for (var i = 0; i < engine.particles.length; i++) {
 function draw() {
 
   ctx.clearRect(0,0,w,h);
-  drawCone(w/4,h/4);
-  drawCone(w-w/4,h/4);
-  drawCone(w/4,h-h/4);
-  drawCone(w-w/4,h-h/4);
+  drawCone(w/4 + 140,h/4 + 25);
+  drawCone(w-w/4 - 140,h/4 + 25);
+  drawCone(w/4 + 140,h-h/4 - 25);
+  drawCone(w-w/4 -140,h-h/4 - 25);
 
 }
 
@@ -50,8 +50,7 @@ function drawCone(startx, starty){
   for (var i = 0; i < 40; i++) {
     var p = engine.particles[i];
     ctx.fillStyle = p.c;
-    ctx.HfillEllipse(startx - i*map(w/2-mouseX,0,w/2,0, 10), starty - i*map(h/2-mouseY,0,h/2,0, 10), map(getTotalVolume(), 0,255, 300,500) -i*8
-  );
+    ctx.HfillEllipse(startx - i*map(w/2-mouseX,0,w/2,0, 10), starty - i*map(h/2-mouseY,0,h/2,0, 10), map(getTotalVolume(), 0,255, 300,500) -i*8 );
   }
 }
 

@@ -1,0 +1,310 @@
+
+<html>
+
+<head>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <!-- <script language="javascript" src="../js/stats.js"></script> -->
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+
+<!-- <script language="javascript" src="../js/p5.js"></script> -->
+<script language="javascript" src="../js/matter.min.js"></script>
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body {
+background: #000;
+}
+
+#canvas1 {
+   /*filter: blur(0px), contrast(200%);
+   -webkit-filter: blur(0px) contrast(200%);*/
+   /*filter:contrast(200%);*/
+}
+</style>
+
+<body>
+
+
+<script type="text/javascript">
+
+var hidden_canvas;
+
+var hidden_ctx = createHiddenCanvas('canvas3');
+var ctx = createCanvas('canvas1');
+var ctx2 = createCanvas('canvas2');
+
+var grid = new Grid (1, 1, w/2 ,h/2, w/4, h/4)
+
+var threshold_res = 4;
+var threshold_ammt = 81;
+
+var blur_ammt = 4;
+var blur_pass = 8;
+var contrast = 22;
+
+$('#canvas1').css('-webkit-filter', 'blur(' + blur_ammt + 'px)' + ' contrast('+ contrast + ')');
+
+var img = new Image();
+img.src = '../img/dot.png';
+
+var Engine = Matter.Engine,
+    Render = Matter.Render,
+    World = Matter.World,
+		Body = Matter.Body,
+    Bodies = Matter.Bodies;
+
+
+var engine, world;
+var circles = [];
+var boundries = [];
+
+var radius = 140;
+console.log(grid);
+
+function setup(){
+  var body = document.querySelector("body");
+  hidden_canvas = document.getElementById('canvas3')
+	engine = Engine.create();
+  engine.density = 0.005;
+  //engine.restitution = 0.5;
+	       //frictionAir: 0.06,
+	       //restitution: 0.3}
+	world = engine.world;
+	Engine.run(engine);
+
+  var offset = 5;
+
+
+  options = {
+    friction: 0.9,
+    restitution: 0.4,
+    isStatic: true
+  }
+
+//var topWall = Bodies.rectangle(400, 0, 810, 30, options);
+var leftWall = Bodies.rectangle(0, 0, 200, h*2, options);
+var rightWall = Bodies.rectangle(w, 0, 200, h*2, options);
+var bottomWall = Bodies.rectangle(w/2, h, w, 200, options);
+
+World.add(engine.world, [leftWall, rightWall, bottomWall]);
+
+
+	for (var i = 0; i < grid.length; i++) {
+    var g = grid.grid[i];
+		var x = g.x;
+		var y = g.y;
+    //if (g.row % 2 == 0) x -= grid.spacing.x/2;
+		boundries.push(new Obstacle(x, y, radius))
+	}
+
+
+  for (var i = 0; i < 10; i++) {
+    addCircle();
+  }
+
+  engine.timing.timeScale = 0.9;
+  engine.world.gravity.x = 0.2;
+}
+
+function draw(){
+  //hidden_ctx.globalCompositeOperation = "source-over";
+
+	//hidden_ctx.background(0);
+  hidden_ctx.clearRect(0, 0, w, h);
+  hidden_ctx.fillStyle = rgb(255);
+  // hidden_ctx.globalCompositeOperation = "screen";
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = rgb(80);
+
+  // hidden_ctx.shadowColor = rgba(240,240,240, 0.95);
+  // hidden_ctx.shadowBlur = 12;
+  // ctx2.shadowOffsetX = 8;
+  //ctx.shadowOffsetY = 4;
+
+  ctx.shadowColor = rgba(80,80,80, 0.5);
+  ctx.shadowBlur = 52;
+  // ctx2.shadowOffsetX = 8;
+  ctx.shadowOffsetY = 4;
+
+  if(chance(100)) engine.world.gravity.x *= posNeg();
+  if(chance(200)) engine.world.gravity.y = random(-0.1, 2);
+  //for (var i = 0; i < 2; i++) {
+  if(chance(10))  addCircle();
+  //}
+
+  for (var i = 0; i < boundries.length; i++) {
+    boundries[i].show();
+  }
+
+	for (var i = 0; i < circles.length; i++) {
+		var b = circles[i];
+		b.show();
+
+		if(b.isOffScreen()) {
+				b.removeFromWorld();
+				circles.splice(i, 1);
+				i--;
+		}
+
+	}
+
+
+
+
+
+  //boxBlurCanvasRGB( 'canvas3', w/4, 0, w/2 + w/4, height, blur_ammt, blur_pass );
+  //hidden_ctx.theshold(threshold_res, threshold_ammt);
+  ctx.drawImage(hidden_canvas, 0, 0, w, h);
+
+  //ctx.pixelate();
+
+  //runFilter('canvas3', Filters.threshold, 128);
+
+}
+
+
+
+function addCircle(){
+  circles.push(new Circle(random(w), -random(300), randomInt(5, 15)));
+
+}
+
+
+//////////////////////// OBJECTS
+
+var Circle = function(x, y, r){
+	this.options = {
+		friction: 0.9,
+		restitution: 0.2
+	}
+	this.r = r;
+
+	this.body = Bodies.circle(x, y, this.r/2, this.options);
+  this.pos = this.body.position;
+
+	World.add(world, this.body);
+
+	this.show = function(){
+		this.pos = this.body.position;
+		var angle = this.body.angle;
+		//console.log(pos);
+		//rectMode(CENTER);
+		//fill(100);
+		hidden_ctx.save();
+		hidden_ctx.translate(this.pos.x, this.pos.y);
+		//ctx.rotate(angle);
+		hidden_ctx.fillEllipse(0,0, this.r, this.r);
+    //hidden_ctx.drawImage(img, 0,0, this.r, this.r);
+		hidden_ctx.restore();
+	}
+
+	this.isOffScreen = function(){
+		var pos = this.body.position;
+		//console.log(pos.y);
+		return (this.pos.y > h + 100);
+	}
+
+	this.removeFromWorld = function(){
+		World.remove(world, this.body);
+	}
+}
+
+
+function Obstacle(x, y, r){
+
+	this.x = x;
+	this.y = y;
+	this.r = r;
+
+	this.options = {
+		friction: 0.99,
+		restitution: 0.1,
+		isStatic: true
+	}
+
+	//this.body = Bodies.circle(x, y, this.r/2, this.options);
+  this.body = Bodies.polygon(x, y, 3, this.r*1.1, this.options);
+  // Body.rotate(this.body, radians(270));
+	// World.add(world, this.body);
+
+	this.show = function(){
+
+		var pos = this.body.position;
+
+    ctx.fillStyle = rgb(200);
+
+		//ctx.save();
+		//ctx.translate(pos.x, pos.y);
+    //ctx.rotateDeg(10);
+    ctx.eqDownFillTriangle(pos.x, pos.y, this.r);
+    //ctx.rotateDeg(-10);
+		//ctx2.fillEllipse(0,0, this.r, this.r);
+		ctx2.restore();
+	}
+
+this.move = function(){
+
+	var pos = this.body.position;
+	var y = h - h/4 + Math.sin(frameCount/100) * h/4;
+	// Body.translate(this.body, pos);
+	Body.translate(this.body, {x: pos.x, y: y});
+	// Body.update(this.body);
+}
+}
+
+
+
+function mouseMoved(){
+	circles.push(new Box(mouseX, mouseY, 2));
+}
+
+
+///////////////////////////////////
+
+
+
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+// // settings.addRange(title, min, max, value, step, callback);
+settings.addRange("threshold_res", 1, 20, threshold_res, 0.1, function(value){
+  threshold_res = value;
+});
+
+settings.addRange("threshold_ammt", 1, 500, threshold_ammt, 0.1, function(value){
+  threshold_ammt = value;
+});
+
+settings.addRange("blur_ammt", 1, 50, blur_ammt, 1, function(value){
+  blur_ammt = value;
+  $('#canvas1').css('-webkit-filter', 'blur(' + value + 'px)' + ' contrast(13)');
+});
+
+settings.addRange("blur_pass", 1, 20, blur_pass, 0.1, function(value){
+  blur_pass = value;
+});
+
+
+settings.addRange("contrast", 1, 200, contrast, 1, function(value){
+  contrast = value;
+  $('#canvas1').css('-webkit-filter', 'blur(' + blur_ammt + 'px)' + ' contrast('+ value+')');
+});
+
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+</script>
+
+
+
+</body>
+</html>

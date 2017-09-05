@@ -171,29 +171,33 @@ function draw(){
   ctx.fillStyle = "white";
   ctx.strokeStyle = "white";
 
-  var sz = 50 + Math.abs(Math.sin(frameCount/100) * 500);
-  var sz2 = 50 + Math.abs(Math.cos(frameCount/100) * 500);
-
-  ctx.centreStrokeRect(w/2, h/2, sz, sz);
-  ctx.centreStrokeRect(w/2, h/2, sz2, sz2);
+  for (var i = 0; i < 30; i++) {
+    var y = h/2 + Math.sin((frameCount+i*5)/200) * h/2;
+    ctx.line(0, y, w, y);
+  }
+  // var sz = 50 + Math.abs(Math.sin(frameCount/100) * 500);
+  // var sz2 = 50 + Math.abs(Math.cos(frameCount/100) * 500);
+  //
+  // ctx.centreStrokeRect(w/2, h/2, sz, sz);
+  // ctx.centreStrokeRect(w/2, h/2, sz2, sz2);
 
   //if (chance(500)) animate = !animate;
 
-    for (var i = 0; i < particles.length; i++) {
-
-      var p = particles[i];
-      //if(chance(1000)) p.target.x = sticky(random(w),engine.grid.spacing_x) + engine.grid.spacing_x/2;
-      //if (animate) {
-          p.sz = 2 * p.start_sz + Math.sin(frameCount/60) * 10;
-          ctx.centreStrokeRect(p.pos.x, p.pos.y, p.sz*2, p.sz*2);
-      //} else {
-          ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
-      //}
-      drawParticles();
-      moveParticles();
-
-    }
-
+    // for (var i = 0; i < particles.length; i++) {
+    //
+    //   var p = particles[i];
+    //   //if(chance(1000)) p.target.x = sticky(random(w),engine.grid.spacing_x) + engine.grid.spacing_x/2;
+    //   //if (animate) {
+    //       p.sz = 2 * p.start_sz + Math.sin(frameCount/60) * 10;
+    //       ctx.centreStrokeRect(p.pos.x, p.pos.y, p.sz*2, p.sz*2);
+    //   //} else {
+    //       ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+    //   //}
+    //
+    //
+    // }
+    drawParticles();
+    moveParticles();
 
 
       tweenBlocks();

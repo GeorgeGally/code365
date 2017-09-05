@@ -8,6 +8,8 @@
 <script language="javascript" src="js/canvas.js"></script>
 
 <script language="javascript" src="js/vector.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
 
 	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
 	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
@@ -20,6 +22,22 @@
 var ctx = createCanvas("canvas1");
 var ball = new Vector(random(w), random(h));
 var speed = new Vector(posNeg()*random(1,4), posNeg()*random(1,4));
+var POINTS = 600;
+var RADIUS = 200;
+var FORCE = 0.3;
+var RESISTANCE = 0.3;
+var MOUSE_RADIUS = 100;
+var CONNECTIONS = POINTS / RADIUS;
+var MIN_SIZE = 10;
+var MAX_SIZE = 75;
+var GRAVITY = 0.1;
+var BLUR = 9.2;
+var CONTRAST = 79;
+var MAX_PARTICLES = 12;
+
+
+//$('#bg').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' contrast('+ CONTRAST + ')');
+// $('#canvas1').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' contrast('+ CONTRAST + ')');
 
 var Wave = function(_num_particles, _x, _y, _me) {
 
@@ -157,6 +175,53 @@ function draw(){
 	};
 }
 
+
+// SLIDERS
+
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+
+
+settings.addRange("BLUR", 1, 50, BLUR, 0.1, function(value){
+  BLUR = value;
+  $('#canvas1').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' contrast('+ CONTRAST+')');
+  $('#bg').css('-webkit-filter', 'blur(' + value + 'px)' + ' contrast('+ CONTRAST+')');
+});
+
+
+
+
+settings.addRange("CONTRAST", 1, 200, CONTRAST, 0.1, function(value){
+  CONTRAST = value;
+  $('#canvas1').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' contrast('+ CONTRAST+')');
+  //$('#bg').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' contrast('+ CONTRAST+')');
+});
+
+settings.addRange("FORCE", 0, 10, FORCE, 0.1, function(value){
+  FORCE = value;
+});
+
+settings.addRange("RESISTANCE", 0, 1, RESISTANCE, 0.001, function(value){
+  RESISTANCE = value;
+});
+
+
+settings.addRange("GRAVITY", 0, 1, GRAVITY, 0.01, function(value){
+  GRAVITY = value;
+});
+
+settings.addRange("MAX_SIZE", 1, 500, MAX_SIZE, 1, function(value){
+  MAX_SIZE = value;
+});
+
+
+settings.addRange("MIN_SIZE", 1, 500, MIN_SIZE, 1, function(value){
+  MIN_SIZE = value;
+});
+
+settings.addRange("MAX_PARTICLES", 1, 500, MAX_PARTICLES, 1, function(value){
+  MAX_PARTICLES = value;
+});
 
 
 </script>

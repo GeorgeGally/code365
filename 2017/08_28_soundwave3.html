@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+ 	<meta charset="utf-8">
+	<title>Soundcloud Viz</title>
+
+	<script src='http://connect.soundcloud.com/sdk.js'></script>
+	<script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+var ctx3 = createCanvas("canvas1");
+var flies = [];
+var balls = new particleEngine(22);
+
+var RADIUS = 100;
+var FORCE = 0.3;
+var RESISTANCE = 0.3;
+var MOUSE_RADIUS = 100;
+var MIN_SIZE = 10;
+var MAX_SIZE = 120;
+var GRAVITY = 0.1;
+var BLUR = 9.2;
+var CONTRAST = 79;
+var MAX_PARTICLES = 22;
+
+$('#canvas1').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' contrast('+ CONTRAST + ')');
+
+var pixels, wall;
+
+function setup(){
+  wall = new pixelGrid(120, 60);
+  pixels = wall.pixels;
+  console.log(wall);
+}
+
+for (var i = 0; i < balls.particles.length; i++) {
+    b = balls.particles[i];
+    b.position.x = i*w/balls.particles.length + w/balls.particles.length/2;
+    b.position.y = h/2+100;
+    b.speed.x = 0;
+    b.sz = 30;
+
+    flies[i] = new particleEngine(20);
+    for (var j = 0; j < flies[i].particles.length; j++) {
+        p = flies[i].particles[j];
+        p.position.x = b.position.x;
+        p.position.y = b.position.y;
+        p.sz = 20;
+    }
+}
+
+// FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+function draw(){
+
+    ctx.background(0, 0.3);
+    ctx3.clearRect(0, 0, w, h);
+
+    for (var i = 0; i < balls.particles.length; i++) {
+
+        b = balls.particles[i];
+        var s = map(audioChannelVolume[b.me*5], 0, 100, -80, 80);
+        b.position.y =  tween(b.position.y, h/2 + s, 4);
+        ctx.fillStyle = "white";
+        //ctx.fillEllipse(b.position.x, b.position.y, b.sz, b.sz);
+
+        for (var j = 0; j < flies[i].particles.length; j++) {
+
+            p = flies[i].particles[j];
+            //ctx.fillStyle = "white";
+            var mouse = b.position;
+            //console.log(mouse)
+            mouse = mouse.subtract(p.position);
+            mouse.setMag(0.2);
+            //console.log(mouse)
+            acceleration = mouse;
+            p.speed = p.speed.add(acceleration);
+            p.position = p.position.add(p.speed);
+            p.speed.limit(10);
+            p.sz = tween(p.sz, p.speed.y * 10, 4)
+            //console.log(p.dist)
+            // ctx.line(p.position.x, p.position.y, mouseX, mouseY);
+            ctx.fillEllipse(p.position.x, p.position.y, p.sz, p.sz);
+
+        }
+
+    }
+
+    wall.draw(ctx2, ctx);
+
+    icons();
+}
+
+
+var icon = 1;
+var icon_sz = 250;
+function icons(){
+  ctx3.shadowColor = rgba(80,80,80, 0.5);
+  ctx3.shadowBlur = 52;
+  ctx3.fillStyle = rgb(255);
+  if(chance(100)) icon = randomInt(1,3);
+  if(icon == 1) ctx3.HfillEllipse(w/2, h/2, icon_sz, icon_sz);
+  if(icon == 2) ctx3.centreFillRect(w/2, h/2, icon_sz, icon_sz);
+  if(icon == 3) ctx3.eqFillTriangle(w/2, h/2, icon_sz/1.7, icon_sz/1.7);
+}
+
+
+// SLIDERS
+
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+
+
+settings.addRange("BLUR", 1, 50, BLUR, 0.1, function(value){
+  BLUR = value;
+  $('#canvas1').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' contrast('+ CONTRAST+')');
+  $('#bg').css('-webkit-filter', 'blur(' + value + 'px)' + ' contrast('+ CONTRAST+')');
+});
+
+
+
+
+settings.addRange("CONTRAST", 1, 200, CONTRAST, 0.1, function(value){
+  CONTRAST = value;
+  $('#canvas1').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' contrast('+ CONTRAST+')');
+  $('#bg').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' contrast('+ CONTRAST+')');
+});
+
+settings.addRange("FORCE", 0, 10, FORCE, 0.1, function(value){
+  FORCE = value;
+});
+
+settings.addRange("RESISTANCE", 0, 1, RESISTANCE, 0.001, function(value){
+  RESISTANCE = value;
+});
+
+
+settings.addRange("GRAVITY", 0, 1, GRAVITY, 0.01, function(value){
+  GRAVITY = value;
+});
+
+settings.addRange("MAX_SIZE", 1, 500, MAX_SIZE, 1, function(value){
+  MAX_SIZE = value;
+});
+
+
+settings.addRange("MIN_SIZE", 1, 500, MIN_SIZE, 1, function(value){
+  MIN_SIZE = value;
+});
+
+
+</script>
+<script language="javascript" src="../js/pixel_grid.js"></script>
+
+ <script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

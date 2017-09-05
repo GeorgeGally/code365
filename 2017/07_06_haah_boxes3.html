@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/url.js"></script>
+<script language="javascript" src="../js/physics2.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/three.min.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+
+<script>
+var ctx = createHiddenCanvas("canvas1");
+
+var video = document.createElement('video');
+    video.src = "../vids/chasing_summer.m4v";
+    video.load();
+    video.play();
+
+
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+var num_particles = 600;
+var plane = [];
+
+var d=0, t=0;
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+
+document.body.appendChild( renderer.domElement );
+var sz = random(4, 8);
+var geometry = new THREE.BoxGeometry( sz, sz, sz);
+geometry.dynamic = true;
+
+texture = new THREE.Texture(canvas);
+texture.needsUpdate = true;
+
+var material = new THREE.MeshDepthMaterial();
+material.shading = THREE.SmoothShading;
+scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+var video_material = new THREE.MeshBasicMaterial({ map: texture });
+video_material.map.minFilter = THREE.LinearFilter;
+
+for (var i = 0; i < num_particles; i++) {
+
+  if (chance(10)) {
+    plane[i] = new THREE.Mesh( geometry, video_material );
+  } else {
+    plane[i] = new THREE.Mesh( geometry, material );
+  }
+
+
+  scene.add( plane[i] );
+  plane[i].rotation.z += (i * Math.PI);
+  // plane[i].position.x = random(-15,15);
+  plane[i].position.x = randomInt(-60, 60);
+  plane[i].position.y = randomInt(-62, 60);
+  plane[i].position.z = randomInt(-62, 62);
+  plane[i].rotation.z = 270;
+  plane[i].start = new Vector(plane[i].position.x, plane[i].position.y,plane[i].position.z);
+  plane[i].position.normalize();
+  plane[i].position.multiplyScalar( Math.random() * 20 + 15 );
+  plane[i].s = 1;
+  plane[i].counter = random(-18,18);
+  plane[i].s2 = 1;
+  plane[i].me = i%3;
+  plane[i].scale.x = plane[i].scale.y = plane[i].scale.z = random(0.4, 2);
+
+
+
+}
+
+renderer.setClearColor( 0xf7f7f7 );
+camera.position.z = 120;
+camera.near = 40;
+camera.far  = 145;
+
+var dir = 1;
+
+function draw() {
+
+  if(video.readyState === video.HAVE_ENOUGH_DATA && canvas.width > 0){;
+    ctx.drawImage(video, 0, 0, w, h);
+  }
+
+  if (chance(500)) dir *= -1;
+  for (var i = 0; i < num_particles; i++) {
+  var p  = plane[i];
+  var s = Sound.mapSound(i, num_particles*2, 1, 4);
+  if (s> 1) p.s = tween(p.s, s, 20);
+  //(s > 0) ? plane[i].s = tween(plane[i].s, s, 15): null;
+  //plane[i].s2 = tween(plane[i].s, map(Sound.mix[plane[i].me], 0, 150, 0.6, 1), 5);
+  p.scale.x = p.s;
+  p.scale.y = p.s;
+  p.scale.z = p.s;
+  //p.rotation.y += 0.01 * Math.sin(frameCount/1000 + i);
+  p.counter += random(0,1)/100;
+
+    //p.position.y = plane[i].s2;
+    //p.geometry.verticesNeedUpdate=true;
+    //p.geometry.vertices[0].y = tween(plane.geometry.vertices[0].y, start_y[0] + map(audioChannelVolume[10],0,140, 0, 40), 10);
+  }
+
+
+  var s = radians(Sound.mapVolume(10, 100, 1, 100)/2000);
+  if(s) scene.rotation.y += dir * s;
+  //scene.rotation.y = tween(scene.rotation.y, scene.rotation.y + map(audioChannelVolume[10],0,140, -0.4, 0.4), 90);
+  texture.needsUpdate = true;
+
+  renderer.render( scene, camera );
+
+};
+
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+</html>

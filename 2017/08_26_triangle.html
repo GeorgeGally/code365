@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+ <script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+// was getting annoyed with the same track playing, so changed soundcloud function to play random track
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+ctx.strokeStyle = rgba(0,0,0,0.8);
+
+var particles = [];
+var radius = 150;
+var num_particles = 3400;
+var cols = ['#ffffff', '#50bfe8', '#f06724', '#8cc640'];
+var angle = 360/num_particles;
+var circ_sz = 300;
+var t_size = 150;
+var top_offset = 0;
+
+function setup(){
+  wall = new pixelGrid(228, 92);
+  pixels = wall.pixels;
+
+
+for (var i = 0; i < num_particles; i+=1) {
+
+		//var x = 2*Math.cos(radians(i*angle))*radius;
+    	var x = random(w);
+    	var y = random(h);
+
+		addParticle(x, y, cols[i%5], i);
+};
+
+var s1 = 1;
+var s2 = -1;
+}
+
+function draw(){
+
+	ctx.fillStyle = rgb(0, 0.1);
+	ctx.fillRect(0, 0, w, h);
+
+  ctx.fillStyle = rgb(255, 0.1);
+  ctx.fillRect(0, 0, w, h - h/2 + Math.sin(frameCount/10) * h/2);
+	moveParticles();
+
+	ctx.save();
+	ctx.fillStyle = rgb(255);
+	ctx.ellipse(w/2, h/2, 400, 400);
+	//ctx.rect(w/2-circ_sz/2, h/2-circ_sz/2, circ_sz, circ_sz);
+	ctx.clip();
+
+	ctx.fillStyle = rgb(255);
+	drawParticles();
+	ctx.restore();
+
+	// MIDDLE
+
+	ctx.save();
+	ctx.fillStyle = rgb(0);
+	ctx.eqFillTriangle(w/2, top_offset + h/2, t_size);
+	ctx.clip();
+	ctx.globalCompositeOperation = 'lighten';
+	ctx.fillStyle = rgb(200,0,55);
+	drawParticles();
+	ctx.restore();
+	ctx.eqTriangle(w/2, top_offset + h/2, t_size);
+
+  wall.draw(ctx2, ctx);
+
+}
+
+
+function addParticle(_x, _y, _colour, _me){
+	var particle = {
+		x: _x,
+		y: _y,
+		c: _colour,
+		me: _me,
+		speedx: posNeg()*random(0.1,1),
+		speedy: posNeg()*random(0.1,1),
+		sz: random(5,30),
+		angle: random(1)
+	}
+
+	particles.push(particle);
+}
+
+
+function drawParticles(){
+
+	for (var i = 0; i < particles.length; i++) {
+		p = particles[i];
+		//ctx.fillStyle = p.c;
+		ctx.fillEllipse(p.x, p.y, p.sz, p.sz);
+	}
+
+}
+
+function moveParticles(){
+
+	for (var i = 0; i < particles.length; i++) {
+
+		p = particles[i];
+		p.sz = map(audioChannelVolume[p.me%100],0,100, 0, 10);
+
+		p.x = (p.x + p.speedx)%w;
+		p.y = (p.y + p.speedy)%h;
+
+	};
+
+}
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+
+</script>
+ <script language="javascript" src="../js/soundcloud.js"></script>
+ <script language="javascript" src="../js/pixel_grid.js"></script>
+</body>
+</html>

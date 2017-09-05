@@ -1,0 +1,91 @@
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+
+<script language="javascript" src="../js/p5.js"></script>
+<script language="javascript" src="../js/matter.min.js"></script>
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script type="text/javascript">
+
+var Engine = Matter.Engine,
+    Render = Matter.Render,
+    World = Matter.World,
+    Bodies = Matter.Bodies;
+
+var w = window.innerWidth;
+var h = window.innerHeight;
+
+var engine, world, ground;
+var boxes = [];
+
+function setup(){
+	createCanvas(w, h);
+	engine = Engine.create();
+	world = engine.world;
+	//box1 = new Box(400,200, 80, 80);
+	Engine.run(engine);
+	// world.add(box1);
+	//World.add(world, box1);
+	//console.log(box1);
+	var options = {
+		isStatic: true
+	}
+	ground = Bodies.rectangle(w/2, h - 100, w, 20, options);
+	World.add(world, ground);
+}
+
+function draw(){
+	background(51);
+	//rect(box1.position.x, box1.position.y, 40, 40);
+	for (var i = 0; i < boxes.length; i++) {
+		boxes[i].show();
+	}
+	rectMode(CENTER);
+	fill(100);
+	rect(ground.position.x, ground.position.y, w, 20);
+}
+
+
+var Box = function(x, y, w, h){
+	this.options = {
+		friction: 0.3,
+		restitution: 0.6
+	}
+	this.w = w;
+	this.h = h;
+	this.body = Bodies.rectangle(x, y, w, h, this.options);
+	World.add(world, this.body);
+
+	this.show = function(){
+		var pos = this.body.position;
+		var angle = this.body.angle;
+		rectMode(CENTER);
+
+		push();
+		translate(pos.x, pos.y);
+		rotate(angle);
+		rect(0,0, this.w, this.h);
+		pop();
+	}
+}
+
+
+function mouseMoved(){
+	boxes.push(new Box(mouseX, mouseY, 10, 10));
+}
+
+</script>
+
+
+
+
+</body>
+</html>

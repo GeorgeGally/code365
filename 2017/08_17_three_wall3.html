@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/url.js"></script>
+<script language="javascript" src="../js/physics2.js"></script>
+<script language="javascript" src="../js/three.min.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+var ctx = createCanvas("canvas1");
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 70, aspect, 0.1, 1000 );
+
+var d=0, t=0;
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+var geometry = new THREE.PlaneGeometry( 300, 200, 300, 200 );
+geometry.dynamic = true;
+
+var dMaterial = new THREE.MeshDepthMaterial();
+dMaterial.shading = THREE.SmoothShading;
+var plane = new THREE.Mesh( geometry, dMaterial );
+scene.add( plane );
+camera.position.z = 120;
+camera.near = 60;
+camera.far  = 195;
+plane.rotation.z += Math.PI;
+plane.geometry.start = [];
+for (i=0;i<plane.geometry.vertices.length;i++) {
+  plane.geometry.start[i] = plane.geometry.vertices[i]
+}
+  //plane.geometry.vertices[i].z+=50-Math.random()*100
+
+var offset = 0;
+
+var render = function () {
+
+  requestAnimationFrame( render );
+  t+=.0001
+  d+=.001
+  for (i=0;i<plane.geometry.vertices.length;i++){
+    var v = plane.geometry.vertices[i];
+    // v.z = Math.sin((t*i+d)/30)*Math.cos((i+d*t)/20) * 10;
+    // v.z = Math.sin((t*i+d)/30)*Math.cos((i+d)/20) * 20;
+    v.z = Math.cos((t*i+d)/30)* 30;
+    //v.x = Math.sin((frameCount)/100)* 20;
+    //v.z = 10 + Math.sin((frameCount + i)/10+d)*20;
+    //v.x = plane.geometry.start[i].x + Math.sin((frameCount + i)/(150+d)) * offset;
+  }
+  plane.geometry.verticesNeedUpdate=true
+  renderer.render( scene, camera );
+};
+
+render();
+
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+
+</script>
+
+ <!-- <script src='../js/soundcloud_new.js'></script> -->
+</body>
+</html>

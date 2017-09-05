@@ -91,13 +91,16 @@ function Microphone (_fft) {
     }
 
 
-    this.getVol = function(_max){
+    this.getVol = function(_min, _max){
 
-      var max = _max || 100;
+      var min_max = _min || 100;
+      var min = _min || 0;
+
+      var max = _max || min_max;
 
       // map total volume to 100 for convenience
-      self.volume = map(self.vol, 0, self.peak_volume, 0, max);
-      return self.volume;
+      self.volume = map(self.vol, 0, self.peak_volume, min, max);
+      return self.volume || 0;;
     }
 
     this.getVolume = function() { return this.getVol();}

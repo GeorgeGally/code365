@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative_coding.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var r = 400;
+var rot = 0;
+var pos = 0;
+// FORCE(gravity) = (G * m1 * m2)/ (d*d) * r
+function draw(){
+
+    ctx.background(240);
+    rot = tween(rot, map(audioChannelVolume[15],0,180, 0, 90), 20);
+    ctx.save();
+    ctx.translate(w/2, h/2);
+    ctx.rotate(radians(rot));
+    ctx.strokeStyle = rgb(0);
+
+    ctx.fillStyle = 'white';
+
+
+    for (var i = 0; i < 20; i++) {
+    ctx.beginPath();
+    var s = map(audioChannelVolume[15],0,180, 0, 8);
+    var n = 10 + Math.sin(frameCount/100 + (i * 50)/100) * 10;
+    ctx.lineWidth = (s + n)/ 3;
+    //ctx.arc(0, 0, r/2 - i*10, radians(0), radians(360));
+    ctx.HstrokeEllipse(0, 0, r - i*20);
+    ctx.fill();
+    ctx.stroke();
+    }
+
+    // ctx.lineWidth = 2;
+    // ctx.strokeStyle = rgb(255);
+    // ctx.fillStyle = 'black';
+    // for (var i = 0; i < 30; i++) {
+    // ctx.lineWidth = i/10;
+    // ctx.beginPath();
+    // ctx.arc(0, 0, r/2 - i*5, 0, radians(90));
+
+    // ctx.fill();
+    // ctx.stroke();
+    // }
+
+    //   ctx.lineWidth = 2;
+    // ctx.strokeStyle = rgb(255);
+    // ctx.fillStyle = 'black';
+    // for (var i = 0; i < 30; i++) {
+    // ctx.lineWidth = i/10;
+    // ctx.beginPath();
+    // ctx.arc(0, 0, r/2 - i*5, radians(180), radians(270));
+
+    // ctx.fill();
+    // ctx.stroke();
+    // }
+
+    // ctx.strokeStyle = rgb(0);
+    // ctx.lineWidth = 4;
+    // ctx.HstrokeEllipse(0, 0, r, r);
+
+
+
+    //ctx.line(20-r/2, 0, 20-r/2, r);
+    //ctx.line(r/2-20, 0, r/2-20, -r);
+
+    ctx.fillStyle = "black";
+    //ctx.fillEllipse(0, 0, 20, 20);
+    ctx.restore();
+
+}
+
+</script>
+ <script language="javascript" src="js/soundcloud.js"></script>
+</body>
+</html>

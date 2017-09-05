@@ -15,7 +15,7 @@
 
 </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -66,19 +66,19 @@ for (var i = 0; i < num_particles; i++) {
 
 
 function draw(){
-  
+
   ctx.fillStyle = rgba(225, 225, 225, 0.6);
   ctx.fillRect(0,0,w,h);
   //ctx.clearRect(0, 0, canvas.width, canvas.height);
   physics.update();
-  
-  p[0].x = tween(p[0].x, w/2+ map(audioChannelVolume[(20)%60], 0, 150, -125, 55)-25, 2); 
-  p[0].y = tween(p[0].y, h/2 + map(audioChannelVolume[(10)%110], 0, 150, -125, 55)-25, 2); 
+
+  p[0].x = tween(p[0].x, w/2+ map(audioChannelVolume[(20)%60], 0, 150, -125, 55)-25, 2);
+  p[0].y = tween(p[0].y, h/2 + map(audioChannelVolume[(10)%110], 0, 150, -125, 55)-25, 2);
   for (var i = 0; i < p.length; i++) {
     var particle = p[i];
     if (i <2 ) {
-    // p[i].x = tween(p[i].x, map(audioChannelVolume[(i)%60], 0, 150, 0, 400), 18); 
-    // p[i].y = tween(p[i].y, map(audioChannelVolume[(i*2)%110], 0, 150, 0, 300), 18); 
+    // p[i].x = tween(p[i].x, map(audioChannelVolume[(i)%60], 0, 150, 0, 400), 18);
+    // p[i].y = tween(p[i].y, map(audioChannelVolume[(i*2)%110], 0, 150, 0, 300), 18);
   }
     //ctx.fillStyle = rgba(0,0,0,0.1);
     //ctx.fillEllipse(p[i].x, p[i].y, audioChannelVolume[(i)%80]/2, audioChannelVolume[(i)%80]/2);
@@ -106,7 +106,7 @@ function draw(){
     p[0].y = mouseY;
     p[0].unlock();
   }
-  mirror();
+  ctx.mirror();
 }
 
 

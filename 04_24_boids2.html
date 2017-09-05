@@ -4,7 +4,7 @@
 
  	<meta charset="utf-8">
 	<title>Soundcloud Viz</title>
-	
+
 	<script src='http://connect.soundcloud.com/sdk.js'></script>
 	<script language="javascript" src="js/creative_coding.js"></script>
 	<script language="javascript" src="js/canvas.js"></script>
@@ -16,7 +16,7 @@
 
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -31,11 +31,10 @@ function Boid(swarm) {
     this.y = Math.random() * height;
     this.heading = Math.random() * 2 * Math.PI - Math.PI;
 
-
-this.radius = 2;
-this.speed = 4;
-this.radialSpeed = Math.PI / 60;
-this.vision = 150;
+    this.radius = 2;
+    this.speed = 4;
+    this.radialSpeed = Math.PI / 60;
+    this.vision = 150;
 
 
 this.draw = function(ctx) {
@@ -52,9 +51,6 @@ this.draw = function(ctx) {
     ctx.lineTo(this.x + Math.cos(this.heading - Math.PI / 2) * this.radius,
                this.y + Math.sin(this.heading - Math.PI / 2) * this.radius);
     ctx.fill();
-    // ctx.fillEllipse(this.x + Math.cos(this.heading - Math.PI / 2) * this.radius, this.y+ Math.sin(this.heading + Math.PI / 2) * this.radius, 4*this.radius, 5*this.radius)
-    // ctx.fillEllipse(this.x - Math.cos(this.heading - Math.PI / 2) * this.radius, this.y -  Math.sin(this.heading + Math.PI / 2) * this.radius, 4*this.radius, 5*this.radius)
-    // ctx.drawImage(img, this.x + Math.cos(this.heading - Math.PI / 2) * this.radius, this.y+ Math.sin(this.heading + Math.PI / 2) * this.radius)
 };
 
 

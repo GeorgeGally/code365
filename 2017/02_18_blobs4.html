@@ -7,8 +7,9 @@
 <script language="javascript" src="../js/creative_coding.js"></script>
 <script language="javascript" src="../js/canvas.js"></script>
 <script language="javascript" src="../js/vector.js"></script>
-<script language="javascript" src="../js/vector_particles.js"></script>
-
+<script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <script src="../js/jquery-1.10.1.min.js"></script>
 <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
 <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
 
@@ -22,66 +23,48 @@
 var ctx = createCanvas("canvas1");
 
 var imagedata = ctx.getImageData(0, 0, w, h);
-var engine = new particleEngine(5);
+var engine = new particleEngine(6, 2);
+
+var threshold_res = 4;
+var threshold_ammt = 81;
+
+var blur_ammt = 3;
+var contrast = 3;
+
+$('#canvas1').css('-webkit-filter', 'blur(' + blur_ammt + 'px)' + ' contrast('+ contrast + ')');
 
 for (var i = 0; i < engine.particles.length; i++) {
   p = engine.particles[i];
-  p.size = 5000;
+  p.size = 50;
   p.bounce = true;
-  p.speed = new Vector(random(-15,15),random(-15,15));
+  p.speed = new Vector(random(-5,5),random(-5,5));
   p.pos = new Vector(random(w),random(h));
 }
 
-
-function setPixel(p, x, y) {
-
-  var c = 0;
-
-  for (var i = 0; i < engine.particles.length; i++) {
-    p = engine.particles[i];
-  for (var j = i+1; j < engine.particles.length-1; j++) {
-    p2 = engine.particles[j];
-    d = dist(x,y, p2.pos.x, p2.pos.y);
-    c +=  (2+ p.size / d);
-  }
-  }
-  //var i = (y * w + x) * 4;
-  ctx.fillStyle = rgb(c);
-  ctx.fillRect(x, y, 4, 4);
-  // imagedata.data[i++] = c;
-  // imagedata.data[i++] = c;
-  // imagedata.data[i++] = c;
-  // imagedata.data[i] = 255;
-  // imagedata.data[i+=2] = 0;
-  // imagedata.data[i+=2] = 0;
-  // imagedata.data[i+=2] = 0;
-  // imagedata.data[i+=2] = 255;
-}
+engine.borders = true;
 
 
 function draw() {
+
   ctx.background(0);
-  //engine.moveParticles();
+  //engine.update();
   for (var i = 0; i < engine.particles.length; i++) {
     p = engine.particles[i];
+    if (p.pos.y >= h) p.speed.y*= 0.99;
     if(bounce(p.pos.x, 0, w, 40)) p.speed.x*=-1;
     if(bounce(p.pos.y, 0, h, 40)) p.speed.y*=-1;
 
-    p.pos.x += p.speed.x;
-    p.pos.y += p.speed.y;
+    // p.pos.x += p.speed.x;
+    // p.pos.y += p.speed.y;
+    p.pos = p.pos.add(p.speed);
 
     }
 
     for( var y = 0 ; y < h; y+=4 ) {
       for( var x = 0 ; x < w; x+=4 ) {
-        // set the colour randomly
         setPixel(p, x, y);
       }
     }
-
-
-    // p.pos = new Vector(mouseX, mouseY);
-
 
 
   //ctx.putImageData( imagedata, 0, 0 );
@@ -98,6 +81,55 @@ function draw() {
 
 
 
+function setPixel(p, x, y) {
+
+  var c = 0;
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+
+    for (var j = i+1; j < engine.particles.length-1; j++) {
+      p2 = engine.particles[j];
+      d = dist(x,y, p2.pos.x, p2.pos.y);
+      c +=  (2+ p.size / d);
+    }
+
+  }
+  //var i = (y * w + x) * 4;
+  ctx.fillStyle = rgb(c);
+  ctx.fillRect(x, y, 4, 4);
+  // imagedata.data[i++] = c;
+  // imagedata.data[i++] = c;
+  // imagedata.data[i++] = c;
+  // imagedata.data[i] = 255;
+  // imagedata.data[i+=2] = 0;
+  // imagedata.data[i+=2] = 0;
+  // imagedata.data[i+=2] = 0;
+  // imagedata.data[i+=2] = 255;
+}
+
+
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+// // settings.addRange(title, min, max, value, step, callback);
+settings.addRange("threshold_res", 1, 20, threshold_res, 0.1, function(value){
+  threshold_res = value;
+});
+
+settings.addRange("threshold_ammt", 1, 500, threshold_ammt, 0.1, function(value){
+  threshold_ammt = value;
+});
+
+settings.addRange("blur_ammt", 1, 50, blur_ammt, 1, function(value){
+  blur_ammt = value;
+  $('#canvas1').css('-webkit-filter', 'blur(' + value + 'px)' + ' contrast(13)');
+});
+
+
+settings.addRange("contrast", 1, 200, contrast, 1, function(value){
+  contrast = value;
+  $('#canvas1').css('-webkit-filter', 'blur(' + blur_ammt + 'px)' + ' contrast('+ value+')');
+});
 
 
 

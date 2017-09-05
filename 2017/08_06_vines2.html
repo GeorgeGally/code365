@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var MAX = 96 * 50;
+var dx = 0, dy = 0;
+
+var vines = [{x: 0, y:0, a: 0, ai: 0, p:[], l: MAX, w: 8}]
+
+
+console.log(vines);;
+
+function draw(){
+
+  ctx.background(0, 0.01);
+  ctx.save();
+  ctx.translate(w/2, h/2);
+  //console.log(vines.x);
+  update();
+  render();
+  ctx.restore();
+  ctx.fillStyle = "white";
+  ctx.fillEllipse(w/2, h/2, 10,10);
+}
+
+
+function update(){
+  //console.log(vines.length);
+  vines.filter( v => v.l--);
+  vines.forEach( v => {
+    dx = Math.cos(v.a) * v.w /2;
+    dy = Math.sin(v.a) * v.w /2;
+    //if(vines.length == 2) console.log(v.a);
+    v.x += dx;
+    v.y += dy;
+    v.a += v.ai / v.w / 2;
+    //v.w -= 0.001;
+    //console.log(v.p.length -v.l);
+    v.p.splice(0, v.p.length - v.l);
+    v.p.splice(0, v.p.length - 60 * 5);
+    v.p.push({x: v.x, y: v.y, dx: dx, dy: dy});
+
+    if(frameCount%30 == 0) {
+      v.ai = Math.random() -0.5;
+    }
+    //console.log(Math.random());
+    if(v.w > 1 && Math.random() < v.l / 16384) {
+      console.log("========");
+      vines.push({x: v.x, y: v.y, a: v.a, ai: v.ai, w: v.w/2, p: [], l: Math.min(v.l, 0|v.w*32*(1*Math.random()))});
+    }
+
+  })
+}
+
+
+
+function render(){
+  //console.log(vines);
+
+  vines.forEach( v => {
+    if(v.w == 8){
+      ctx.translate(-v.x, -v.y);
+    }
+    //ctx.lineWidth = v.w;
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = "grey"
+    ctx.strokeStyle = "white";
+    ctx.beginPath();
+    l = v.p.length-1;
+    //console.log(l);
+      for (i = l; p = v.p[i]; i--) {
+        ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+
+  })
+
+}
+
+</script>
+
+</body>
+
+</html>

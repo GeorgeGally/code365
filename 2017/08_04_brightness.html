@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+
+
+    <script language="javascript" src="../js/creative_coding.js"></script>
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/particle_engine.js"></script>
+    <script language="javascript" src="../js/raw_video.js"></script>
+    <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createHiddenCanvas("canvas1");
+var engine = new particleEngine(40, 30);
+var particles = engine.particles;
+
+function draw(){
+
+    ctx2.drawImage(video, 0, 0, w, h);
+    var data = ctx2.getImageData(0, 0, w, h).data;
+    ctx.background(0);
+
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+
+      var pos = Math.round(p.pos.x + p.pos.y * w - w/2) * 4;
+
+      var r = data[pos];
+      var g = data[pos+1];
+      var b = data[pos+2];
+      //console.log(r);
+      //brt = 20;
+      var brt = brightness(r, g, b);
+        //console.log(brt);
+      ctx.fillStyle = rgb(255);
+      ctx.fillEllipse(p.pos.x, p.pos.y, brt, brt)
+    }
+}
+
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+
+</script>
+
+</body>
+</html>

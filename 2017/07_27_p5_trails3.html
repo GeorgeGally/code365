@@ -1,0 +1,191 @@
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+
+<script language="javascript" src="../js/p5.js"></script>
+<script language="javascript" src="../js/p5.dom.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/grid.js"></script>
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { background: #000;}
+input, div { display: inline;}
+
+.active { background: #ccc;}
+
+#holder {
+	position: absolute;
+	left: 50px;
+	top: 50px;
+	z-index: 10;
+}
+
+</style>
+</head>
+<body>
+	<div id="holder">
+
+	</div>
+<script type="text/javascript">
+
+var w = window.innerWidth;
+var h = window.innerHeight;
+var hidden;
+var video;
+var rows = 80, cols = 60;
+var particles = [];
+var old_r = [];
+var thresh;
+var xScale, yScale;
+var max_particles = 1000;
+function setup(){
+	createCanvas(w, h);
+	background(255);
+	for (var i = 0; i < 100; i++) {
+		particles[i] = new Particle(random(w), random(h));
+	}
+	thresh = createSlider(0, 255, 60);
+	thresh.parent('holder')
+}
+
+function draw(){
+	background(255, 50);
+
+	for (var i = 0; i < particles.length; i++) {
+		var p = particles[i];
+		p.update();
+		p.draw();
+
+	}
+}
+
+
+
+
+
+
+//////////////////////////
+
+var Particle = function(x, y){
+	this.x = x || w/2;
+	this.y = y || h/2;
+	this.sz = 20;
+	this.history = [];
+	this.speed = createVector(random(-5,5),random(-5,5));
+
+	this.update = function(){
+		this.sz = Math.abs(Math.sin(frameCount/10) * 40);
+		//this.speed.y += 0.1;
+		this.x += this.speed.x;
+		this.y += this.speed.y;
+		if (this.x > w + this.sz/2) this.speed.x *=-1;
+		if (this.y > h + this.sz/2) this.speed.y *=-1;
+		if (this.x < -this.sz/2) this.speed.x *=-1;
+		if (this.x < -this.sz/2) this.speed.y *=-1;
+		var pos = createVector(this.x, this.y);
+		this.history.push(pos);
+		if(this.history.length > 20) {
+			this.history.splice(0,1);
+		}
+	}
+
+	this.draw = function(){
+
+		strokeWeight(1);
+		stroke(0);
+		fill(255);
+		for (var i = 0; i < this.history.length; i++) {
+			var p = this.history[i];
+			ellipse(p.x, p.y, this.sz/2 + i, this.sz/2 + i)
+		}
+		noStroke();
+		fill(255);
+		ellipse(this.x, this.y, this.sz, this.sz);
+	}
+
+}
+
+
+function randomInt(min, max) {
+  if(max===undefined) {
+    max = min;
+    min = 0;
+  }
+  return Math.floor(Math.random() * (max+1-min)) +min;
+}
+
+
+/////////////
+
+function tween(pos, target, speed){
+ if (speed == undefined) speed = 20;
+ pos += (target - pos)/speed;
+ return pos;
+}
+
+function rgb(r, g, b, a) {
+
+ return getColour(r, g, b, a);
+
+};
+
+
+function getColour(r, g, b, a){
+  'use strict';
+  var c;
+
+  if((typeof r === 'string' || r instanceof String) && r.substr(0,1) == "#") {
+
+  return r;
+
+  } else if (typeof r === 'string' || r instanceof String) {
+
+  return r;
+
+  } else if (g == undefined) {
+
+   return 'rgb('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+')';
+
+  } else if (b == undefined) {
+
+    return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(g,0,1)+')';
+
+  } else if (a == undefined){
+
+  return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', 1)';
+
+  } else {
+
+    return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', '+clamp(a,0,1)+')';
+
+ }
+
+  return(c);
+};
+
+function clamp(value, min, max){
+  return Math.min(Math.max(value, Math.min(min, max)),Math.max(min, max));
+}
+
+function distributeAngles(me, total) {
+    return me/total * 360;
+}
+
+function posNeg(){
+ return randomInt(0,1) * 2 - 1;
+}
+</script>
+
+
+</body>
+
+</html>

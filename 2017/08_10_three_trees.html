@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/three.js"></script>
+<script language="javascript" src="../js/three_tree/Tree.js"></script>
+<script language="javascript" src="../js/three_tree/TreeGeometry.js"></script>
+<script language="javascript" src="../js/three_tree/TreeHelper.js"></script>
+<script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+<!-- <script language="javascript" src="../js/Detector.js"></script> -->
+<!-- <script language="javascript" src="../js/three_setup.js"></script> -->
+<script language="javascript" src="../js/perlin.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var container, stats;
+var camera, renderer, geometry, material;
+var scene, tree, mesh;
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+noise.seed(Math.random());
+
+
+
+function setup() {
+
+	container = document.createElement( 'div' );
+	document.body.appendChild( container );
+
+	camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 1, 1000 );
+	camera.position.z = 40;
+
+	renderer = new THREE.WebGLRenderer();
+// 	//renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	container.appendChild( renderer.domElement );
+
+// 	// stats = new Stats();
+// 	// stats.domElement.style.position = 'absolute';
+// 	// stats.domElement.style.top = '0px';
+// 	// container.appendChild( stats.domElement );
+
+	scene = new THREE.Scene();
+
+	window.addEventListener( 'resize', onWindowResize, false );
+// 	document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+// 	document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+	init();
+
+}
+
+
+
+function init(){
+
+  var noiseScale = 1.5;
+	            var size = 40;
+	            var height = 0.025;
+
+	            var floor = new THREE.Mesh(
+	                new THREE.ParametricGeometry(function(u, v) {
+	                    var x = u - 0.5;
+	                    var y = v - 0.5;
+	                    return new THREE.Vector3(x, y, noise.simplex2(x * noiseScale, y * noiseScale) * height);
+	                }, 12, 12),
+	                new THREE.MeshPhongMaterial({
+	                    side : THREE.DoubleSide,
+	                    color : 0xbbbbbb,
+	                    shininess : 40,
+	                    shading : THREE.FlatShading
+	                })
+	            );
+
+	            floor.position.set(0, 0.0, 0);
+	            floor.scale.set(size, size, size);
+	            floor.rotation.set(- Math.PI * 0.5, 0, 0);
+	            floor.castShadow = floor.receiveShadow = true;
+	 scene.add(floor);
+
+
+
+
+var loader = new THREE.TextureLoader();
+
+             loader.load("../img/textures/bark.png", function(treeMapTexture) {
+                 loader.load("../img/textures/bark_normal.png", function(treeNormalMap) {
+
+                   var tree = makeTree();
+                   scene.add(mesh);
+                   var tree = makeTree();
+                   scene.add(mesh);
+                   var tree = makeTree();
+                   
+                     treeMapTexture.wrapS = treeMapTexture.wrapT = THREE.RepeatWrapping;
+                     treeMapTexture.repeat.set(1, 25.0);
+                     treeNormalMap.wrapS = treeNormalMap.wrapT = THREE.RepeatWrapping;
+                     treeNormalMap.repeat.set(1, 25.0);
+
+                     treeMapTexture = treeMapTexture;
+                     treeNormalMap = treeNormalMap;
+
+                     var mesh = new THREE.Mesh(
+                         THREE.TreeGeometry.build(tree),
+                         new THREE.MeshPhongMaterial({
+                             shininess : 5,
+                             map : treeMapTexture,
+                             normalMap : treeNormalMap
+                         })
+                     );
+                     mesh.castShadow = mesh.receiveShadow = true;
+                     scene.add(mesh);
+                     mesh.position.set(0, 0, 0);
+                 });
+             });
+
+             var light0 = new THREE.DirectionalLight(0xffffff, 1.0);
+             light0.position.set(20, 30, 20);
+             light0.castShadow = true;
+             light0.shadow.camera.fov = 120;
+             light0.shadow.camera.near = 0.1;
+             light0.shadow.camera.far = 1000;
+             light0.shadow.camera.top = light0.shadow.camera.right = 20;
+             light0.shadow.camera.bottom = light0.shadow.camera.left = -20;
+             light0.shadow.mapSize.width = light0.shadow.mapSize.height = 2048;
+             scene.add(light0);
+
+             light = light0;
+
+             var light1 = new THREE.DirectionalLight(0xffffff, 0.5);
+             light1.position.set(-1, 1, -1);
+             scene.add(light1);
+
+             var ambientLight = new THREE.AmbientLight(0x404040);
+             scene.add(ambientLight);
+
+
+var geometry = THREE.TreeGeometry.build(tree);
+
+mesh = new THREE.Mesh(
+    geometry,
+    new THREE.MeshPhongMaterial({}) // set any material
+);
+
+scene.add(mesh);
+
+controls = new THREE.OrbitControls( camera, renderer.domElement );
+controls.enableDamping = true;
+controls.dampingFactor = 0.25;
+controls.enableZoom = true;
+
+}
+
+
+function makeTree(){
+  var tree = new THREE.Tree({
+    generations : randomInt(2, 8),        // # for branch' hierarchy
+    length      : 4.0,      // length of root branch
+    uvLength    : 16.0,     // uv.v ratio against geometry length (recommended is generations * length)
+    radius      : random(0.1, 0.3),      // radius of root branch
+    radiusSegments : 8,     // # of radius segments for each branch geometry
+    heightSegments : 8      // # of height segments for each branch geometry
+});
+return tree;
+}
+
+
+function draw() {
+renderer.render( scene, camera );
+
+}
+
+function onWindowResize() {
+
+	windowHalfX = window.innerWidth / 2;
+	windowHalfY = window.innerHeight / 2;
+
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+
+	renderer.setSize( window.innerWidth, window.innerHeight );
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

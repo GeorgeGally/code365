@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <!-- <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+ <body>
+
+<script>
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var engine = new particleEngine(100, 10);
+var colours = new colourPool()
+.add(rgba(255, 1), 4)
+.add(rgba(80, 129, 4, 1), 6)
+.add(rgba(158, 142, 1, 1), 2)
+.add(rgba(243, 184, 0, 1), 2)
+.add(rgba(219, 130, 0, 1), 1)
+.add(rgba(182, 66, 1, 1), 1)
+
+console.log(hexToRgb("#b64201"));
+
+var points = [{x:75, y:150}],
+    r = 50, //radius of the hexagon
+    n = 6, // number of sides in the hexagon
+    x,
+    y;
+
+ctx.lineWidth = 4;
+ctx.lineCap = 'round';
+
+for (var y = 0; y < 20; y++) {
+  for (var x = 0; x < 10; x++) {
+    var c = colours.get();
+    ctx.fillStyle = c;
+    if(y%2 == 0) {
+      ctx.fillPolygon(x * r * 3, y * (r - 7), n, r);
+    } else {
+      ctx.fillPolygon(x * (r * 3) - (r * 1.5), y * (r - 7), n, r)
+    }
+
+  }
+}
+
+function drawHex(_x, _y, _r, _c){
+  ctx.beginPath();
+
+  // light
+  //ctx.fillStyle = 'rgb(' + j * 45 + ',' + j * 25 + ',' + j * 5 + ')';
+  ctx.fillStyle = c;
+
+  for (var i = 0; i < n +1; i++) {
+    x = _x + _r * Math.cos(2 * Math.PI * i / n);
+    y = _y + _r * Math.sin(2 * Math.PI * i / n);
+    ctx.lineTo(x, y);
+
+    if (i === 0) {
+      points.push({x:x, y:y});
+    }
+  }
+
+  ctx.fill();
+}
+
+
+</script>
+ <!-- <script language="javascript" src="../js/soundcloud.js"></script> -->
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/perlin.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(100, 6);
+var particles = engine.particles;
+
+var perlin;
+noise.seed(Math.random());
+
+for (var i = 0; i < particles.length; i++) {
+  var p = particles[i];
+  //p.pos.y-= engine.grid.spacing.y/4 + 80;
+  //p.start.y += engine.grid.spacing.y/2;
+}
+
+// var simplex = new SimplexNoise( r )
+// var simplex3 = simplex.noise3D.bind(simplex)
+// var simplexScale = 0.6;
+var change = 0;
+
+
+
+// var noise = simplex3(
+//   p.pos.x * simplexScale,
+//   p.pos.y * simplexScale,
+//   0.0005
+// )
+//noise.seed(seed);
+//console.log(noise);
+var theta = noise * Math.PI * 2;
+var noisy = .007;
+
+
+function draw(){
+
+  ctx.background(0);
+
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    // p.pos.x = p.start.x + Math.cos((i + frameCount)/40) * (engine.grid.spacing.x*10);
+    // p.pos.y = p.start.y - Math.abs(Math.sin((i/5 + frameCount)/50) * engine.grid.spacing.y)  + engine.grid.spacing.y/4;
+
+    p.pos.x = p.start.x + 100 * noise.perlin2(frameCount/100, noisy), Math.cos(frameCount/100);
+    p.pos.y = p.start.y + 200 * noise.perlin2(frameCount/100, Math.sin(i/100));
+    ctx.strokeStyle = rgb(255);
+    ctx.line(p.pos.x, p.pos.y, p.start.x, p.start.y);
+  }
+  noisy += .007;
+
+}
+
+
+</script>
+
+</body>
+
+</html>

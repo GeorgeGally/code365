@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+  <style>
+
+  </style>
+ </head>
+ <body>
+
+<script>
+var ctx = createCanvas("canvas1");
+var ctx2 = createHiddenCanvas("canvas2");
+
+var amount = 0;
+var stars = [];
+
+var mouse = {
+  x: w / 2,
+  y: h / 2
+};
+
+var gravity = 0.12;
+var mouseMoved = false;
+
+var prevA = -500;
+
+ctx.globalCompositeOperation = "screen";
+  ctx.fillStyle = "white";
+  ctx.strokeStyle = "black";
+  ctx.lineWidth = 10;
+
+
+function draw () {
+  //ctx.background(255);
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "white";
+  ctx.strokeStyle = "black";
+
+  for (var i = stars.length-1; i > 0; i--) {
+    var s = stars[i];
+    s.render();
+    if (s.y + (s.r * 2) > h) {
+      stars.splice(0, 1);
+      //amount--;
+      i--;
+    }
+  }
+
+  if (!mouseMoved && frameCount - prevA > 50) {
+    stars.push(new Star(w / 2, h / 1));
+    //amount++;
+    prevA = frameCount;
+  }
+
+};
+
+
+function onMouseMove(e) {
+
+  if (!mouseMoved) {
+    mouseMoved = true;
+  }
+
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+
+  stars.push(new Star(mouse.x, mouse.y));
+  //amount++;
+}
+
+
+function Star(x, y) {
+  this.x = x;
+  this.y = y;
+  this.r = (Math.random() + 0.1) * 50;
+  this.color = ((40 * Math.random()) + 0);
+  this.velocityY = (Math.random() - 0.5) * 0;
+  this.velocityX = (Math.random() - 0.5) * 20;
+}
+
+Star.prototype.render = function() {
+
+  this.velocityY += gravity;
+  this.x += this.velocityX;
+  this.y += this.velocityY;
+
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, this.r, Math.PI * 2, 0);
+  ctx.fill();
+  ctx.stroke();
+
+}
+
+
+
+window.addEventListener("mousemove", onMouseMove);
+
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+
+</script>
+  <!-- <script language="javascript" src="../js/pixel_grid.js"></script> -->
+ <!-- <script src='../js/soundcloud_new.js'></script> -->
+</body>
+</html>

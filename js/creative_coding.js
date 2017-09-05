@@ -15,7 +15,7 @@ mouseDown = false,
 mouseMoved = false;
 var counter = 0;
 var TWO_PI = Math.PI * 2;
-//loadScript('../js/fx.js', done);
+
 
 
 var p = CanvasRenderingContext2D.prototype;
@@ -229,10 +229,11 @@ p.Hellipse = function(x, y, width, height) {
 };
 
 
-p.Lellipse = function(x, y, width, height) {
+p.Lellipse = function(x, y, width, height, sides) {
+  var sides = sides || 8;
  if (height == undefined) { height = width; }
  this.beginPath();
- for(var i=0;i<Math.PI*2;i+=Math.PI/8) {
+ for(var i=0;i<Math.PI*2;i+=Math.PI/sides) {
  this.lineTo(x+(Math.cos(i)*width/2), y+(Math.sin(i)*height/2));
  }
  //this.closePath();
@@ -252,9 +253,9 @@ p.HfillEllipse = function(x, y, width, height) {
  this.beginPath();
 };
 
-p.LfillEllipse = function(x, y, width, height) {
+p.LfillEllipse = function(x, y, width, height, size) {
  if (height == undefined) height = width;
- this.Lellipse(x,y,width, height);
+ this.Lellipse(x,y,width, height, size);
  this.fill();
  this.beginPath();
 };
@@ -292,6 +293,7 @@ p.centreStrokeRect = function(x, y, width, height) {
 };
 
 p.centreFillRect = function(x, y, width, height) {
+  height = height || width;
  this.fillRect(x - width/2, y - height/2, width, height);
 };
 
@@ -371,6 +373,15 @@ p.eqDownFillTriangle = function(x, y, sz, down) {
 }
 
 
+p.eqLeftFillTriangle = function(x, y, sz, down) {
+ this.translate(x, y);
+ this.rotate(radians(270));
+ this.fillTriangle(0, 0 - sz, 0 + sz, 0 + sz/2, 0 - sz, 0 + sz/2);
+ this.rotate(radians(-270));
+ this.translate(-x, -y);
+}
+
+
 p.eqDownTriangle = function(x, y, sz, down) {
  this.translate(x, y);
  if (!down) this.rotate(radians(180));
@@ -434,7 +445,7 @@ p.getCurrentFill = function() {
 }
 
 
-
+/// HANDY TRIG UTILITIES
 
 function radians(deg) {return deg*Math.PI/180;};
 
@@ -444,6 +455,11 @@ function degreesToPoint(deg, diameter) {
     var rad = Math.PI * deg / 180;
     var r = diameter / 2;
     return {x: r * Math.cos(rad), y: r * Math.sin(rad)};
+}
+
+function dist(x1, y1, x2, y2) {
+ x2-=x1; y2-=y1;
+ return Math.sqrt((x2*x2) + (y2*y2));
 }
 
 p.rotateDegrees = function(deg){
@@ -457,6 +473,7 @@ p.rotateDeg = function(deg){
 
 
 
+// RANDOM UTILS
 
 
 function random(min, max) {
@@ -501,7 +518,6 @@ function randomCardinalInt(min, max) {
   return posNeg() * randomInt(min, max);
 }
 
-
 function randomColour(_sticky){
   var sticky = _sticky || 1
   var r = randomSticky(255, sticky);
@@ -510,6 +526,8 @@ function randomColour(_sticky){
   return rgb(r,g,b);
 }
 
+
+// MAP, CLAMP, RANGE
 
 function map(value, min1, max1, min2, max2, clampResult) {
  var returnvalue = ((value-min1) / (max1 - min1) * (max2-min2)) + min2;
@@ -531,10 +549,6 @@ function inRange(value){
  return value >= Math.min(min, max) && value <= Math.max(min, max);
 }
 
-function dist(x1, y1, x2, y2) {
- x2-=x1; y2-=y1;
- return Math.sqrt((x2*x2) + (y2*y2));
-}
 
 
 
@@ -779,72 +793,38 @@ function makeGrid(_w, _h){
 
 
 function colourPool(){
-
-  this.colours = [];
-  this.weights = [];
+  this.pool = [];
   this.colour_list = [];
+  this.weights = [];
 
-  this.add = function(_colour, _weight){
+  this.add = function(_colour, _weight) {
     if (_weight == undefined) _weight = 1;
-    this.colour_list.push(_colour);
+    this.pool.push(_colour);
     this.weights.push(_weight);
-    this.colours  = this.generateWeighedList(this.colour_list, this.weights);
+    this.colour_list  = this.generateWeighedList(this.pool, this.weights);
     return this;
   }
 
-  this.get = function(){
-    return this.colours[randomInt(this.colours.length-1)];
+  this.get = function(n){
+    if (n == undefined) n = randomInt(this.pool.length-1);
+    return this.pool[n];
   }
-
   this.generateWeighedList = function(list, weight) {
-    var weighed_list = [];
 
+    var weighed_list = [];
     // Loop over weights
     for (var i = 0; i < weight.length; i++) {
-
-        var multiples = weight[i] * 100;
-
-        // Loop over the list of items
-        for (var j = 0; j < multiples; j++) {
+       var multiples = weight[i] * 100;
+       // Loop over the list of items
+       for (var j = 0; j < multiples; j++) {
             weighed_list.push(list[i]);
-        }
+       }
     }
-
     return weighed_list;
-  };
-
-  return this;
+ };
+return this;
 }
 
-function xyz(px, py, pz, pitch, roll, yaw) {
-
-    var cosa = Math.cos(yaw);
-    var sina = Math.sin(yaw);
-
-    var cosb = Math.cos(pitch);
-    var sinb = Math.sin(pitch);
-
-    var cosc = Math.cos(roll);
-    var sinc = Math.sin(roll);
-
-    var Axx = cosa*cosb;
-    var Axy = cosa*sinb*sinc - sina*cosc;
-    var Axz = cosa*sinb*cosc + sina*sinc;
-
-    var Ayx = sina*cosb;
-    var Ayy = sina*sinb*sinc + cosa*cosc;
-    var Ayz = sina*sinb*cosc - cosa*sinc;
-
-    var Azx = -sinb;
-    var Azy = cosb*sinc;
-    var Azz = cosb*cosc;
-
-    x = Axx*px + Axy*py + Axz*pz;
-    y = Ayx*px + Ayy*py + Ayz*pz;
-    z = Azx*px + Azy*py + Azz*pz;
-
-    return {x:x, y:y, z:z};
-}
 
 
 var Vector = function(_x, _y, _z){
@@ -966,7 +946,7 @@ function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _sta
   this.length = 0;
   this.spacing_x;
   this.spacing_y;
-
+  this.c = rgb(200);
   this.num_items_horiz = 0;
   this.num_items_vert = 0;
 
@@ -1042,7 +1022,7 @@ function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _sta
         row.push({x: xx, y: yy});
 
         this.edge.push(edge);
-        this.grid.push({row: y, col: x, x: xx, y: yy, edge: edge});
+        this.grid.push({row: y, col: x, x: xx, y: yy, edge: edge, c: this.c, r: 255, g: 255, b: 255});
         c++;
 
       }
@@ -1065,507 +1045,13 @@ function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _sta
 
 }
 
-
-////// EFFECTS
-
-p.drawText = function (_options){
-	if (_options.background === undefined) _options.background = "none";
-
-	options = {
-		fontSize: 	_options.fontSize 	|| 20,
-		blockSize: 	_options.blockSize 	|| 12,
-		background: _options.background,
-		colourType: _options.colourType || "all"
-	}
-
-	//console.log(options);
-
-  	this.font= options.fontSize + "px Courier";
-
-    var col = [];
-    var j = 0;
-
-    var imgData = this.getImageData(0,0,w,h);
-    console.log(imgData);
-    for(var x = 0; x < w; x += options.blockSize) {
-
-        for(var y = 0; y < h; y += options.blockSize) {
-
-            var pos = (x + y * w);
-            var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
-            var b = (sourceBuffer32[pos] >> 16) & 0xff;
-            var g = (sourceBuffer32[pos] >> 8) & 0xff;
-            var r = (sourceBuffer32[pos] >> 0) & 0xff;
-
-						if (options.colourType == "red") {
-							col.push(rgb(r, 0, 0));
-						} else if (options.colourType == "green") {
-							col.push(rgb(0, r, 0));
-						} else if (options.colourType == "blue") {
-							col.push(rgb(0, 0, r));
-						} else {
-							col.push(rgb(r,g,b));
-						}
-
-        }
-
-    }
-		//console.log(options.background);
-
-		if (options.background == "none") {
-			this.background(250);
-		} else {
-			this.background(options.background);
-		}
-
-
-    var j = 0;
-    for(var x = 0; x < w; x += options.blockSize) {
-
-				for(var y = 0; y < h; y += options.blockSize) {
-
-            this.fillStyle = col[j];
-            this.fillText("*", x, y);
-            j++;
-        }
-    }
-
+p.clearScreen = function (_x, _y, _w, _h){
+  var x = _x || 0;
+  var y = _y || 0;
+  var w = _w || w;
+  var h = _h || h;
+  this.clearRect(_x, _y, _w, _h)
 }
-
-p.pixelate = function (blocksize) {
-
-  if (blocksize == undefined) blocksize = 20;
-  blocksize = Math.round(blocksize);
-
-  var imgData=this.getImageData(0,0,w,h);
-
-  this.clearRect(0,0,w,h);
-
-    var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
-
-    for(var x = 0; x < w; x += blocksize)
-    {
-        for(var y = 0; y < h; y += blocksize)
-        {
-
-          var pos = (x + y * w);
-          var b = (sourceBuffer32[pos] >> 16) & 0xff;
-          var g = (sourceBuffer32[pos] >> 8) & 0xff;
-          var r = (sourceBuffer32[pos] >> 0) & 0xff;
-          this.fillStyle = rgb(r,g,b);
-          this.fillRect(x, y, blocksize, blocksize);
-
-        }
-    }
-
-}
-
-
-function pixelate(blocksize,blockshape, _ctx) {
-  if (_ctx == undefined) _ctx = ctx;
-  if (blockshape == undefined) blockshape = 0;
-  if (blocksize == undefined) blocksize = 20;
-  var imgData=ctx.getImageData(0,0,w,h);
-
-  ctx.clearRect(0,0,w,h);
-  //console.log(blockshape)
-  if (blockshape == 3) {
-    ctx.background(0);
-  }
-
-    //var sourceBuffer8 = new Uint8Array(imgData.data.buffer);
-    //var sourceBuffer8 = new Uint8ClampedArray(imgData.data.buffer);
-    var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
-    for(var x = 0; x < w; x += blocksize)
-    {
-        for(var y = 0; y < h; y += blocksize)
-        {
-
-          var pos = (x + y * w);
-          var b = (sourceBuffer32[pos] >> 16) & 0xff;
-          var g = (sourceBuffer32[pos] >> 8) & 0xff;
-          var r = (sourceBuffer32[pos] >> 0) & 0xff;
-          ctx.fillStyle = rgb(r,g,b);
-          if (blockshape == 0) {
-            ctx.fillRect(x, y, blocksize, blocksize);
-          } else if (blockshape == 1) {
-          	ctx.fillEllipse(x, y, blocksize, blocksize);
-          } else if (blockshape == 2) {
-          	var bb = brightness(r,g,b);
-          	ctx.fillStyle = (bb < 40 ? rgb(0) : rgb(255));
-            ctx.fillEllipse(x, y, blocksize-1, blocksize-1);
-           } else if (blockshape == 3) {
-            ctx.fillStyle = rgb(r,g,b);
-            ctx.fillEllipse(x, y, blocksize-3, blocksize-3);
-          } else if (blockshape == 4) {
-           //ctx.fillStyle = rgb(0);
-           ctx.fillStyle = rgb(r,g,b);
-           var sz = blocksize - map(r, 0, 255, 0, blocksize);
-           ctx.fillEllipse(x, y, sz, sz);
-          } else {
-          	var bb = brightness(r,g,b);
-          	if (bb< 40) {
-          		ctx.fillStyle = rgb(0);
-          		ctx.fillEllipse(x, y, blocksize-1, blocksize-1);
-          	} else {
-          		ctx.fillStyle = rgb(255);
-          		ctx.fillEllipse(x, y, blocksize-1, blocksize-1);
-            	ctx.strokeEllipse(x, y, blocksize, blocksize);
-          	}
-          };
-
-        }
-    }
-
-}
-
-p.posterize = function(blocksize, ammt) {
- if (ammt == undefined) ammt = 0;
-
- if (blocksize == undefined) blocksize = 20;
-
- ammt = Math.floor(ammt);
- blocksize = Math.floor(blocksize);
-
- var imgData=this.getImageData(0,0,w,h);
-
- this.clearRect(0,0,w,h);
-
- var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
-
- for (var x = 0; x < w; x += blocksize) {
-
-   for (var y = 0; y < h; y += blocksize) {
-
-         var pos = (x + y * w);
-         var b = (sourceBuffer32[pos] >> 16) & 0xff;
-         var g = (sourceBuffer32[pos] >> 8) & 0xff;
-         var r = (sourceBuffer32[pos] >> 0) & 0xff;
-         r = sticky(r, ammt);
-         g = sticky(g, ammt);
-         b = sticky(b, ammt);
-         this.fillStyle = rgb(r,g,b);
-         this.fillRect(x, y, blocksize, blocksize);
-
-       }
-   }
-
-}
-
- p.theshhold = function(blocksize, ammt ,flip) {
-  if (ammt == undefined) ammt = 0;
-
-  if (blocksize == undefined) blocksize = 20;
-  if (flip == undefined) flip = false;
-
-  ammt = Math.floor(ammt);
-  blocksize = Math.floor(blocksize);
-
-  var imgData=this.getImageData(0,0,w,h);
-
-  this.clearRect(0,0,w,h);
-
-  var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
-
-  for (var x = 0; x < w; x += blocksize) {
-
-    for (var y = 0; y < h; y += blocksize) {
-
-          var pos = (x + y * w);
-          var b = (sourceBuffer32[pos] >> 16) & 0xff;
-          var g = (sourceBuffer32[pos] >> 8) & 0xff;
-          var r = (sourceBuffer32[pos] >> 0) & 0xff;
-          r = sticky(r, ammt);
-          g = sticky(g, ammt);
-          b = sticky(b, ammt);
-          this.fillStyle = rgb(r, g, b);
-          // if(brightness(r,g,b) < ammt) {
-          // this.fillStyle = rgb(0);
-          this.fillRect(w-x, y, blocksize, blocksize);
-          // }
-
-        }
-    }
-
-}
-
-
-function pixelShuffle(blockwidth, blockheight, freq, x1, y1, x2, y2) {
-
-  if (x1 == undefined) {
-    x1 = 0; y1 = 0; x2 = w; y2 = h;
-  }
-	if (freq == undefined) freq = 20;
-	if (blockwidth == undefined) blockwidth = 20;
-	if (blockheight == undefined) blockheight = blockwidth;
-    var imgData=ctx.getImageData(x1,y1,x2,y2);
-    //var sourceBuffer8 = new Uint8Array(imgData.data.buffer);
-    //var sourceBuffer8 = new Uint8ClampedArray(imgData.data.buffer);
-    //shuffle(sourceBuffer8, 1);
-    var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
-
-    for(var x = x1; x < x2; x += blockwidth) {
-
-        for(var y = y1; y < y2; y += blockheight) {
-
-          var pos = (x + y * x2);
-          if (chance(freq)) {
-            pos = (pos + randomInt(-100,100)*4) % (x2*y2*4);
-            var b = (sourceBuffer32[pos] >> 16) & 0xff;
-            var g = (sourceBuffer32[pos] >> 8) & 0xff;
-            var r = (sourceBuffer32[pos] >> 0) & 0xff;
-            ctx.fillStyle = rgba(r,g,b, 0.9);
-          ctx.fillRect(x, y, blockwidth, blockheight);
-          }
-        };
-
-    }
-
-}
-
-
-
-
-function shuffle(a, ammt) {
- if (ammt = undefined) ammt = a.length;
-    var j, x, i;
-    for (i = ammt; i; i--) {
-        j = Math.floor(Math.random() * i);
-        x = a[i - 1];
-        a[i - 1] = a[j];
-        a[j] = x;
-    }
-}
-
-
-
-function halftone(blocksize, reverse) {
-  if (reverse == undefined) reverse = 1;
-  if (reverse == true) reverse = -1;
-  if (blocksize == undefined) blocksize = 20;
-  var imgData=ctx.getImageData(0,0,w,h);
-
-  ctx.clearRect(0,0,w,h);
-  var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
-  ctx.fillStyle = rgb(0,0,0);
-
-  for(var x = 0; x < w; x += blocksize) {
-
-        for(var y = 0; y < h; y += blocksize) {
-
-        	var pos = (x + y * w);
-        	var b = (sourceBuffer32[pos] >> 16) & 0xff;
-			var g = (sourceBuffer32[pos] >> 8) & 0xff;
-        	var r = (sourceBuffer32[pos] >> 0) & 0xff;
-          	if (reverse == -1) {
-          		var bb = 100 - brightness(r,g,b);
-          	} else {
-          		var bb = brightness(r,g,b);
-          	}
-
-          	ctx.fillEllipse(x, y, blocksize*bb/100, blocksize*bb/100);
-
-          };
-
-        }
-    }
-
-
-
-
-function triangulate(grid_w, grid_h, alpha) {
-
-	grid_h = grid_h || grid_w;
-
-	alpha = alpha || 0.8;
-
-
-	var ww = Math.ceil(w/grid_w);
-	var	hh = Math.ceil(h/grid_h);
-    var imgData=ctx.getImageData(0,0,w,h);
-    ctx.clearRect(0,0,w,h);
-    //var sourceBuffer8 = new Uint8Array(imgData.data.buffer);
-    //var sourceBuffer8 = new Uint8ClampedArray(imgData.data.buffer);
-
-    var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
-    var i =0;
-    for(var x = 0; x < w; x += grid_w)
-    {
-        for(var y = 0; y < h; y += grid_h)
-        {
-
-          var pos = (x + y * w);
-          var b = (sourceBuffer32[pos] >> 16) & 0xff;
-          var g = (sourceBuffer32[pos] >> 8) & 0xff;
-          var r = (sourceBuffer32[pos] >> 0) & 0xff;
-          ctx.fillStyle = rgba(r,g,b, alpha);
-
-  if (i%2) {
-	 ctx.fillTriangle(x, y - grid_h, x, y + grid_h, x - grid_w, y );
-	} else {
-		ctx.fillTriangle(x - grid_w, y - grid_h, x, y, x - grid_w , y + grid_h);
-	}
-
-	i++;
-  }
-}
-
-}
-
-
-// text utilities
-
-function addZero(d){
-  if (d < 10) {
-    return "0" + d;
-  } else {
-    return d;
-  }
-}
-
-
-
-// MIRROR THE CANVAS
-
-function mirror(_side){
-
-  var side = _side || 1;
-  var input = ctx.getImageData(0, 0, w, h);
-  var output = ctx.createImageData(w, h);
-  var inputData = input.data;
-  var outputData = output.data
-   // loop
-   if (side ==1) {
-   for (var y = 0; y < h-1; y += 1) {
-       for (var x = 0; x < w/2; x += 1) {
-         // RGB
-         var i = (y*w + x)*4;
-         var flip = (y*w + (w/2 - x))*4;
-         for (var c = 0; c < 4; c += 1) {
-            outputData[i+c] = inputData[flip+c];
-         }
-       }
-   }
-   ctx.putImageData(output, w/2, 0);
- } else if (side ==2) {
-   for (var y = 0; y < h/2; y += 1) {
-     for (var x = 1; x < w; x += 1) {
-       var i = (y*w + x)*4;
-       var flip = ((h/2-y)*w + x)*4;
-       for (var c = 0; c < 4; c += 1) {
-         outputData[i+c] = inputData[flip+c];
-       }
-     }
-   }
-   ctx.putImageData(output, 0, h/2);
-  } else {
-    for (var y = h/2; y < h; y += 1) {
-      for (var x = 1; x < w; x += 1) {
-        var i = (y*w + x)*4;
-        var flip = ((h/2-y)*w + x)*4;
-        for (var c = 0; c < 4; c += 1) {
-          outputData[i+c] = inputData[flip+c];
-        }
-      }
-    }
-    ctx.putImageData(output, 0, h/2);
-  }
-}
-
-
-p.mirror = function(_side){
-
-  var side = _side || 1;
-  var input = ctx.getImageData(0, 0, w, h);
-  var output = ctx.createImageData(w, h);
-  var inputData = input.data;
-  var outputData = output.data
-   // loop
-   if (side ==1) {
-   for (var y = 0; y < h-1; y += 1) {
-       for (var x = 0; x < w/2; x += 1) {
-         // RGB
-         var i = (y*w + x)*4;
-         var flip = (y*w + (w/2 - x))*4;
-         for (var c = 0; c < 4; c += 1) {
-            outputData[i+c] = inputData[flip+c];
-         }
-       }
-   }
-   this.putImageData(output, w/2, 0);
-  } else {
-    for (var y = 0; y < h/2; y += 1) {
-      for (var x = 1; x < w; x += 1) {
-        var i = (y*w + x)*4;
-        var flip = ((h/2-y)*w + x)*4;
-        for (var c = 0; c < 4; c += 1) {
-          outputData[i+c] = inputData[flip+c];
-        }
-      }
-    }
-    this.putImageData(output, 0, h/2);
-  }
-}
-
-// function mirror(_side){
-//   var side = _side || 1;
-//   var input = ctx.getImageData(0, 0, w, h);
-//   var output = ctx.createImageData(w, h);
-//   var inputData = input.data;
-//   var outputData = output.data
-//    // loop
-//    if (side ==1) {
-//      for (var y = 1; y < h-1; y += 1) {
-//          for (var x = 0; x < w/2; x += 1) {
-//            // RGB
-//            var i = (y*w + x)*4;
-//            var flip = (y*w + (w/2 - x))*4;
-//            for (var c = 0; c < 4; c += 1) {
-//               outputData[i+c] = inputData[flip+c];
-//            }
-//          }
-//         ctx.putImageData(output, w/2, 0);
-//      }
-//  } else {
-//        for (var x = 1; x < w; x += 1) {
-//          for (var y = 0; y < h/2; y += 1) {
-//          // RGB
-//          var i = (y*w + x)*4;
-//          var flip = ((h-y)*w + x)*4;
-//          for (var c = 0; c < 4; c += 1) {
-//             outputData[i+c] = inputData[flip+c];
-//          }
-//        }
-//    }
-//    ctx.putImageData(output, 0, h/2);
-//  }
-//
-// }
-
-
-function hasClass(el, className) {
-  if (el.classList)
-    return el.classList.contains(className)
-  else
-    return !!el.className.match(new RegExp('(\\s|^)' + className + '(\\s|$)'))
-}
-
-function addClass(el, className) {
-  if (el.classList)
-    el.classList.add(className)
-  else if (!hasClass(el, className)) el.className += " " + className
-}
-
-function removeClass(el, className) {
-  if (el.classList)
-    el.classList.remove(className)
-  else if (hasClass(el, className)) {
-    var reg = new RegExp('(\\s|^)' + className + '(\\s|$)')
-    el.className=el.className.replace(reg, ' ')
-  }
-}
-
-
 
 
 
@@ -1650,78 +1136,17 @@ window.addEventListener('mousemove', function(e) {
 
 function init() {
 
-
-
-window.addEventListener('mousedown', function(e){mouseDown =true; if(typeof onMouseDown == 'function') onMouseDown() ;});
-window.addEventListener('mouseup', function(e){mouseDown = false;if(typeof onMouseUp == 'function') onMouseUp()  ;});
-window.addEventListener('keydown', function(e){if(typeof onKeyDown == 'function') onKeyDown(e);});
-window.addEventListener('keyup', function(e){if(typeof onKeyUp == 'function') onKeyUp(e);});
-if(typeof window.setup == 'function') window.setup();
-loop();
+  window.addEventListener('mousedown', function(e){mouseDown =true; if(typeof onMouseDown == 'function') onMouseDown() ;});
+  window.addEventListener('mouseup', function(e){mouseDown = false;if(typeof onMouseUp == 'function') onMouseUp()  ;});
+  window.addEventListener('keydown', function(e){if(typeof onKeyDown == 'function') onKeyDown(e);});
+  window.addEventListener('keyup', function(e){if(typeof onKeyUp == 'function') onKeyUp(e);});
+  if(typeof window.setup == 'function') window.setup();
+  loop();
 }
 
 window.addEventListener('load',init);
 
 
-///////////////// UTILITIES
-
-function ScaleImage(srcwidth, srcheight, targetwidth, targetheight, fLetterBox) {
-
-    var result = { width: 0, height: 0, fScaleToTargetWidth: true };
-
-    if ((srcwidth <= 0) || (srcheight <= 0) || (targetwidth <= 0) || (targetheight <= 0)) {
-        return result;
-    }
-
-    // scale to the target width
-    var scaleX1 = targetwidth;
-    var scaleY1 = (srcheight * targetwidth) / srcwidth;
-
-    // scale to the target height
-    var scaleX2 = (srcwidth * targetheight) / srcheight;
-    var scaleY2 = targetheight;
-
-    // now figure out which one we should use
-    var fScaleOnWidth = (scaleX2 > targetwidth);
-    if (fScaleOnWidth) {
-        fScaleOnWidth = fLetterBox;
-    }
-    else {
-       fScaleOnWidth = !fLetterBox;
-    }
-
-    if (fScaleOnWidth) {
-        result.width = Math.floor(scaleX1);
-        result.height = Math.floor(scaleY1);
-        result.fScaleToTargetWidth = true;
-    }
-    else {
-        result.width = Math.floor(scaleX2);
-        result.height = Math.floor(scaleY2);
-        result.fScaleToTargetWidth = false;
-    }
-    result.targetleft = Math.floor((targetwidth - result.width) / 2);
-    result.targettop = Math.floor((targetheight - result.height) / 2);
-
-    return result;
-}
-
-
-// date utils
-
-function getDayOfWeek(_date){
-var d = new Date(_date);
-var weekday = new Array(7);
-weekday[0] =  "Sunday";
-weekday[1] = "Monday";
-weekday[2] = "Tuesday";
-weekday[3] = "Wednesday";
-weekday[4] = "Thursday";
-weekday[5] = "Friday";
-weekday[6] = "Saturday";
-
-return weekday[d.getDay()];
-}
 
 
 // loadscript utility
@@ -1741,3 +1166,8 @@ function loadScript(url, callback) {
     // Fire the loading
     head.appendChild(script);
 }
+
+
+
+loadScript('/js/fx.js');
+loadScript('/js/utils.js');

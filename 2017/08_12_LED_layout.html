@@ -1,0 +1,101 @@
+
+<html>
+
+<head>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/raw_video.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <!-- <script language="javascript" src="../js/stats.js"></script> -->
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+
+<!-- <script language="javascript" src="../js/p5.js"></script> -->
+<script language="javascript" src="../js/matter.min.js"></script>
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body {
+background: #fff;
+}
+
+#canvas3 {
+   filter: blur(15px) contrast(200%);
+   -webkit-filter: blur(8px) contrast(200%);
+   /*filter:contrast(200%);*/
+}
+</style>
+
+<body>
+
+
+<script type="text/javascript">
+
+frameRate = 20;
+
+
+
+var ctx = createCanvas('canvas1');
+var hidden_ctx = createHiddenCanvas('canvas2');
+
+var grid = new Grid(83, 60, 900, 900);
+
+var vert_scale, horiz_scale;
+
+function setup(){
+  vert_scale = w/320;
+  horiz_scale = h/240;
+}
+
+
+function draw(){
+
+  ctx.background(50);
+
+  ctx.fillStyle = rgb(0);
+  ctx.fillRect(0,0, 900, 900);
+
+  hidden_ctx.drawImage(video, 0, 0, 320, 240);
+  var imageData = hidden_ctx.getImageData(0, 0, 320, 240);
+  var px = imageData.data;
+  //var v = sampleVideo();
+  // if (v.length > 0) {
+  for (var i = 0; i < grid.length; i++) {
+    var g = grid.grid[i];
+    var pos = Math.round(g.x/320 + (g.y * 900)/240) * 4;
+    var b = brightness(px[pos],px[pos+1],px[pos+2])
+    ctx.fillStyle = rgb(b);
+    ctx.LfillEllipse(g.x, g.y, 4, 4);
+  //}
+  }
+}
+
+
+function sampleVideo(){
+  var v = [];
+
+
+  var l = px.length;
+  for (var i = 0; i < l; i+=4) {
+    var b = brightness(px[i],px[i+1],px[i+2]);
+    v.push(b);
+  }
+  return v;
+}
+
+
+
+</script>
+
+
+
+
+</body>
+</html>

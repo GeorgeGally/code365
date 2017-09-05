@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+ctx.font="22px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/train_data.csv';
+var engine = new particleEngine(0);
+engine.border = false;
+var movements = [];
+var sticker = 40;
+
+d3.csv(url, function(error, data) {
+
+  if (error) console.log(error);
+
+  movements = data;
+  console.log(movements);
+
+});
+
+
+var counter = 0;
+var bar_ht = 20;
+var max_wi = 0;
+var max_wo = 0;
+var max_ei = 0;
+var max_eo = 0;
+var pos = 0;
+var friction = 0.94;
+var passengers = 0;
+ctx.background(0);
+
+var start_time = Date.now(); // set starttime
+console.log(start_time);
+
+function draw() {
+
+  ctx.background(0, 0.2);
+  //ctx.background(0);
+  ctx2.clearRect(0,0,w,h);
+
+
+
+  if (movements.length > 0 && counter < movements.length) {
+    var d = movements[counter];
+
+    var dt = new Date(d.datum);
+    var day = dt.getDate();
+
+    //console.log(day); // 25
+    pos = map(passengers, 0, 380000, 1, w);
+    //ctx2.fillStyle = "white";
+    // ctx2.save();
+    // ctx2.translate(w-100, h/2);
+    // ctx2.rotateDegrees(-90);
+    // ctx2.fillText("SOUTH", 0, 0);
+    // ctx2.restore();
+
+    ctx2.fillText(addZero(d.uur) + ":" + addZero(d.minuut) + " " + getDayOfWeek(d.datum) + ", " +  d.datum, pos, h-150);
+    d.West_uit = parseInt(d.West_uit);
+    d.Oost_uit = parseInt(d.Oost_uit);
+    passengers += d.West_uit;
+    passengers += d.Oost_uit;
+    for (var i = 0; i < d.West_in/2; i++) {
+        addParticle(-1, "right");
+    }
+    for (var i = 0; i < d.Oost_in/2; i++) {
+        addParticle(1, "right");
+    }
+    for (var i = 0; i < d.West_uit/10; i++) {
+        addParticle(-1, "left");
+    }
+    for (var i = 0; i < d.Oost_uit/10; i++) {
+        addParticle(1, "left");
+    }
+  }
+  drawParticles();
+  //drawLines();
+  counter++;
+  //engine.update();
+  //drawGraph();
+}
+
+
+
+
+function addParticle(dir, side){
+  engine.add(1, 1);
+  var y = random(h);
+
+  var p = engine.last;
+
+  if(side=="right") {
+    var x = w;
+    p.dir.x = -1;
+    p.c = rgba(0, random(0, 205), 0, 0.3);
+  } else {
+    var x = -1 * random(-20,-10);
+    p.dir.x = 1;
+    p.c = rgba(random(0, 205), 0, 0, 0.3);
+  }
+
+  p.pos = p.target = new Vector(x, y);
+  p.sz = 6;
+  p.vx = 0;
+  p.vy = 0;
+
+  //p.c = rgba(random(0, 205), 0.3);
+}
+
+function moveParticle(p) {
+  p.vx += random(1.1,2.5)*p.dir.x;
+  //p.vy += random(-1.6,1.6)*p.dir.y;
+  //console.log(p.pos);
+  p.vx *= friction;
+  //p.vy *= friction;
+  p.target.x += p.vx;
+  //p.target.y += p.vy;
+  //p.target.x += random(0.5);
+  //if(chance(10)) p.sz -= 0.09;
+  // if(chance(50)) p.target.y += random(-5, 5);
+}
+
+function drawLines(){
+  ctx.strokeStyle = "white";
+  ctx.lineWisth = "1";
+  for (var i = 0; i < h; i+=30) {
+    ctx.line(0, i, w, i);
+  }
+}
+
+
+function drawParticles(){
+  //
+  for (var i = engine.particles.length-1; i >=0; i--) {
+    p = engine.particles[i];
+    moveParticle(p);
+
+    // ctx.fillStyle = rgba(255, 0.4);
+    // ctx.fillStyle = p.c;
+    ctx.fillStyle = "white";
+    ctx.LfillEllipse(sticky(p.pos.x,20), sticky(p.pos.y,20), p.sz, p.sz);
+    if(p.sz < 0.1) {
+      //ctx.fillStyle = "black";
+      //ctx.fillRect(sticky(p.pos.x,20), sticky(p.pos.y, 20), 1, 1);
+      engine.delete(p.me);
+    }
+  }
+
+}
+
+
+function drawGraph(){
+  //ctx2.clearRect(0, 0, w, h);
+  ctx2.fillStyle = "white";
+  ctx2.fillRect(0, h-180, w, 6);
+  //
+  ctx2.fillText("Central Station passengers exiting", pos, h - 215);
+  ctx2.fillText("Passenger number: " + passengers + ". Expected this month: 380 000", pos, h - 200);
+
+  ctx2.fillStyle = "#0f94c7";
+  ctx2.fillRect(0, h-180, pos, 6);
+
+  //counter+=4;
+}
+
+
+</script>
+
+</body>
+
+</html>

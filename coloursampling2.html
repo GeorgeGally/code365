@@ -16,7 +16,7 @@
 
 </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -47,31 +47,29 @@ function draw() {
 }
 
 // function keyPressed(){
-//  showColours(); 
+//  showColours();
 // }
 
 
 function showColours(){
-  
+
   //console.log(colors.length);
   ctx.fillStyle = rgba(155,255,255,1);
-  ctx.fillRect(0, 0, w, h); 
+  ctx.fillRect(0, 0, w, h);
   var xpos=0;
   var ypos=0;
-  for (var i=0; i< width*height/boxSize; i++) { 
+  for (var i=0; i< width*height/boxSize; i++) {
     if (xpos >= width) {
-      xpos =0; 
+      xpos =0;
       ypos+=boxSize;
     }
 
   var c = colors[i%(colors.length-1)];
 
-ctx.fillStyle = c;
-//println(c);  
-//ellipse(boxSize/2+xpos,ypos,boxSize,boxSize);
+  ctx.fillStyle = c;
   ctx.fillRect(xpos,ypos,boxSize,boxSize);
   xpos+=boxSize;
-} 
+}
 
 }
 

@@ -99,7 +99,7 @@ this.setup();
 // SETUP WAVES CLASS
 
 var waves = [];
-var grid_w = 5;
+var grid_w = 10;
 var grid_h = 20;
 var num_waves = grid_w * grid_h;
 var spacing_x = w/grid_w;
@@ -122,8 +122,11 @@ function draw(){
 	for (var i = 0; i < num_waves; i++) {
 		waves[i].draw();
 	};
-	ctx.mirror();
-  ctx.mirror(2);
+	mirror();
+  mirror(2);
+  // mirror();
+  // mirror(2);
+
   //pixelate(10,2);
 }
 

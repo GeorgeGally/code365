@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+ 	<meta charset="utf-8">
+	<title>Soundcloud Viz</title>
+
+	<script src='http://connect.soundcloud.com/sdk.js'></script>
+	<script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+	<script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+ctx.strokeStyle = rgba(255,0.8);
+ctx.lineWidth = 3;
+frameRate = 120;
+var time = 0;
+ctx2.font = "bold 20px Arial";
+ctx2.textAlign = "center";
+
+function draw(){
+    ctx2.clearRect(0, 0,w,h);
+    ctx.background(255, 0.08);
+    ctx.fillStyle = rgb(0);
+    ctx.save();
+  	ctx.translate(w/2, h/2);
+
+    for (var i = 0; i < 150; i++) {
+    	ctx.rotate(radians(time));
+        ctx.fillRect( 10+i*2, 0 ,  i*3+10,i*3+10);
+        ctx.strokeRect( 10+i*2, 0 ,  i*3+10,i*3+10);
+        time+=0.0001;
+    }
+
+    ctx.restore();
+    ctx2.fillStyle = "red";
+    ctx2.fillText("I will forsake this reality.", w/2, h/2)
+}
+
+</script>
+ <script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

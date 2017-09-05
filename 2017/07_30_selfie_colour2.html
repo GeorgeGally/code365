@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
+<script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script language="javascript" src="../js/color_thief.js"></script>
+
+<script src="../js/clmtrackr.min.js"></script>
+<script src="../js/model_pca_20_svm.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+
+// var canvas2 = document.getElementById('canvas2');
+// var canvas2 = document.getElementsByTagName('canvas')[1];
+
+// console.log(canvas2);
+//var colorThief = new ColorThief();
+var block_size = 50;
+
+var ratio_x, ratio_y;
+var positions = [];
+var ctracker = new clm.tracker();
+var cols = [];
+
+function setup(){
+  ctracker.init(pModel);
+  var vid = document.getElementById('videoOutput');
+  video.width = w/2;
+  video.height = h/2;
+  ratio_x = width/video.width;
+  ratio_y = height/video.height;
+  ctx2.canvas.style.left = w/2 - 150 + "px";
+  ctx2.canvas.style.top  = h/2 - 150 + "px";
+  // canvas2.style.width = "400px";
+  // canvas2.style.height = "300px";
+  ctx2.canvas.width = 300;
+  ctx2.canvas.height = 400;
+  vid.oncanplay = function() {
+      ctracker.start(vid);
+  };
+  //console.log(vid);
+  //
+
+}
+
+
+
+
+
+function draw(){
+
+  ctx.background(0);
+  //ctx2.background(0);
+  ctx3.clearRect(0, 0, w, h);
+  ctx.drawImage(video, 0, 0, w, h);
+  ctx2.drawImage(video, 0, 0, 300, 400);
+//   //ctx2.pixelate(50);
+  pixelate(100)
+  update();
+
+}
+
+
+function update(){
+  //  console.log(ctracker);
+  if (ctracker.getCurrentPosition()) {
+    positions = ctracker.getCurrentPosition();
+
+    //ctracker.draw(ctx.canvas);
+    //var c = $('#canvas1')
+    //var cols = colorThief.getPalette(c, 25);
+
+    if (positions.length > 0) {
+      drawEyes(positions)
+    }
+
+  }
+}
+
+
+function pixelate (blocksize) {
+  cols = [];
+  var blocksize =  blocksize || 50;
+  blocksize = Math.round(blocksize);
+  //console.log(canvas2.width);
+  var imgData = ctx2.getImageData(0, 0, w, h);
+  //console.log(blocksize);
+  //ctx2.clearRect(0,0,w,h);
+
+    var sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+
+    for(var x = 0; x < w; x += blocksize) {
+
+        for(var y = 0; y < w; y += blocksize) {
+
+          var pos = (x + y * w);
+          var b = (sourceBuffer32[pos] >> 16) & 0xff;
+          var g = (sourceBuffer32[pos] >> 8) & 0xff;
+          var r = (sourceBuffer32[pos] >> 0) & 0xff;
+          var c = rgb(r,g,b);
+          ctx2.fillStyle = c;
+          ctx2.fillRect(x, y, blocksize, blocksize);
+          cols.push(c);
+        }
+    }
+
+}
+
+function drawEyes(positions){
+      //ctx.fillStyle = "blue";
+      //console.log("drawEyes");
+      //var x  = ratio_x * Math.round((positions[27][0] + ratio_x * positions[32][0]))/2;
+      //var y = ratio_y * Math.round( (positions[32][0] + ratio_y * positions[32][1]))/2;
+      var x  = Math.round(positions[27][0] + positions[32][0]) - 150;
+      var y = Math.round(positions[27][1] + positions[32][1]) - 150;
+      ctx2.canvas.style.left = x;
+      $('#canvas2').css({left: x + 'px' });
+      $('#canvas2').css({top: y + 'px'});
+      //ctx2.fillEllipse(x, y, 20, 20)
+      //ctx2.fillEllipse(positions[27][0], y, 20, 20);
+      //if(cols[1]) {
+        ctx3.fillStyle = "yellow";
+        ctx3.fillRect(x - 50, y - 100, 200, 400);
+        ctx3.fillStyle = "blue";
+        ctx3.fillRect(x + 300, y + 100, 30, 200);
+      //}
+}
+
+</script>
+
+</body>
+
+</html>

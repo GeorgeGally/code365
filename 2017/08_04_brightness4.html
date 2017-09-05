@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+
+
+    <script language="javascript" src="../js/creative_coding.js"></script>
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/particle_engine.js"></script>
+    <script language="javascript" src="../js/raw_video.js"></script>
+    <script language="javascript" src="../js/motion.js"></script>
+    <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+    <script language="javascript" src="../js/stats.js"></script>
+    <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+<div id="stats"></div>
+<script>
+
+var ctx = createCanvas("canvas1");
+
+
+ctx.background(0);
+
+var engine = new particleEngine();
+engine.edges = false;
+
+function draw(){
+
+    ctx.background(0, 0.03);
+    var motion = motionDetection();
+    for (var i = 0; i < motion.length; i++) {
+      var m = motion[i];
+      //ctx.fillStyle = rgb(m.r, m.g, m.b);
+      //ctx.fillEllipse (m.x, m.y, 20, 20);
+      var c = rgb(m.r, m.g, m.b);
+      engine.add(m.x, m.y, c);
+    }
+    engine.update();
+    engine.draw();
+}
+
+
+// javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+</script>
+<script language="javascript" src="../js/motion.js"></script>
+</body>
+</html>

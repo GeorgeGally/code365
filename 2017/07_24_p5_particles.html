@@ -1,0 +1,150 @@
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+
+<script language="javascript" src="../js/p5.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/grid.js"></script>
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script type="text/javascript">
+
+var w = window.innerWidth;
+var h = window.innerHeight;
+var hidden;
+var particles = [];
+var rot_y = 0;
+var engine;
+
+function setup(){
+	createCanvas(w, h, WEBGL);
+	hidden = createGraphics(w, h);
+	engine = new particleEngine(5, 5);
+	hidden.strokeWeight(8);
+for (var i = 0; i < 30; i++) {
+	var speed = random(-5, 5);
+	particles[i] = {
+		x: random(w),
+		y: 0,
+		sz: random(5, h),
+		sw: random(20),
+		speed: speed
+	}
+}
+
+}
+
+function draw(){
+	background(0);
+	drawHidden();
+	texture(hidden);
+	var b = Sound.getBassVol(0,1);
+	var m = Sound.getMidsVol(0,1);
+	var h = Sound.getHighsVol(0,1);
+	rot_y += b;
+	rotateY(rot_y/100);
+	//rotateX(radians(90));
+	//rotateZ(h);
+	for (var i = 0; i < engine.particles.length; i++) {
+		var p = engine.particles[i];
+		push();
+		translate(p.pos.x - w/2, -p.pos.y + 380);
+		box(60);
+		pop();
+	}
+}
+
+
+function drawHidden(){
+	hidden.background(225);
+	for (var i = 0; i < particles.length; i++) {
+		var p = particles[i];
+		p.x += p.speed;
+		if(p.x > w || p.x < 0) p.speed*=-1;
+		hidden.stroke(0);
+		hidden.noFill();
+		p.sw = Sound.mapSound(i, particles.length, 0, 10);
+		hidden.strokeWeight(p.sw);
+		hidden.line(p.x, 0, p.x, h);
+	}
+
+}
+
+
+function randomInt(min, max) {
+  if(max===undefined) {
+    max = min;
+    min = 0;
+  }
+  return Math.floor(Math.random() * (max+1-min)) +min;
+}
+
+
+/////////////
+
+function rgb(r, g, b, a) {
+
+ return getColour(r, g, b, a);
+
+};
+
+
+function getColour(r, g, b, a){
+  'use strict';
+  var c;
+
+  if((typeof r === 'string' || r instanceof String) && r.substr(0,1) == "#") {
+
+  return r;
+
+  } else if (typeof r === 'string' || r instanceof String) {
+
+  return r;
+
+  } else if (g == undefined) {
+
+   return 'rgb('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+')';
+
+  } else if (b == undefined) {
+
+    return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(Math.round(r),0,255)+', '+clamp(g,0,1)+')';
+
+  } else if (a == undefined){
+
+  return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', 1)';
+
+  } else {
+
+    return 'rgba('+clamp(Math.round(r),0,255)+', '+clamp(Math.round(g),0,255)+', '+clamp(Math.round(b),0,255)+', '+clamp(a,0,1)+')';
+
+ }
+
+  return(c);
+};
+
+function clamp(value, min, max){
+  return Math.min(Math.max(value, Math.min(min, max)),Math.max(min, max));
+}
+
+function distributeAngles(me, total) {
+    return me/total * 360;
+}
+
+function posNeg(){
+ return randomInt(0,1) * 2 - 1;
+}
+</script>
+
+
+</body>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</html>

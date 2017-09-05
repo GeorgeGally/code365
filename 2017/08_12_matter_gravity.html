@@ -1,0 +1,154 @@
+
+<html>
+
+<head>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+<script language="javascript" src="../js/matter.min.js"></script>
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body {
+background: #111;
+}
+
+#canvas1 {
+   filter: blur(0px), contrast(200%);
+   -webkit-filter: blur(0px) contrast(200%);
+   /*filter:contrast(200%);*/
+}
+</style>
+
+<body>
+
+
+<script type="text/javascript">
+
+var hidden_canvas;
+
+var ctx = createCanvas('canvas1');
+var canvas = document.getElementById("canvas1");
+// Matter.js module aliases
+var Engine = Matter.Engine,
+    World = Matter.World,
+    Body = Matter.Body,
+    Bodies = Matter.Bodies,
+    Common = Matter.Common,
+    Constraint = Matter.Constraint,
+    Composites = Matter.Composites,
+    MouseConstraint = Matter.MouseConstraint;
+
+// create a Matter.js engine
+var engine = Engine.create(
+
+  'canvas', {
+  render: {
+    options: {
+      wireframes: true,
+      showAngleIndicator: true
+    }
+  }
+});
+
+// gravity init
+world = engine.world;
+world.gravity.x = random(1);
+world.gravity.y = random(1);
+
+//add a mouse-controlled constraint
+//var mouseConstraint = MouseConstraint.create(engine);
+//World.add(engine.world, mouseConstraint);
+
+
+//Engine.run(engine);
+
+// create a load of circle bodies
+var stack = Composites.stack(250, 5, 12, 20, 0, 0, function(x, y, column, row) {
+  return Bodies.circle(x, y, Common.random(5, 15), { friction: .001, restitution: .1, density: 5.5 });
+});
+
+// add boundaries
+var offset = 5;
+World.add(world, [
+  Bodies.rectangle(0, 0, w, 50, { isStatic: true }),
+  Bodies.rectangle(0, 0, 50, h, { isStatic: true }),
+  Bodies.rectangle(0, h, w, 50, { isStatic: true }),
+  Bodies.rectangle(w, 0, 50, h, { isStatic: true })
+]);
+
+
+
+// create function to update output values & manipulate gravity
+// function gravOutputUpdate(id, axis, val) {
+//   document.getElementById(id).innerHTML = val;
+//   engine.world.gravity[axis] = val;
+// }
+
+// add all of the bodies to the world
+World.add(world, stack);
+
+// run the engine
+Engine.run(engine);
+
+
+
+
+//////////////////////// OBJECTS
+
+var Circle = function(x, y, r){
+	this.options = {
+		friction: 0.01,
+		restitution: 0.2
+	}
+	this.r = r;
+  this.c = colours.get();
+	this.body = Bodies.circle(x, y, this.r/2, this.options);
+  this.pos = this.body.position;
+  //Body.applyForce( this.body, {x: this.pos.x, y: this.pos.y}, {x: random(-0.01,0.01), y: 0.001});
+	World.add(world, this.body);
+
+	this.show = function(){
+		this.pos = this.body.position;
+		var angle = this.body.angle;
+		//console.log(pos);
+		//rectMode(CENTER);
+		//fill(100);
+		hidden_ctx.save();
+		hidden_ctx.translate(this.pos.x, this.pos.y);
+		hidden_ctx.fillStyle = this.c;
+		hidden_ctx.LfillEllipse(0,0, this.r, this.r);
+    //hidden_ctx.drawImage(img, 0,0, this.r, this.r);
+		hidden_ctx.restore();
+	}
+
+	this.isOffScreen = function(){
+		var pos = this.body.position;
+		//console.log(pos.y);
+		return (this.pos.y > h + 100);
+	}
+
+	this.removeFromWorld = function(){
+		World.remove(world, this.body);
+	}
+}
+
+
+
+</script>
+
+
+
+
+</body>
+</html>

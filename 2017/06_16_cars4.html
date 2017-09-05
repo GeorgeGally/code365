@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+ctx.font="22px Arial";
+frameRate = 120;
+var particles = [];
+var grid_w = 1;
+var grid_h = 1;
+var grid = createGrid(grid_w, grid_h, w/2,h);
+var num_particles = grid_w * grid_h;
+ctx.strokeWeight(1);
+var margin = 100;
+var data;
+
+
+var url = "../data/NYPD_Motor_Vehicle_Collisions_sample.csv";
+var minXDataPoint = 1000;
+var maxXDataPoint = -1000
+var minYDataPoint = 1000;
+var maxYDataPoint = -1000;
+
+var total_accidents = 0, total_incidents = 0;
+var total_injured = 0, total_deaths = 0;
+var total_pedestrians_injured = 0, total_pedestrians_deaths = 0;
+var total_cyclists_injured = 0, total_cyclists_deaths = 0;
+var total_motorists_injured = 0, total_motorists_deaths = 0;
+
+var pedestrian = 0, cyclist = 0, motorist = 0;
+
+d3.csv(url, function(_data) {
+  data = _data;
+  data.reverse();
+		//console.log(data);
+		// var minXDataPoint = d3.min(data, function(d) { return d.LATITUDE;});
+  	// var maxXDataPoint = d3.max(data, function(d) { return d.LATITUDE;});
+  	// var minYDataPoint = d3.min(data, function(d) { return d.LONGITUDE;});
+  	// var maxYDataPoint = d3.max(data, function(d) { return d.LONGITUDE;});
+		for (var i = 0; i < data.length; i++) {
+			var d = data[i];
+			//console.log(d.LONGITUDE);
+			if (d.LATITUDE !=0 && d.LATITUDE < minXDataPoint) minXDataPoint = d.LATITUDE;
+			if (d.LATITUDE !=0 && d.LATITUDE > maxXDataPoint) maxXDataPoint = d.LATITUDE;
+			if (d.LONGITUDE !=0 && d.LONGITUDE < minYDataPoint) minYDataPoint = d.LONGITUDE;
+			if (d.LONGITUDE !=0 && d.LONGITUDE > maxYDataPoint) maxYDataPoint = d.LONGITUDE;
+			//
+		}
+
+
+  		var xScale = d3.scale.linear()
+        .domain([minXDataPoint, maxXDataPoint])
+        .range([ 0 + margin, w - margin]);
+
+			var yScale = d3.scale.linear()
+        .domain([minYDataPoint, maxYDataPoint])
+        .range([0 + margin, h - margin]);
+
+			// console.log(minYDataPoint);
+			// console.log(maxYDataPoint);
+			//console.log(data.length);
+
+
+
+		//console.log(particles.length);
+
+});
+
+
+var counter = 0;
+
+function draw(){
+
+
+  if (data && counter < data.length-2)  {
+    ctx.background(0);
+    ctx2.clearRect(0,0,w,h);
+    nextAccident(counter);
+    drawGraph(data[counter]);
+    nextAccident(counter+1);
+    drawGraph(data[counter+1]);
+	  moveParticles();
+	  drawParticles();
+	  counter+=2;
+  }
+}
+
+
+
+
+function nextAccident(i){
+  var injured = 0, killed = 0;
+  pedestrian = 0, cyclist = 0, motorist = 0;
+  var d = data[i];
+
+  if(d['NUMBER OF PEDESTRIANS INJURED'] != undefined) {
+    total_pedestrians_injured += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+    pedestrian += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+    injured += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+  }
+  if(d['NUMBER OF PEDESTRIANS KILLED'] != undefined) {
+    total_pedestrians_deaths += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+    pedestrian += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+    killed += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+  }
+
+  if(d['NUMBER OF CYCLIST INJURED'] != undefined) {
+    total_cyclists_injured += parseInt(d['NUMBER OF CYCLIST INJURED']);
+    cyclist += parseInt(d['NUMBER OF CYCLIST INJURED']);
+    injured += parseInt(d['NUMBER OF CYCLIST INJURED']);
+  }
+  if(d['NUMBER OF CYCLIST KILLED'] != undefined) {
+    total_cyclists_deaths += parseInt(d['NUMBER OF CYCLIST KILLED']);
+    cyclist += parseInt(d['NUMBER OF CYCLIST KILLED']);
+    killed += parseInt(d['NUMBER OF CYCLIST KILLED']);;
+  }
+
+  if(d['NUMBER OF MOTORIST INJURED'] != undefined) {
+    total_motorists_injured += parseInt(d['NUMBER OF MOTORIST INJURED']);
+    motorist += parseInt(d['NUMBER OF MOTORIST INJURED']);
+    injured += parseInt(d['NUMBER OF MOTORIST INJURED']);
+  }
+  if(d['NUMBER OF MOTORIST KILLED'] != undefined) {
+    total_motorists_deaths += parseInt(d['NUMBER OF MOTORIST KILLED']);
+    motorist += parseInt(d['NUMBER OF MOTORIST KILLED']);
+    killed += parseInt(d['NUMBER OF MOTORIST KILLED']);
+  }
+
+  var pos = total_incidents;
+  ctx3.fillStyle = "white";
+  ctx3.fillRect(pos, h/2, motorist, 30);
+
+  ctx3.fillStyle = "grey";
+  ctx3.fillRect(pos + motorist + cyclist, h/2, cyclist, 30);
+
+  ctx3.fillStyle = "orange";
+  ctx3.fillRect(pos + motorist + cyclist, h/2, pedestrian, 30);
+
+  var total = 4 + 8 * killed + 5 * injured;
+  total_deaths += killed;
+  total_injured += injured;
+  total_accidents += 1;
+  total_incidents += (motorist + cyclist + pedestrian);
+  var x = sticky(map(d.LATITUDE, minXDataPoint, maxXDataPoint, 0, w),10);
+  var y = sticky(map(d.LONGITUDE, minYDataPoint, maxYDataPoint, 0, h-150),10);
+
+    //if (particles.length == 0 || !checkCloseness(i, x, y, total)) {
+      addParticle(x, y, injured, killed, pedestrian, cyclist, motorist, total);
+    //}
+}
+
+function checkCloseness(i, x, y, total){
+	var hit = false;
+	for (var j = i+1; j < particles.length; j++) {
+		var p = particles[j];
+		var distance = dist(x,y, p.x, p.y);
+
+		if ( distance < p.sz + total) {
+			p.sz += total;
+			//hit = true;
+			return true;
+		}
+
+	}
+}
+
+
+
+function checkHit(p){
+	var hit = false;
+  var i = p.me;
+  //console.log(i);
+	for (p2 in particles) {
+  //for (var j = i+1; j < particles.length-1; j++) {
+    //console.log(p2);
+    //var p2 = particles[j];
+    if (p != p2 && p.visible && p2.visible) {
+
+		    var distance = dist(p.x, p.y, p2.x, p2.y);
+        //console.log(distance);
+		      if (distance < p2.sz/2 + p.sz/2) {
+    			p.sz += p2.sz;
+          p2.visible = false;
+          //particles.splice(p2.me, 1)
+    			hit = true;
+          //console.log("hit");
+          break;
+		}
+  }
+	}
+}
+
+
+
+function addParticle(_x, _y, injured, killed, pedestrian, cyclist, motorist, total){
+	//console.log(injured);
+  if (pedestrian > cyclist && pedestrian > motorist) {
+    var c = "grey";
+  } else if (cyclist > pedestrian && cyclist > motorist) {
+    var c = "orange";
+  } else {
+    var c = "white";
+  }
+
+	var particle = {
+		x: _x,
+		y: _y,
+    target_x: w,
+		target_y: _y,
+		injured: injured,
+		killed: killed,
+    pedestrian: pedestrian,
+    cyclist: cyclist,
+    motorist: motorist,
+		move: true,
+    c: c,
+    visible: true,
+		// sz: 2 + 2* killed + injured,
+		sz: total,
+		me: 1
+	}
+
+	particles.push(particle);
+
+  for (var i = 0; i < particles.length; i++) {
+    particles[i].me = i;
+  }
+
+}
+
+
+function moveParticles(_i){
+	// for (p in particles) {
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+
+    //console.log(p);
+		  //p = particles[i];
+		  checkHit(p);
+		  //if(p.move) p.sz+=0.02;
+	     if (Math.round(p.x/10) == Math.round(p.target_x/10) && Math.round(p.y/10) == Math.round(p.target_y/10) && p.move == true) {
+			p.move = false;
+			console.log("next");
+	}
+	if(p.move) {
+		// p.x = tween(p.x, p.target_x, 2);
+		// p.y = tween(p.y, p.target_y, 2);
+	}
+
+
+}
+}
+
+function drawParticles(){
+	for (var i = 0; i < particles.length; i++) {
+    p = particles[i];
+    if(p.visible) {
+
+		ctx.fillStyle = p.c;
+		if(p.killed == 0) ctx.cross(p.x, p.y, p.sz*2, p.sz/2);
+		if(p.killed == 0 && p.injured > 0 && p.sz > 10) {
+			ctx.fillStyle = p.c;
+			//ctx.fillEllipse(p.x, p.y, p.sz/2, p.sz/2);
+      ctx.cross(p.x, p.y, p.sz*2, p.sz/2)
+		}
+		if(p.killed > 0) {
+			ctx.fillStyle = "red";
+      ctx.cross(p.x, p.y, p.sz*2, p.sz/2)
+			//ctx.fillEllipse(p.x, p.y, p.sz/2, p.sz/2);
+		}
+  }
+	}
+}
+
+
+function drawGraph(d){
+
+  ctx2.fillStyle = "black";
+  ctx2.fillRect(0, h-180, w, 6);
+
+  ctx2.fillStyle = "white";
+  var pos = map(total_incidents, 0, 2800, 0, w);
+  ctx2.fillText("Date: " + d.DATE + " - " + d.TIME, pos, h - 215);
+  ctx2.fillText("Total Accidents: " + total_accidents + ". Total Killed: " + total_deaths + ". Total injured: " + total_injured, pos, h - 200);
+
+  ctx2.fillStyle = "green";
+  if(pedestrian == 0) {
+    ctx2.fillEllipse(pos, h-153, 10,10);
+  } else {
+    ctx2.fillEllipse(pos, h-153, 16,16);
+  }
+
+
+  ctx2.fillStyle = "blue";
+  if(cyclist == 0) {
+    ctx2.fillEllipse(pos, h-139, 10,10);
+  } else {
+    ctx2.fillEllipse(pos, h-139, 16,16);
+  }
+
+
+  ctx2.fillStyle = "pink";
+  if(motorist == 0) {
+    ctx2.fillEllipse(pos, h-124, 10,10);
+  } else {
+    ctx2.fillEllipse(pos, h-124, 16,16);
+  }
+
+
+
+  ctx2.fillStyle = "white";
+  ctx2.fillText("Pedestrians Injured: " + total_pedestrians_injured + ". Pedestrians Killed: " +  total_pedestrians_deaths, pos + 10, h - 150);
+
+
+  ctx2.fillText("Cyclists Injured: " + total_cyclists_injured + ". Cyclists Killed: " + total_cyclists_deaths, pos + 10, h - 135);
+
+
+  ctx2.fillText("Motorists Injured: " + total_motorists_injured+ ". Motorists Killed: " + total_motorists_deaths, pos + 10, h - 120);
+
+  //ctx2.fillStyle = "red";
+  //ctx2.fillRect(0, h-180, pos, 20);
+
+  //counter+=4;
+}
+
+
+</script>
+
+</body>
+</html>

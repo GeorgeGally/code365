@@ -1,0 +1,332 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>The Walls are closing in</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<script language="javascript" src="../js/creative_coding.js"></script>
+		<script language="javascript" src="../js/canvas.js"></script>
+		<script language="javascript" src="../js/vector.js"></script>
+		<script language="javascript" src="../js/vector_particles.js"></script>
+		<script src="../js/three.min.js"></script>
+		<script src="../js/threejs/Projector.js"></script>
+		<script src="../js/threejs/CanvasRenderer.js"></script>
+
+		<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+	</head>
+	<body>
+
+
+
+		<script>
+
+		var ctx = createHiddenCanvas("canvas1");
+		var scene;
+		canvas.style.zIndex = 100;
+
+			var camera, scene, renderer;
+
+			var texture_placeholder,
+			isUserInteracting = false,
+			onMouseDownMouseX = 0, onMouseDownMouseY = 0,
+			lon = 90, onMouseDownLon = 0,
+			lat = 0, onMouseDownLat = 0,
+			phi = 0, theta = 0,
+			target = new THREE.Vector3();
+			var sphere;
+
+			//animate();
+
+			function init() {
+
+				scene = new THREE.Scene();
+
+				texture_placeholder = document.createElement( 'canvas' );
+				texture_placeholder.width = 128;
+				texture_placeholder.height = 128;
+				var context = texture_placeholder.getContext( '2d' );
+				context.fillStyle = 'rgb( 0, 0, 0 )';
+				context.fillRect( 0, 0, texture_placeholder.width, texture_placeholder.height );
+
+				var materials = [
+
+					loadTexture( '../img/wall/stone_wall.jpg' ), // right
+					loadTexture( '../img/wall/stone_wall.jpg' ), // left
+					loadTexture( '../img/wall/stone_wall_ROOF.jpg' ), // top
+					loadTexture( '../img/wall/stone_wall_floor.jpg' ), // bottom
+					loadTexture( '../img/wall/stone_wall.jpg' ), // back
+					loadTexture( '../img/wall/stone_wall_front.jpg' )  // front
+
+				];
+
+				mesh = new THREE.Mesh( new THREE.BoxGeometry( 300, 300, 300, 7, 7, 7 ), new THREE.MeshFaceMaterial( materials ) );
+				mesh.scale.x = - 1;
+
+
+				var geometry = new THREE.SphereGeometry( 105, 32, 32 );
+				var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+
+				sphere = new THREE.Mesh( geometry, material );
+
+				scene.add( mesh );
+				scene.add( sphere );
+
+				renderer = new THREE.CanvasRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.appendChild( renderer.domElement );
+
+				document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+				document.addEventListener( 'mousewheel', onDocumentMouseWheel, false );
+
+				document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+				document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function loadTexture( path ) {
+
+				var texture = new THREE.Texture( texture_placeholder );
+				var material = new THREE.MeshBasicMaterial( { map: texture, overdraw: 0.5 } );
+
+				var image = new Image();
+				image.onload = function () {
+
+					texture.image = this;
+					texture.needsUpdate = true;
+
+				};
+				image.src = path;
+
+				return material;
+
+			}
+
+			function onDocumentMouseDown( event ) {
+
+				event.preventDefault();
+
+				isUserInteracting = true;
+
+				onPointerDownPointerX = event.clientX;
+				onPointerDownPointerY = event.clientY;
+
+				onPointerDownLon = lon;
+				onPointerDownLat = lat;
+
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				if ( isUserInteracting === true ) {
+
+					lon = ( onPointerDownPointerX - event.clientX ) * 0.1 + onPointerDownLon;
+					lat = ( event.clientY - onPointerDownPointerY ) * 0.1 + onPointerDownLat;
+
+				}
+
+			}
+
+			function onDocumentMouseUp( event ) {
+
+				isUserInteracting = false;
+
+			}
+
+			function onDocumentMouseWheel( event ) {
+
+				camera.fov -= event.wheelDeltaY * 0.05;
+				camera.updateProjectionMatrix();
+
+			}
+
+
+			function onDocumentTouchStart( event ) {
+
+				if ( event.touches.length == 1 ) {
+
+					event.preventDefault();
+
+					onPointerDownPointerX = event.touches[ 0 ].pageX;
+					onPointerDownPointerY = event.touches[ 0 ].pageY;
+
+					onPointerDownLon = lon;
+					onPointerDownLat = lat;
+
+				}
+
+			}
+
+			function onDocumentTouchMove( event ) {
+
+				if ( event.touches.length == 1 ) {
+
+					event.preventDefault();
+
+					lon = ( onPointerDownPointerX - event.touches[0].pageX ) * 0.1 + onPointerDownLon;
+					lat = ( event.touches[0].pageY - onPointerDownPointerY ) * 0.1 + onPointerDownLat;
+
+				}
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+				update();
+
+			}
+
+			function update() {
+
+				var time = Date.now();
+
+				if ( isUserInteracting === false ) {
+					lon += 0.1;
+				}
+
+				lat = Math.max( - 85, Math.min( 85, lat ) );
+				phi = THREE.Math.degToRad( 90 - lat );
+				theta = THREE.Math.degToRad( lon );
+
+				target.x = 500 * Math.sin( phi ) * Math.cos( theta );
+				target.y = 500 * Math.cos( phi );
+				target.z = 500 * Math.sin( phi ) * Math.sin( theta );
+
+				sphere.position.x = Math.sin( time * 0.001 ) * 30;
+				sphere.position.y = Math.sin( time * 0.0011 ) * 30;
+				sphere.position.z = Math.sin( time * 0.0012 ) * 30;
+
+				sphere.rotation.x += 0.02;
+				sphere.rotation.y += 0.03;
+
+				camera.lookAt( target );
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+
+		<script>
+
+		init();
+
+		var box;
+		var block_size = 1;
+		var box1 = document.getElementById('box1');
+		var rotation = new Vector();
+
+		ctx.strokeStyle = rgba(0,0,0,0.8);
+		ctx.lineWidth = 0.5;
+		var particles = [];
+		var flies = [];
+		var radius = 320;
+		var c = 0;
+		var num_particles = 180;
+		ctx.translate(0.5, 0.5);
+
+		for (var i = 0; i < num_particles; i++) {
+
+		    var m = map(i, 0, num_particles, 0, 360);
+		    var cc = hsl(m, 96, 60);
+			addParticle(random(55), random(55), cc, i);
+			flies[i] = new particleEngine(6);
+
+			for (var j = 0; j < flies[i].particles.length; j++) {
+		        p = flies[i].particles[j];
+		        p.position.x = w/2;
+		        p.position.y = h/2;
+		        p.me = (p.me + randomInt(100))%80;
+		        c = randomInt(100,255);
+		        p.c = rgba(c, c, c, random(0.1, 0.8));
+		    }
+		}
+
+		function draw() {
+		  ctx.background("#000");
+		  //box1.setAttribute('rotation', {x: rotation.x+=1, y: rotation.y+=0.2, z: rotation.z-=1});
+			moveParticles();
+		}
+
+
+		function addParticle(_x, _y, _colour, _me){
+			var particle = {
+				x: w/2,
+				y: h/2,
+				c: _colour,
+				me: _me,
+				r: 0,
+				me2: (_me + randomInt(-30,30))%num_particles,
+				speedx: random(-2,2)/2,
+				speedy: random(2,20),
+				sz: 0,
+				angle: radians((map(_me, 0, num_particles, 0, 360)))
+			}
+
+			particles.push(particle);
+		}
+
+		function moveParticles(){
+			for (var i = 0; i < particles.length; i++) {
+				p = particles[i];
+
+				var r = 2+ radius/2;
+				if (chance(10)) r =  map(Sound.mapSound(p.me, num_particles), 0,250, 5 + radius/2, radius/2 + 390);
+				p.r = tween(p.r, r, 15);
+				x = p.x + p.r * Math.cos(p.angle);
+				y = p.y + p.r * Math.sin(p.angle);
+
+		    ctx.strokeStyle ="white";
+		    ctx.fillStyle ="white";
+
+
+		        for (var j = 0; j < flies[i].particles.length; j++) {
+
+		            var mouse = new Vector(x+p.sz/2, y+p.sz/2);
+		            b = flies[i].particles[j];
+		            mouse = mouse.subtract(b.position);
+		            mouse.setMag(0.5);
+		            acceleration = mouse;
+		            b.speed = b.speed.add(acceleration);
+		            b.position = b.position.add(b.speed);
+		            b.speed.limit(5);
+		            //p.sz = 2;
+		            b.sz =  Sound.mapVolume(0.2, 4);
+
+		            //ctx.line(b.position.x, b.position.y, x, y);
+		            ctx.fillEllipse(b.position.x, b.position.y, b.sz, b.sz);
+
+
+		        }
+		        };
+
+		}
+
+
+
+
+
+		</script>
+		 <script language="javascript" src="../js/soundcloud_new.js"></script>
+	</body>
+</html>

@@ -337,20 +337,19 @@ var soundCloud = function(_fft_size) {
     return this.getRMS(self.spectrum);
   }
 
-  this.mapVolume = function (_min, _max) {
-    if(!_min) {
-      min = 0; max = 100;
-    } else if (!max) {
-      _min = 0; max = _max;
-    } else {
-      min = _min; max = _max;
-    }
-    //self.peak_volume = 0 | self.peak_volume;
+  this.getVol = function(_min, _max){
 
-    var vol = map(this.getRMS(self.spectrum), 0, self.peak_volume, min, max);
-    //console.log(self.peak_volume);
-    return vol;
+    var min_max = _min || 100;
+    var min = _min || 0;
+
+    var max = _max || min_max;
+    //return this.getRMS(self.spectrum);
+    // map total volume to 100 for convenience
+    self.volume = map(self.vol, 0, self.peak_volume, min, max);
+    return self.volume || 0;;
   }
+
+  //this.getVolume = function() { return this.getVol();}
 
   this.getRMS = function (freq) {
         var rms = 0;
@@ -486,3 +485,4 @@ function loadScript(url, callback)
 }
 
 var Sound = new soundCloud();
+console.log(Sound);

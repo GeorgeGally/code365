@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body style="background: #fff">
+
+<script>
+
+// GLOBALS
+var ctx = createCanvas("canvas1");
+
+var blocksize = 13;
+var img = new Image();
+img.src = '../img/people/stevie-nicks2.jpg';
+
+
+
+
+
+function draw(){
+  if(chance(100)) blocksize = randomInt(10, 100);
+  ctx.background(0);
+  ctx.drawImage(img, 0,0,w,h);
+  var imgData=ctx.getImageData(0,0,w,h);
+  pixelate(blocksize);
+}
+
+
+
+function addParticle(_x, _y, txt, col, highlight){
+
+  var particle = {
+    x: _x,
+    y: _y,
+    c: col,
+    txt: txt,
+    highlight: highlight,
+  }
+
+  particles.push(particle);
+}
+
+
+</script>
+</body>
+</html>

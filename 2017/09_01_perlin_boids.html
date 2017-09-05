@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/perlin.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createHiddenCanvas("canvas2");
+
+noise.seed(randomInt(20));
+
+
+var scl = 10;
+var xvec, yvec;
+var noiseInc = .1;
+var time = 0;
+var particles = [];
+var flowfield;
+var data ;
+
+function setup() {
+
+      //  for (var i = 0; i < 500; i++) {
+      //         particles[i] = new Particle();
+      //  }
+      video.width = w/scl;
+      video.height = h/scl;
+}
+
+function draw() { // Rotating Vectors
+
+  ctx2.drawImage(video, 0, 0, video.width, video.height);
+  data = new Uint32Array(ctx2.getImageData(0, 0, video.width, video.height).data.buffer);
+  //data = ctx2.getImageData(0, 0, video.width, video.height).data.buffer);
+
+       ctx.background(255, 0.1);
+
+       FlowField();
+
+      //  for (var k = 0; k < particles.length; k++) {
+      //         particles[k].show();
+      //         particles[k].update();
+      //         particles[k].edge();
+      //         particles[k].follow(flowfield);
+      //  }
+      // console.log(flowfield);
+}
+
+function FlowField(){
+       xvec = Math.floor((w+50) / scl);
+       yvec = Math.floor((h+50) / scl);
+       flowfield = new Array(xvec * yvec);
+
+       for (var y = 0; y < video.height; y++) {
+         for (var x = 0; x < video.width; x++) {
+         // var p = particles[i];
+         var pos = (x + y * video.width);
+
+         var b = (data[pos] >> 16) & 0xff;
+         var g = (data[pos] >> 8) & 0xff;
+         var r = (data[pos] >> 0) & 0xff;
+
+         var brt = brightness(r, g, b, scl*1.1);
+           //console.log(brt);
+         //ctx.fillStyle = rgb(r, g, b);
+         //ctx.fillEllipse(scl/2 + x*scl, scl/2 + y*scl, brt, brt);
+         var dir = brightness(r, g, b, 360);
+         ctx.strokeStyle = rgb(0);
+        ctx.save();
+                       ctx.translate(x * scl, y * scl);
+                      //  ctx.fillEllipse(0, 0, b/20);
+                      //  ctx.rotate(dir.heading());
+                      ctx.rotateDeg(dir);
+                       ctx.line(0, 0, scl, 0);
+                       ctx.restore();
+
+       }
+       }
+
+      //  var yNoise = 0;
+      //  for (var y = 0; y < yvec; y++) {
+      //         var xNoise = 0;
+      //         for (var x = 0; x < xvec; x++) {
+      //                var vecDirect = noise.perlin3(xNoise, yNoise, time) * 2*(TWO_PI);
+      //                //
+      //               //  vecDirect = map(degrees(vecDirect), -360, 360, 0, 360);
+      //               //  vecDirect = radians(vecDirect);
+      //               //console.log(vecDirect);
+      //               //  var dir = p5.Vector.fromAngle(vecDirect);
+      //               var dir = vecDirect;
+      //                var index = (x + y * xvec) * scl;
+       //
+      //                var b = (data[index] >> 16) & 0xff;
+      //                var g = (data[index] >> 8) & 0xff;
+      //                var r = (data[index] >> 0) & 0xff;
+       //
+      //               //  flowfield[index] = dir;
+      //               var b = brightness(r, g, b, 360);
+      //               flowfield[index] = radians(b);
+      //                //dir.setMag(3);
+      //                xNoise += noiseInc;
+      //                ctx.strokeStyle = rgb(180);
+      //                ctx.save();
+      //                ctx.translate(x * scl, y * scl);
+      //                ctx.fillEllipse(0, 0, b/20);
+      //               //  ctx.rotate(dir.heading());
+      //               ctx.rotate(dir);
+      //                ctx.line(0, 0, scl, 0);
+      //                ctx.restore();
+      //         }
+      //         yNoise += noiseInc;
+      //         time += .0001;
+      //  }
+}
+
+function Particle() {
+       this.x = random(width);
+       this.y = random(height);
+       this.pos = new Vector(this.x, this.y);
+       this.vel = new Vector(0, 0);
+       this.acc = new Vector(0, 0);
+       this.r = 2.0;
+       this.maxspeed = 2;
+
+       this.update = function() {
+              //this.pos.x = this.pos.add(this.vel);
+              this.pos.x += this.vel.x;
+              this.pos.y += this.vel.y;
+              this.vel.x += this.acc.x;
+              this.vel.y += this.acc.y;
+              //this.vel = this.vel.add(this.acc);
+              //this.acc.mult(0);
+              //if (this.vel.x > this.maxspeed) this.vel.x = this.maxspeed;
+              //if (this.vel.y > this.maxspeed) this.vel.y = this.maxspeed;
+              this.vel.limit(this.maxspeed);
+              //console.log(this.vel);
+       }
+
+       this.follow = function(vectors) { // flowfield vectors
+              var x = Math.floor(this.pos.x / scl);
+              var y = Math.floor(this.pos.y / scl);
+              var index = x + y * xvec;
+              //console.log(this.pos.x + " - " + this.pos.y);
+              var force = vectors[index];
+              this.applyForce(force);
+       }
+
+       this.applyForce = function(force) {
+
+              this.acc = this.acc.add(force);
+              //console.log(force);
+
+       }
+
+       this.show = function() {
+              ctx2.fillStyle = rgb(255,0,0,100);
+              ctx2.LfillEllipse(this.pos.x, this.pos.y, 4, 4);
+       }
+
+       this.edge = function() {
+              if (this.pos.x < -this.r) this.pos.x = width + this.r;
+              if (this.pos.y < -this.r) this.pos.y = height + this.r;
+              if (this.pos.x > width + this.r) this.pos.x = -this.r;
+              if (this.pos.y > height + this.r) this.pos.y = -this.r;
+       }
+}
+
+
+
+
+</script>
+ <!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

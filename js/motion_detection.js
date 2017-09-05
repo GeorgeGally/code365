@@ -1,8 +1,8 @@
 
 
 //GET CHANGES FROM BACKGROUND
-var sensitivity = 20;
-var samplesize = 10;
+var sensitivity = 50;
+var samplesize = 20;
 var old = [];
 var motion_array = [];
 
@@ -29,9 +29,9 @@ function motionDetection(_samplesize){
 			var b = buffer[pos] >> 16 & 0xff;
 
   			if (old[pos] && Math.abs(r-old[pos]) > sensitivity) {
-  				var c = {r:r, g: g, b: b};
-					var pos = {x: x, y: y};
-  				motion_array.push({pos: pos, c: c});
+  				var c = rgb(r, g, b);
+					var p = new Vector(x, y);
+  				motion_array.push({pos: p, x: x, y: y, c: c, r:r, g:g, b:b});
   			}
 
   			old[pos] = r;

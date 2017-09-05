@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(100, 10);
+var colours = new colourPool()
+//.add(rgba(255, 0.8), 1)
+.add(rgba(80, 129, 4, 0.8), 6)
+.add(rgba(158, 142, 1, 0.8), 2)
+.add(rgba(243, 184, 0, 0.8), 2)
+.add(rgba(219, 130, 0, 0.8), 1)
+.add(rgba(182, 66, 1, 0.8), 1)
+
+console.log(hexToRgb("#b64201"));
+
+//engine.randomize();
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  // p.c = rgba(random(195), random(120, 205), random(20), 0.8);
+  p.c = colours.get();
+  if(chance(10)) p.c = rgba(random(195), random(120, 205), random(20), 0.8);
+  //if(chance(30)) p.c = rgba(255, 0.8);
+  if(chance(30)) p.c = rgba(200, 200, 0, 0.8);
+  p.angle = randomSticky(360, 20);
+  p.sz = 60;
+}
+
+
+
+function draw(){
+
+  ctx.background(255, 0.6);
+  var x = 0, y = 0;
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    ctx.fillStyle = p.c;
+    ctx.save();
+    //var pos = (x + y * w);
+    ctx.translate(x, y);
+    ctx.rotateDegrees(90);
+    //ctx.LfillEllipse(0, 0, p.sz, p.sz, 3);
+    ctx.fillPolygon(0, 0, 6, p.sz/2);
+    //ctx.rotate(-p.angle);
+    ctx.restore();
+    x += (p.sz -5);
+    if (x > w) {
+      x = p.sz/2 - 7;
+      y+= p.sz + 2;
+    }
+  }
+
+  //triangulateBrightness();
+
+  //mirror();
+}
+
+
+</script>
+ <script language="javascript" src="../js/soundcloud.js"></script>
+</body>
+</html>

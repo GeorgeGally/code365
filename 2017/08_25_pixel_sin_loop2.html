@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createHiddenCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var engine = new particleEngine(80, 1);
+var particles = engine.particles;
+var pos_counter = 0;
+//console.log(engine.grid);
+
+function setup(){
+  wall = new pixelGrid(114, 46);
+  wall.shape = "square";
+  pixels = wall.pixels;
+  console.log(wall);
+  engine.border = true;
+  engine.edge = true;
+
+for (var i = 0; i < particles.length; i++) {
+  var p = particles[i];
+  p.c = rgb(0);
+  //p.pos.x = random(w);
+  p.pos.y = random(h);
+  p.target_sz = random(10, 40);
+  p.speed.x = random(-2, 2);
+  p.speed.y = random(1, 15);
+  p.tween_speed = 5;
+  p.c = randomGrey();
+}
+}
+
+function draw(){
+
+  ctx.background(0, 0.05);
+
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    //drawTrails(p);
+    ctx.fillStyle = p.c;
+    //
+    ctx.LfillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+  }
+  //if(frameCount%30 == 0) pos_counter++;
+  engine.update();
+
+  ctx.fillStyle = "black";
+  ctx.centreFillRect (w/2, h/2, 210, 210);
+  ctx.fillStyle = "white";
+  var offset = 5;
+  ctx.fillTriangle(w/2 - 100 - offset, h/2 -100 - offset, w/2 + 100 - offset, h/2 - 100 -offset, w/2 - 100 - offset, h/2 + 100 - offset);
+  ctx.fillTriangle(w/2 + 100 + offset, h/2 - 100 + offset, w/2 + 100 + offset, h/2  + 100 + offset, w/2 - 100 + offset, h/2 + 100 + offset);
+  // ctx.fillStyle = "white";
+  // ctx.fillEllipse (w/2, h/2, 200, 200);
+
+  // ctx.fillEllipse (w/2, h/2, 200-40, 200-40);
+
+  //engine.draw();
+  wall.draw(ctx2, ctx);
+}
+
+
+function drawTrails(p){
+
+  //console.log(p.trails.length);
+  for (var j = 0; j < p.trails.length; j++) {
+    var p2 = p.trails[j];
+    ctx.fillStyle = rgb(255 - j * 5);
+    ctx.HfillEllipse(p2.x, p2.y, 100 - j*2);
+  }
+}
+
+function upDateTrails(p){
+  p.trails.push({x: p.pos.x, y: p.pos.y});
+  if(p.trails.length > 80) p.trails.splice(0,1);
+  //console.log(p.trails);
+}
+
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+
+
+
+</script>
+<script language="javascript" src="../js/pixel_grid.js"></script>
+</body>
+
+</html>

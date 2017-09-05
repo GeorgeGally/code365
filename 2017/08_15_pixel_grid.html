@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" /> -->
+
+</head>
+<body style = "background: #000;">
+
+<script>
+var ctx2 = createHiddenCanvas("canvas1");
+//var ctx2 = createCanvas("canvas2");
+var ctx = createCanvas("canvas1");
+//var ctx = createCanvas("canvas1");
+// var ctx2 = createCanvas("canvas1");
+//reFitCanvas(800, 600);
+var sourceBuffer32;
+// var block_size = 5;
+//
+// var maxballs = 30500;
+var pw = 80;
+var ph = 100;
+
+var pixels, wall;
+
+function setup(){
+  wall = new pixelGrid(50, 40);
+  pixels = wall.pixels;
+  console.log(pixels);
+}
+
+
+
+var engine = new particleEngine(30, 30);
+engine.setSize(5, 20);
+engine.setColour(rgb(255));
+
+// var wall = new particleEngine(pw, ph, w, h);
+
+// console.log(wall.particles[0].pos);
+
+
+
+function draw(){
+  //sensitivity = 20;
+  ctx2.background(0);
+  ctx.clearRect(0, 0, w, h);
+  ctx2.fillStyle = rgb(255);
+  ctx2.fillEllipse(w/2, h/2, w/2 + Math.sin(frameCount/20) * w/2, h);
+  //engine.draw(ctx2);
+  //drawPixelScreen(ctx, ctx2);
+  //wall.sample();
+  wall.getSample(ctx, ctx2);
+  // for (var i = 0; i < pixels.length; i++) {
+  //   var p = pixels[i];
+  //   ctx.fillStyle = rgb(p.r, p.g, p.b);
+  //   ctx.LfillEllipse(p.x, p.y, 8, 8);
+  // }
+}
+
+// function drawPixelScreen(_ctx, _ctx2){
+//   var ctx = _ctx || ctx;
+//   var ctx2 = _ctx2 || ctx;
+//   var imgData = ctx2.getImageData(0,0,w,h);
+//   sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+//   for (var i = 0; i < wall.particles.length; i++) {
+//   var p = wall.particles[i];
+//   var s = sample(p.pos.x, p.pos.y, 1);
+//   ctx.fillStyle = rgb(s.brightness);
+//   var sz = Math.sin((i + frameCount)/20) * 3;
+//   //ctx.centreFillRect(p.pos.x, p.pos.y, sz, sz);
+//   ctx.centreFillRect(p.pos.x, p.pos.y, 3, 3);
+//
+// }
+// }
+
+
+function sample(x, y, stickiness) {
+      var stickiness = stickiness || 1;
+      //var ammt = Math.round(mouseX/100);
+      var pos = Math.round(x + y * w);
+      var b = (sourceBuffer32[pos] >> 16) & 0xff;
+      var g = (sourceBuffer32[pos] >> 8) & 0xff;
+      var r = (sourceBuffer32[pos] >> 0) & 0xff;
+      r = sticky(r, stickiness);
+      g = sticky(g, stickiness);
+      b = sticky(b, stickiness);
+      bright = sticky(brightness(r, g, b, 255), stickiness);
+      return {c: rgb(r,g,b), r:r, g:g, b:b, brightness: bright};
+}
+
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+
+
+</script>
+
+  <script language="javascript" src="../js/raw_video.js"></script>
+  <script language="javascript" src="../js/pixel_grid.js"></script>
+
+</body>
+
+</html>

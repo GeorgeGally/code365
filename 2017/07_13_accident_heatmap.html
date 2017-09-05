@@ -1,0 +1,670 @@
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+<script src="../js/creative_coding.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDEKAnXP_v0EOZxJ5bv0K4UNqYFRM1JAj0&libraries=visualization"></script>
+<script src="../js/heatmap.js"></script>
+<script src="../js/heatmap-gmaps.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<!-- <script src="../js/markerclusterer.js"></script>-->
+<script src="../js/infobubble.js"></script>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<style>
+boby { line-height: 22px; font-size: 16px;}
+.info_content { padding: 10px; font-size: 14px; }
+.info_content h3 { font-weight: bold; }
+.info_content h4 { font-style: italic; }
+canvas {
+	pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+
+
+
+<h1 style="font-weight: 100; position: absolute; z-index: 1; top: 40px; left: 40px; background: #fff; padding: 18px; line-height: 22px;">
+
+	<div class="half-bottom">
+		<select id="filter" name="select" onchange="filter()">
+			<option value="all" selected>All Accidents</option>
+			<option value="pedestrian">Pedestrians</option>
+			<option value="cyclist">Cyclists</option>
+			<option value="motorist">Motorists</option>
+		</select>
+
+		<select id="time_of_day" name="select" onchange="filter()" style = "margin-left: 10px;">
+			<option value="any" selected>Anytime</option>
+			<option value="day">Day</option>
+			<option value="night">Night</option>
+		</select>
+
+	</div>
+
+	New York traffic accidents 14 June - 13 July 2017<br>
+<div id="total_accindents"></div>
+</h1>
+
+<div id="map"></div>
+
+<script type="text/javascript">
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+//$('#canvas1').css('position: fixed');
+
+var url = "../data/NYPD_Motor_Vehicle_Collisions-11-6-2017_10_7_2017.csv";
+var minXDataPoint = 1000;
+var maxXDataPoint = -1000
+var minYDataPoint = 1000;
+var maxYDataPoint = -1000;
+var c = 0;
+var heatmapData = [];
+
+var day_start = 5;
+var night_start = 18;
+
+
+var total_accidents = 0, total_incidents = 0;
+var total_injured = 0, total_deaths = 0, total_ok = 0;
+var total_pedestrians_injured = 0, total_pedestrians_deaths = 0;
+var total_cyclists_injured = 0, total_cyclists_deaths = 0;
+var total_motorists_injured = 0, total_motorists_deaths = 0;
+
+var pedestrian = 0, cyclist = 0, motorist = 0, ok = 0;
+var injured = 0, killed = 0;
+
+var map, heatmap, overlay;
+var heatmap, data;
+
+// STYLE GENERAL POI WINDOW
+
+  var infoWindow = new InfoBubble({
+      minHeight: 120,
+      minWidth: 300,
+      hideCloseButton: true,
+      disableAutoPan: true,
+      disableAnimation: true,
+      backgroundColor: '#ffffff',
+      borderRadius: 6,
+      padding: 2,
+      arrowSize: 10,
+      borderWidth: 0,
+      borderColor: '#fff',
+      maxWidth: 400
+  }), d;
+
+
+var markers = [];
+var infowindows = [];
+var icon = '../img/cross.png';
+
+window.onload = function(){
+
+	var location = {
+        "lat": 40.7090,
+        "lng": -73.95
+    };
+
+	var myLatlng = new google.maps.LatLng(location.lat, location.lng);
+
+	var styles = [{"featureType":"water","elementType":"geometry","stylers":[{"color":"#e9e9e9"},{"lightness":67}]},{"featureType":"landscape","elementType":"geometry","stylers":[{"color":"#f5f5f5"},{"lightness":20}]},{"featureType":"road.highway","elementType":"geometry.fill","stylers":[{"color":"#ffffff"},{"lightness":17}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#ffffff"},{"lightness":29},{"weight":0.2}]},{"featureType":"road.arterial","elementType":"geometry","stylers":[{"color":"#ffffff"},{"lightness":18}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"color":"#ffffff"},{"lightness":16}]},{"featureType":"poi","elementType":"geometry","stylers":[{"color":"#f5f5f5"},{"lightness":21}]},{"featureType":"poi.park","elementType":"geometry","stylers":[{"color":"#dedede"},{"lightness":21}]},{"elementType":"labels.text.stroke","stylers":[{"visibility":"on"},{"color":"#ffffff"},{"lightness":16}]},{"elementType":"labels.text.fill","stylers":[{"saturation":36},{"color":"#333333"},{"lightness":40}]},{"elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"geometry","stylers":[{"color":"#f2f2f2"},{"lightness":19}]},{"featureType":"administrative","elementType":"geometry.fill","stylers":[{"color":"#fefefe"},{"lightness":20}]},{"featureType":"administrative","elementType":"geometry.stroke","stylers":[{"color":"#fefefe"},{"lightness":17},{"weight":1.2}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#46bcec"},{"visibility":"on"}]}]
+	var styles = [{"featureType":"administrative","elementType":"labels.text.fill","stylers":[{"color":"#444444"}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#f2f2f2"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":-100},{"lightness":45}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#46bcec"},{"visibility":"on"}]}];
+	var styles =
+	[{ "featureType": "all",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "saturation": 36
+            },
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 40
+            }
+        ]
+    },
+    {
+        "featureType": "all",
+        "elementType": "labels.text.stroke",
+        "stylers": [
+            {
+                "visibility": "on"
+            },
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 16
+            }
+        ]
+    },
+    {
+        "featureType": "all",
+        "elementType": "labels.icon",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 20
+            }
+        ]
+    },
+    {
+        "featureType": "administrative",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 17
+            },
+            {
+                "weight": 1.2
+            }
+        ]
+    },
+    {
+        "featureType": "landscape",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 20
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 21
+            }
+        ]
+    },
+    {
+        "featureType": "road.highway",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 17
+            }
+        ]
+    },
+    {
+        "featureType": "road.highway",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 29
+            },
+            {
+                "weight": 0.2
+            }
+        ]
+    },
+    {
+        "featureType": "road.arterial",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 18
+            }
+        ]
+    },
+    {
+        "featureType": "road.local",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 16
+            }
+        ]
+    },
+    {
+        "featureType": "transit",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 19
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "color": "#000000"
+            },
+            {
+                "lightness": 17
+            }
+        ]
+    }
+]
+
+	var mapOptions = {
+	  zoom: 11,
+	  styles: styles,
+	  center: myLatlng,
+	  mapTypeId: google.maps.MapTypeId.ROADMAP,
+	  disableDefaultUI: false,
+	  scrollwheel: true,
+	  draggable: true,
+	  navigationControl: false,
+	  mapTypeControl: false,
+	  scaleControl: true,
+	  disableDoubleClickZoom: false
+	};
+
+	map = new google.maps.Map(document.getElementById("map"), mapOptions);
+	heatmap = new HeatmapOverlay(map, {"radius":25, "visible":true, "opacity":50});
+	overlay = new google.maps.OverlayView();
+	overlay.draw = function(){};
+	overlay.setMap(map)
+
+	canvas = document.getElementById('canvas1');
+
+
+map.addListener('center_changed', function() {
+     // 3 seconds after the center of the map has changed, pan back to the
+     // marker.
+     window.setTimeout(function() {
+			 filter();
+       //map.panTo(marker.getPosition());
+     }, 3000);
+});
+
+
+google.maps.event.addListenerOnce(map, "idle", function(){
+
+		overlay.getPanes().overlayLayer.appendChild(canvas);
+		d3.csv(url, function(_data) {
+		  data = _data;
+		  //data.reverse();
+
+				for (var i = 0; i < data.length; i++) {
+					var d = data[i];
+					if (d.LATITUDE !=0 && d.LATITUDE < minXDataPoint) minXDataPoint = d.LATITUDE;
+					if (d.LATITUDE !=0 && d.LATITUDE > maxXDataPoint) maxXDataPoint = d.LATITUDE;
+					if (d.LONGITUDE !=0 && d.LONGITUDE < minYDataPoint && d.LONGITUDE != -42.768513) minYDataPoint = d.LONGITUDE;
+					if (d.LONGITUDE !=0 && d.LONGITUDE > maxYDataPoint) maxYDataPoint = d.LONGITUDE;
+
+		}
+
+		processData(data, "all");
+
+		});
+
+});
+
+};
+
+
+function processData(data, f, t){
+
+	var f = f || "all";
+	var t = t || "any";
+	ctx2.clearRect(0, 0, w, h);
+
+	if(t == day_start) {
+		ctx.background(255);
+	} else {
+		ctx.background(0);
+	}
+
+	console.log(f + " : " + t);
+
+		total_pedestrians_injured = 0, total_pedestrians_deaths = 0;
+		total_cyclists_injured = 0, total_cyclists_deaths = 0;
+		total_motorists_injured = 0, total_motorists_deaths = 0;
+		total_deaths = 0, total_injured = 0;
+
+		var sub = "";
+		c = 0;
+		var total = 0;
+
+		resetMap();
+
+
+	for (var i = 0; i < data.length; i++) {
+
+			var d = data[i];
+			var hh = parseInt((d.TIME).split(":")[0]);
+
+			if (t == "any"
+			|| (t == day_start && hh >= t-1 && hh <= night_start)
+			|| (t == night_start && (hh >= t || (hh < day_start && hh >= 0)))
+		){
+			//console.log(hh);
+			injured = 0, killed = 0;
+			pedestrian = 0, cyclist = 0, motorist = 0, ok = 0;
+
+		if(d['NUMBER OF PEDESTRIANS INJURED'] != undefined && parseInt(d['NUMBER OF PEDESTRIANS INJURED']) > 0) {
+			total_pedestrians_injured += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+			pedestrian += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+			injured += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+
+		}
+		if(d['NUMBER OF PEDESTRIANS KILLED'] != undefined && parseInt(d['NUMBER OF PEDESTRIANS KILLED']) > 0) {
+			total_pedestrians_deaths += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+			pedestrian += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+			killed += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+			//console.log(">> " + d.LATITUDE);
+		}
+
+		if(d['NUMBER OF CYCLIST INJURED'] != undefined && parseInt(d['NUMBER OF CYCLIST INJURED']) > 0) {
+			total_cyclists_injured += parseInt(d['NUMBER OF CYCLIST INJURED']);
+			cyclist += parseInt(d['NUMBER OF CYCLIST INJURED']);
+			injured += parseInt(d['NUMBER OF CYCLIST INJURED']);
+		}
+		if(d['NUMBER OF CYCLIST KILLED'] != undefined && parseInt(d['NUMBER OF CYCLIST KILLED']) > 0) {
+			total_cyclists_deaths += parseInt(d['NUMBER OF CYCLIST KILLED']);
+			cyclist += parseInt(d['NUMBER OF CYCLIST KILLED']);
+			killed += parseInt(d['NUMBER OF CYCLIST KILLED']);;
+		}
+
+		if(d['NUMBER OF MOTORIST INJURED'] != undefined && parseInt(d['NUMBER OF MOTORIST INJURED']) > 0) {
+			total_motorists_injured += parseInt(d['NUMBER OF MOTORIST INJURED']);
+			motorist += parseInt(d['NUMBER OF MOTORIST INJURED']);
+			injured += parseInt(d['NUMBER OF MOTORIST INJURED']);
+		}
+
+		if(d['NUMBER OF MOTORIST KILLED'] != undefined && parseInt(d['NUMBER OF MOTORIST KILLED']) > 0) {
+			total_motorists_deaths += parseInt(d['NUMBER OF MOTORIST KILLED']);
+			motorist += parseInt(d['NUMBER OF MOTORIST KILLED']);
+			killed += parseInt(d['NUMBER OF MOTORIST KILLED']);
+		}
+
+		total_deaths += killed;
+		total_injured += injured;
+		var totals = motorist + cyclist + pedestrian;
+
+		// console.log(motorist);
+
+		if(f == "all") {
+
+			if (killed > 0) {
+				addMarker(d, i);
+				var loc = new google.maps.LatLng(d.LATITUDE, d.LONGITUDE);
+				var px = fromLatLngToPixel(loc);
+				ctx2.fillStyle = rgb(255, 0, 0);
+				ctx2.LfillEllipse(px.x, px.y, 10,10);
+			}
+			total = data.length;
+			sub = "Total Accidents: " + total + ". Killed: " + total_deaths + ". Injured: " + total_injured;
+			getLocs(d, t, 1);
+
+
+		} else if (f == "motorist"  && motorist > 0) {
+
+			if (killed > 0) {
+				addMarker(d, i);
+				var loc = new google.maps.LatLng(d.LATITUDE, d.LONGITUDE);
+				var px = fromLatLngToPixel(loc);
+				ctx2.fillStyle = rgb(255, 0, 0);
+				ctx2.LfillEllipse(px.x, px.y, 10,10);
+			}
+			total += motorist;
+			sub = "Motorists injured: " + total_motorists_injured + ". Killed: " + total_motorists_deaths;
+			getLocs(d, t, motorist);
+
+		} else if (f == "cyclist"  && cyclist > 0) {
+
+			if (killed > 0) {
+				addMarker(d, i);
+				var loc = new google.maps.LatLng(d.LATITUDE, d.LONGITUDE);
+				var px = fromLatLngToPixel(loc);
+				ctx2.fillStyle = rgb(255, 0, 0);
+				ctx2.LfillEllipse(px.x, px.y, 10,10);
+			}
+			total += cyclist;
+			sub = "Cyclists injured: " + total_cyclists_injured + ". Killed: " + total_cyclists_deaths;
+			getLocs(d, t, cyclist);
+
+		} else if (f == "pedestrian"  && pedestrian > 0) {
+
+			if (killed > 0) {
+				addMarker(d, i);
+				var loc = new google.maps.LatLng(d.LATITUDE, d.LONGITUDE);
+				var px = fromLatLngToPixel(loc);
+				ctx2.fillStyle = rgb(255, 0, 0);
+				ctx2.LfillEllipse(px.x, px.y, 10,10);
+			}
+			total += pedestrian;
+			sub = "Pedestrians injured: " + total_pedestrians_injured + ". Killed: " + total_pedestrians_deaths;
+			//console.log("pedestrian: " + pedestrian);
+			getLocs(d, t, pedestrian);
+
+		}
+	}
+
+}
+
+
+
+	$('#total_accindents').text(sub);
+
+	addHeatmap();
+
+}
+
+
+function resetMap(){
+
+heatmapData = [];
+
+for (var i = 0; i < markers.length; i++) {
+	markers[i].setMap(null);
+}
+markers = [];
+heatmap.setMap(null);
+// var bounds = map.getBounds();
+// console.log(bounds);
+}
+
+
+function addHeatmap(){
+	heatmap = new google.maps.visualization.HeatmapLayer({
+			data: heatmapData,
+			//dissipating: false,
+			maxIntensity: 10,
+			radius: 40
+	});
+
+	heatmap.setMap(map);
+}
+
+function getLocs(d, t, totals){
+	// console.log(totals);
+	for (var j = 0; j < totals; j++) {
+			var loc = new google.maps.LatLng(d.LATITUDE, d.LONGITUDE);
+			heatmapData.push(loc);
+			//console.log(loc);
+			var px = fromLatLngToPixel(loc);
+			//console.log(px);
+			//ctx.fillStyle = rgb(255);
+			if(t == day_start) {
+				ctx.fillStyle = rgb(0);
+			} else {
+				ctx.fillStyle = rgb(255);
+			}
+			ctx.LfillEllipse(px.x, px.y, 3, 3);
+	}
+
+}
+
+
+function addMarker(d, i){
+				c++;
+
+				var accidentLatlng = new google.maps.LatLng(d.LATITUDE, d.LONGITUDE);
+				var txt = makeContent(d);
+
+				var marker = markers[total_deaths];
+				marker = new google.maps.Marker({
+	    		position: accidentLatlng,
+					icon: icon,
+					map: map,
+					animation: google.maps.Animation.DROP,
+				});
+				markers.push(marker);
+				google.maps.event.addListener(marker, 'mouseover', (function(marker, i) {
+
+	 			return function() {
+			 	infoWindow.setContent(makeContent(data[i]));
+			 	infoWindow.open(map, marker);
+	 }
+	})(marker, i));
+
+
+	google.maps.event.addListener(marker, 'mouseout', (function(marker, i) {
+	 return function() {
+			 infoWindow.setContent(makeContent(data[i]));
+			 infoWindow.close(map, marker);
+	 }
+	})(marker, i));
+
+
+	//infowindow.setMap(map);
+
+
+}
+
+function makeContent(d){
+
+	var hh = addZero((d.TIME).split(":")[0]);
+	var mm = (d.TIME).split(":")[1];
+	var txt = '<div class="info_content" class="text-center">';
+	txt += d.DATE + " " + hh + ":"+ mm + "<br>";
+	txt += "<h3>"
+	if(d['BOROUGH'] != "") txt += d.BOROUGH;
+	if(d['CROSS STREET NAME'] != "") txt += ": " + d['CROSS STREET NAME'];
+	txt +="</h3><h4>";
+	if(d["CONTRIBUTING FACTOR VEHICLE 1"] != "" && d["CONTRIBUTING FACTOR VEHICLE 1"] != "Unspecified") txt += d["CONTRIBUTING FACTOR VEHICLE 1"] + ". ";
+	if(d["CONTRIBUTING FACTOR VEHICLE 2"] != "" && d["CONTRIBUTING FACTOR VEHICLE 2"] != "Unspecified") txt += d["CONTRIBUTING FACTOR VEHICLE 2"] + ". ";
+	txt +="</h4>";
+
+
+	// if(d["VEHICLE TYPE CODE 1"]) txt += d["VEHICLE TYPE CODE 1"];
+
+	//txt += "<br>";
+
+	if(d['NUMBER OF PEDESTRIANS INJURED'] != undefined && parseInt(d['NUMBER OF PEDESTRIANS INJURED']) != 0) {
+		txt += "Cyclists Injured: " + d['NUMBER OF PEDESTRIANS INJURED'] + ".";
+	}
+
+	if(d['NUMBER OF PEDESTRIANS KILLED'] != undefined && parseInt(d['NUMBER OF PEDESTRIANS KILLED']) != 0) {
+		txt += "Pedestrians Killed: " + d['NUMBER OF PEDESTRIANS KILLED'] + ".<br>";
+	}
+
+	if(d['NUMBER OF CYCLIST INJURED'] != undefined && parseInt(d['NUMBER OF CYCLIST INJURED']) != 0) {
+		txt += "Cyclists Injured: " + d['NUMBER OF CYCLIST INJURED'] + ".";
+	}
+
+	if(d['NUMBER OF CYCLIST KILLED'] != undefined && parseInt(d['NUMBER OF CYCLIST KILLED']) != 0) {
+		txt += "Cyclists Killed: " +d['NUMBER OF CYCLIST KILLED'] + ".<br>";
+	}
+
+	if(d['NUMBER OF MOTORIST INJURED'] != undefined && parseInt(d['NUMBER OF MOTORIST INJURED']) != 0) {
+		txt += "Motorists Injured: " +d['NUMBER OF MOTORIST INJURED'] + ".";
+	}
+
+	if(d['NUMBER OF MOTORIST KILLED'] != undefined && parseInt(d['NUMBER OF MOTORIST KILLED']) != 0) {
+		txt += "Motorists Killed: " + d['NUMBER OF MOTORIST KILLED'] + ".<br>";
+	}
+
+
+
+	txt +='</div>';
+	//console.log(txt);
+	return txt;
+;
+}
+
+$('#filter').onChange = function(){
+
+}
+
+function filter() {
+	var f = $('#filter').val();
+	var tt = $('#time_of_day').val();
+	if(tt == "day") {
+		var t = day_start;
+	} else if(tt == "night") {
+		var t = night_start;
+	} else {
+		var t = "any";
+	}
+	processData(data, f, t);
+}
+
+
+function fromLatLngToPixel(position) {
+  var scale = Math.pow(2, map.getZoom());
+  var proj = map.getProjection();
+  var bounds = map.getBounds();
+
+  var nw = proj.fromLatLngToPoint(
+    new google.maps.LatLng(
+      bounds.getNorthEast().lat(),
+      bounds.getSouthWest().lng()
+    ));
+  var point = proj.fromLatLngToPoint(position);
+
+  return new google.maps.Point(
+    Math.floor((point.x - nw.x) * scale),
+    Math.floor((point.y - nw.y) * scale));
+}
+
+</script>
+
+
+
+
+</body>
+</html>

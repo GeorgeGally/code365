@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(4,4);
+var particles = engine.particles;
+var pos_counter = 0;
+console.log(engine.grid);
+
+var p  = new Vector(particles[2].pos.x, particles[2].pos.y);
+var p2 = new Vector(particles[3].pos.x, particles[3].pos.y);
+particles[2].pos = particles[2].target = p2;
+particles[3].pos = particles[3].target = p;
+
+for (var i = 0; i < particles.length; i++) {
+  var p = particles[i];
+  p.c = rgb(255);
+  p.trails = [];
+  p.speed.x = 0.1;
+  p.speed.y = 0.1;
+}
+
+function draw(){
+
+  ctx.background(0);
+  ctx.strokeStyle = rgb(255);
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    //drawTrails(p);
+    ctx.fillStyle = p.c;
+    ctx.line(p.pos.x, p.pos.y, particles[(i+1)%particles.length].pos.x, particles[(i+1)%particles.length].pos.y)
+    p.target.x = engine.grid.x[(i+pos_counter)%particles.length];
+    p.target.y = engine.grid.y[(i+pos_counter)%particles.length];
+    ctx.fillEllipse(p.pos.x, p.pos.y, 20, 20);
+    upDateTrails(p);
+
+  }
+  if(frameCount%100 == 0) pos_counter++;
+  engine.update();
+}
+
+
+function drawTrails(p){
+  ctx.fillStyle = rgb(255);
+  for (var i = 0; i < p.trails.length; i++) {
+    var p2 = p.trails[i];
+    ctx.fillEllipse(p2.x, p2.y, 40, 40);
+  }
+}
+
+function upDateTrails(p){
+  p.trails.push(p.pos);
+  if(p.trails.length > 10) p.trails.splice(0,1);
+  //console.log(p.trails);
+}
+
+
+</script>
+
+</body>
+
+</html>

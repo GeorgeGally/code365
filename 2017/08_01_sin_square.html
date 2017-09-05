@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+ctx2.font="10px Arial";
+var gw = 20;
+var gh = 20;
+var engine = new particleEngine(gw, gh);
+var markers = new particleEngine(gw, gh);
+var hit_dist = 140;
+var sz = 10;
+var tween_speed = 2;
+
+ctx.font="12px Arial";
+
+console.log(engine);
+
+for (var i = 0; i < engine.length; i++) {
+  var p = engine.particles[i];
+  var g2 = markers.particles[i];
+  p.trails = [];
+  p.sz = sz;
+  p.orig = new Vector(p.pos.x, p.pos.y);
+  g2.orig = new Vector(g2.pos.x, g2.pos.y);
+  p.old_me = p.me;
+  g2.old_me = g2.me;
+  p.start_sz = sz;
+  if(chance(2)) {
+    p.on = true;
+    p.open = false;
+  } else {
+    p.on = false;
+    p.open = true;
+  }
+}
+
+function draw() {
+
+  ctx.background(0);
+
+  if (chance(20)) swap();
+
+  moveGrid();
+  drawGrid();
+
+}
+
+function newPos(p){
+
+  console.log(p.me);
+  p.on = true;
+
+  var row = p.row;
+  var col = p.col;
+  var old_pos = col + (row * engine.grid.num_items_horiz);
+  var new_col = randomInt(engine.grid.num_items_horiz-1);
+  var new_pos = new_col + ( row * (engine.grid.num_items_horiz));
+
+  var new_target = markers.particles[new_pos];
+
+  p.target.x = new_target.start.x;
+  p.target.y = new_target.start.y;
+
+}
+
+
+function swap(){
+
+    var target1 = randomInt(engine.length-1);
+    var target2 = randomInt(engine.length-1);
+    var p = engine.particles[target1];
+    var p2 = engine.particles[target2];
+
+    if (target1 != target2 && (p.open || p2.open)) {
+      console.log(target1 + " : " + target2);
+      var old_target = p.target;
+      p.target = p2.target;
+      p2.target = old_target;
+      p.on = true;
+      p2.on = true;
+    }
+}
+
+
+// function shuffleGrid(){
+//
+//   console.log("shuffleGrid");
+//   for (var i = 0; i < engine.length; i++) {
+//
+//     var p = engine.particles[i];
+//
+//     if (!p.on && chance(10)) newPos(p);
+//
+//   }
+//
+// }
+
+
+function moveGrid(){
+
+  for (var i = 0; i < engine.length; i++) {
+
+    var p = engine.particles[i];
+
+    p.pos.x = tween(p.pos.x, p.target.x, tween_speed);
+    p.pos.y = tween(p.pos.y, p.target.y, tween_speed);
+
+    if (Math.round(p.pos.x) == Math.round(p.target.x) && Math.round(p.pos.y) == Math.round(p.target.y)) p.on = false;
+
+    upDateTrails(p);
+  }
+}
+
+
+function drawGrid(){
+
+  for (var i = 0; i < engine.length; i++) {
+
+    var p = engine.particles[i];
+    ctx.fillStyle = rgb(50);
+    ctx.LfillEllipse(p.start.x, p.start.y, 5, 5);
+
+  }
+
+  for (var i = 0; i < engine.length; i++) {
+    var p = engine.particles[i];
+
+    if(!p.open)  {
+      if(p.on) drawTrails(p);
+      ctx.fillStyle = "white";
+      //if(p.on) drawTrails(p);
+      ctx.fillEllipse(p.pos.x, p.pos.y, 10, 10);
+    } else {
+
+    }
+
+  }
+
+}
+
+
+function drawTrails(p){
+
+  for (var j = p.trails.length-1; j >0 ; j--) {
+    var p2 = p.trails[j];
+    ctx.fillStyle = rgb(255 - j*20);
+    ctx.LfillEllipse(p2.x, p2.y, 20 - j/2);
+  }
+
+}
+
+
+function upDateTrails(p){
+  
+  p.trails.push({x: p.pos.x, y: p.pos.y});
+  if(p.trails.length > 50) p.trails.splice(0,1);
+  //console.log(p.trails);
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>

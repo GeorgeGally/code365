@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+ <script language="javascript" src="../js/canvas.js"></script>
+ <script language="javascript" src="../js/particle_engine.js"></script>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+// was getting annoyed with the same track playing, so changed soundcloud function to play random track
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas1");
+
+var engine = new particleEngine(10, 10);
+
+var particles = [];
+var radius = 150;
+var num_particles = 500;
+var cols = ['#ffffff', '#50bfe8', '#f06724', '#8cc640'];
+var angle = 360/num_particles;
+var circ_sz = 300;
+var t_size = 150;
+var top_offset = 0;
+ctx.lineWidth = 10;
+
+function setup(){
+  wall = new pixelGrid(140, 100, 3);
+  pixels = wall.pixels;
+  engine.grid.spacing.x = Math.round(engine.grid.spacing.x);
+
+for (var i = 0; i < engine.length; i+=1) {
+    var p = engine.particles[i];
+    p.c = rgba(random(255), 0.8);
+    p.speed.y = randomInt(-3, 10);
+};
+
+var s1 = 1;
+var s2 = -1;
+}
+
+function draw(){
+
+	//ctx.background(0, 0.1);
+	//ctx.save();
+  // console.log(engine.grid.spacing.x);
+  for (var i = 0; i < engine.length; i+=1) {
+    var p = engine.particles[i];
+    var s = Sound.mapSound(i, engine.length, 0, 10);
+      p.pos.y = (p.pos.y + p.speed.y - s) % h;
+      ctx.fillStyle = p.c;
+      ctx.fillRect(p.pos.x, p.pos.y, engine.grid.spacing.x, 100);
+  }
+
+  icons();
+
+  wall.draw(ctx2, ctx);
+
+}
+
+var icon = 1;
+var icon_sz = 250;
+function icons(){
+  ctx.fillStyle = rgb(0);
+  ctx.strokeStyle = rgb(255);
+  var icon_sz = Sound.getVol(100, 300);
+  if(chance(100)) icon = randomInt(1,3);
+  if(icon == 1) {
+    ctx.HfillEllipse(w/2, h/2, icon_sz, icon_sz);
+    ctx.HstrokeEllipse(w/2, h/2, icon_sz, icon_sz);
+  }
+  if(icon == 2) {
+    ctx.centreFillRect(w/2, h/2, icon_sz, icon_sz);
+    ctx.centreStrokeRect(w/2, h/2, icon_sz, icon_sz);
+  }
+  if(icon == 3) {
+    ctx.eqFillTriangle(w/2, h/2, icon_sz/1.7, icon_sz/1.7);
+    ctx.eqStrokeTriangle(w/2, h/2, icon_sz/1.7, icon_sz/1.7);
+  }
+}
+
+
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+
+</script>
+ <script language="javascript" src="../js/soundcloud_new.js"></script>
+ <script language="javascript" src="../js/pixel_grid.js"></script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+
+<script language="javascript" src="../js/p5.js"></script>
+<script language="javascript" src="../js/matter.min.js"></script>
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script type="text/javascript">
+
+var Engine = Matter.Engine,
+    Render = Matter.Render,
+    World = Matter.World,
+		Body = Matter.Body,
+    Bodies = Matter.Bodies;
+console.log(Bodies);
+var w = window.innerWidth;
+var h = window.innerHeight;
+
+var engine, world;
+var circles = [];
+var boundries = [];
+var num_boundries = 20;
+
+
+function setup(){
+	createCanvas(w, h);
+	engine = Engine.create();
+	world = engine.world;
+	//box1 = new Box(400,200, 80, 80);
+	Engine.run(engine);
+	// world.add(box1);
+	//World.add(world, box1);
+	//console.log(box1);
+	var options = {
+		isStatic: true
+	}
+	for (var i = 0; i < num_boundries; i++) {
+		boundries.push(new Ground(50 + i * w/num_boundries, h - h/4, 40))
+		//ground = ;
+		//World.add(world, ground);
+	}
+
+	//console.log(ground);
+}
+
+function draw(){
+	background(255);
+	fill(0);
+	circles.push(new Box(random(w), 0, 5));
+
+	for (var i = 0; i < circles.length; i++) {
+		var b = circles[i];
+		b.show();
+
+		if(b.isOffScreen()) {
+				b.removeFromWorld();
+				circles.splice(i, 1);
+				i--;
+		}
+
+	}
+
+	for (var i = 0; i < boundries.length; i++) {
+		//boundries[i].move();
+		boundries[i].show();
+	}
+
+}
+
+
+//////////////////////// OBJECTS
+
+var Box = function(x, y, r){
+	this.options = {
+		friction: 0.1,
+		restitution: 0.5
+	}
+	this.r = r;
+	this.pos;
+	this.body = Bodies.circle(x, y, this.r/2, this.options);
+	World.add(world, this.body);
+
+	this.show = function(){
+		this.pos = this.body.position;
+		var angle = this.body.angle;
+		//console.log(pos);
+		//rectMode(CENTER);
+		//fill(100);
+		push();
+		translate(this.pos.x, this.pos.y);
+		rotate(angle);
+		ellipse(0,0, this.r, this.r);
+		pop();
+	}
+
+	this.isOffScreen = function(){
+		var pos = this.body.position;
+		//console.log(pos.y);
+		return (this.pos.y > h + 100);
+	}
+
+	this.removeFromWorld = function(){
+		World.remove(world, this.body);
+	}
+}
+
+
+function Ground(x, y, r){
+
+	this.x = x;
+	this.y = y;
+	this.r = r;
+
+	this.options = {
+		friction: 0.9,
+		restitution: 0.4,
+		isStatic: true
+	}
+
+	this.body = Bodies.circle(x, y, this.r/2, this.options);
+
+	World.add(world, this.body);
+
+	this.show = function(){
+
+		var pos = this.body.position;
+		rectMode(CENTER);
+		fill(0);
+		noStroke();
+		push();
+		translate(pos.x, pos.y);
+		ellipse(0,0, this.r, this.r);
+		pop();
+	}
+
+this.move = function(){
+
+	var pos = this.body.position;
+	var y = h - h/4 + Math.sin(frameCount/100) * h/4;
+	// Body.translate(this.body, pos);
+	Body.translate(this.body, {x: pos.x, y: y});
+	// Body.update(this.body);
+}
+}
+
+
+
+function mouseMoved(){
+	circles.push(new Box(mouseX, mouseY, 5));
+}
+
+</script>
+
+
+
+
+</body>
+</html>

@@ -8,6 +8,8 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 
 	this.bounce = false;
 	this.edges = true;
+	this.reset = false;
+	this.MAXPARTICLES = 10000;
 	this.particles = [];
 	this.spacing = 0;
 	this.border = true;
@@ -33,9 +35,59 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 
 	}
 
-	this.draw = function() {
+	this.draw = function(_ctx) {
+		var ctx = _ctx || ctx;
 		this.update();
-		this.drawParticles();
+		this.drawParticles(ctx);
+	}
+
+	this.setSpeed = function(_x1 , _x2, _y1 , _y2) {
+		for (var i = 0; i < this.particles.length; i++) {
+			var p = this.particles[i];
+			p.speed = new Vector(random(_x1 , _x2), random(_y1 , _y2));
+		}
+	}
+
+	this.setAccel = function(_x1 , _x2, _y1 , _y2) {
+		for (var i = 0; i < this.particles.length; i++) {
+			var p = this.particles[i];
+			p.accel = new Vector(randomCardinal(_x1 , _x2), randomCardinal(_y1 , _y2));
+			p.start_accel = p.accel;
+		}
+	}
+
+	this.setDir = function(_x, _y) {
+		var x = _x || posneg();
+		var y = _y || posneg();
+		for (var i = 0; i < this.particles.length; i++) {
+			var p = this.particles[i];
+			p.dir = new Vector(x, y);
+		}
+	}
+
+	this.setSize = function(min, max) {
+		max = max || min;
+
+		for (var i = 0; i < this.particles.length; i++) {
+			var sz = random(min, max);
+			this.particles[i].sz = sz || 0;
+			this.particles[i].target_sz = sz || 0;
+		}
+	}
+
+	this.setColour = function(c) {
+		for (var i = 0; i < this.particles.length; i++) {
+			var p = this.particles[i];
+			p.c = c;
+		}
+	}
+
+	this.randomize = function() {
+		for (var i = 0; i < this.particles.length; i++) {
+		  var p = this.particles[i];
+		  p.pos.x = random(w);
+		  p.pos.y = random(h);
+		}
 	}
 
 
@@ -60,6 +112,10 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 			row = 1;
 			col = 1;
 		}
+
+		var speed =  new Vector(random(0.2,2), random(0.2,2));
+		var accel = new Vector(1,1);
+
 		var particle = {
 			pos: new Vector(_x, _y),
 			start: new Vector(_x, _y),
@@ -68,8 +124,13 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 			end: new Vector(_x, _y),
 			row: row,
 			col: col,
-			speed: new Vector(random(0.2,2), random(0.2,2)),
-			acceleration: new Vector(0,0),
+			speed: speed,
+			start_speed: speed,
+			accel: accel,
+			start_accel: new Vector(accel.x, accel.y),
+			vel: speed,
+			dir: new Vector(1, 1),
+			acceleration: new Vector(1,1),
 			c: _colour,
 			alpha: 1,
 			tween_speed: this.tween_speed,
@@ -82,7 +143,6 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 			target_sz: 5,
 			target_size: 5,
 			size: 4,
-			dir: new Vector(posNeg(),posNeg()),
 			on: true,
 			isSpring: false,
 			spring: 0.03,
@@ -95,8 +155,16 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 		this.last = particle;
 		this.length = this.particles.length;
 		this.spacing = 360/this.particles.length;
-
+		this.resetAngles();
+		if (this.particles.length > this.MAXPARTICLES) this.particles.splice(0, 1);
 		return particle;
+}
+
+this.resetAngles = function() {
+	for (var i = 0; i < this.particles.length; i++) {
+		var p = this.particles[i];
+		p.angle = radians(distributeAngles(i, this.particles.length));
+	}
 }
 
 this.delete = function(_me){
@@ -120,11 +188,12 @@ this.delete = function(_me){
 
 }
 
-this.drawParticles = function(){
-
+this.drawParticles = function(_ctx){
+	var ctx = _ctx || ctx;
 	for (var i = 0; i < this.length; i++) {
 
 		p = this.particles[i];
+		ctx.fillStyle = p.c;
 		ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
 
 	}
@@ -142,8 +211,8 @@ this.update = function(){
 			updateSpring(p)
 		}	else {
 			this.move(p);
-			if(this.border) this.offCanvasTest(p);
-		};
+			this.offCanvasTest(p);
+		}
 	}
 }
 
@@ -152,12 +221,12 @@ this.move = function(p){
 
 		p.old = p.pos;
 		if (p.tween == false) {
-			p.pos.x += (p.speed.x)*p.dir.x;
-			p.pos.y += (p.speed.y)*p.dir.y;
+			p.pos.x += (p.speed.x  * p.accel.x)*p.dir.x;
+			p.pos.y += (p.speed.y  * p.accel.y)*p.dir.y;
 
 		} else {
-			p.target.x += (p.speed.x)*p.dir.x;
-			p.target.y += (p.speed.y)*p.dir.y;
+			p.target.x += (p.speed.x * p.accel.x)*p.dir.x;
+			p.target.y += (p.speed.y * p.accel.y)*p.dir.y;
 			p.sz = tween(p.sz, p.target_sz, p.tween_speed);
 			p.pos.x = tween(p.pos.x, p.target.x, p.tween_speed);
 			p.pos.y = tween(p.pos.y, p.target.y, p.tween_speed);
@@ -170,15 +239,59 @@ this.move = function(p){
 
 
 this.offCanvasTest = function(p){
-	if (this.bounce) {
-				if (bounce(p.x, 0, w)) p.speed.x *=-1;
-				if (bounce(p.y, 0, h)) p.speed.y *=-1;
-	} else {
-				if (p.pos.x > w) p.pos.x = p.target.x = 0;
-				if (p.pos.y > h) p.pos.y = p.target.y = 0;
-				if (p.pos.x < 0) p.pos.x = p.target.x = w;
-				if (p.pos.y < 0) p.pos.y = p.target.y =h;
+
+	if(!this.edge) {
+		//console.log(this.edge);
+		if (p.pos.x > w || p.pos.y > h || p.pos.x < 0 || p.pos.y < 0) this.delete(p.me);
+	} else if(this.border) {
+
+		if (this.bounce) {
+
+			if (bounce(p.x, 0, w)) {
+				p.speed.x *=-1;
+				if (this.reset) this.resetParticle(p);
+			}
+
+
+			if (bounce(p.y, 0, h)) {
+				p.speed.y *=-1;
+				if (this.reset) this.resetParticle(p);
+			}
+
+		} else {
+
+			if (p.pos.x > w) {
+				p.pos.x = p.target.x = 0;
+				if (this.reset) this.resetParticle(p);
+			}
+
+
+			if (p.pos.y > h) {
+				p.pos.y = p.target.y = 0;
+				if (this.reset) this.resetParticle(p);
+			}
+
+			if (p.pos.x < 0) {
+				p.pos.x = p.target.x = w;
+				if (this.reset) this.resetParticle(p);
+			};
+			if (p.pos.y < 0) {
+				p.pos.y = p.target.y =h;
+				if (this.reset) this.resetParticle(p);
+			};
+		}
+
+
+
 	}
+}
+
+
+this.resetParticle = function(p){
+	p.speed.y = random(1);
+	p.start_accel.y = random(0.5);
+	p.accel.y = p.start_accel.y;
+	p.me == 10 ? console.log(p.start_accel.y) : null;
 }
 
 

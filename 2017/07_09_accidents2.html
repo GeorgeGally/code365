@@ -1,0 +1,197 @@
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+<script src="../js/creative_coding.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDEKAnXP_v0EOZxJ5bv0K4UNqYFRM1JAj0&libraries=visualization"></script>
+<script src="../js/heatmap.js"></script>
+<script src="../js/heatmap-gmaps.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<!-- <script src="../js/markerclusterer.js"></script>
+<script src="../js/infobubble.js"></script> -->
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+</head>
+
+<body>
+
+
+	<div id="map"></div>
+
+<h1 style="font-weight: 100; position: absolute; z-index: 99; bottom: 40px; left: 40px; background: #fff; padding: 4px 10px 6px 10px;">New York traffic accidents 14 June - 13 July 2017<br>
+<div id="total_accindents"></div>
+</h1>
+
+
+
+<script type="text/javascript">
+var url = "../data/NYPD_Motor_Vehicle_Collisions-11-6-2017_10_7_2017.csv";
+var minXDataPoint = 1000;
+var maxXDataPoint = -1000
+var minYDataPoint = 1000;
+var maxYDataPoint = -1000;
+
+var total_accidents = 0, total_incidents = 0;
+var total_injured = 0, total_deaths = 0, total_ok = 0;
+var total_pedestrians_injured = 0, total_pedestrians_deaths = 0;
+var total_cyclists_injured = 0, total_cyclists_deaths = 0;
+var total_motorists_injured = 0, total_motorists_deaths = 0;
+
+var pedestrian = 0, cyclist = 0, motorist = 0, ok = 0;
+var injured = 0, killed = 0;
+
+var map;
+var heatmap;
+
+window.onload = function(){
+
+	var location = {
+        "lat": 40.7090,
+        "lng": -73.95
+    };
+
+	var myLatlng = new google.maps.LatLng(location.lat, location.lng);
+
+	var styles = [{"featureType":"water","elementType":"geometry","stylers":[{"color":"#e9e9e9"},{"lightness":17}]},{"featureType":"landscape","elementType":"geometry","stylers":[{"color":"#f5f5f5"},{"lightness":20}]},{"featureType":"road.highway","elementType":"geometry.fill","stylers":[{"color":"#ffffff"},{"lightness":17}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#ffffff"},{"lightness":29},{"weight":0.2}]},{"featureType":"road.arterial","elementType":"geometry","stylers":[{"color":"#ffffff"},{"lightness":18}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"color":"#ffffff"},{"lightness":16}]},{"featureType":"poi","elementType":"geometry","stylers":[{"color":"#f5f5f5"},{"lightness":21}]},{"featureType":"poi.park","elementType":"geometry","stylers":[{"color":"#dedede"},{"lightness":21}]},{"elementType":"labels.text.stroke","stylers":[{"visibility":"on"},{"color":"#ffffff"},{"lightness":16}]},{"elementType":"labels.text.fill","stylers":[{"saturation":36},{"color":"#333333"},{"lightness":40}]},{"elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"geometry","stylers":[{"color":"#f2f2f2"},{"lightness":19}]},{"featureType":"administrative","elementType":"geometry.fill","stylers":[{"color":"#fefefe"},{"lightness":20}]},{"featureType":"administrative","elementType":"geometry.stroke","stylers":[{"color":"#fefefe"},{"lightness":17},{"weight":1.2}]}]
+	var styles = [{"featureType":"administrative","elementType":"labels.text.fill","stylers":[{"color":"#444444"}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#f2f2f2"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":-100},{"lightness":45}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#46bcec"},{"visibility":"on"}]}];
+
+	var myOptions = {
+	  zoom: 11,
+	  styles: styles,
+	  center: myLatlng,
+	  mapTypeId: google.maps.MapTypeId.ROADMAP,
+	  disableDefaultUI: false,
+	  scrollwheel: true,
+	  draggable: true,
+	  navigationControl: false,
+	  mapTypeControl: false,
+	  scaleControl: true,
+	  disableDoubleClickZoom: false
+	};
+
+	map = new google.maps.Map(document.getElementById("map"), myOptions);
+	heatmap = new HeatmapOverlay(map, {"radius":25, "visible":true, "opacity":50});
+
+
+
+google.maps.event.addListenerOnce(map, "idle", function(){
+
+		d3.csv(url, function(_data) {
+		  data = _data;
+		  //data.reverse();
+
+				for (var i = 0; i < data.length; i++) {
+					var d = data[i];
+					//console.log(d.LONGITUDE);
+					if (d.LATITUDE !=0 && d.LATITUDE < minXDataPoint) minXDataPoint = d.LATITUDE;
+					if (d.LATITUDE !=0 && d.LATITUDE > maxXDataPoint) maxXDataPoint = d.LATITUDE;
+					if (d.LONGITUDE !=0 && d.LONGITUDE < minYDataPoint && d.LONGITUDE != -42.768513) minYDataPoint = d.LONGITUDE;
+					if (d.LONGITUDE !=0 && d.LONGITUDE > maxYDataPoint) maxYDataPoint = d.LONGITUDE;
+
+		}
+		setHeatmap(data);
+
+		});
+
+});
+
+
+
+
+function setHeatmap(data){
+
+		//console.log(data);
+		var heatmapData = [];
+		console.log("length: " + data.length);
+		for (var i = 0; i < data.length; i++) {
+
+			$('#total_accindents').text("Total Accidents: " + data.length);
+			var d = data[i];
+
+			injured = 0, killed = 0;
+			pedestrian = 0, cyclist = 0, motorist = 0, ok = 0;
+
+		if(d['NUMBER OF PEDESTRIANS INJURED'] != undefined) {
+			total_pedestrians_injured += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+			pedestrian += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+			injured += parseInt(d['NUMBER OF PEDESTRIANS INJURED']);
+		}
+		if(d['NUMBER OF PEDESTRIANS KILLED'] != undefined) {
+			total_pedestrians_deaths += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+			pedestrian += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+			killed += parseInt(d['NUMBER OF PEDESTRIANS KILLED']);
+		}
+
+		if(d['NUMBER OF CYCLIST INJURED'] != undefined) {
+			total_cyclists_injured += parseInt(d['NUMBER OF CYCLIST INJURED']);
+			cyclist += parseInt(d['NUMBER OF CYCLIST INJURED']);
+			injured += parseInt(d['NUMBER OF CYCLIST INJURED']);
+		}
+		if(d['NUMBER OF CYCLIST KILLED'] != undefined) {
+			total_cyclists_deaths += parseInt(d['NUMBER OF CYCLIST KILLED']);
+			cyclist += parseInt(d['NUMBER OF CYCLIST KILLED']);
+			killed += parseInt(d['NUMBER OF CYCLIST KILLED']);;
+		}
+
+		if(d['NUMBER OF MOTORIST INJURED'] != undefined) {
+			total_motorists_injured += parseInt(d['NUMBER OF MOTORIST INJURED']);
+			motorist += parseInt(d['NUMBER OF MOTORIST INJURED']);
+			injured += parseInt(d['NUMBER OF MOTORIST INJURED']);
+		}
+		if(d['NUMBER OF MOTORIST KILLED'] != undefined) {
+			total_motorists_deaths += parseInt(d['NUMBER OF MOTORIST KILLED']);
+			motorist += parseInt(d['NUMBER OF MOTORIST KILLED']);
+			killed += parseInt(d['NUMBER OF MOTORIST KILLED']);
+		}
+
+		total_deaths += killed;
+		total_injured += injured;
+		var totals = motorist + cyclist + pedestrian;
+
+		for (var j = 0; j < totals; j++) {
+				var loc = new google.maps.LatLng(d.LATITUDE, d.LONGITUDE);
+				heatmapData.push(loc);
+		}
+
+
+	};
+
+		var heatmap = new google.maps.visualization.HeatmapLayer({
+  		data: heatmapData,
+  		//dissipating: false,
+  		maxIntensity: 20,
+      radius: 50
+		});
+
+		heatmap.setMap(map);
+
+		var options =  {
+   		url: '../../images/transparent.png',
+    	height: 0,
+    	width: 0,
+    	textColor: 'transparent',
+    	textSize: 0
+  	}
+
+	}
+
+// });
+//
+};
+
+
+
+</script>
+
+
+
+
+</body>
+</html>
