@@ -14,7 +14,7 @@
 
 <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
 <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+<!-- <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" /> -->
 
 </head>
 <body>
@@ -23,8 +23,8 @@
 
 var ctx = createCanvas("bg");
 var ctx2 = createCanvas("canvas1");
+var final_ctx = createCanvas("canvas1");
 var ctx3 = createCanvas("canvas2");
-var final_ctx = createCanvas("canvas3");
 
 
 var POINTS = 500;
@@ -50,12 +50,8 @@ var engine = new particleEngine(0);
 var bg_engine = new particleEngine(30);
 
 var pixels, wall;
-
-function setup(){
-  wall = new pixelGrid(114, 46);
-  pixels = wall.pixels;
-  console.log(wall);
-
+function setup() {
+wall = new pixelGrid(114, 46);
 for (var i = 0; i < bg_engine.particles.length; i++) {
   var p = bg_engine.particles[i];
   p.pos.x += random(-50,50);
@@ -72,19 +68,23 @@ ctx.background(0);
 
 function draw() {
 
-  // ctx.background(0, 0.03);
-  ctx.background(0, 0.1);
+  ctx.background(0, 0.09);
   ctx.fillStyle = rgb(255);
   ctx2.fillStyle = rgb(255);
-  //ctx2.background(0, 0.5);
-  ctx2.clearRect(0, 0, w, h);
+  //ctx2.background(0, 0.1);
+  //ctx2.clearRect(0, 0, w, h);
 
   ctx3.clearRect(0, 0, w, h);
   ctx3.shadowColor = rgba(80,80,80, 0.5);
   ctx3.shadowBlur = 52;
 
-  drip();
-
+  ctx.fillStyle = "white";
+  for (var i = 0; i < bg_engine.particles.length; i++) {
+    var p = bg_engine.particles[i];
+    p.pos.y += p.speed.y;
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+    if (p.pos.y > h) p.pos.y = h/2 + random(-50, 50);
+  }
   //FORCE = Sound.getVol(0.1, 0.99);
   //FORCE = Sound.mapSound(randomInt(50), 200, 0.1, 0.99);
 
@@ -101,29 +101,14 @@ function draw() {
 
     var p = engine.particles[i];
     update(p);
-    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz-1, p.sz-1);
+    ctx.fillEllipse(sticky(p.pos.x, wall.samplesize.x), sticky(p.pos.y, wall.samplesize.y), p.sz-1, p.sz-1);
 
   }
-  ctx2.drawImage(ctx.canvas, 0, 0, w, h);
-  ctx3.fillStyle = "white";
-  ctx3.strokeStyle = "white";
-  ctx2.lineWidth = 20;
-  ctx3.eqFillTriangle(w/2, h/2, RADIUS, RADIUS);
-  ctx3.fillStyle = "black";
-  ctx3.eqFillTriangle(w/2, h/2, RADIUS - 40, RADIUS- 40);
-  //ctx3.HfillEllipse(w/2, h/2, RADIUS, RADIUS);
 
-  wall.draw(final_ctx, ctx2);
-}
-
-function drip(){
   ctx.fillStyle = "white";
-  for (var i = 0; i < bg_engine.particles.length; i++) {
-    var p = bg_engine.particles[i];
-    p.pos.y += p.speed.y;
-    ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
-    if (p.pos.y > h) p.pos.y = h/2 + random(-50, 50);
-  }
+  // ctx3.eqFillTriangle(w/2, h/2, RADIUS, RADIUS);
+  ctx.HfillEllipse(w/2, h/2, RADIUS, RADIUS);
+  wall.draw(final_ctx, ctx);
 }
 
 
@@ -137,6 +122,7 @@ function addParticle(){
   last.resistance = random(RESISTANCE, 0.999999);
   last.sz = randomSticky(MIN_SIZE, MAX_SIZE, 5);
   last.c = rgb(180-engine.last.sz*6);
+  last.pos.y += random(-100, 100);
   last.start = new Vector(last.pos.x, last.pos.y);
   if(engine.particles >= MAX_PARTICLES) engine.particles.splice(0,1);
 }
@@ -144,7 +130,7 @@ function addParticle(){
 
 function update(p) {
 
-    p.sz = tween(p.sz, Sound.mapSound(p.me, engine.particles.length *2, MIN_SIZE, MAX_SIZE), 15);
+    // p.sz = tween(p.sz, Sound.mapSound(p.me, engine.particles.length *2, MIN_SIZE, MAX_SIZE), 15);
     //console.log(p.sz);
     p.acceleration.x += (w/2 - p.pos.x) / p.sz;
     p.acceleration.y += (h/2 - p.pos.y) / p.sz;
@@ -239,19 +225,13 @@ settings.addRange("MIN_SIZE", 1, 500, MIN_SIZE, 1, function(value){
   MIN_SIZE = value;
 });
 
-settings.addRange("RADIUS", 1, 500, RADIUS, 1, function(value){
-  RADIUS = value;
-});
-
-
 settings.addRange("MAX_PARTICLES", 1, 500, MAX_PARTICLES, 1, function(value){
   MAX_PARTICLES = value;
 });
 
 </script>
-
 <script language="javascript" src="../js/pixel_grid.js"></script>
-<script language="javascript" src="../js/soundcloud_new.js"></script>
+<!-- <script language="javascript" src="../js/soundcloud_new.js"></script> -->
 </body>
 
 </html>

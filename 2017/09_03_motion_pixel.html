@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+
+<meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createHiddenCanvas("canvas2");
+var final_ctx = createCanvas("canvas2");
+
+var sample_size = 50;
+var sensitivity = 70;
+
+var old_red = [];
+var pixels_on = 1;
+var MAX = 2500;
+var particles = [];
+
+
+
+var pixels, wall;
+
+function setup(){
+  wall = new pixelGrid(50, 42);
+  ctx.background(0);
+}
+
+
+function draw(){
+
+  ctx2.drawImage(video, 0, 0, w, h);
+  var colour_data = ctx2.getImageData(0, 0 , w, h).data;
+
+  ctx.background(0, 0.1);
+  final_ctx.clearRect(0,0, w, h);
+  for (var y = 0; y < h; y+=sample_size) {
+    for (var x = 0; x < w; x+=sample_size) {
+
+      var pos = (x + y * w) * 4;
+      var red = colour_data[pos];
+      var blue = colour_data[pos+1];
+      var green = colour_data[pos+2];
+
+      // is there motion
+      if(old_red.length > 0 && Math.abs(old_red[pos] - red) > sensitivity) {
+          //ctx.fillStyle = "red";
+          //ctx.fillEllipse(w-x, y, 5, 5);
+
+         addParticle(w - x, y, red, blue, green);
+      }
+      old_red[pos] = red;
+
+    }
+  }
+
+    updateParticleEngine();
+    if(pixels_on) wall.draw(final_ctx, ctx);
+}
+
+
+
+
+
+////// PARTICLE STUFF
+
+function updateParticleEngine(){
+  // particles updating and drawing
+  // for (var i = 0; i < particles.length; i++) {
+  for (var i = particles.length - 1; i >= 0 ; i--) {
+    var p = particles[i];
+    update(p);
+    render(p);
+    isDead(p, i);
+  }
+}
+
+function addParticle(_x, _y, _r, _g, _b){
+
+    var temp_particle = {
+      x: _x,
+      y: _y,
+      startx: _x,
+      starty: _y + random(-sample_size/2, sample_size/2),
+      speedx: randomInt(-1, 1),
+      speedy: random(-5, -1),
+      sz: Math.round(sample_size * 0.9),
+      accel: 0.9,
+      c: rgba(_r * 2, 0.5)
+    }
+    particles.push(temp_particle);
+    if(particles.length > MAX) particles.splice(0,1);
+}
+
+function update(p){
+  //p.x += p.speedx;
+  p.y += p.speedy;
+  p.speedy -= p.accel;
+  p.sz -= 0.05;
+
+}
+
+function isDead(p, i){
+  if(p.sz < 0.5 || p.y < 0)  particles.splice(i, 1);
+
+}
+
+function render(p){
+  p.sz -= 0.05;
+
+  // ctx.strokeStyle = p.c;
+  // ctx.line(p.x, p.y, p.startx, p.starty);
+  ctx.fillStyle = p.c;
+  ctx.fillEllipse(p.x, p.y, p.sz, p.sz);
+}
+
+
+
+//// QuickSettings
+
+var settings = QuickSettings.create(w-200, 0, "Settings");
+
+settings.addRange("SAMPLE SIZE", 8, 255, sample_size, 1, function(value){
+  sample_size = value;
+});
+
+
+settings.addRange("MOVEMENT SENSITIVITY", 0, 255, sensitivity, 1, function(value){
+  sensitivity = value;
+});
+
+
+settings.addRange("MAX PARTICLES", 100, 10000, MAX, 1, function(value){
+  MAX = value;
+});
+
+settings.addRange("PIXELS ON", 0, 1, pixels_on, 1, function(value){
+  pixels_on = value;
+});
+
+
+</script>
+
+<script language="javascript" src="../js/pixel_grid.js"></script>
+</body>
+
+</html>
