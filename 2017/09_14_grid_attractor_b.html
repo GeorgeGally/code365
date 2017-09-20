@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/tween.min.js"></script>
+<script language="javascript" src="../js/perlin_noise.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body style="background: #fff">
+
+<script>
+
+var hidden_ctx = createCanvas("hidden_canvas");
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+var engine = new particleEngine(40, 40);
+engine.randomize();
+engine.setSpeed(-0.5, 0.5, -0.5, 0.5);
+engine.setSize(5, 30);
+var actRandomSeed = 0;
+
+var mover = 0;
+var img = new Image();
+img.src = "../img/modern-meadow.png";
+ctx.imageSmoothingEnabled = true;
+var fadeout = 0.06;
+
+var octaves = 4;
+var falloff = 0.5;
+var tileSize = 10;
+
+var gridResolutionX, gridResolutionY;
+var debugMode = false;
+// PShape arrow;
+
+function setup() {
+  // size(800,800);
+  // cursor(CROSS);
+  gridResolutionX = Math.round(width/tileSize);
+  gridResolutionY = Math.round(height/tileSize);
+  //smooth();
+  //arrow = loadShape("arrow.svg");
+}
+
+function draw() {
+  ctx.background(255);
+
+
+  var noiseXRange = CosOsc(frameCount/50, 50)/10.0;
+  var noiseYRange = SinOsc(frameCount/50, 50)/10.0;
+
+  for (var gY=0; gY<= gridResolutionY; gY++) {
+    for (var gX=0; gX<= gridResolutionX; gX++) {
+      var posX = tileSize*gX;
+      var posY = tileSize*gY;
+
+      // get noise value
+      var noiseX = map(gX, 0, gridResolutionX, 0,noiseXRange);
+      var noiseY = map(gY, 0, gridResolutionY, 0,noiseYRange);
+      //var noiseValue = noise(noiseX,noiseY);
+      var noiseValue = PerlinNoise.noise(noiseX, noiseY, octaves,falloff);
+      var angle = noiseValue*TWO_PI;
+
+      ctx.save();
+      ctx.translate(posX,posY);
+
+      // debug heatmap
+      if (debugMode) {
+
+        ctx.fillStyle = rgb(noiseValue*255);
+        ctx.fillEllipse(0,0,tileSize*0.25,tileSize*0.25);
+      }
+
+      // arc
+      // ctx.strokeWeight(1);
+      ctx.lineStyle = "black";;
+      //ctx.arc(0,0,tileSize*0.75,tileSize*0.75,0,angle);
+
+      // arrow
+      //ctx.stroke(0);
+      ctx.limeWidth = 0.75;
+      ctx.rotate(angle);
+      //shape(arrow,0,0,tileSize*0.75,tileSize*0.75);
+      ctx.line(0, 0, tileSize*0.75,tileSize*0.75 )
+      ctx.restore();
+    }
+  }
+
+//
+//   println("octaves: "+octaves+" falloff: "+falloff+" noiseXRange: 0-"+noiseXRange+" noiseYRange: 0-"+noiseYRange);
+
+}
+
+function keyReleased() {
+  if (key == ' ') noiseSeed(random(100000));
+}
+
+function keyPressed() {
+  if (keyCode == UP) falloff += 0.05;
+  if (keyCode == DOWN) falloff -= 0.05;
+  if (falloff > 1.0) falloff = 1.0;
+  if (falloff < 0.0) falloff = 0.0;
+
+  if (keyCode == LEFT) octaves--;
+  if (keyCode == RIGHT) octaves++;
+  if (octaves < 0) octaves = 0;
+}
+
+
+function randomSeed(seed) {
+    var x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+}
+
+function mouseReleased() {
+  actRandomSeed = randomInt(100000);
+}
+
+
+
+
+
+</script>
+
+</body>
+</html>

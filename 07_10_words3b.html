@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="js/creative_coding.js"></script>
+    <script language="javascript" src="js/canvas.js"></script>
+    <script language="javascript" src="js/vector.js"></script>
+    <script language="javascript" src="js/vector_particles.js"></script>
+    <script language="javascript" src="js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var r = 260;
+var rot = 0;
+
+    //var words = undefined;
+    var particle_array = [];
+    var imgData;
+    var maxParticles = 1000;
+    ctx.font = "320px helvetica";
+    ctx.fillStyle="blue";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    var words = ['love','love'];
+
+    var logo = new Image();
+    logo.src = "../img/zoa_txt.png";
+
+     var img = new Image();
+    img.src = 'img/dot.png';
+
+    function setup(){
+      brightSpark();
+    }
+
+    function draw(){
+
+        ctx.fillStyle = "#000";
+        //ctx.drawImage(logo, w/2 - logo.width/2, h/2  - logo.height/2);
+        for (var i = particle_array.length - 1; i >= 0; i--) {
+            p = particle_array[i];
+            // c.fillRect(p.x, p.y, p.size, p.size);
+            if(p.x!=0 && p.y!=0) {
+            //ctx.globalCompositeOperation = 'lighten';
+            ctx.fillStyle=p.c;
+            //c.drawImage(img,p.x, p.y, p.size, p.size);
+            ctx.fillEllipse(p.x, p.y, p.size, p.size);
+
+
+            if (p.alpha<1) p.alpha+=0.0009;
+            if (p.size<0.005) {
+                p.x = p.orig_x+random(-4,4); p.y = p.orig_y+random(-4,4); p.size = 3;p.speedx = random(-2,2),
+                p.speedy =  random(-2,2)
+                }
+            // p.speedy = random(-1,1) ;
+            // p.speedx = random(-1,1) ;
+            p.x += p.speedx;
+            p.y += p.speedy;
+            p.size *= p.reduce;
+        }
+        };
+
+        if(particle_array.size>maxParticles) particle_array.shift();
+
+        ctx.fillStyle = "#000";
+        //ctx.drawImage(logo, w/2 - logo.width/2, h/2  - logo.height/2);
+    }
+
+
+
+function brightSpark(){
+        ctx.background(255);
+        ctx.drawImage(logo, w/2 - logo.width/2, h/2  - logo.height/2);
+        imgData = ctx.getImageData(0, 0, window.innerWidth, window.innerHeight).data;
+        //console.log(imgData);
+        for (var y = 0; y < window.innerHeight; y+=4) {
+             for (var x = 0; x < window.innerWidth; x+=4) {
+                var pt = (y *window.innerWidth + x)*4;
+                var fBrightness;
+                //addParticle(x,y);
+                fBrightness = (0.3*imgData[pt] + 0.59*imgData[pt+1] + 0.11*imgData[pt+2]);
+                //console.log(fBrightness);
+                 if(fBrightness < 20) {
+                 //if(random(40) > 38) {
+                addParticle(x,y);
+                }
+             }
+        }
+        ctx.background(0);
+        //ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
+    }
+function addParticle(_x, _y){
+        var particle = {
+        orig_x: _x,
+        orig_y: _y,
+        x: _x+random(-4,4),
+        y: _y+random(-4,4),
+        //c: rgb(random(40,255),random(10,255), random(255)),
+        c: rgb(random(10,255)),
+        size: 1,
+        // reduce: random(0.8, 0.9999),
+        reduce: random(0.9, 0.999),
+        alpha: 0,
+        speedx: random(-2,2),
+        speedy: random(-2,2)
+    };
+    particle_array.push(particle);
+}
+    // requestAnimationFrame(drawme);
+
+
+</script>
+</body>
+</html>

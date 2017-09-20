@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/tween.min.js"></script>
+<script language="javascript" src="../js/perlin_noise.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body style="background: #fff">
+
+<script>
+
+var hidden_ctx = createCanvas("hidden_canvas");
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var sensitivity = 50;
+ctx.lineWidth = 0.1;
+// var engine = new particleEngine(40, 40);
+// engine.randomize();
+// engine.setSpeed(-0.5, 0.5, -0.5, 0.5);
+// engine.setSize(5, 30);
+
+var xCount = 150;
+var yCount = 100;
+var gridSize_x = w;
+var gridSize_y = h;
+var damping = 0.3;
+var home_speed = 10;
+var myNodes = [];
+
+for (var i = 0; i < xCount*yCount; i++) {
+  myNodes[i]  = new Node();
+}
+
+console.log(myNodes)
+
+// attractor
+var myAttractor;
+
+function setup() {
+
+  ctx.background(255);
+  // setup node grid
+  initGrid();
+
+  // setup attractor
+  myAttractor = new Attractor(0, 0);
+  myAttractor.strength = 10;
+  myAttractor.ramp = 0.9;
+
+  ctx.fillStyle = rgb(0);
+  ctx.strokeStyle = rgba(0, 0.8);
+
+}
+
+
+function randomMotion(motion){
+  if (motion.length > 0) {
+    myAttractor.x = w - motion[randomInt(motion.length-1)].x;
+    myAttractor.y = motion[randomInt(motion.length-1)].y;
+  }
+}
+
+function draw() {
+  ctx.background(255, 0.8);
+
+  var motion = motionDetection();
+  randomMotion(motion);
+  // for (var i = 0; i < motion.length; i++) {
+  //   var m = motion[i];
+  //   //ctx.fillStyle = "red";
+  //   ctx.fillRect(m.x, m.y, 4, 4);
+  // }
+
+
+
+  for (var i = 0; i < myNodes.length; i++) {
+
+    var n = myNodes[i];
+    
+    if (chance(40)) randomMotion(motion);
+    //randomMotion(motion);
+    //if (mousePressed) {
+      myAttractor.attract(n);
+    //}
+
+    n.update();
+
+    if(n.velocity.x < 0.05 || n.velocity.y < 0.05) {
+        n.x = tween(n.x, n.start.x, home_speed);
+        n.y = tween(n.y, n.start.y, home_speed);
+    }
+
+
+    // draw nodes
+
+    //console.log(myNodes[i].x)
+    // ctx.fillEllipse(myNodes[i].x, myNodes[i].y, 5, 5, 5);
+    //ctx.fillRect(n.x, n.y, 1, 1);
+    ctx.line(n.x, n.y, n.start.x, n.start.y);
+  }
+
+}
+
+
+function initGrid() {
+  var i = 0;
+  for (var y = 0; y < yCount; y++) {
+    for (var x = 0; x < xCount; x++) {
+      var xPos = x*(gridSize_x/(xCount-1))+(width-gridSize_x)/2;
+      var yPos = y*(gridSize_y/(yCount-1))+(height-gridSize_y)/2;
+      myNodes[i] = new Node(xPos, yPos);
+      myNodes[i].setBoundary(0, 0, width, height);
+      myNodes[i].setDamping(damping);  //// 0.0 - 1.0
+      i++;
+    }
+  }
+  // console.log(myNodes)
+}
+
+
+function updateNodes(){
+    for (var i = 0; i < myNodes.length; i++) {
+      myNodes[i].setDamping(damping);
+    }
+}
+
+
+
+function Attractor(theX, theY) {
+
+  this.x = theX, this.y = theY;
+
+  // radius of impact
+  this.radius = 200;
+
+  this.attract = function(theNode) {
+    // calculate distance
+    var dx = this.x - theNode.x;
+    var dy = this.y - theNode.y;
+    var d = mag(dx, dy);
+
+    if (d > 0 && d < this.radius) {
+      // calculate force
+      // var s = d/this.radius;
+      // var f = 1 / Math.pow(s, 0.5) - 1;
+      // f = f / this.radius;
+
+      var s = Math.pow(d / this.radius, 1 / this.ramp);
+      var f = s * 9 * this.strength * (1 / (s + 1) + ((s - 3) / 4)) / d;
+      // apply force to node velocity
+      theNode.velocity.x += dx * f;
+      theNode.velocity.y += dy * f;
+    }
+  }
+
+}
+
+//////////////////// NODE //////////////////
+
+
+function Node(theX, theY, theZ) {
+  if(typeof theX == Vector) {
+    this.x = theVector.x;
+    this.y = theVector.y;
+    this.z = theVector.z;
+  } else {
+    this.x = theX;
+    this.y = theY;
+    this.z = theZ;
+  }
+
+  this.start = new Vector(this.x, this.y);
+	// ------ public properties ------
+	// if needed, an ID for the node
+	this.id = "";
+
+	/**
+	 * Diameter of the node (useful if a click on the node has to be checked)
+	 */
+	this.diameter = 0;
+
+	/**
+	 * Minimum x position
+	 */
+   var MAX_VALUE = 1000000;
+	this.minX = -MAX_VALUE;
+	this.maxX = MAX_VALUE;
+	this.minY = -MAX_VALUE;
+	this.maxY = MAX_VALUE;
+	this.minZ = -MAX_VALUE;
+	this.maxZ = MAX_VALUE;
+
+  this.velocity = new Vector();
+	this.pVelocity = new Vector();
+
+  this.maxVelocity = 10;
+	this.damping = 0.5;
+
+	// inertia of node: 0=no inertia (not used for now)
+  // this.inertia = 0.5;
+
+	// radius of impact
+	this.radius = 200;
+	// strength: positive for attraction, negative for repulsion (default for
+	// Nodes)
+	this.strength = -1;
+	// parameter that influences the form of the function
+	this.ramp = 1.0;
+
+	// ------ rotate position around origin ------
+	this.rotateX = function(theAngle) {
+		var newy = this.y * Math.cos(theAngle) - this.z * Math.sin(theAngle);
+		var newz = this.y * Math.sin(theAngle) + this.z * Math.cos(theAngle);
+		this.y = newy;
+		this.z = newz;
+	}
+
+	this.rotateY = function(theAngle) {
+		var newx = this.x * Math.cos(-theAngle) - this.z * Math.sin(-theAngle);
+		var newz = this.x * Math.sin(-theAngle) + this.z * Math.cos(-theAngle);
+		this.x = newx;
+		this.z = newz;
+	}
+
+	this.rotateZ = function(theAngle) {
+		var newx = this.x * Math.cos(theAngle) - this.y * Math.sin(theAngle);
+		var newy = this.x * Math.sin(theAngle) + this.y * Math.cos(theAngle);
+		this.x = newx;
+		this.y = newy;
+	}
+
+	// ------ calculate attraction ------
+	this.attract = function(theNodes) {
+     if(typeof(theNodes) == array) {
+		// attraction or repulsion part
+		for (var i = 0; i < theNodes.length; i++) {
+			var otherNode = theNodes[i];
+			// stop when empty
+			if (otherNode == null)
+				break;
+			// not with itself
+			if (otherNode == this)
+				continue;
+
+			this.attract(otherNode);
+		}
+  } else {
+    var d = Vector.dist(this, theNode);
+
+    if (d > 0 && d < radius) {
+      var s = PApplet.pow(d / radius, 1 / ramp);
+      var f = s * 9 * strength * (1 / (s + 1) + ((s - 3) / 4)) / d;
+      var df = Vector.sub(this, theNode);
+      df.mult(f);
+
+      theNode.velocity.x += df.x;
+      theNode.velocity.y += df.y;
+      theNode.velocity.z += df.z;
+    }
+  }
+	}
+
+
+	// ------ update positions ------
+
+
+	this.update = function (theLockX,  theLockY, theLockZ) {
+
+		this.velocity.limit(this.maxVelocity);
+
+		// prevent oscillating by reducing velocity if angle to previous
+		// velocity is very large
+		/*float da = PVector.angleBetween(velocity, pVelocity);
+		if (!Float.isNaN(da)) {
+			da = PApplet.abs(1 - (da / PApplet.PI));
+			//da = PApplet.pow(da, 4);
+			if (da < 0.5) da = 0;
+			PApplet.println(id + ", " + da);
+			velocity.mult(da);
+		}*/
+		pVelocity = this.velocity;
+
+		if (!theLockX) this.x += this.velocity.x;
+		if (!theLockY) this.y += this.velocity.y;
+		if (!theLockZ) this.z += this.velocity.z;
+
+		if (this.x < this.minX) {
+			this.x = this.minX - (this.x - this.minX);
+			this.velocity.x = -this.velocity.x;
+		}
+		if (this.x > this.maxX) {
+			this.x = this.maxX - (this.x - this.maxX);
+			this.velocity.x = -this.velocity.x;
+		}
+
+		if (this.y < this.minY) {
+			this.y = this.minY - (this.y - this.minY);
+			this.velocity.y = -this.velocity.y;
+		}
+		if (this.y > this.maxY) {
+			this.y = this.maxY - (this.y - this.maxY);
+			this.velocity.y = -this.velocity.y;
+		}
+
+		if (this.z < this.minZ) {
+			this.z = this.minZ - (this.z - this.minZ);
+			velocity.z = -velocity.z;
+		}
+		if (this.z > this.maxZ) {
+			this.z = this.maxZ - (this.z - this.maxZ);
+			this.velocity.z = -this.velocity.z;
+		}
+
+		// x = PApplet.constrain(x, minX, maxX);
+		// y = PApplet.constrain(y, minY, maxY);
+		// z = PApplet.constrain(z, minZ, maxZ);
+
+		this.velocity.mult(1 - this.damping);
+	}
+
+	// ------ getters and setters ------
+	this.getID = function() {
+		return this.id;
+	}
+
+	this.setID = function(theID) {
+		this.id = theID;
+	}
+
+	this.getDiameter = function() {
+		return this.diameter;
+	}
+
+	this.setDiameter = function(theDiameter) {
+		this.diameter = theDiameter;
+	}
+
+	// this.setBoundary = function(theMinX, theMinY, theMinZ,
+	// 		theMaxX, theMaxY, theMaxZ) {
+	// 	this.minX = theMinX;
+	// 	this.maxX = theMaxX;
+	// 	this.minY = theMinY;
+	// 	this.maxY = theMaxY;
+	// 	this.minZ = theMinZ;
+	// 	this.maxZ = theMaxZ;
+	// }
+
+	this.setBoundary = function(theMinX, theMinY, theMaxX, theMaxY) {
+		this.minX = theMinX;
+		this.maxX = theMaxX;
+		this.minY = theMinY;
+		this.maxY = theMaxY;
+	}
+
+	this.getMinX = function() {
+		return this.minX;
+	}
+
+	this.setMinX = function(theMinX) {
+		this.minX = theMinX;
+	}
+
+	this.getMaxX = function() {
+		return this.maxX;
+	}
+
+	this.setMaxX = function(theMaxX) {
+		this.maxX = theMaxX;
+	}
+
+	this.getMinY = function() {
+		return this.minY;
+	}
+
+	this.setMinY = function(theMinY) {
+		this.minY = theMinY;
+	}
+
+	this.getMaxY = function() {
+		return this.maxY;
+	}
+
+	this.setMaxY = function(theMaxY) {
+		this.maxY = theMaxY;
+	}
+
+	this.getMinZ = function() {
+		return minZ;
+	}
+
+	this.setMinZ = function(theMinZ) {
+		this.minZ = theMinZ;
+	}
+
+	this.getMaxZ = function() {
+		return this.maxZ;
+	}
+
+	this.setMaxZ = function(theMaxZ) {
+		this.maxZ = theMaxZ;
+	}
+
+	this.getVelocity = function() {
+		return this.velocity;
+	}
+
+	this.setVelocity = function(theVelocity) {
+		this.velocity = theVelocity;
+	}
+
+	this.getMaxVelocity = function() {
+		return this.maxVelocity;
+	}
+
+	this.setMaxVelocity = function(theMaxVelocity) {
+		this.maxVelocity = theMaxVelocity;
+	}
+
+	this.getDamping = function() {
+		return this.damping;
+	}
+
+	this.setDamping = function(theDamping) {
+		this.damping = theDamping;
+	}
+
+	this.getRadius = function() {
+		return this.radius;
+	}
+
+	this.setRadius = function(theRadius) {
+		this.radius = theRadius;
+	}
+
+	this.getStrength = function() {
+		return this.strength;
+	}
+
+	this.setStrength = function(theStrength) {
+		this.strength = theStrength;
+	}
+
+	this.getRamp = function() {
+		return this.ramp;
+	}
+
+	this.setRamp = function(theRamp) {
+		this.ramp = theRamp;
+	}
+
+}
+
+
+////////////////////////////////////////////
+
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+// // settings.addRange(title, min, max, value, step, callback);
+settings.addRange("xCount", 10, 300, xCount, 1, function(value){
+  xCountxCount = value;
+  initGrid();
+});
+settings.addRange("yCount", 10, 300, yCount, 1, function(value){
+  yCount = value;
+  initGrid();
+});
+settings.addRange("damping", 0.01, 1, damping, 0.01, function(value){
+  damping = value;
+  updateNodes();
+});
+settings.addRange("home_speed", 1, 100, home_speed, 0.1, function(value){
+  home_speed = value;
+});
+settings.addRange("sensitivity", 1, 100, sensitivity, 0.1, function(value){
+  sensitivity = value;
+});
+
+
+
+</script>
+<script language="javascript" src="../js/motion_detection.js"></script>
+</body>
+</html>

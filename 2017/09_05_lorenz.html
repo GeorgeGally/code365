@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+
+<meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var x = 1.0, y = 1.0, z = 1.0;
+var a = 10;
+var b = 28;
+var c = 8/3;
+var FOV = 250;
+var SCALE_UP = 4;
+
+ctx.background(0);
+
+function draw(){
+  //ctx.background(0);
+  ctx.fillStyle = rgb(255)
+  var dt = 0.01;
+  var dx = (a * (y - x)) * dt;
+  var dy = (x * (b - z) - y) * dt;
+  var dz = (x * y - c  * z) * dt;
+  x = x + dx;
+  y = y + dy;
+  z = z + dz;
+
+  scale = FOV/(z+FOV);
+    x3d = (x * scale) * SCALE_UP;
+    y3d = (y * scale) * SCALE_UP;
+
+  ctx.save();
+  ctx.translate(w/2, h/2);
+  ctx.fillRect(x3d, y3d, 1, 1);
+  ctx.restore();
+  //console.log(x);
+}
+
+
+
+
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+// // settings.addRange(title, min, max, value, step, callback);
+settings.addRange("FOV", 1, 500, FOV, 0.1, function(value){
+  FOV = value;
+});
+
+settings.addRange("SCALE_UP", 1, 20, SCALE_UP, 0.1, function(value){
+  SCALE_UP = value;
+});
+
+
+settings.addRange("a", 1, 100, a, 0.1, function(value){
+  a = value;
+});
+
+settings.addRange("b", 1, 100, b, 0.1, function(value){
+  b = value;
+});
+
+settings.addRange("c", 1, 100, c, 0.1, function(value){
+  c = value;
+});
+
+</script>
+
+<script language="javascript" src="../js/pixel_grid.js"></script>
+</body>
+
+</html>

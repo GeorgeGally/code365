@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script>var module = {};</script>
+  <script language="javascript" src="../js/delaunay.js"></script>
+
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+
+<script>
+
+var engine = new particleEngine(1,1);
+engine.setSpeed(-2,2, -2,2)
+var particle = engine.particles[0];
+console.log(engine)
+var points = [];
+var pt = [0, 0];
+points.push(pt);
+
+var pt = [w, 0];
+points.push(pt);
+
+var pt = [0, h];
+points.push(pt);
+
+var pt = [w, h];
+points.push(pt);
+
+
+// for (var i = 0; i < 1500; i++) {
+//   var pt = [randomInt(w), randomInt(h)];
+//   points.push(pt);
+// }
+
+console.time('delaunay');
+var delaunay = new Delaunator(points);
+console.timeEnd('delaunay');
+
+var ctx = createCanvas('canvas1');
+
+var minX = Infinity;
+var minY = Infinity;
+var maxX = -Infinity;
+var maxY = -Infinity;
+for (var i = 0; i < points.length; i++) {
+    var x = points[i][0];
+    var y = points[i][1];
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+}
+
+var padding = 5;
+// var w = 1024;
+// var h = (w - 2 * padding) * (maxY - minY) / (maxX - minX) + 2 * padding;
+
+canvas.style.width = w + 'px';
+canvas.style.height = h + 'px';
+
+canvas.width = w;
+canvas.height = h;
+
+if (window.devicePixelRatio >= 2) {
+    canvas.width = w * 2;
+    canvas.height = h * 2;
+    ctx.scale(2, 2);
+}
+
+var ratio = (w - 2 * padding) / Math.max(maxX - minX, maxY - minY);
+
+ctx.lineJoin = 'round';
+ctx.lineCap = 'round';
+
+var updated = true;
+
+
+function drawTrail(p){
+    points.push([p.pos.x, p.pos.y]);
+    if (points.length > 5000) points.splice(0,1);
+    delaunay = new Delaunator(points);
+}
+
+// canvas.onmousemove = function (e) {
+//     points.push([
+//         (e.layerX - padding) / ratio + minX,
+//         (e.layerY - padding) / ratio + minY
+//     ]);
+//     console.time('delaunay');
+//     delaunay = new Delaunator(points);
+//     console.timeEnd('delaunay');
+//     //updated = true;
+// }
+
+function getX(i) {
+    return padding + ratio * (points[i][0] - minX);
+}
+function getY(i) {
+    return padding + ratio * (points[i][1] - minY);
+}
+
+
+
+function draw() {
+    // if (!updated) return;
+    // updated = false;
+
+    ctx.clearRect(0, 0, w, h);
+    particle.pos.x+=particle.speed.x;
+    particle.pos.y+=particle.speed.y;
+    if(bounce(particle.pos.x, 0, w)) particle.speed.x*=-1;
+    if(bounce(particle.pos.y, 0, h)) particle.speed.y*=-1;
+    ctx.fillEllipse(particle.pos.x, particle.pos.y, 20);
+    if(frameCount%20 == 0) drawTrail(particle);
+    var triangles = delaunay.triangles;
+    var hull = delaunay.hull;
+
+    ctx.beginPath();
+    for (var i = 0; i < triangles.length; i += 3) {
+        var p0 = triangles[i];
+        var p1 = triangles[i + 1];
+        var p2 = triangles[i + 2];
+        ctx.moveTo(getX(p0), getY(p0));
+        ctx.lineTo(getX(p1), getY(p1));
+        ctx.lineTo(getX(p2), getY(p2));
+        ctx.closePath();
+    }
+    ctx.strokeStyle = 'rgba(0,200,0,1)';
+    // ctx.fillStyle = rgb(SinOsc(i/10, 255));
+    // ctx.fill();
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+    //
+
+    // ctx.fillStyle = 'rgba(255,255,0,0.1)';
+    // ctx.fill();
+
+    // ctx.beginPath();
+    // ctx.moveTo(getX(hull.i), getY(hull.i));
+    // var e = hull;
+    // do {
+    //     ctx.lineTo(getX(e.next.i), getY(e.next.i));
+    //     e = e.next;
+    // } while (e !== hull);
+    // ctx.lineWidth = 1;
+    // ctx.strokeStyle = 'red';
+    // ctx.stroke();
+
+    // ctx.fillStyle = 'black';
+    // ctx.beginPath();
+    // for (var i = 0; i < points.length; i++) {
+    //     ctx.rect(getX(i) - 1.5, getY(i) - 1.5, 3, 3);
+    // }
+    // ctx.fill();
+}
+
+</script>
+
+</body>
+</html>

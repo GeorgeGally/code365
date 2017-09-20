@@ -9,13 +9,11 @@
   <script language="javascript" src="../js/quicksettings.min.js"></script>
     <script language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.min.js"></script>
       <script language="javascript" src="https://rawgit.com/google/liquidfun/master/liquidfun/Box2D/lfjs/liquidfun.js"></script>
-  <!-- <script language="javascript" src="../js/stats.js"></script> -->
+
 	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
 	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
 <script src="../js/jquery-1.10.1.min.js"></script>
 
-
-<!-- <script language="javascript" src="../js/p5.js"></script> -->
 <script language="javascript" src="../js/matter.min.js"></script>
 
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
@@ -29,24 +27,6 @@
 
 var ctx, ctx2;
 
-var dataSet = [
-    "BK","BK","BK","BK","BK","BK","BK","BK","BK","BK","BK","BK","BK","BG","BG","BG",
-    "BK","BK","BK","BK","BK","BK","RD","RD","RD","RD","RD","BK","BK","BG","BG","BG",
-    "BK","BK","BK","BK","BK","RD","RD","RD","RD","RD","RD","RD","RD","RD","BG","BG",
-    "BK","BK","BK","BK","BK","BR","BR","BR","BG","BG","BR","BG","BK","RD","RD","RD",
-    "BK","BK","BK","BK","BR","BG","BR","BG","BG","BG","BR","BG","BG","RD","RD","RD",
-    "BK","BK","BK","BK","BR","BG","BR","BR","BG","BG","BG","BR","BG","BG","BG","RD",
-    "BK","BK","BK","BK","BR","BR","BG","BG","BG","BG","BR","BR","BR","BR","RD","BK",
-    "BK","BK","BK","BK","BK","BK","BG","BG","BG","BG","BG","BG","BG","RD","BK","BK",
-    "BK","BK","RD","RD","RD","RD","RD","BL","RD","RD","RD","BL","RD","BK","BK","BK",
-    "BK","RD","RD","RD","RD","RD","RD","RD","BL","RD","RD","RD","BL","BK","BK","BR",
-    "BG","BG","RD","RD","RD","RD","RD","RD","BL","BL","BL","BL","BL","BK","BK","BR",
-    "BG","BG","BG","BK","BL","BL","RD","BL","BL","YL","BL","BL","YL","BL","BR","BR",
-    "BK","BG","BK","BR","BL","BL","BL","BL","BL","BL","BL","BL","BL","BL","BR","BR",
-    "BK","BK","BR","BR","BR","BL","BL","BL","BL","BL","BL","BL","BL","BL","BR","BR",
-    "BK","BR","BR","BR","BL","BL","BL","BL","BL","BL","BL","BK","BK","BK","BK","BK",
-    "BK","BR","BK","BK","BL","BL","BL","BL","BK","BK","BK","BK","BK","BK","BK","BK"
-];
 
 function getRgbColor(colorType)
 {
@@ -192,11 +172,7 @@ function init() {
         var x0 = Math.floor( (x-72) / 16 );
         var y0 = Math.floor( (242+y) / 16 );
         var pos = x0 + y0 * 16;
-        // if ( x0 >= 0 && x0 < 16
-        //   && y0 >= 0 && y0 < 16
-        //   && pos < dataSet.length ) {
-        //     color = new THREE.Color(0xffffff);
-        // } else {
+
             color = new THREE.Color(0xffffff);
         //}
         geometry.vertices.push(vertex);

@@ -27,18 +27,18 @@ var b = 255;
 var _hsl = rgbToHsl(r, g, b);
 console.log(_hsl);
 
-var start_h = hue = _hsl[0] * 360;
-var start_s = s = _hsl[1] * 100;
-var start_l = l = _hsl[2] * 100;
+var start_h = hue = _hsl[0];
+var start_s = s = _hsl[1];
+var start_l = l = _hsl[2];
 
 var r2 = 255;
 var g2 = 110;
 var b2 = 127;
 var _hsl2 = rgbToHsl(r2, g2, b2);
 
-var h2 = _hsl2[0] * 360;
-var s2 = _hsl2[1] * 100;
-var l2 = _hsl2[2] * 100;
+var h2 = _hsl2[0];
+var s2 = _hsl2[1];
+var l2 = _hsl2[2];
 
 function draw(){
 

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/tween.min.js"></script>
+<script language="javascript" src="../js/perlin_noise.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body style="background: #fff">
+
+<script>
+
+var hidden_ctx = createCanvas("hidden_canvas");
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+var engine = new particleEngine(40, 40);
+engine.randomize();
+engine.setSpeed(-0.5, 0.5, -0.5, 0.5);
+engine.setSize(5, 30);
+var actRandomSeed = 0;
+
+var mover = 0;
+
+
+
+function setup() {
+
+}
+
+function draw() {
+  ctx.background(255, 0.06);
+  ctx2.clearRect(0, 0, w, h);
+  mover = SinOsc(frameCount/180, w * 2);
+
+  ctx.fillStyle = "red";
+  ctx.fillEllipse(mover, h/2, 20, 20);
+
+  var faderX = mover/width;
+
+  randomSeed(actRandomSeed);
+  var angle = radians(360/engine.length);
+
+  for (var i=0; i< engine.length; i++){
+    // positions
+    var p = engine.particles[i];
+    p.pos.x += p.speed.x;
+    p.pos.y += p.speed.y;
+    //var randomX = random(0,width);
+    //var randomY = random(0,height);
+    var circleX = w/2 + Math.cos(angle*i)*300;
+    var circleY = h/2 + Math.sin(angle*i)*300;
+
+    var x = lerp(p.pos.x,circleX, faderX);
+    var y = lerp(p.pos.y,circleY, faderX);
+
+    ctx.fillStyle = rgb(0);
+    var sz = Math.round(p.sz);
+    ctx.LfillEllipse(x,y,sz,sz);
+
+    ctx.fillStyle = rgb(255);
+    ctx.LfillEllipse( x, y, sz/2, sz/2);
+
+  }
+
+
+}
+
+
+function randomSeed(seed) {
+    var x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+}
+
+function mouseReleased() {
+  actRandomSeed = randomInt(100000);
+}
+
+
+
+
+
+</script>
+
+</body>
+</html>

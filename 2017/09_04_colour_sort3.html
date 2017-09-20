@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+
+<meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createHiddenCanvas("canvas2");
+
+var index = 0;
+
+
+var img = new Image();
+var img_w, img_h, slice_w;
+img.src = '../img/people/macborg.jpg';
+
+var grid = new Grid(10, 50);
+var sorted_colours = [];
+var sample_size = 10;
+
+img.onload = function() {
+  ctx.drawImage(img, 0, 0, w, h);
+  var data = ctx.getImageData(0, 0, w, h).data;
+  console.log(data);
+
+  for (var y = 0; y < h; y+=sample_size) {
+    for (var x = 0; x < w; x+=sample_size) {
+
+      var pos = (x + y * w) * 4;
+      var r = data[pos];
+      var g = data[pos+1];
+      var b = data[pos+2];
+      var c = rgbToHsl(r, g, b);
+      sorted_colours.push(c);
+
+    }
+  }
+  console.log(sorted_colours);
+
+
+}
+
+var x = 0, y = 0;
+
+function colourSort(){
+  if (index < sorted_colours.length) {
+  //for (var i = 0; i < sorted_colours.length; i++) {
+    var record = -1;
+    var selected_colour = index;
+
+    for (var j = index; j < sorted_colours.length; j++) {
+      var s = sorted_colours[j];
+      // var b = brightness(s.r, s.g, s.b);
+      if(s[0] > record) {
+        selected_colour = j;
+        record = s[0];
+      }
+  }
+  tmp = sorted_colours[index];
+  sorted_colours[index] = sorted_colours[selected_colour];
+  sorted_colours[selected_colour] = tmp;
+
+  var s = sorted_colours[index];
+
+  //var x = (index * sample_size) % w;
+  //var y = Math.round(sample_size * (index)/w);
+  // ctx.fillStyle = rgb(s.r, s.g, s.b);
+  ctx.fillStyle = hsl(s[0], s[1], s[2]);
+  ctx.fillRect(x, y, sample_size, sample_size);
+  index++;
+  x = (x + sample_size);
+  if (x > w) {
+    x = 0;
+    y += sample_size;
+  }
+
+  }
+}
+
+
+var counter = 0;
+function draw(){
+  for (var i = 0; i < 10; i++) {
+    colourSort();
+  }
+
+}
+
+
+
+
+
+
+
+
+</script>
+
+<script language="javascript" src="../js/pixel_grid.js"></script>
+</body>
+
+</html>

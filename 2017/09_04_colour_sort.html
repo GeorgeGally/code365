@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+
+<meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createHiddenCanvas("canvas2");
+
+var grid = new Grid(10, 50);
+var sorted_colours = [];
+
+console.log(grid);
+for (var i = 0; i < grid.length; i++) {
+  var g = grid.grid[i];
+  g.h = randomInt(360);
+  g.s = randomInt(50, 100);
+  g.l = 50;
+  g.c = hsl(g.h, g.s, g.l);
+  sorted_colours.push({h:g.h, s:g.s, l:g.l});
+}
+colourSort();
+
+for (var i = 0; i < sorted_colours.length; i++) {
+  var s = sorted_colours[i];
+  console.log(s.h);
+}
+
+function colourSort(){
+  for (var i = 0; i < sorted_colours.length; i++) {
+    var record = -1;
+    var selected_colour = i;
+    var g = grid.grid[i];
+    //console.log(g.h);
+    for (var j = i; j < sorted_colours.length; j++) {
+      var s = sorted_colours[j];
+      if(s.h > record) {
+        selected_colour = j;
+        record = s.h;
+      }
+  }
+  tmp = sorted_colours[i];
+  sorted_colours[i] = sorted_colours[selected_colour];
+  sorted_colours[selected_colour] = tmp;
+}
+}
+
+function draw(){
+  for (var i = 0; i < grid.length; i++) {
+    var g = grid.grid[i];
+    var s = sorted_colours[i];
+    ctx.fillStyle = hsl(s.h, s.s, s.l);
+    ctx.fillRect(g.x - grid.spacing.x/2, g.y- grid.spacing.y/2, grid.spacing.x, grid.spacing.y);
+  }
+}
+
+
+
+
+
+
+
+</script>
+
+<script language="javascript" src="../js/pixel_grid.js"></script>
+</body>
+
+</html>

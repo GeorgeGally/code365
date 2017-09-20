@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/tween.min.js"></script>
+<script language="javascript" src="../js/perlin_noise.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body style="background: #fff">
+
+<script>
+
+var hidden_ctx = createCanvas("hidden_canvas");
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+ctx2.font = "bold 20px Arial";
+ctx2.textAlign = "center";
+
+ctx.font = hidden_ctx.font = "200pt Helvetica";
+hidden_ctx.fillStyle="blue";
+ctx.textAlign = hidden_ctx.textAlign = "center";
+hidden_ctx.textBaseline = "middle";
+var words = ['Time'];
+
+
+//noise.seed(Math.random());
+
+var sampleSize = 20;
+var nodes = new particleEngine(40, 30);
+nodes.setSpeed(0, 1);
+nodes.setColour("black");
+nodes.minX = 5;
+nodes.miny = 5;
+nodes.maxX = w - 5;
+nodes.maxy = h - 5;
+
+var attractors = new particleEngine(8, 4);
+for (var i = attractors.particles.length-1; i >= 0 ; i--) {
+  var a = attractors.particles[i];
+  a.radius = 150;
+  a.noisy = random(1,8)/10001;
+  a.strength = -4;
+}
+var imgData;
+
+
+
+
+
+for (var i = nodes.particles.length-1; i >= 0 ; i--) {
+  var p = nodes.particles[i];
+  p.sz = random(10, 28);
+  p.c = rgb(0);
+  p.l = random(0.1,1);
+  p.noisy = random(1,8)/10001;
+  p.border = false;
+  p.velocity = new Vector(random(-2, 2), random(-2, 2));
+  p.damping = 0.02;
+
+
+}
+
+// ctx.shadowOffsetY = 2;
+// ctx.shadowBlur = 4;
+// ctx.shadowColor = "black";
+ctx.background(255);
+
+function draw(){
+
+  hidden_ctx.background(255, 0.3);
+  ctx2.clearRect(0, 0, w, h);
+
+
+  for (var j = nodes.particles.length-1; j >= 0 ; j--) {
+
+    var p = nodes.particles[j];
+
+    for (var i = attractors.particles.length-1; i >= 0 ; i--) {
+
+    var a = attractors.particles[i];
+    //a.pos.x = a.start.x + Math.cos(frameCount/20 + i) * w/8;
+    //a.pos.y = a.start.y + Math.sin(frameCount/20 + i*4) * h/4;
+    a.pos.x += PerlinNoise.noise(Math.sin(frameCount/100), i/1000, a.pos.y) * 0.01;
+    a.pos.y += PerlinNoise.noise(frameCount/50, a.pos.x, (frameCount % 40)/10) * 0.005;
+    // a.pos.y += noise.perlin2(count, frameCount % 20)*3;
+    //a.pos.x += 60*PerlinNoise.noise(20+a.pos.x*.007, 20+a.pos.y*1, a.noisy*.07)*Math.cos(0.7 * 22/7 * PerlinNoise.noise(a.pos.x*.007, a.pos.y*.007, a.noisy*.5));
+    // a.pos.y += 40*PerlinNoise.noise(20+ a.pos.x*.0007, 20+a.pos.y*.0007, a.noisy*19)*Math.sin(0.3 * 22/7 * PerlinNoise.noise(a.pos.x*.007, a.pos.y*.007, a.noisy*5));
+
+    //a.pos.y = 40*PerlinNoise.noise(20+ a.pos.x* 0.0007, 20+ frameCount * 0.0007, a.noisy*19);
+
+    if (a.pos.x > w) a.pos.x = 0;
+    if (a.pos.y > h) a.pos.y = 0;
+
+    if (a.pos.x < 0) a.pos.x = w;
+    if (a.pos.y < 0) a.pos.y = h;
+
+    attract(a, p);
+
+    }
+  drawParticle(p, j);
+  }
+  ctx.drawImage(hidden_ctx.canvas, 0, 0, w, h);
+  drawAttractor();
+
+  //drawLogo();
+
+  //ctx.fillStyle = "red";
+  //ctx.fillEllipse(w/2 + line_width/2, h/2 - line_width/2, 10, 10);
+  //addParticle(random(w), random(10));
+
+}
+
+function drawAttractor(){
+  for (var i = attractors.particles.length-1; i >= 0 ; i--) {
+    var a = attractors.particles[i];
+    ctx2.fillStyle = "red";
+    ctx2.LfillEllipse(a.pos.x, a.pos.y, 10, 10);
+  }
+
+}
+
+
+function drawParticle(p, j) {
+
+  hidden_ctx.fillStyle = p.c;
+  moveParticle(p, j);
+  //ctx.fillRect(p.pos.x, p.pos.y, p.sz, p.sz);
+  hidden_ctx.LfillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+  hidden_ctx.fillStyle = "white";
+  hidden_ctx.LfillEllipse(p.pos.x, p.pos.y, p.sz/5, p.sz/5);
+}
+
+
+function attract(a, p){
+
+  var dx = a.pos.x - p.pos.x;
+  var dy = a.pos.y - p.pos.y;
+  var d = mag(dx, dy);
+
+  if (d > 0 && d < a.radius) {
+
+    var s = d / a.radius;
+    var f = 1 / Math.pow(s, 0.5) -1;
+    f = a.strength * f / a.radius;
+    // p.velocity.x += dx * f;
+    // p.velocity.y += dy * f;
+    p.velocity.x += dy * f;
+    p.velocity.y += dx * f;
+
+  }
+}
+
+
+function mag(x, y){
+  return Math.sqrt(x * x + y * y);
+}
+
+
+function moveParticle(p, i){
+
+  p.pos.x += p.velocity.x;
+  p.pos.y += p.velocity.y;
+  if(p.x < p.start.x + nodes.minX) {
+    p.pos.x = nodes.minX - (p.pos.x - nodes.minX);
+    p.velocity.x *= -1;
+  }
+
+  // if(p.pos.x > w || p.pos.x < 0) {
+  //   //p.pos.x = nodes.maxX - (p.pos.x - nodes.maxX);
+  //   p.velocity.x *= -1;
+  // }
+  //
+  // if(p.pos.y > h || p.pos.y < 0) {
+  //   //p.pos.x = nodes.maxX - (p.pos.x - nodes.maxX);
+  //   p.velocity.y *= -1;
+  // }
+
+  if (p.pos.x > w) p.pos.x = 0;
+  if (p.pos.y > h) p.pos.y = 0;
+
+  if (p.pos.x < 0) p.pos.x = w;
+  if (p.pos.y < 0) p.pos.y = h;
+
+
+  p.velocity.x *= (1 - p.damping);
+  p.velocity.y *= (1 - p.damping);
+
+}
+
+
+// function addParticle(x, y){
+//   nodes.add(x, y);
+//   var p = nodes.last;
+//   p.sz = 1;
+//   p.c = randomGrey(100);
+//   p.l = random(0.1,1);
+//   p.noisy = random(1,8)/10001;
+//   p.edge = false;
+//   p.pos.x > w/2 ? speedx = random(0.1,0.2) : speedx = random(-0.2,0.1);
+//   speedy = random(-0.2, 5);
+//   //p.pos.y > h/2 ? speedy = random(1,2) : speedy = random(-2,-1);
+//   p.speed = new Vector(speedx, speedy);
+// }
+
+
+var ww = randomInt(0,words.length-1);
+
+
+
+function brightSpark(){
+
+  ctx.background = rgb(0, 0, 0);
+  ctx.fillStyle = "red";
+	ctx.fillText(words[ww], w/2, h/2);
+	//draw();
+	imgData = ctx.getImageData(0, 0, w, h).data;
+
+  for (var i = 0; i < nodes.length; i++) {
+    var p = nodes.particles[i];
+
+  // for (var y = 0; y < h; y+= sampleSize) {
+  //
+	// 	 for (var x = 0; x < w; x+= sampleSize) {
+    // var pt = Math.round((p.pos.y * w + p.pos.x)*4);
+		// 	//var pt = Math.round(y * w + x)*4;
+    //   var r = imgData[pt];
+    //   var g = imgData[pt+1];
+    //   var b = imgData[pt+2];
+    //   var bright = brightness(r, g, b, 100);
+    //   if(i%100 == 0) console.log(r);
+    //   if (bright > 80) {
+    //
+    //     p.start.y = p.pos.y - bright/10;
+    //   }
+    var c = samplePoint(imgData, p.pos.x, p.pos.y);
+    console.log(brightness(c.r, c.g, c.b));
+
+    }
+
+	//hidden_ctx.clearRect(0,0, w, h);
+}
+
+
+function drawLogo() {
+  ctx2.lineWidth = 10;
+  ctx2.save();
+  var line_width = SinOsc(frameCount/10, 300)
+  ctx2.translate(w/2, h/2);
+  ctx2.rotateDegrees(-45);
+  ctx2.strokeStyle = "white";
+  ctx2.strokeRect(-line_width/2, 0, line_width, 20);
+  ctx2.fillStyle = "black";
+  ctx2.fillRect(-line_width/2, 0, line_width, 20);
+  ctx2.restore();
+}
+
+function samplePoint(buffer, x, y) {
+        var ammt = Math.round(mouseX/100);
+         var pos = (x + y * w);
+         var b = (buffer[pos] >> 16) & 0xff;
+         var g = (buffer[pos] >> 8) & 0xff;
+         var r = (buffer[pos] >> 0) & 0xff;
+         r = sticky(r, ammt);
+         g = sticky(g, ammt);
+         b = sticky(b, ammt);
+         return {r:r, g: g, b:b};
+}
+
+
+</script>
+
+</body>
+</html>

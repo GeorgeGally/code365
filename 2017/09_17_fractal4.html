@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+
+<title>HTML5 Canvas</title>
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script type="text/javascript">
+
+window.addEventListener("load", windowLoadHandler, false);
+
+//for debug messages while testing code
+var Debugger = function() { };
+Debugger.log = function(message) {
+	try {
+		console.log(message);
+	}
+	catch (exception) {
+		return;
+	}
+}
+
+function windowLoadHandler() {
+	canvasApp();
+}
+
+// function canvasSupport() {
+// 	return Modernizr.canvas;
+// }
+
+function canvasApp() {
+	// if (!canvasSupport()) {
+	// 	return;
+	// }
+	var ctx = createCanvas("displayCanvas");
+	var displayCanvas = document.getElementById("displayCanvas");
+
+	var displayWidth = displayCanvas.width;
+	var displayHeight = displayCanvas.height;
+
+
+	var numCircles;
+	var maxMaxRad;
+	var minMaxRad;
+	var minRadFactor;
+	var circles;
+	var iterations;
+	var timer;
+	var drawsPerFrame;
+	var drawCount;
+	var bgColor,urlColor;
+	var TWO_PI = 2*Math.PI;
+	var lineWidth;
+
+	init();
+
+	function init() {
+		/*
+		In other experiments, you may wish to use more fractal curves ("circles")
+		and allow the radius of them to vary. If so, modify the next three variables.
+		*/
+		numCircles = 2;
+		maxMaxRad = 200;
+		minMaxRad = 300;
+
+		/*
+		We draw closed curves with varying radius. The factor below should be set between 0 and 1,
+		representing the size of the smallest radius with respect to the largest possible.
+		*/
+		minRadFactor = 0;
+
+		/*
+		The number of subdividing steps to take when creating a single fractal curve.
+		Can use more, but anything over 10 (thus 1024 points) is overkill for a moderately sized canvas.
+		*/
+		iterations = 5;
+
+		//number of curves to draw on every tick of the timer
+		drawsPerFrame = 5;
+
+		bgColor = "#FFFFFF";
+		urlColor = "#EEEEEE";
+
+		lineWidth = 1;
+
+		startGenerate();
+	}
+
+	function startGenerate() {
+		drawCount = 0;
+		ctx.setTransform(1,0,0,1,0,0);
+
+		ctx.clearRect(0,0,displayWidth,displayHeight);
+
+		setCircles();
+
+		if(timer) {clearInterval(timer);}
+		timer = setInterval(onTimer,1000/50);
+	}
+
+	function setCircles() {
+		var i;
+		var r0,g0,b0;
+		var r1,g1,b1;
+		var c0,c1;
+		var maxR, minR;
+		var grad;
+		var phase = Math.random()*TWO_PI;
+
+		circles = [];
+
+		for (i = 0; i < numCircles; i++) {
+			maxR = minMaxRad+Math.random()*(maxMaxRad-minMaxRad);
+			minR = minRadFactor*maxR;
+			var c = randomInt(255);
+			r = c;
+			g = c;
+			b = c;
+
+			var newCircle = {
+				centerX: -maxMaxRad,
+				centerY: displayHeight/2-50,
+				maxRad : maxR,
+				minRad : minR,
+				color: "rgba(0,0,0,0.15)",
+				fillColor: rgba(r, g, b, 0.5),
+				param : 0,
+				changeSpeed : 1/600,
+				phase : Math.random()*TWO_PI, //the phase to use for a single fractal curve.
+				globalPhase: phase, //the curve as a whole will rise and fall by a sinusoid.
+				};
+			circles.push(newCircle);
+			newCircle.pointList1 = setLinePoints(iterations);
+			newCircle.pointList2 = setLinePoints(iterations);
+		}
+	}
+
+	function onTimer() {
+		var i,j;
+		var c;
+		var rad;
+		var point1,point2;
+		var x0,y0;
+		var cosParam;
+
+		var xSqueeze = 0.3; //cheap 3D effect by shortening in x direction.
+
+		var yOffset;
+
+		//draw circles
+		for (j = 0; j < drawsPerFrame; j++) {
+
+			drawCount++;
+
+			for (i = 0; i < numCircles; i++) {
+				c = circles[i];
+				c.param += c.changeSpeed;
+				if (c.param >= 1) {
+					c.param = 0;
+
+					c.pointList1 = c.pointList2;
+					c.pointList2 = setLinePoints(iterations);
+				}
+				cosParam = 0.5-0.5*Math.cos(Math.PI*c.param);
+
+				ctx.strokeStyle = c.color;
+				ctx.lineWidth = lineWidth;
+				ctx.fillStyle = c.fillColor;
+				ctx.beginPath();
+				point1 = c.pointList1.first;
+				point2 = c.pointList2.first;
+
+				//slowly rotate
+				c.phase += 0.0001;
+
+				theta = c.phase;
+				rad = c.minRad + (point1.y + cosParam*(point2.y-point1.y))*(c.maxRad - c.minRad);
+
+				//move center
+				c.centerX += 0.25;
+				c.centerY += 0.02;
+
+				//stop when off screen
+				if (c.centerX > displayWidth + maxMaxRad) {
+					clearInterval(timer);
+					timer = null;
+				}
+
+				//Drawing the curve involves stepping through a linked list of points defined by a fractal subdivision process.
+				//It is like drawing a circle, except with varying radius.
+				x0 = c.centerX + xSqueeze*rad*Math.cos(theta);
+				y0 = c.centerY + rad*Math.sin(theta);
+				ctx.lineTo(x0, y0);
+				while (point1.next != null) {
+					point1 = point1.next;
+					point2 = point2.next;
+					theta = TWO_PI*(point1.x + cosParam*(point2.x-point1.x)) + c.phase;
+					rad = c.minRad + (point1.y + cosParam*(point2.y-point1.y))*(c.maxRad - c.minRad);
+					x0 = c.centerX + xSqueeze*rad*Math.cos(theta);
+					y0 = c.centerY + rad*Math.sin(theta);
+					ctx.lineTo(x0, y0);
+				}
+				ctx.closePath();
+				ctx.stroke();
+				//ctx.fill();
+
+			}
+		}
+	}
+
+	//Here is the function that defines a noisy (but not wildly varying) data set which we will use to draw the curves.
+	function setLinePoints(iterations) {
+		var pointList = {};
+		pointList.first = {x:0, y:1};
+		var lastPoint = {x:1, y:1}
+		var minY = 1;
+		var maxY = 1;
+		var point;
+		var nextPoint;
+		var dx, newX, newY;
+		var ratio;
+
+		var minRatio = 0.5;
+
+		pointList.first.next = lastPoint;
+		for (var i = 0; i < iterations; i++) {
+			point = pointList.first;
+			while (point.next != null) {
+				nextPoint = point.next;
+
+				dx = nextPoint.x - point.x;
+				newX = 0.5*(point.x + nextPoint.x);
+				newY = 0.5*(point.y + nextPoint.y);
+				newY += dx*(Math.random()*2 - 1);
+
+				var newPoint = {x:newX, y:newY};
+
+				//min, max
+				if (newY < minY) {
+					minY = newY;
+				}
+				else if (newY > maxY) {
+					maxY = newY;
+				}
+
+				//put between points
+				newPoint.next = nextPoint;
+				point.next = newPoint;
+
+				point = nextPoint;
+			}
+		}
+
+		//normalize to values between 0 and 1
+		if (maxY != minY) {
+			var normalizeRate = 1/(maxY - minY);
+			point = pointList.first;
+			while (point != null) {
+				point.y = normalizeRate*(point.y - minY);
+				point = point.next;
+			}
+		}
+		//unlikely that max = min, but could happen if using zero iterations. In this case, set all points equal to 1.
+		else {
+			point = pointList.first;
+			while (point != null) {
+				point.y = 1;
+				point = point.next;
+			}
+		}
+
+		return pointList;
+	}
+
+	function exportPressed(evt) {
+		//background - otherwise background will be transparent.
+
+
+	}
+
+	function regeneratePressed(evt) {
+		startGenerate();
+	}
+
+}
+
+</script>
+
+<title>HTML5 Canvas Generative Art</title>
+
+<style type="text/css">
+	body {background-color:#FFFFFF; color:#333333;}
+	h4 {font-family: sans-serif; color:#333333; font-size:16px;}
+	h3 {font-family: sans-serif; color:#333333;}
+	p {font-family: sans-serif; color:#333333; font-size:14px;}
+		#caption {position:absolute; width:1024px; text-align:center; top:520px; z-index:1}
+	a {font-family: sans-serif; color:#d15423; text-decoration:none;}
+		#displayCanvas {position:absolute; top:10px; z-index:0;}
+
+		#container {width:100%; height:100%; margin:auto;}
+</style>
+
+</head>
+<body>
+
+
+</div>
+</body>
+</html>

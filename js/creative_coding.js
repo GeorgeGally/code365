@@ -60,7 +60,9 @@ function rgbToHsl(r, g, b){
         }
         h /= 6;
     }
-
+    h = map(h, 0, 1, 0, 360);
+    s*=100;
+    l*=100;
     return [h, s, l];
 }
 
@@ -470,8 +472,13 @@ p.rotateDeg = function(deg){
   this.rotate(radians(deg));
 }
 
+function SinOsc(angle, ammt){
+  return Math.sin(angle) * ammt;
+}
 
-
+function CosOsc(angle, ammt){
+  return Math.cos(angle) * ammt;
+}
 
 // RANDOM UTILS
 
@@ -826,6 +833,10 @@ return this;
 }
 
 
+function lerp(v0, v1, t) {
+    return v0*(1-t)+v1*t
+}
+
 
 var Vector = function(_x, _y, _z){
   this.x = _x || 0;
@@ -1054,7 +1065,9 @@ p.clearScreen = function (_x, _y, _w, _h){
 }
 
 
-
+function mag(x, y){
+  return Math.sqrt(x * x + y * y);
+}
 
 var mousePressed = 0;
 var mouseReleased = 0;

@@ -43,8 +43,10 @@ for (var i = 0; i < grid.length; i++) {
   }
 }
 
+ctx.background(0);
+
 function draw() {
-  ctx.background(0);
+  ctx.background(0, 0.02);
   ctx2.clearRect(0, 0, w, h);
   ctx.fillStyle = "white";
   ctx2.fillStyle = "black";

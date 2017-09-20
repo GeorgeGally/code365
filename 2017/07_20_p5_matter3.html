@@ -8,6 +8,9 @@
 
 
 <script language="javascript" src="../js/p5.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
 <script language="javascript" src="../js/matter.min.js"></script>
 
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
@@ -59,7 +62,12 @@ function setup(){
 function draw(){
 	background(255);
 	fill(0);
-
+	sensitivity = 80;
+	motion = motionDetection();
+	for (var i = 0; i < motion.length; i++) {
+		var m = motion[i];
+		if(chance(5)) circles.push(new Box(m.x, m.y, 20));
+	}
 	for (var i = 0; i < circles.length; i++) {
 		var b = circles[i];
 		b.show();
@@ -157,7 +165,7 @@ $('#myContainer').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' contrast('+ C
 
 </script>
 
-
+<script language="javascript" src="../js/motion_detection.js"></script>
 
 
 </body>

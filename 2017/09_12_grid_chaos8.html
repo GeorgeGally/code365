@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/tween.min.js"></script>
+<script language="javascript" src="../js/perlin_noise.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body style="background: #fff">
+
+<script>
+
+var hidden_ctx = createCanvas("hidden_canvas");
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+ctx2.font = "bold 20px Arial";
+ctx2.textAlign = "center";
+
+var num = 10;
+var sz = 500;
+var sampleSize = 20;
+var engine = new particleEngine(80, 50);
+engine.setSpeed(0, 1);
+engine.setColour("black");
+var particles = engine.particles;
+console.log(particles)
+var imgData;
+
+ctx.strokeStyle = rgb(0);
+
+ctx.font = hidden_ctx.font = "200pt Helvetica";
+hidden_ctx.fillStyle="blue";
+ctx.textAlign = hidden_ctx.textAlign = "center";
+hidden_ctx.textBaseline = "middle";
+var words = ['Time'];
+
+for (var i = engine.particles.length-1; i >= 0 ; i--) {
+  var p = engine.particles[i];
+  p.sz = 30;
+  p.c = randomGrey(100);
+  p.l = random(0.1,1);
+  p.noisy = random(1,8)/10001;
+  p.border = false;
+  //p.pos.x = p.target.x -= 500;
+  //p.pos.y = p.target.y -= 500;
+  p.pos.x > w/2 ? speedx = random(0.1,0.2) : speedx = random(-0.2,0.1);
+  speedy = random(-0.2, 5);
+  //p.pos.y > h/2 ? speedy = random(1,2) : speedy = random(-2,-1);
+  p.speed = new Vector(speedx, speedy);
+}
+
+//brightSpark();
+// outside();
+
+ctx.shadowOffsetY = 2;
+ctx.shadowBlur = 8;
+ctx.shadowColor = "black";
+
+function draw(){
+
+  ctx.background(255, 0.9);
+  ctx2.clearRect(0, 0, w, h);
+  //brightSpark();
+  for (var i = engine.particles.length-1; i >= 0 ; i--) {
+    var p = engine.particles[i];
+    ctx.fillStyle = p.c;
+    // p.target.x = p.start.x + random(-mouseX/10, mouseX/10);
+    // p.target.x = p.start.x + CosOsc(frameCount/10 + i + mouseX/10, 10);
+    // p.target.y = p.start.y + SinOsc(frameCount/10 + i + mouseY/10, 10);
+    moveParticle(p, i);
+    //p.pos.x = p.start.x + CosOsc(frameCount/10 + i + p.row, 10);
+    //p.pos.y = p.start.y + SinOsc(frameCount/10 + i + p.col, 5);
+    ctx.LfillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+  }
+  ctx2.lineWidth = 40;
+  ctx2.save();
+  var line_width = SinOsc(frameCount/10, 300)
+  ctx2.translate(w/2, h/2);
+  ctx2.rotateDegrees(-45);
+  ctx2.strokeStyle = "white";
+  ctx2.strokeRect(-line_width/2, 0, line_width, 20);
+  ctx2.fillStyle = "black";
+  ctx2.fillRect(-line_width/2, 0, line_width, 20);
+  ctx2.restore();
+
+  //ctx.fillStyle = "red";
+  //ctx.fillEllipse(w/2 + line_width/2, h/2 - line_width/2, 10, 10);
+  //addParticle(random(w), random(10));
+
+}
+
+function moveParticle(p, i){
+  // p.target.x += p.speed.x;
+  // p.target.y += p.speed.y;
+  // p.speed.x -= SinOsc(frameCount/10 + i, 2);
+  // p.speed.y += SinOsc(frameCount/5 + i/5, 4);
+
+  // p.target.x = p.start.x + 180 * PerlinNoise.noise(frameCount/120, i, p.noisy*.07) - 90;
+  p.pos.x = p.start.x + Math.cos(i + frameCount/100) * 80;
+  //p.target.y = p.start.y + 180 * PerlinNoise.noise(frameCount/100, i, p.noisy) - 90;
+  p.pos.y = p.start.y + Math.sin(i + frameCount/50) * 80;
+//  p.sz = CosOsc(frameCount/10 + i + mouseX/10, 20);
+  // p.pos.x = tween(p.pos.x, p.target.x, p.tween_speed);
+  // p.pos.y = tween(p.pos.y, p.target.y, p.tween_speed);
+  //engine.offCanvasTest(p);
+}
+
+function addParticle(x, y){
+  engine.add(x, y);
+  var p = engine.last;
+  p.sz = 1;
+  p.c = randomGrey(100);
+  p.l = random(0.1,1);
+  p.noisy = random(1,8)/10001;
+  p.edge = false;
+  p.pos.x > w/2 ? speedx = random(0.1,0.2) : speedx = random(-0.2,0.1);
+  speedy = random(-0.2, 5);
+  //p.pos.y > h/2 ? speedy = random(1,2) : speedy = random(-2,-1);
+  p.speed = new Vector(speedx, speedy);
+}
+
+
+var ww = randomInt(0,words.length-1);
+
+function brightSpark(){
+
+  ctx.background = rgb(0, 0, 0);
+  ctx.fillStyle = "red";
+	ctx.fillText(words[ww], w/2, h/2);
+	//draw();
+	imgData = ctx.getImageData(0, 0, w, h).data;
+
+  for (var i = 0; i < engine.length; i++) {
+    var p = engine.particles[i];
+
+  // for (var y = 0; y < h; y+= sampleSize) {
+  //
+	// 	 for (var x = 0; x < w; x+= sampleSize) {
+    // var pt = Math.round((p.pos.y * w + p.pos.x)*4);
+		// 	//var pt = Math.round(y * w + x)*4;
+    //   var r = imgData[pt];
+    //   var g = imgData[pt+1];
+    //   var b = imgData[pt+2];
+    //   var bright = brightness(r, g, b, 100);
+    //   if(i%100 == 0) console.log(r);
+    //   if (bright > 80) {
+    //
+    //     p.start.y = p.pos.y - bright/10;
+    //   }
+    var c = samplePoint(imgData, p.pos.x, p.pos.y);
+    console.log(brightness(c.r, c.g, c.b));
+
+    }
+
+	//hidden_ctx.clearRect(0,0, w, h);
+}
+
+
+function samplePoint(buffer, x, y) {
+        var ammt = Math.round(mouseX/100);
+         var pos = (x + y * w);
+         var b = (buffer[pos] >> 16) & 0xff;
+         var g = (buffer[pos] >> 8) & 0xff;
+         var r = (buffer[pos] >> 0) & 0xff;
+         r = sticky(r, ammt);
+         g = sticky(g, ammt);
+         b = sticky(b, ammt);
+         return {r:r, g: g, b:b};
+}
+
+
+</script>
+
+</body>
+</html>

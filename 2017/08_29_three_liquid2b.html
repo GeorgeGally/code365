@@ -263,11 +263,11 @@
 				sun.position.set( 300, 400, 175 );
 				scene.add( sun );
 
-				var sun2 = new THREE.DirectionalLight( 0xffffff, 0.01 );
-				sun2.position.set( 200, 250, -200 );
-				scene.add( sun2 );
+				// var sun2 = new THREE.DirectionalLight( 0xffffff, 0.01 );
+				// sun2.position.set( 200, 250, -200 );
+				// scene.add( sun2 );
 
-				var light = new THREE.HemisphereLight( 0x333333, 0x33333ff, 0.1 );
+				var light = new THREE.AmbientLight( 0xffffff, 0.3 );
 				scene.add( light );
 
 				renderer = new THREE.WebGLRenderer();

@@ -28,12 +28,12 @@ var ss = 1.6;
 var brt;
 var img, s_img;
 var inverse, sound;
-var ww = Math.round(w/block_size);
-var hh = Math.round(h/block_size);
+var ww = Math.round(w/block_size)+10;
+var hh = Math.round(h/block_size)+10;
 
 var engine = new particleEngine(ww, hh);
 
-//console.log(engine);
+console.log(engine);
 
 for (var i = 0; i < engine.length; i++) {
   p = engine.particles[i];
@@ -61,9 +61,13 @@ function draw() {
   var old_Y = 0;
   var counter = 0;
   for (var y = 0; y < h; y += block_size) {
+
     old_X = 0;
+
     for (var x = 0; x < w; x += block_size) {
+
       var p = engine.particles[counter];
+      console.log(counter)
       var pos = Math.round(x + y * w);
       var r = buffer[pos] >> 0 & 0xff;
       var g = buffer[pos] >> 8 & 0xff;

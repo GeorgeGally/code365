@@ -74,6 +74,7 @@ function draw() {
   for (var y = 0; y < h; y += block_size) {
     old_X = 0;
     for (var x = 0; x < w; x += block_size) {
+
       var p = engine.particles[counter];
       var pos = x + y * w;
       var r = buffer[pos] >> 0 & 0xff;

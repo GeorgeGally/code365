@@ -24,32 +24,37 @@ var ctx = createCanvas("canvas1");
 var ctx2 = createCanvas("canvas2");
 var img = new Image();
 
-var POINTS = 500;
+var POINTS = 1500;
 var RADIUS = 90;
-var FORCE = 1.5;
-var RESISTANCE = 0.9;
+var FORCE = 3.5;
+var RESISTANCE = 0.2;
 var MOUSE_RADIUS = 100;
 var CONNECTIONS = POINTS / RADIUS;
-var MIN_SIZE = 10;
-var MAX_SIZE = 50;
+var MIN_SIZE = 5;
+var MAX_SIZE = 10;
 var GRAVITY = 0.1;
-var BLUR = 9.2;
-var CONTRAST = 79;
+var BLUR = 0;
+var CONTRAST = 9;
 
 var bounce_factor = 0.8;
 
 var threshold_res = 4;
 var threshold_ammt = 81;
-
+ctx2.lineWidth = 20;
 
 
 var engine = new particleEngine(0);
 
-$('#canvas1').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' contrast('+ CONTRAST + ')');
+$('#canvas1').css('-webkit-filter', 'blur(' + BLUR + 'px');
+
+for (var i = 0; i < 500; i++) {
+  addParticle();
+}
+
 
 function draw() {
 
-  ctx.background(250);
+  ctx.background(250, 0.4);
   ctx2.clearRect(0, 0, w, h);
   ctx2.shadowColor = rgba(80,80,80, 0.5);
   ctx2.shadowBlur = 52;
@@ -65,8 +70,8 @@ function draw() {
     ctx.fillEllipse(p.pos.x, p.pos.y, p.sz-1, p.sz-1);
 
   }
-  ctx2.fillStyle = "white";
-  ctx2.HfillEllipse(w/2, h/2, 200, 200);
+  ctx2.strokeStyle = "white";
+  ctx2.HstrokeEllipse(w/2, h/2, 200, 200);
 
 }
 
@@ -76,9 +81,9 @@ function addParticle(){
   var last = engine.last;
   last.resistance = random(RESISTANCE, 0.999999);
   last.sz = randomInt(MIN_SIZE, MAX_SIZE);
-  last.c = rgb(180-engine.last.sz*6);
+  last.c = rgb(0);
   last.start = new Vector(last.pos.x, last.pos.y);
-  if(engine.particles > 300) engine.particles.splice(0,1);
+  if(engine.particles > POINTS) engine.particles.splice(0,1);
 }
 
 
@@ -150,7 +155,7 @@ settings.addRange("BLUR", 1, 50, BLUR, 0.1, function(value){
 
 
 
-settings.addRange("CONTRAST", 1, 200, CONTRAST, 0.1, function(value){
+settings.addRange("CONTRAST", 0, 200, CONTRAST, 0.1, function(value){
   CONTRAST = value;
   $('#canvas1').css('-webkit-filter', 'blur(' + BLUR + 'px)' + ' CONTRAST('+ value+')');
 });

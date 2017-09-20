@@ -1,0 +1,218 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script>var module = {};</script>
+  <script language="javascript" src="../js/delaunay.js"></script>
+
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+
+<script>
+var ctx = createCanvas('canvas1');
+var ctx2 = createCanvas('canvas2');
+var ctx3 = createCanvas('canvas3');
+
+var engine = new particleEngine(15,5);
+engine.setSpeed(-6,6, -6,6)
+// var particle = engine.particles[0];
+console.log(engine)
+var points = [];
+reset();
+
+function reset(){
+
+  points = [];
+  for (var i = 0; i < engine.length; i++) {
+    var p = engine.get(i);
+    // p.pos.x+=p.speed.x;
+    // p.pos.y+=p.speed.y;
+    var pt = [p.pos.x, p.pos.y];
+    points.push(pt);
+  }
+  // var pt = [0, 0];
+  // points.push(pt);
+  //
+  // var pt = [w, 0];
+  // points.push(pt);
+  //
+  // var pt = [0, h];
+  // points.push(pt);
+  //
+  // var pt = [w, h];
+  // points.push(pt);
+
+  delaunay = new Delaunator(points);
+  ctx.drawImage(ctx3.canvas, 0, 0, w, h);
+}
+
+// for (var i = 0; i < 1500; i++) {
+//   var pt = [randomInt(w), randomInt(h)];
+//   points.push(pt);
+// }
+
+console.time('delaunay');
+var delaunay = new Delaunator(points);
+console.timeEnd('delaunay');
+
+
+
+var minX = Infinity;
+var minY = Infinity;
+var maxX = -Infinity;
+var maxY = -Infinity;
+for (var i = 0; i < points.length; i++) {
+    var x = points[i][0];
+    var y = points[i][1];
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+}
+
+var padding = 1;
+// var w = 1024;
+// var h = (w - 2 * padding) * (maxY - minY) / (maxX - minX) + 2 * padding;
+
+ctx.canvas.style.width = w + 'px';
+ctx.canvas.style.height = h + 'px';
+ctx2.canvas.style.width = w + 'px';
+ctx2.canvas.style.height = h + 'px';
+ctx3.canvas.style.width = w + 'px';
+ctx3.canvas.style.height = h + 'px';
+// canvas.width = w;
+// canvas.height = h;
+
+if (window.devicePixelRatio >= 2) {
+    ctx.canvas.width = w * 2;
+    ctx.canvas.height = h * 2;
+    ctx.scale(2, 2);
+    ctx2.canvas.width = w * 2;
+    ctx2.canvas.height = h * 2;
+    ctx2.scale(2, 2);
+    ctx3.canvas.width = w * 2;
+    ctx3.canvas.height = h * 2;
+    ctx3.scale(2, 2);
+}
+
+var ratio = (w - 2 * padding) / Math.max(maxX - minX, maxY - minY);
+
+ctx2.lineJoin = 'round';
+ctx2.lineCap = 'round';
+
+var updated = true;
+
+
+function drawTrail(p){
+    points.push([p.pos.x, p.pos.y]);
+
+    if (points.length > 5000) points.splice(0,1);
+    delaunay = new Delaunator(points);
+
+    p.start.x = getX(points.length-1);
+    p.start.y = getY(points.length-1);
+    // p.start.x = p.pos.x;
+    // p.start.y = p.pos.y;
+}
+
+// canvas.onmousemove = function (e) {
+//     points.push([
+//         (e.layerX - padding) / ratio + minX,
+//         (e.layerY - padding) / ratio + minY
+//     ]);
+//     console.time('delaunay');
+//     delaunay = new Delaunator(points);
+//     console.timeEnd('delaunay');
+//     //updated = true;
+// }
+
+function getX(i) {
+    return padding + ratio * (points[i][0] - minX);
+}
+function getY(i) {
+    return padding + ratio * (points[i][1] - minY);
+}
+
+
+ctx.strokeStyle = rgba(0, 0.5);
+ctx.lineWidth = 0.2;
+
+function draw() {
+    // if (!updated) return;
+    // updated = false;
+    ctx.background(255, 0.05);
+    ctx2.clearRect(0, 0, w, h);
+    ctx3.clearRect(0, 0, w, h);
+
+    for (var i = 0; i < engine.length; i++) {
+      var p = engine.get(i);
+      p.pos.x+=p.speed.x;
+      p.pos.y+=p.speed.y;
+      if(bounce(p.pos.x, 0, w)) p.speed.x*=-1;
+      if(bounce(p.pos.y, 0, h)) p.speed.y*=-1;
+      ctx2.fillStyle = "red";
+      ctx2.LfillEllipse(p.pos.x, p.pos.y, 4);
+      //ctx2.line(p.pos.x, p.pos.y, p.start.x, p.start.y);
+      if(frameCount%20 == 0) drawTrail(p);
+    }
+
+    var triangles = delaunay.triangles;
+    var hull = delaunay.hull;
+
+    ctx3.beginPath();
+    for (var i = 0; i < triangles.length; i += 3) {
+        var p0 = triangles[i];
+        var p1 = triangles[i + 1];
+        var p2 = triangles[i + 2];
+
+        ctx3.moveTo(getX(p0), getY(p0));
+        ctx3.lineTo(getX(p1), getY(p1));
+        ctx3.lineTo(getX(p2), getY(p2));
+        ctx3.closePath();
+    }
+    ctx3.strokeStyle = rgb(0);
+    // ctx.fillStyle = rgb(SinOsc(i/10, 255));
+    // ctx.fill();
+    ctx3.lineWidth = 0.5;
+    ctx3.stroke();
+    //
+
+    // ctx.fillStyle = 'rgba(255,255,0,0.1)';
+    // ctx.fill();
+
+    // ctx.beginPath();
+    // ctx.moveTo(getX(hull.i), getY(hull.i));
+    // var e = hull;
+    // do {
+    //     ctx.lineTo(getX(e.next.i), getY(e.next.i));
+    //     e = e.next;
+    // } while (e !== hull);
+    // ctx.lineWidth = 1;
+    // ctx.strokeStyle = 'red';
+    // ctx.stroke();
+
+    ctx3.fillStyle = 'black';
+    //ctx.beginPath();
+    for (var i = 0; i < points.length; i++) {
+        ctx3.fillRect(getX(i) - 1.5, getY(i) - 1.5, 3, 3);
+    }
+    //ctx.fill();
+    if(chance(100)) reset();
+}
+
+</script>
+
+</body>
+</html>

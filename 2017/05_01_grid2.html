@@ -50,11 +50,15 @@ for (var i = 0; i < grid.length; i++) {
   }
 }
 
+ctx.background(0);
+
+
 function draw() {
 
-  ctx.background(0);
-  //ctx2.clearRect(0, 0, w, h);
+  ctx.background(0, 0.1);
+  ctx2.clearRect(0, 0, w, h);
   ctx.fillStyle = "white";
+  ctx2.fillStyle = "white";
   //ctx2.fillStyle = "black";
 
   if (chance(20)) shuffleGrid();
@@ -137,12 +141,12 @@ function drawGrid(){
     var g = grid.particles[i];
     var g2 = grid2.particles[i];
     ctx.fillStyle = "white";
-    ctx.strokeStyle = rgba(255);
+    ctx.strokeStyle = rgba(255, 0.2);
     if(dist(g.old.x, g.old.y, g.pos.x, g.pos.y) < 150) {
     //ctx.line(g.old.x, g.old.y, g.pos.x, g.pos.y);
       //if(g.old.x != g.pos.x && g.old.y != g.pos.y)
-      ctx.fillStyle = rgba(255, 0.2);
-      ctx.fillEllipse(g.old.x, g.old.y, 26, 26);
+      //ctx.fillStyle = rgba(255, 0.2);
+      //ctx.fillEllipse(g.old.x, g.old.y, 26, 26);
     }
     //ctx.fillStyle = "red";
     //ctx.fillEllipse(g.start.x, g.start.y, 4, 4);
@@ -150,13 +154,13 @@ function drawGrid(){
     if(g.on) {
       ctx.fillStyle = "white";
       //ctx.fillText(g2.old_me, g.pos.x, g.pos.y + 20);
-      ctx.LfillEllipse(g.pos.x, g.pos.y, 6, 6);
+      ctx2.LfillEllipse(g.pos.x, g.pos.y, 6, 6);
 
     for (var j = i+1; j < grid.length-1; j++) {
       var gg = grid.particles[j];
-      if(dist(gg.pos.x, gg.pos.y, g.pos.x, g.pos.y) < 20) {
+      if(dist(gg.pos.x, gg.pos.y, g.pos.x, g.pos.y) < 30) {
         ctx.line(gg.pos.x, gg.pos.y, g.pos.x, g.pos.y);
-        ctx.LfillEllipse(gg.pos.x, gg.pos.y, 6, 6);
+        //ctx2.LfillEllipse(gg.pos.x, gg.pos.y, 6, 6);
       }
     }
     }

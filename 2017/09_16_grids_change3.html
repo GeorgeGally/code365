@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+      <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="../js/creative_coding.js"></script>
+    <script language="javascript" src="../js/quicksettings.min.js"></script>
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/perlin_noise.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body style="background: #efefef">
+
+<script>
+
+var ctx = createCanvas('canvas1');
+var samplesize = 15;
+var radius = 200;
+
+var engine = new particleEngine(40, 40);
+var mode = 1;
+var sin_up = false;
+
+var wave_ht = 50;
+var fly_wave_ht = 50;
+
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+  p.sz = 20;
+  p.engine = new particleEngine(6, 1);
+  p.flies = p.engine;
+  p.noisy = random(1,8)/10001;
+  for (var j = 0; j < p.flies.length; j++) {
+    var f = p.flies.particles[j];
+    f.pos.y = p.pos.y;
+    f.target.y = p.target.y;
+  }
+}
+
+lineUpGrid();
+
+function draw(){
+
+  ctx.background(245, 0.6);
+  ctx.strokeStyle = rgb(0);
+  ctx.fillStyle = rgb(0);
+
+  // if (chance(400)) lineUpGrid();
+  // if (chance(400)) drawCircle();
+  // if (chance(400)) drawSin();
+  // if (chance(400)) drawRings();
+  // if (chance(400)) drawUpDown();
+  // if (chance(400)) sin_up != sin_up;
+
+    for (var i = engine.particles.length - 1; i >= 0; i--) {
+
+    p = engine.particles[i];
+
+    moveParticle(p);
+    drawParticle(p);
+  }
+
+
+
+}
+
+
+//////////////
+
+function lineUpGrid(){
+  mode = 1;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    //console.log(p)
+    p.target.x = p.start.x;
+    p.target.y = p.start.y;
+    if(i == 10 ) console.log(p.target)
+    // for (var j = 0; j < p.flies.particles.length; j++) {
+    //   var f = p.flies.particles[j];
+    //   f.target.x = p.pos.x + CosOsc(p.angle + frameCount/10, 50);
+    //   f.target.y = p.pos.y + SinOsc(p.angle + frameCount/10, 50);
+    // }
+  }
+}
+
+function drawCircle(){
+  mode = 2;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    p.target.x = w/2 + Math.cos(p.angle) * radius;
+    p.target.y = h/2 + Math.sin(p.angle) * radius;
+  }
+}
+
+function drawSin(){
+  mode = 3;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    p.target.x = p.start.x;
+    p.target.y = CosOsc(p.angle + frameCount/100, radius);
+  }
+}
+
+function drawRings(){
+  mode = 4;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    p.target.x = w/2;
+    p.target.y = h/2;
+    p.target_sz = 20 + p.me * 5;
+  }
+}
+
+
+function drawUpDown(){
+  console.log("drawUpDown");
+  mode = 5;
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+    p.target.x = p.start.x;
+    p.target.y = h/2 + h/2*Math.sin(frameCount/100) + Math.cos(p.angle + frameCount/100) * radius/2;
+  }
+}
+
+
+
+
+
+function moveParticle(p){
+
+  // if (sin_up) {
+  //   hh = h/2;
+  // } else {
+  //   hh = h/2 + Math.sin(frameCount/100) * h/4;
+  // }
+  // if (mode == 3 || mode == 5) {
+  //   p.target.y = hh + Math.cos(p.angle + frameCount/20) * radius/2;
+  // }
+  // if (mode == 5) {
+  //   p.target.y = h/2 + h/2*Math.sin(frameCount/100) + Math.cos(p.angle + frameCount/100) * radius/2;
+  // }
+
+  // if (mode != 4) {
+  //   p.sz = Math.sin(p.angle + frameCount/20) * 20;
+  // }
+  //if (p.alpha<1) p.alpha+=0.0019999;
+
+  //if(mode == "line") {
+  // p.target.x = p.start.x + CosOsc( i/10 + p.angle + frameCount/10, wave_ht);
+  // p.target.y = p.start.y + SinOsc( i/10 + p.angle + frameCount/10, wave_ht);
+  //}
+  // console.log(PerlinNoise.noise(
+  //     wave_ht + frameCount/10,
+  //     p.me/10,
+  //     p.noisy*.07))
+  p.pos.x = p.start.x + PerlinNoise.noise(
+      p.pos.x/100 + Math.sin(i/2 + frameCount/50),
+      frameCount/100,
+      p.noisy*.07
+    ) * wave_ht - wave_ht/2;
+
+    p.pos.y = p.start.y + PerlinNoise.noise(
+        p.pos.x/100 + Math.sin(i/2 + frameCount/50),
+        frameCount/100,
+        p.noisy*.07
+      ) * wave_ht - wave_ht/2;
+
+  //p.pos.y = p.start.y + Math.sin(i/2 + frameCount/10) * 20;
+  // p.target.y = p.start.y + PerlinNoise.noise(
+  //   p.pos.y *.0007,
+  //   frameCount/10, p.noisy*0.2) * wave_ht - wave_ht/2;
+
+  //p.pos.x = tween(p.pos.x, p.target.x, 20);
+  // p.pos.y = tween(p.pos.y, p.target.y, 20);
+  //p.pos.x += p.speed.x;
+  //p.pos.y += p.speed.y;
+  //p.target_sz = CosOsc( i/10 + p.angle + frameCount/10, 30);
+  p.sz = tween(p.sz, p.target_sz, 20);
+
+  for (var j = 0; j < p.flies.length; j++) {
+    var f = p.flies.particles[j];
+    //console.log(b)
+    var s = SinOsc(f.angle, 50);
+    f.angle += 0.1;
+    f.target.x = p.pos.x + CosOsc(j/10 + f.angle + frameCount/10, fly_wave_ht);
+    f.target.y = p.pos.y + SinOsc(j/10 + f.angle + frameCount/50, fly_wave_ht);
+    // f.target.x = f.pos.x + Math.cos(b.angle) * (50 + s/6);
+    // f.target.y = f.pos.y + Math.sin(b.angle) * (50 + s/6);
+    f.pos.x = tween(f.pos.x, f.target.x, 20);
+    f.pos.y = tween(f.pos.y, f.target.y, 20);
+    f.sz = s/5;
+  }
+}
+
+
+function drawParticle(p){
+ctx.fillStyle = "black";
+//  if (mode == 4) {
+//  ctx.strokeEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+//} else {
+  ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+  //ctx.line(p.pos.x, p.pos.y, p.start.x, p.start.y);
+//}
+//ctx.fillStyle = "red";
+for (var j = 0; j < p.flies.length; j++) {
+  var f = p.flies.particles[j];
+  //ctx.LfillEllipse(f.pos.x, f.pos.y, f.sz, f.sz);
+}
+}
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+// // settings.addRange(title, min, max, value, step, callback);
+settings.addRange("wave_ht", 10, 300, wave_ht, 1, function(value){
+  wave_ht = value;
+});
+
+settings.addRange("fly_wave_ht", 10, 300, fly_wave_ht, 1, function(value){
+  fly_wave_ht = value;
+});
+
+</script>
+
+</body>
+
+</html>
+wave_ht

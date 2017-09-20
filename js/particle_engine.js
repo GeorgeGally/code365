@@ -1,7 +1,7 @@
 var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 
-	var gw = _gw || 1;
-	var gh = _gh || 1;
+	var gw = _gw || 0;
+	var gh = _gh || 0;
 	this.start = {x: _startx || 0 , y: _starty || 0};
 	this.width = _grid_w || w;
   this.height = _grid_h || h;
@@ -44,7 +44,12 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 	this.setSpeed = function(_x1 , _x2, _y1 , _y2) {
 		for (var i = 0; i < this.particles.length; i++) {
 			var p = this.particles[i];
-			p.speed = new Vector(random(_x1 , _x2), random(_y1 , _y2));
+			if(!_y1) {
+				p.speed = new Vector(_x1 , _x2);
+			} else {
+				p.speed = new Vector(random(_x1 , _x2), random(_y1 , _y2));
+			}
+
 		}
 	}
 
