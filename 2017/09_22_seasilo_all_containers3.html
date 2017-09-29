@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Sea Silo</title>
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/physics2.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+<div id="container"></div>
+<script>
+
+//130 million containers shipped per yr
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var MAXPARTICLES = 87233;
+var counter = 10;
+ctx.background(0);
+ctx2.font = "16px Arial";
+var engine = new particleEngine(20, 60, w + 100, h);
+
+
+var counter = 0;
+var speed = randomInt(4, 12);
+
+for (var i = 0; i < engine.particles.length; i++) {
+
+  var p = engine.particles[i];
+  if (i%engine.grid.num_items_horiz == 0) speed = randomInt(4, 12);
+  p.speed.x = speed;
+  p.speed.y = 0;
+  p.dir = posNeg();
+  p.c = randomGrey(0, 255, 50);
+
+}
+
+
+
+function draw() {
+
+  ctx.background(0, 1)
+  ctx2.clearRect(0, 0, w, h);
+
+  drawParticles();
+  drawGraph();
+}
+
+
+function drawParticles(){
+
+  for (var i = 0; i < engine.particles.length; i++) {
+
+    var p = engine.particles[i];
+
+    ctx.fillStyle = p.c;
+    p.pos.x +=  p.speed.x;
+
+    ctx.fillRect(p.pos.x, p.pos.y, engine.grid.spacing.x, engine.grid.spacing.y-1);
+    if(p.pos.x > w + 50) {
+      p.pos.x = -50;
+      counter++;
+    } else if(p.pos.x > w - engine.grid.spacing.x) {
+      //console.log(p.pos.y)
+      //ctx.fillRect(-engine.grid.spacing.x, p.pos.y, engine.grid.spacing.x, engine.grid.spacing.y);
+    }
+
+
+    //if(bounce(p.pos.y, 0, h)) p.dir *=-1;
+  }
+}
+
+function drawGraph(){
+  var ht = h - 100;
+  ctx2.fillStyle = "white";
+  var pos = map(counter, 0, 130000000/365, 0, w);
+  ctx2.fillText("Number of containers shipped globally each day: " + counter, w - 420, ht - 20);
+  ctx2.fillRect(0, ht, w, 6);
+  ctx2.fillStyle = "red";
+  ctx2.fillRect(0, ht, pos, 6);
+}
+
+
+
+</script>
+
+</body>
+</html>

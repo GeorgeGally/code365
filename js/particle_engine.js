@@ -2,6 +2,7 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 
 	var gw = _gw || 0;
 	var gh = _gh || 0;
+
 	this.start = {x: _startx || 0 , y: _starty || 0};
 	this.width = _grid_w || w;
   this.height = _grid_h || h;
@@ -19,20 +20,86 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 	this.pos = new Vector();
 	this.last = [];
 
-	var num_particles = gw * gh;
 	this.grid = new Grid(gw, gh,  this.width, this.height, this.start.x, this.start.y);
-	//console.log(this.grid);
+	var num_particles = this.grid.length;
+
 
 	this.setup = function() {
 
-	for (var i = 0; i < num_particles; i++) {
+		for (var i = 0; i < num_particles; i++) {
 
-	  var m = map(i, 0, num_particles, 0, 360);
-	  var cc = rgb(0);
-		this.add(this.grid.x[i], this.grid.y[i], cc, i);
+		  var cc = rgb(0);
+			this.add(this.grid.x[i], this.grid.y[i], cc, i);
+
+		}
 
 	}
 
+
+		this.add = function(_x, _y, _colour, _me){
+			//console.log(this.grid.grid);
+
+			var x = _x || w/2;
+			var y = _y || h/2;
+			var colour = _colour || "black";
+			var me = _me || this.particles.length;
+
+			var angle = radians(distributeAngles(me, this.particles.length));
+
+			if (this.grid.grid[me]) {
+				row = this.grid.grid[me].row
+				col = this.grid.grid[me].col
+			} else {
+				row = 1;
+				col = 1;
+			}
+
+			var speed =  new Vector(random(0.2,2), random(0.2,2));
+			var accel = new Vector(1,1);
+
+			var particle = {
+				pos: new Vector(x, y),
+				start: new Vector(x, y),
+				target: new Vector(x, y),
+				old: new Vector(x, y),
+				end: new Vector(x, y),
+				row: row,
+				col: col,
+				speed: speed,
+				start_speed: speed,
+				accel: accel,
+				start_accel: new Vector(accel.x, accel.y),
+				vel: speed,
+				dir: new Vector(1, 1),
+				acceleration: new Vector(1,1),
+				c: _colour,
+				alpha: 1,
+				tween_speed: this.tween_speed,
+				tween: true,
+				me: _me,
+				//parent: null,
+				r: 0,
+				sz: 5,
+				orig_sz: 5,
+				target_sz: 5,
+				target_size: 5,
+				size: 4,
+				on: true,
+				isSpring: false,
+				spring: 0.03,
+				friction: 0.98,
+				angle: angle,
+				engine: []
+		}
+
+			//console.log(particle)
+			this.particles.push(particle);
+			this.last = particle;
+			this.length = this.particles.length;
+			// this.spacing = 360/this.particles.length;
+			this.resetAngles();
+			// if (this.particles.length > this.MAXPARTICLES) this.particles.splice(0, 1);
+			// return particle;
 	}
 
 	this.draw = function(_ctx) {
@@ -100,70 +167,6 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 		return this.particles[i];
 	}
 
-	this.add = function(_x, _y, _colour, _me){
-		//console.log(this.grid.grid);
-
-		_x = _x || w/2;
-		_y = _y || h/2;
-		_colour = _colour || "black";
-		_me = _me || this.particles.length;
-
-		var angle = radians(distributeAngles(_me, this.particles.length));
-
-		if (this.grid.grid[_me]) {
-			row = this.grid.grid[_me].row
-			col = this.grid.grid[_me].col
-		} else {
-			row = 1;
-			col = 1;
-		}
-
-		var speed =  new Vector(random(0.2,2), random(0.2,2));
-		var accel = new Vector(1,1);
-
-		var particle = {
-			pos: new Vector(_x, _y),
-			start: new Vector(_x, _y),
-			target: new Vector(_x, _y),
-			old: new Vector(_x, _y),
-			end: new Vector(_x, _y),
-			row: row,
-			col: col,
-			speed: speed,
-			start_speed: speed,
-			accel: accel,
-			start_accel: new Vector(accel.x, accel.y),
-			vel: speed,
-			dir: new Vector(1, 1),
-			acceleration: new Vector(1,1),
-			c: _colour,
-			alpha: 1,
-			tween_speed: this.tween_speed,
-			tween: true,
-			me: _me,
-			//parent: null,
-			r: 0,
-			sz: 5,
-			orig_sz: 5,
-			target_sz: 5,
-			target_size: 5,
-			size: 4,
-			on: true,
-			isSpring: false,
-			spring: 0.03,
-			friction: 0.98,
-			angle: angle,
-			engine: []
-	}
-
-		this.particles.push(particle);
-		this.last = particle;
-		this.length = this.particles.length;
-		this.spacing = 360/this.particles.length;
-		this.resetAngles();
-		if (this.particles.length > this.MAXPARTICLES) this.particles.splice(0, 1);
-		return particle;
-}
 
 this.resetAngles = function() {
 	for (var i = 0; i < this.particles.length; i++) {
@@ -281,7 +284,7 @@ this.offCanvasTest = function(p){
 				if (this.reset) this.resetParticle(p);
 			};
 			if (p.pos.y < 0) {
-				p.pos.y = p.target.y =h;
+				p.pos.y = p.target.y = h;
 				if (this.reset) this.resetParticle(p);
 			};
 		}
@@ -341,7 +344,5 @@ this.respace = function(){
 	}
 }
 
-
-this.setup();
-
+	this.setup();
 }

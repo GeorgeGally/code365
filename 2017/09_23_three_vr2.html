@@ -1,0 +1,239 @@
+
+<html>
+
+<head>
+  <script language="javascript" src="../js/three.min.js"></script>
+  <script language="javascript" src='../js/threejs/controls/OrbitControls.js'></script>
+  <script language="javascript" src='../js/threejs/effects/StereoEffect.js'></script>
+  <!-- <script language="javascript" src="../js/threejs/extras/curves/CatmullRomCurve3.js"></script> -->
+  <script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+   <script language="javascript" src="../js/particle_engine.js"></script>
+
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <!-- <script language="javascript" src="../js/stats.js"></script> -->
+
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <script src="../js/jquery-1.10.1.min.js"></script>
+
+  <script language="javascript" src="../js/matter.min.js"></script>
+
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<body>
+<canvas></canvas>
+
+<script type="text/javascript">
+
+var ctx4 = createHiddenCanvas("canvas4");
+var ctx2 = createHiddenCanvas("canvas2");
+
+var ctx = createHiddenCanvas("canvas1");
+
+// var canvas2 = ctx2.canvas;
+
+var canvas2 = document.getElementById("canvas4");
+canvas2.width = w, canvas2.height = h;
+
+var ww = w, wh = h;
+var renderer = new THREE.WebGLRenderer({
+  canvas: document.querySelector("canvas")
+});
+
+renderer.setSize(ww, wh);
+renderer.shadowMap.enabled;
+
+var scene = new THREE.Scene();
+
+var clock = new THREE.Clock();
+
+//Create a perpsective camera
+//var camera = new THREE.PerspectiveCamera(45, ww / wh, 0.001, 1000);
+var camera = new THREE.PerspectiveCamera(95, 1, 0.001, 1500);
+camera.position.z = 10;
+
+var camera = new THREE.PerspectiveCamera(90, ww / wh, 0.001, 700);
+camera.position.z = 50;
+
+
+var ambiLight = new THREE.AmbientLight(0xffffff);
+ambiLight.position.set(10,10,100);
+scene.add(ambiLight);
+
+// var light = new THREE.DirectionalLight();
+// light.position.set(10,10,100);
+// scene.add(light);
+//
+// var light = new THREE.DirectionalLight();
+// light.position.set(10,10,-100);
+// scene.add(light);
+
+var tube_geom = new THREE.CylinderGeometry( 300, 300, 800, 420, 420, true );
+tube_geom.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));
+tube_geom.computeVertexNormals();
+
+var texture = new THREE.Texture(canvas);
+var texture2 = new THREE.Texture(canvas2);
+
+// var bumpMap = new THREE.Texture(canvas);
+// bumpMap.needsUpdate = true;
+
+texture.needsUpdate = true;
+texture.minFilter = THREE.LinearFilter;
+var videoMaterial = new THREE.MeshPhongMaterial({
+  color: 0xffffff,
+  specular: 0xffffff,
+  shininess: 20,
+  shading: THREE.FlatShading,
+  map: texture,
+  // metalness: 0.6, roughness: 1
+});
+
+texture2.needsUpdate = true;
+texture2.minFilter = THREE.LinearFilter;
+var videoMaterial2 = new THREE.MeshLambertMaterial({ map: texture2, metalness: 0.6, roughness: 0});
+
+
+//videoMaterial.bumpMap = bumpMap;
+var tube = new THREE.Mesh(tube_geom, videoMaterial);
+scene.add(tube);
+
+tube.position.set(0, 0, 0);
+// tube.material.bumpScale = 2;
+
+// var texture2 = new THREE.Texture(canvas2);
+// texture2.needsUpdate = true;
+// texture2.minFilter = THREE.LinearFilter;
+//
+//
+//
+//
+// var videoMaterial2 = new THREE.MeshBasicMaterial({
+// map: texture2
+// });
+
+
+// geometry
+//var floor_mesh = new THREE.SphereGeometry(300, 90, 800);
+// var floor_mesh = new THREE.CircleGeometry(300, 90);
+// var material = new THREE.MeshBasicMaterial({ color: '#000000' });
+//floor_mesh.applyMatrix(new THREE.Matrix4().makeScale(1, 1, -1));
+//_assignUVs(floor_mesh);
+var floor = new THREE.Mesh(tube_geom, videoMaterial2);
+scene.add( floor );
+floor.position.set(0, -680, 0);
+
+camera.position.set(0, 0, 300);
+// sky.position.set(-200, 0, 0);
+
+controls = new THREE.OrbitControls( camera, renderer.domElement );
+controls.enableDamping = true;
+controls.dampingFactor = 0.55;
+controls.noZoom = true;
+controls.noPan = true;
+// controls.target.set(
+//   camera.position.x + 0.001,
+//   camera.position.y,
+//   camera.position.z
+//   );
+
+var effect = new THREE.StereoEffect( renderer );
+effect.eyeSeparation = 10;
+effect.setSize( window.innerWidth, window.innerHeight );
+
+
+  var img = new Image();
+  img.src = "../img/textures/concrete4c.jpg";
+  engine = new particleEngine(0, 0);
+
+  var particles = [];
+  var radius = 180;
+  var max_particles = 1582;
+  var ratio = w/256;
+
+function draw(){
+
+  // ctx.globalCompositeOperation = "normal";
+  ctx.drawImage(img, 0, 0, w, h);
+  ctx.background(0, 0.1);
+    ctx2.clearRect(0, 0, w, h);
+
+  	// for (var i = 0; i < 256; i+=2) {
+      var vol = random(100);
+  		var x = random(w);
+      var y = h/2;
+  		addParticle(x, y, "#fff");
+  	//};
+  	moveParticles();
+    drawGraph();
+    if(chance(20) && counter < 1582) counter++;
+
+  ctx4.save();
+  ctx4.scale(1, -1);
+  ctx4.drawImage(ctx.canvas, 0, -h, w, h);
+  //ctx4.drawImage(ctx2.canvas, -w, 0, w, h);
+  ctx4.restore();
+  ctx4.background(0, 0.85);
+
+  // bumpMap.needsUpdate = true;
+  texture.needsUpdate = true;
+  texture2.needsUpdate = true;
+  //Render the scene
+  renderer.render(scene, camera);
+
+}
+
+
+
+  function addParticle(_x, _y, _colour){
+  	var particle = {
+  		x: _x,
+  		y: _y,
+  		c: _colour,
+  		speedx: random(-1,1),
+  		speedy: random(-3,3),
+  		sz: 18
+  	}
+
+  	particles.push(particle);
+    if(particles.length> max_particles) particles.splice(0,1);
+  }
+
+  function moveParticles(){
+  	for (var i = particles.length-1; i >= 0 ; i--) {
+  		p = particles[i];
+  		p.x += p.speedx;
+  		p.y+= p.speedy;
+  		p.sz *= 0.98;
+  		ctx.fillStyle = p.c;
+  		ctx.fillEllipse(p.x, p.y, p.sz, p.sz);
+  		ctx.fillStyle = "#000";
+  		//if (p.sz > 0.2) ctx.fillEllipse(p.x, p.y, p.sz/5, p.sz/5);
+  		if (p.x < 0 || p.y < 0 || p.x > w || p.y > h || p.sz < 0.2) particles.splice(i,1);
+  	};
+
+  }
+
+
+  function drawGraph(){
+    var ht = h - 100;
+    ctx2.fillStyle = "white";
+    var pos = map(counter, 0, 1582, 0, w);
+    ctx2.fillText("Containers lost at sea in a year: " + counter, w - 360, ht - 20);
+    //ctx2.fillText("Year containers shipped per year: " + engine.length, w - 380, h - 200);
+    ctx2.fillRect(0, ht, w, 6);
+    ctx2.fillStyle = "red";
+    ctx2.fillRect(0, ht, pos, 6);
+  }
+
+
+
+</script>
+
+
+</body>
+</html>

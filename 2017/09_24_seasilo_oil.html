@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/tween.min.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+
+<script>
+
+var hidden_ctx = createCanvas("hidden_canvas");
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx4 = createCanvas("canvas4");
+ctx2.font = "bold 20px Arial";
+ctx2.textAlign = "center";
+
+var num = 10;
+var sz = 500;
+var sampleSize = 5;
+var engine = new particleEngine(0);
+var particles = engine.particles;
+var imgData;
+
+ctx.strokeStyle = rgb(0);
+ctx.lineWidth = 0.5;
+
+
+function setup(){
+
+  ctx.clearRect(0, 0, w, h);
+  brightSpark();
+
+}
+
+
+function draw(){
+
+  ctx.clearRect(0, 0, w, h);
+  ctx2.clearRect(0, 0, w, h);
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    checkHit(p)
+    move(p);
+    drawCircle(p);
+  }
+  if (chance(2)) outside();
+
+
+}
+
+
+function checkHit(p){
+	for (var j = 0; j < engine.particles.length; j++) {
+		var pp = engine.particles[j];
+		if (p.me!=j && dist(p.pos.x, p.pos.y, pp.pos.x,  pp.pos.y) < (p.sz/2 + pp.sz/2)) {
+			pp.active = false;
+			p.active = false;
+		}
+	}
+}
+
+function drawCircle(p){
+	ctx.fillStyle = "black";
+	ctx.HstrokeEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+
+	if (!p.out) {
+		ctx.fillStyle = "black";
+		ctx.HfillEllipse(p.pos.x, p.pos.y, p.sz/2, p.sz/2);
+	}
+
+  if (p.out == true && p.sz> 20) p.active = false;
+}
+
+function move(p){
+	if (p.active && p.sz < 70) {
+		p.sz+= p.speed;
+	} else {
+		p.active = false;
+	}
+}
+
+
+
+function addCircle(x, y, out, max){
+
+	var same = false;
+	var new_sz = randomInt(0.05, max);
+
+	for (var k = 0; k < engine.particles.length; k++) {
+
+    var pp = engine.particles[k];
+		if (dist(pp.pos.x, pp.pos.y, x, y) < (pp.sz/2 + new_sz/2)) {
+			same = true;
+		}
+	}
+	if (!same) {
+		engine.add(x, y);
+		active_particle = engine.particles.length-1;
+		var p = engine.particles[active_particle];
+		p.fixed = false;
+		p.sz = new_sz;
+    p.out = out;
+		p.speed = random(0.1, 2.9);
+		p.active = true;
+	}
+}
+
+
+
+
+function outside(){
+  var sampleSize = randomInt(5, 190);
+	for (var y = 0; y < h; y+= sampleSize) {
+
+		 for (var x = 0; x < w; x+= sampleSize) {
+
+			var pt = (y * w + x)*4;
+      var bright = brightness(imgData[pt], imgData[pt+1], imgData[pt+2]);
+
+			if(bright < 20 && chance(2)) {
+				addCircle(x + random(-80,80), y + random(-80,80), true, 2);
+			}
+
+		 }
+	}
+	//hidden_ctx.clearRect(0,0, w, h);
+}
+
+
+
+function brightSpark(){
+  hidden_ctx.font = "bold 220px Arial";
+  hidden_ctx.textAlign = "center";
+  hidden_ctx.background(255);
+  hidden_ctx.fillStyle = rgb(0);
+  // hidden_ctx.fillText("7.29m barrels", w/2, h/2);
+  hidden_ctx.fillText("CRUDE", w/2, h/2 - 50);
+  hidden_ctx.fillText("OIl", w/2, h/2 + 160);
+	//hidden_ctx.drawImage(img, w/2 - img.width/2, h/2  - img.height/2);
+	imgData = hidden_ctx.getImageData(0, 0, w, h).data;
+
+  for (var y = 0; y < h; y+= sampleSize) {
+
+		 for (var x = 0; x < w; x+= sampleSize) {
+
+			var pt = (y * w + x)*4;
+      var bright = brightness(imgData[pt], imgData[pt+1], imgData[pt+2]);
+			if(bright < 20) {
+				addCircle(x + random(-1,1), y + random(-1,1), false, 25);
+			}
+
+		 }
+	}
+	hidden_ctx.clearRect(0,0, w, h);
+}
+
+
+
+</script>
+<!--  <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

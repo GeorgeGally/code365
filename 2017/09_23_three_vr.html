@@ -1,0 +1,173 @@
+
+<html>
+
+<head>
+  <script language="javascript" src="../js/three.min.js"></script>
+  <script language="javascript" src='../js/threejs/controls/OrbitControls.js'></script>
+  <!-- <script language="javascript" src="../js/threejs/extras/curves/CatmullRomCurve3.js"></script> -->
+  <script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+   <script language="javascript" src="../js/particle_engine.js"></script>
+
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <!-- <script language="javascript" src="../js/stats.js"></script> -->
+
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <script src="../js/jquery-1.10.1.min.js"></script>
+
+  <script language="javascript" src="../js/matter.min.js"></script>
+
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<body>
+<canvas></canvas>
+
+<script type="text/javascript">
+
+var ctx4 = createHiddenCanvas("canvas4");
+var ctx2 = createHiddenCanvas("canvas2");
+
+var ctx = createHiddenCanvas("canvas1");
+
+// var canvas2 = ctx2.canvas;
+
+var canvas2 = document.getElementById("canvas4");
+canvas2.width = w, canvas2.height = h;
+
+var ww = w, wh = h;
+var renderer = new THREE.WebGLRenderer({
+  canvas: document.querySelector("canvas")
+});
+
+renderer.setSize(ww, wh);
+renderer.shadowMap.enabled;
+
+var scene = new THREE.Scene();
+
+var clock = new THREE.Clock();
+
+//Create a perpsective camera
+//var camera = new THREE.PerspectiveCamera(45, ww / wh, 0.001, 1000);
+var camera = new THREE.PerspectiveCamera(95, 1, 0.001, 1500);
+camera.position.z = 10;
+
+var camera = new THREE.PerspectiveCamera(55, ww / wh, 0.001, 2000);
+camera.position.z = 50;
+
+
+var ambiLight = new THREE.AmbientLight(0xffffff)
+scene.add(ambiLight);
+
+var tube_geom = new THREE.CylinderGeometry( 300, 300, 1200, 420, 420, true );
+tube_geom.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));
+tube_geom.computeVertexNormals();
+
+var texture = new THREE.Texture(canvas);
+var texture2 = new THREE.Texture(canvas2);
+
+// var bumpMap = new THREE.Texture(canvas);
+// bumpMap.needsUpdate = true;
+
+texture.needsUpdate = true;
+texture.minFilter = THREE.LinearFilter;
+var videoMaterial = new THREE.MeshStandardMaterial({ map: texture, metalness: 0.6, roughness: 1});
+
+texture2.needsUpdate = true;
+texture2.minFilter = THREE.LinearFilter;
+var videoMaterial2 = new THREE.MeshLambertMaterial({ map: texture2, metalness: 0.6, roughness: 0});
+
+
+//videoMaterial.bumpMap = bumpMap;
+var tube = new THREE.Mesh(tube_geom, videoMaterial);
+scene.add(tube);
+
+tube.position.set(0, 320, 0);
+// tube.material.bumpScale = 2;
+
+// var texture2 = new THREE.Texture(canvas2);
+// texture2.needsUpdate = true;
+// texture2.minFilter = THREE.LinearFilter;
+//
+//
+//
+//
+// var videoMaterial2 = new THREE.MeshBasicMaterial({
+// map: texture2
+// });
+
+
+// geometry
+//var floor_mesh = new THREE.SphereGeometry(300, 90, 800);
+// var floor_mesh = new THREE.CircleGeometry(300, 90);
+// var material = new THREE.MeshBasicMaterial({ color: '#000000' });
+//floor_mesh.applyMatrix(new THREE.Matrix4().makeScale(1, 1, -1));
+//_assignUVs(floor_mesh);
+var floor = new THREE.Mesh(tube_geom, videoMaterial2);
+scene.add( floor );
+floor.position.set(0, -880, 0);
+
+camera.position.set(0, 0, 300);
+// sky.position.set(-200, 0, 0);
+
+controls = new THREE.OrbitControls( camera, renderer.domElement );
+controls.enableDamping = true;
+controls.dampingFactor = 0.55;
+controls.noZoom = true;
+controls.noPan = true;
+// controls.target.set(
+//   camera.position.x + 0.001,
+//   camera.position.y,
+//   camera.position.z
+//   );
+
+  var img = new Image();
+  img.src = "../img/textures/concrete4b.jpg";
+
+
+function draw(){
+  ctx.globalCompositeOperation = "normal";
+  ctx.drawImage(img, 0, 0, w, h);
+
+  ctx.globalCompositeOperation = "overlay";
+  ctx.background(0, 0.5);
+  // console.log(sphere2.rotation.x)
+  ctx.fillStyle = rgba(255);
+  ctx.fillRect(0, frameCount%h, w, 50);
+
+  ctx.fillRect(0, frameCount/10%h, w, 50);
+
+  ctx.fillRect(0, frameCount/2%h, w, 10);
+  ctx.fillRect(0, frameCount/3%h, w, 10);
+
+  ctx.fillStyle = rgba(255, 0, 0, 0.8);
+  ctx.fillRect(frameCount%w, 0, 50, h);
+  ctx2.drawImage(ctx.canvas, 0, 0, w, h);
+
+  //ctx4.drawImage(ctx.canvas, 0, 0, w, h);
+
+  ctx4.save();
+  ctx4.scale(1, -1);
+  ctx4.drawImage(ctx.canvas, 0, -h, w, h);
+  //ctx4.drawImage(ctx2.canvas, -w, 0, w, h);
+  ctx4.restore();
+  ctx4.background(0, 0.85);
+
+  // bumpMap.needsUpdate = true;
+  texture.needsUpdate = true;
+  texture2.needsUpdate = true;
+  //Render the scene
+  renderer.render(scene, camera);
+
+}
+
+
+
+</script>
+
+
+</body>
+</html>

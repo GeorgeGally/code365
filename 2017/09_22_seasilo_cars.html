@@ -1,0 +1,296 @@
+
+<html>
+
+<head>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <!-- <script language="javascript" src="../js/stats.js"></script> -->
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+
+<!-- <script language="javascript" src="../js/p5.js"></script> -->
+<script language="javascript" src="../js/matter.min.js"></script>
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body {
+background: #000;
+}
+
+#canvas1 {
+   /*filter: blur(0px), contrast(200%);
+   -webkit-filter: blur(0px) contrast(200%);*/
+   /*filter:contrast(200%);*/
+}
+</style>
+
+<body>
+
+
+<script type="text/javascript">
+
+var hidden_canvas;
+
+var hidden_ctx = createHiddenCanvas('canvas3');
+var ctx = createCanvas('canvas1');
+var ctx2 = createCanvas('canvas2');
+
+ctx2.font = "16px Arial";
+var grid = new Grid (1, 1, w/2 ,h/2, w/4, h/4)
+
+var threshold_res = 4;
+var threshold_ammt = 81;
+
+var blur_ammt = 4;
+var blur_pass = 8;
+var contrast = 22;
+
+
+var img = new Image();
+img.src = '../img/dot.png';
+
+var Engine = Matter.Engine,
+    Render = Matter.Render,
+    World = Matter.World,
+		Body = Matter.Body,
+    Bodies = Matter.Bodies;
+
+
+var engine, world;
+var circles = [];
+var boundries = [];
+
+var radius = 140;
+
+
+function setup(){
+  var body = document.querySelector("body");
+  hidden_canvas = document.getElementById('canvas3')
+	engine = Engine.create();
+  engine.density = 0.005;
+  //engine.restitution = 0.5;
+	       //frictionAir: 0.06,
+	       //restitution: 0.3}
+	world = engine.world;
+	Engine.run(engine);
+
+  var offset = 5;
+
+
+  options = {
+    friction: 0.8,
+    restitution: 0.5,
+    isStatic: true
+  }
+
+//var topWall = Bodies.rectangle(400, 0, 810, 30, options);
+var leftWall = Bodies.rectangle(-20, 0, 20, h*2, options);
+var rightWall = Bodies.rectangle(w + 20, 0, 20, h*2, options);
+var topWall = Bodies.rectangle(w/2 - 100, 0, w + 200, 20, options);
+
+World.add(engine.world, [leftWall, rightWall, topWall]);
+//World.add(engine.world, [bottomWall]);
+
+
+	for (var i = 0; i < grid.length; i++) {
+    var g = grid.grid[i];
+		var x = g.x;
+		var y = g.y;
+    //if (g.row % 2 == 0) x -= grid.spacing.x/2;
+		boundries.push(new Obstacle(x, y, radius))
+	}
+
+
+  for (var i = 0; i < 10; i++) {
+    addCircle();
+  }
+
+  engine.timing.timeScale = 0.7;
+  engine.world.gravity.x = 0.06;
+  engine.world.gravity.y = -0.3;
+}
+
+function draw(){
+
+	ctx2.clearRect(0, 0, w, h);
+  hidden_ctx.clearRect(0, 0, w, h);
+  hidden_ctx.fillStyle = rgb(255);
+  // hidden_ctx.globalCompositeOperation = "screen";
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = rgb(80);
+
+
+  if(chance(100)) engine.world.gravity.x *= posNeg();
+  //if(chance(200)) engine.world.gravity.y = random(-0.01, 0.8);
+  //for (var i = 0; i < 2; i++) {
+  //if(chance(2))
+  addCircle();
+  //}
+
+  for (var i = 0; i < boundries.length; i++) {
+    boundries[i].show();
+  }
+
+	for (var i = 0; i < circles.length; i++) {
+		var b = circles[i];
+		b.show();
+
+		// if(b.isOffScreen()) {
+		// 		b.removeFromWorld();
+		// 		circles.splice(i, 1);
+		// 		i--;
+		// }
+
+	}
+
+
+  ctx.drawImage(hidden_canvas, 0, 0, w, h);
+  drawGraph();
+}
+
+
+
+function addCircle(){
+  counter++;
+  circles.push(new Circle(random(w), h+random(300), 16));
+
+}
+
+
+//////////////////////// OBJECTS
+
+var Circle = function(x, y, r){
+	this.options = {
+		friction: 0.9,
+		restitution: 0.3
+	}
+	this.r = r;
+  this.c = randomGrey();
+	this.body = Bodies.circle(x, y, this.r/2, this.options);
+  this.pos = this.body.position;
+
+	World.add(world, this.body);
+
+	this.show = function(){
+
+    this.pos = this.body.position;
+		var angle = this.body.angle;
+    // if(this.body.position.x > w) this.body.position.x = 0;
+    // if(this.body.position < 0) this.body.position = w;
+    // if(this.pos.x > w) this.pos.x = 0;
+    // if(this.pos < 0) this.pos = w;
+		hidden_ctx.save();
+		hidden_ctx.translate(this.pos.x, this.pos.y);
+		hidden_ctx.fillStyle = this.c;
+		hidden_ctx.fillEllipse(0,0, this.r-1, this.r-1);
+    //hidden_ctx.drawImage(img, 0,0, this.r, this.r);
+		hidden_ctx.restore();
+	}
+
+	// this.isOffScreen = function(){
+	// 	var pos = this.body.position;
+	// 	//console.log(pos.y);
+	// 	return (this.pos.y > h + 100);
+	// }
+
+	this.removeFromWorld = function(){
+		World.remove(world, this.body);
+	}
+}
+
+
+function Obstacle(x, y, r){
+
+	this.x = x;
+	this.y = y;
+	this.r = r;
+
+	this.options = {
+		friction: 0.99,
+		restitution: 0.1,
+		isStatic: true
+	}
+
+	//this.body = Bodies.circle(x, y, this.r/2, this.options);
+  this.body = Bodies.polygon(x, y, 3, this.r*1.1, this.options);
+
+	this.show = function(){
+
+		var pos = this.body.position;
+
+    ctx.fillStyle = rgb(200);
+
+	}
+
+this.move = function(){
+
+	var pos = this.body.position;
+	var y = h - h/4 + Math.sin(frameCount/100) * h/4;
+	// Body.translate(this.body, pos);
+	Body.translate(this.body, {x: pos.x, y: y});
+	// Body.update(this.body);
+}
+}
+
+
+
+function mouseMoved(){
+	circles.push(new Box(mouseX, mouseY, 2));
+}
+
+
+///////////////////////////////////
+
+
+
+
+// var settings = QuickSettings.create(w-200, 30, "Settings");
+// // // settings.addRange(title, min, max, value, step, callback);
+// settings.addRange("threshold_res", 1, 20, threshold_res, 0.1, function(value){
+//   threshold_res = value;
+// });
+//
+// settings.addRange("threshold_ammt", 1, 500, threshold_ammt, 0.1, function(value){
+//   threshold_ammt = value;
+// });
+//
+// settings.addRange("blur_ammt", 1, 50, blur_ammt, 1, function(value){
+//   blur_ammt = value;
+//   $('#canvas1').css('-webkit-filter', 'blur(' + value + 'px)' + ' contrast(13)');
+// });
+//
+// settings.addRange("blur_pass", 1, 20, blur_pass, 0.1, function(value){
+//   blur_pass = value;
+// });
+//
+//
+// settings.addRange("contrast", 1, 200, contrast, 1, function(value){
+//   contrast = value;
+//   $('#canvas1').css('-webkit-filter', 'blur(' + blur_ammt + 'px)' + ' contrast('+ value+')');
+// });
+
+function drawGraph(){
+  var ht = h - 100;
+  ctx2.fillStyle = "white";
+  var pos = map(counter, 0, 500000, 0, w);
+  ctx2.fillText("One supertanker is more polluting than " + counter + " cars.", w - 420, ht - 20);
+  ctx2.fillRect(0, ht, w, 6);
+  ctx2.fillStyle = "red";
+  ctx2.fillRect(0, ht, pos, 6);
+}
+
+
+</script>
+
+
+
+</body>
+</html>

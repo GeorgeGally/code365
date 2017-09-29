@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Sea Silo</title>
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/physics2.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+<div id="container"></div>
+<script>
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var MAXPARTICLES = 87233;
+var counter = 10;
+ctx.background(0);
+ctx.font="20px Arial";
+var engine = new particleEngine(MAXPARTICLES, 1);
+
+
+var c = 0;
+
+
+ // 32136 - small
+ // 38351 - medum
+ // 11309 - large
+ // 5437 - very large
+ // total 87233
+
+for (var i = 0; i < engine.particles.length; i++) {
+
+  var p = engine.particles[i];
+  p.pos.x = randomInt(w);
+  p.pos.y = randomInt(h);
+
+  p.speed.y = random(1, 5);
+  p.dir = posNeg();
+  if(i < 5437) {
+    p.type = 1;
+    p.sz = 5;
+    p.c = rgb(255, 0, 0);
+
+  } else if(i>= 5437 && i < 5437 + 11309) {
+    p.type = 2;
+    p.sz = 4;
+    p.c = rgb(155, 0.5);
+
+  } else if(i >= 5437 + 11309 && i < 5437 + 11309 + 38351) {
+    p.type = 3;
+    p.sz = 2;
+    p.c = rgba(105, 0.5);
+
+  } else {
+    p.type = 4;
+    p.sz = 1;
+    p.c = rgba(55, 0.5);
+  }
+
+}
+
+
+
+function draw() {
+
+  ctx.background(0, 0.03)
+  ctx2.clearRect(0, 0, w, h);
+
+  drawLines();
+  drawGraph();
+}
+
+
+function addParticle(){
+
+  engine.add(w/2, h/2);
+  var p = engine.last;
+  p.pos.x =  randomInt(w);
+  p.pos.y = randomInt(h);
+  p.sz = random(1, 4);
+  p.speed.y = random(10, 40);
+  p.dir = posNeg();
+
+  //if(engine.length > MAXPARTICLES) engine.particles.splice(0,1);
+
+}
+
+
+function drawLines(){
+
+  //console.log(engine.particles.length);
+  for (var i = 0; i < engine.particles.length; i++) {
+
+    var p = engine.particles[i];
+
+    // if (p.dir == 1) {
+    //   ctx.fillStyle = rgba(100, 1);
+    // } else {
+      ctx.fillStyle = p.c;
+    //}
+
+    //p.position.y += mapAudio(p.me, engine.particles.length) + p.speed.y * freqs[5]/5;
+    //p.pos.y = tween(p.pos.y, p.target.y, 1000);
+    p.pos.y +=  p.speed.y/10 * p.dir;
+    //console.log(p.pos.y)
+    ctx.LfillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+    if(bounce(p.pos.x, 0, w)) p.dir *=-1;
+    if(bounce(p.pos.y, 0, h)) p.dir *=-1;
+  }
+}
+
+function drawGraph(){
+  var ht = h - 100;
+  ctx2.fillStyle = "white";
+  var pos = map(counter, 0, 1582, 0, w);
+  ctx2.fillText("Number of registered ships: " + counter, w - 360, ht - 20);
+  //ctx2.fillText("Year containers shipped per year: " + engine.length, w - 380, h - 200);
+  ctx2.fillRect(0, ht, w, 6);
+  ctx2.fillStyle = "red";
+  ctx2.fillRect(0, ht, pos, 6);
+}
+
+
+
+</script>
+
+</body>
+</html>

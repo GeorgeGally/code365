@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script src="../js/aframe.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<!-- <script src="../js/aframe-sun-sky.min.js"></script> -->
+
+</head>
+<body>
+<script>
+
+var ctx2 = createHiddenCanvas("canvas2");
+var ctx = createHiddenCanvas("canvas1");
+
+//var ctx = createCanvas("canvas1");
+canvas.style.zIndex = 100;
+
+var canvas2 = document.getElementById('canvas2');
+
+w = canvas.width = canvas2.width = 800;
+h = canvas.height = canvas2.height = 600;
+</script>
+
+  <a-scene rotation="0 1 0">
+
+    <a-assets>
+      <a-asset-item id="obj" src="../models/male02.obj"></a-asset-item>
+      <!-- <a-asset-item id="tree-mtl" src="../models/tree.mtl"></a-asset-item> -->
+    </a-assets>
+
+    <!-- <a-entity obj-model="obj: #obj; mtl: #tree-mtl"></a-entity> -->
+
+    <a-assets>
+      <img id="my-texture" src="../img/textures/concrete3.jpg">
+    </a-assets>
+
+    <a-sky  src="#canvas1" rotation="0 0 0"></a-sky>
+
+      <a-sphere id="floor" position="0 2.0 0" segments-height="52" segments-width="40" width="25" height="15" rotation="0 270 0 "  normal-texture-offset="0 1" src="#canvas2"></a-sphere>
+
+      <a-entity camera="userHeight: 4.6" look-controls position="0 -1.5 0"></a-entity>
+      <!-- <a-sphere position="0 2.0 0" segments-height="52" segments-width="40" width="25" height="15" rotation="0 90 0 "  normal-texture-offset="0 1" src="#canvas1"></a-sphere> -->
+      <!-- <a-entity obj-model="obj: #obj;" rotation="0 90 0" color="#000" position="0.06 3.05 -0.01" scale="0.00028 0.00028 0.00028"></a-entity> -->
+
+    </a-scene>
+
+<script>
+
+
+function setup(){
+
+var floor = document.querySelector('#floor').object3D;;
+// console.log(floor.children[0]);
+//floor.children[0].material.map.repeat.x = -1;
+}
+
+var engine = new particleEngine(1);
+w = canvas.width = 2000;
+canvas.style.left = "-2000px";
+
+var img = new Image();
+img.src = "../img/textures/concrete4b.jpg";
+var block_size = 220;
+var maxballs = 500;
+var balls = [];
+var engine = new particleEngine();
+
+var gridx = 170;
+var gridy = 1;
+var number_of_balls = gridx * gridy;
+var grid = new Grid(gridx, gridy);
+
+var data = [20, 60, 20, 80, 40, 40, 100];
+var total = 360;
+
+//console.log(grid);
+for (var i = 0; i < number_of_balls; i++) {
+  engine.addParticle(grid.x[i] , grid.y[i], rgb(0), i);
+  var p = engine.last;
+  //console.log(p);
+  p.pos.x = random(w);
+  p.dir = posNeg();
+  p.speed = new Vector(0, random(-5,-1));
+  p.sz = randomInt(5, 20);
+  total += p.sz;
+  // p.pos.x = grid.x[i];
+  // p.pos.y = grid.y[i];
+  p.c = rgb(randomInt(200, 255));
+}
+
+var particles = engine.particles;
+//console.log(particles);
+
+ctx.background(0);
+
+function update(){
+
+  particles = engine.particles;
+  for (var i = 0; i < particles.length; i++) {
+    p = particles[i];
+    p.pos.x += 1*p.dir;
+    if (p.pos.x>w) p.pos.x = -p.sz;
+  } // end for loop
+
+}
+
+
+function draw(){
+  ctx.globalCompositeOperation = "normal";
+  ctx.drawImage(img, 0, 0, w, h);
+  ctx.background(0, 0.92);
+  ctx.globalCompositeOperation = "overlay";
+
+  update();
+  //engine.moveParticles();
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = particles[i];
+    ctx.fillStyle = p.c;
+    ctx.fillRect(p.pos.x, 0, p.sz, h);
+  }
+  //pixelate();
+  //ctx2.drawImage(ctx.canvas, 0, 0, w, h);
+
+  ctx2.save();
+  ctx2.scale(-1, 1);
+  ctx2.drawImage(canvas, -w, 0, w, h);
+  ctx2.restore();
+  // ctx2.fillStyle = "red";
+  // ctx2.fillRect(0,0, w, frameCount%h);
+}
+
+</script>
+
+
+</body>
+
+</html>

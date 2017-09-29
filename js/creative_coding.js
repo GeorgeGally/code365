@@ -611,8 +611,16 @@ function ave(num, clamper){
   return Math.round(num/clamper)*clamper;
 }
 
-function randomGrey(){
-  return rgb(sticky(randomInt(240),10));
+function randomGrey(_min, _max, _stick){
+  if (_max == undefined) {
+    _max = _min;
+    _min = 0;
+  }
+  var min = _min || 0;
+  var max = _max || 240;
+
+  var stick = _stick || 10;
+  return rgb(sticky(randomInt(min, max), stick));
 }
 
 
