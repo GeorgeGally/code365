@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - clipIntersection</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+			margin: 0px;
+			background: -webkit-radial-gradient(center ellipse,#fff 50%,#c8dad2 100%);
+    	background: radial-gradient(ellipse at center,#fff 50%,#c8dad2 100%);
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+		<div id='WebGL-output'></div>
+
+		<script src="../js/three.min.js"></script>
+		<script src="../js/threejs/controls/OrbitControls.js"></script>
+		<script src="../js/dat.gui.min.js"></script>
+		<script src="../js/canvas.js"></script>
+		<script src="../js/creative_coding.js"></script>
+		<script src="../js/particle_engine.js"></script>
+		<script src="../js/utils/Perlin.js"></script>
+
+
+
+		<script src="../js/threejs/postprocessing/EffectComposer.js"></script>
+		<script src="../js/threejs/postprocessing/ShaderPass.js"></script>
+		<script src="../js/threejs/postprocessing/RenderPass.js"></script>
+
+		<script src="../js/threejs/shaders/CopyShader.js"></script>
+		<script src="../js/threejs/shaders/SepiaShader.js"></script>
+		<script src="../js/threejs/shaders/FilmShader.js"></script>
+		<script src="../js/threejs/shaders/SSAOShader.js"></script>
+
+
+		<script>
+		var ctx2 = createHiddenCanvas('canvas2');
+		var ctx = createHiddenCanvas('canvas1');
+		var canvas = ctx.canvas;
+		var canvas2 = ctx2.canvas;
+		var engine = new particleEngine(1, 20);
+		var img = new Image();
+
+		var sphere = [];
+		var outer_sphere, outer_sphere_mesh;
+		var sphereGeom = [];
+		var helpers = [];
+		var planetMaterial = [], planetMaterial2 = [];
+		var num_slices = 60;
+		var num_spheres = 3;
+		var num_materials = 2;
+
+		var step = 0;
+		var size_decrease = 4;
+
+		var change_constants = [];
+		var speed = [];
+
+		var sphereVerticesArray = [];
+		var sphereVerticesNormArray = [];
+		var pn;
+		var clock = new THREE.Clock();
+		var clipPlanes = [];
+		var scene, renderer, camera, orbitControls, composer;
+		var texture, texture2;
+
+
+		var params = {
+			clipIntersection: true,
+			planeConstant: 0,
+			planeConstant2: 0,
+			sliceWidth: 3,
+			showHelpers: false,
+		};
+
+		var controls = new function() {
+			this.sphereColor = '#c8dad2';
+			this.noiseAmount = 2;
+		}
+
+
+
+		function setup() {
+
+			texture = THREE.ImageUtils.loadTexture('../img/textures/concrete3.jpg');
+			bump = THREE.ImageUtils.loadTexture('../img/textures/facets_bump.jpg');
+			texture2 = THREE.ImageUtils.loadTexture('../img/textures/voronoi3.jpg');
+			texture3 = THREE.ImageUtils.loadTexture('../img/textures/gold2.jpg');
+
+			//img.src = "../img/textures/gel.jpg"
+		  scene = new THREE.Scene();
+		  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+			// position and point the camera to the center of the scene
+		  camera.position.x = -20;
+		  camera.position.y = 30;
+		  camera.position.z = 70;
+		  camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+		  renderer = new THREE.WebGLRenderer({
+				alpha: true,
+				//antialias: true
+			});
+		  renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.shadowMap.enabled = true;
+			// to antialias the shadow
+			//renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+			renderer.localClippingEnabled = true;
+			document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+		  var date = new Date();
+
+			orbitControls = new THREE.OrbitControls(camera);
+			orbitControls.autoRotate = true;
+
+
+			// add subtle ambient lighting
+			var ambientLight = new THREE.AmbientLight(0x111111);
+			scene.add(ambientLight);
+
+
+			// add spotlight for the shadows
+			var spotLight = new THREE.DirectionalLight(0xffffff);
+			spotLight.position.set(-10, 60, 0);
+			spotLight.intensity = 1.2;
+			//spotLight.castShadow = true;
+			spotLight.shadow.bias = 0.0001;
+			//spotLight.shadowCameraVisible = true;
+			var d = 100;
+
+			// spotLight.shadow.camera.right = 15;
+			// spotLight.shadow.camera.left = -15
+			// spotLight.shadow.camera.top = 15;
+			// spotLight.shadow.camera.bottom = -15;
+			//
+			// spotLight.shadow.mapSize.width = 4096;
+			// spotLight.shadow.mapSize.height = 4096;
+
+			scene.add(spotLight);
+			scene.fog = new THREE.FogExp2( 0xc8dad2, 0.001 );
+			// add spotlight for the shadows
+			var spotLight2 = new THREE.SpotLight(0x111111, 1.75, 1000);
+			spotLight2.position.set(-10, 460, 0);
+			spotLight2.intensity = 0.0002;
+			spotLight2.castShadow = true;
+			spotLight2.shadow.bias = 0.0001;
+			;
+			//spotLight.shadowCameraVisible = true;
+			var d = 100;
+
+			spotLight2.shadow.camera.right = d;
+			spotLight2.shadow.camera.left = -d
+			spotLight2.shadow.camera.top = d;
+			spotLight2.shadow.camera.bottom = -d;
+
+			spotLight2.shadow.mapSize.width = 4096;
+			spotLight2.shadow.mapSize.height = 4096;
+
+			scene.add(spotLight2);
+
+			//scene.add( new THREE.AmbientLight( 0xffffff, 0.3 ));
+
+			// SHADOW CAMERA HELPER
+			// shadow_helper = new THREE.CameraHelper( light.shadow.camera );
+			// scene.add( shadow_helper );
+
+			// GROUND
+				var floorGeometry = new THREE.PlaneGeometry(500, 500);
+				var floorMaterial = new THREE.MeshLambertMaterial( { color: rgba(255), transparent: true } );
+				floorMaterial.opacity = 0.03;
+				var floor = new THREE.Mesh( floorGeometry, floorMaterial );
+				floor.rotation.x = -Math.PI / 2;
+				floor.position.y = -20.0;
+				floor.receiveShadow = true;
+				scene.add( floor );
+
+
+			pn = new Perlin('rnd' + date.getTime());
+
+			for (var i = 0; i < num_spheres; i++) {
+			  sphereGeom[i] = new THREE.SphereGeometry(15  - i* size_decrease, 100, 100);
+			}
+
+			// save points for later calculation
+		  for (var i = 0; i < sphereGeom[0].vertices.length; i += 1) {
+		    var vertex = sphereGeom[0].vertices[i];
+		    var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
+		    sphereVerticesArray.push(vec);
+		    var mag = vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
+		    mag = Math.sqrt(mag);
+		    var norm = new THREE.Vector3(vertex.x / mag, vertex.y / mag, vertex.z / mag);
+		    sphereVerticesNormArray.push(norm);
+		  }
+
+
+
+			// CLIPPING PLANES
+
+			for (var i = 0; i < num_slices; i++) {
+				var sphere_number = randomInt(num_materials);
+				clipPlanes[i] = [
+					new THREE.Plane( new THREE.Vector3( -1, 0, 0 ), 0 ),
+					new THREE.Plane( new THREE.Vector3( 1, 0, 0 ), 0 ),
+				];
+
+
+				planetMaterial[sphere_number] = new THREE.MeshPhongMaterial({
+					color: 0xc8dad2 ,
+					//side: THREE.DoubleSide,
+					side: THREE.FrontSide,
+					map: texture,
+					clippingPlanes: clipPlanes[i],
+					//clipIntersection: params.clipIntersection
+				});
+
+				planetMaterial2[sphere_number] = new THREE.MeshPhongMaterial({
+					color: 0xc8dad2,
+					side: THREE.BackSide,
+					map: texture3,
+					clippingPlanes: clipPlanes[i],
+				});
+
+				planetMaterial[sphere_number].map.minFilter = THREE.LinearFilter;
+				planetMaterial2[sphere_number].map.minFilter = THREE.LinearFilter;
+
+				if (sphere_number == 0) {
+					planetMaterial[0].map = texture2;
+					planetMaterial[0].map.minFilter = THREE.LinearFilter;
+
+				} else {
+					//planetMaterial[sphere_number].bumpMap = bump;
+				}
+				sphere[i] = THREE.SceneUtils.createMultiMaterialObject(sphereGeom[sphere_number], [planetMaterial[sphere_number], planetMaterial2[sphere_number]] );
+				sphere[i].castShadow = true;
+				//sphere[i].receiveShadow = true;
+				scene.add(sphere[i]);
+
+				if (sphere_number == 0) {
+					sphere[i].scale.set(1.4, 1.4, 1.4);
+
+				}
+				var c = randomColour(50);
+				helpers[i] = new THREE.Group();
+				helpers[i].add( new THREE.AxisHelper( 0 ) );
+				helpers[i].add( new THREE.PlaneHelper( clipPlanes[i][ 0 ], 30, c ) );
+				helpers[i].add( new THREE.PlaneHelper( clipPlanes[i][ 1 ], 30, c ) );
+				helpers[i].visible = params.showHelpers;
+
+				scene.add( helpers[i] );
+
+
+
+
+			}
+
+
+
+			var boxgeometry = new THREE.SphereGeometry(16, 60, 60);
+			var boxmaterial = new THREE.MeshPhongMaterial({
+				color: 0xffffff,
+				transparent: true
+			});
+			boxmaterial.opacity = 0.8;
+				var cube = new THREE.SceneUtils.createMultiMaterialObject(boxgeometry, planetMaterial[2]);
+				cube.castShadow = true;
+				// cube.position.x = 0;
+				// cube.position.y = 0;
+				// cube.position.z = 0;
+				scene.add(cube);
+
+			// outer_sphere = new THREE.SphereGeometry(14, 100, 100);
+			// var mat = new THREE.MeshPhongMaterial();
+			// //outer_sphere_mesh = THREE.SceneUtils.createMultiMaterialObject(outer_sphere, );
+			// outer_sphere_mesh = THREE.Mesh(outer_sphere, mat);
+			// //outer_sphere_mesh.position.x = 10;
+			// scene.add(outer_sphere_mesh);
+
+
+			// postprocessing
+			composer = new THREE.EffectComposer( renderer );
+
+			var renderPass = new THREE.RenderPass(scene, camera);
+			composer.addPass(renderPass);
+			//renderPass.renderToScreen = true;
+
+			// var pass1 = new THREE.ShaderPass( THREE.SepiaShader );
+			// composer.addPass( pass1 );
+
+			// var pass2 = new THREE.ShaderPass( THREE.FilmShader );
+			// composer.addPass( pass2 );
+
+			// var pass2 = new THREE.ShaderPass( THREE.SSAOShader );
+			// composer.addPass( pass2 );
+			//pass2.renderToScreen = true;
+
+			// var dotScreenPass = new THREE.DotScreenPass();
+			// composer.addPass(dotScreenPass);
+			//
+			// var rgbEffect = new THREE.ShaderPass( THREE.RGBShiftShader );
+			// rgbEffect.uniforms[ 'amount' ].value = 0.0015;
+			// rgbEffect.renderToScreen = true;
+			// composer.addPass( rgbEffect );
+
+			var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
+			effectCopy.renderToScreen = true;
+			composer.addPass(effectCopy);
+
+			// gui
+			var gui = new dat.GUI();
+			gui.addColor(controls, 'sphereColor').onChange(function(e) {
+					for (var i = 0; i < sphereGeom.length; i++) {
+						planetMaterial[i].color.setStyle(e);
+					}
+
+				console.log(c);
+
+			});
+			gui.add(controls, 'noiseAmount', -10, 10).listen();
+
+			gui.add( params, 'showHelpers' ).name( 'show helpers: 0' ).onChange( function ( value) {
+				for (var i = 0; i < num_slices; i++) {
+					helpers[i].visible = value;
+				}
+			} );
+
+
+			gui.add( params, 'sliceWidth', 0.1, 10 ).step( 0.1 ).name( 'Slice Width' ).onChange( function ( value ) {
+				sliceWidth = value;
+
+			} );
+
+			// sphere 1
+			gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(0, 0, value)
+			} );
+
+			gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(0, 1, value);
+			} );
+
+			// sphere 1
+			gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(1, 0, value)
+			} );
+
+			gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(1, 1, value)
+			} );
+
+			// sphere 2
+			gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(2, 0, value)
+			} );
+
+			gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(2, 1, value)
+			} );
+
+}
+
+
+			for (var i = 0; i < num_slices; i++) {
+				change_constants[i] = true;
+				speed[i] = randomInt(20, 200);
+			}
+
+
+			function changeClipConstants(s, num, value) {
+				clipPlanes[ s ][ num ].constant = value;
+			}
+
+
+			var sz = 20;
+
+		  function draw() {
+
+				ctx.background(255);
+				ctx.fillStyle = rgb(0);
+				if(chance(100)) sz = random(10, 30);
+				for (var i = 0; i < engine.particles.length; i++) {
+					var p = engine.particles[i];
+					p.pos.y +=5;
+					if(p.pos.y > h) p.pos.y = 0;
+					ctx.fillRect(0, p.pos.y, w, sz);
+				}
+
+
+				//ctx2.clearRect(0,0, w, h);
+				//ctx2.fillStyle = rgb(255, 0, 0);
+				//ctx2. fillEllipse(w/2, h/2, 400, 400);
+				//ctx2.drawImage(img, 0, 0, w/2, h/2);
+				//ctx.fillEllipse
+		    step += 1;
+
+		    var delta = clock.getDelta();
+				// clipPlanes[0][0].normal.y = Math.cos(step/100);
+				// clipPlanes[0][0].normal.x = Math.sin(step/100);
+				// clipPlanes[0][1].normal.y = Math.cos(step/50);
+				// clipPlanes[0][1].normal.x = Math.sin(step/50);
+
+
+				if(chance(500)) {
+					change_constants[0] = !change_constants[0];
+					params.sliceWidth = random(3, 8);
+				}
+				for (var i = 0; i < num_slices; i++) {
+				if(change_constants[i]) {
+					changeClipConstants(i, 0, Math.sin(step/speed[i]) * 16);
+					changeClipConstants(i, 1, -1 * (Math.sin(step/speed[i]) * 16 - params.sliceWidth));
+				}
+				}
+
+		    orbitControls.update(delta);
+
+		    //scene.remove(sphere[0]);
+				for (var j = 0; j < num_spheres; j++) {
+
+
+		    for (var i = 0; i < sphereGeom[j].vertices.length; i += 1) {
+		      var vertex = sphereGeom[j].vertices[i];
+
+		      // sphereVerticesArray.push(vec);
+		      var value = pn.noise((vertex.x + step + j)/ (10 + j), vertex.y / (10 + j), vertex.z / (10 + j));
+		      // value = Math.abs(1 - value);
+		      vertex.x = sphereVerticesArray[i].x + sphereVerticesNormArray[i].x * value * controls.noiseAmount;
+		      vertex.y = sphereVerticesArray[i].y + sphereVerticesNormArray[i].y * value * controls.noiseAmount;
+		      vertex.z = sphereVerticesArray[i].z + sphereVerticesNormArray[i].z * value * controls.noiseAmount;
+		    }
+		    sphereGeom[j].computeFaceNormals();
+		    sphereGeom[j].computeVertexNormals();
+
+		    sphereGeom[j].verticesNeedUpdate = true;
+				}
+				// for (var i = 0; i < num_materials; i++) {
+				// 	planetMaterial[i].needsUpdate = true;
+				// }
+				//texture.needsUpdate = true;
+				//texture2.needsUpdate = true;
+		    //renderer.render(scene, camera);
+				composer.render();
+		  }
+
+
+
+
+		</script>
+
+	</body>
+</html>

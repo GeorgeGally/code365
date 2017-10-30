@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - clipIntersection</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				margin: 0px;
+				background: -webkit-radial-gradient(center ellipse,#fff 50%,#c8dad2 100%);
+    background: radial-gradient(ellipse at center,#fff 50%,#c8dad2 100%);
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<script src="../js/three.min.js"></script>
+		<script src="../js/threejs/controls/OrbitControls.js"></script>
+		<script src="../js/dat.gui.min.js"></script>
+		<script src="../js/creative_coding.js"></script>
+		<script>
+
+			var camera, scene, renderer;
+
+			var params = {
+				clipIntersection: true,
+				planeConstant: 0,
+				showHelpers: true
+			};
+
+			var clipPlanes = [
+				new THREE.Plane( new THREE.Vector3( 1, 0, 0 ), 0 ),
+				new THREE.Plane( new THREE.Vector3( 0, - 1, 0 ), 0 ),
+				//new THREE.Plane( new THREE.Vector3( 0, 0, - 1 ), 0 ),
+				new THREE.Plane( new THREE.Vector3( 1, -1, - 1 ), 0 ),
+			];
+
+			//init();
+			//render();
+
+			function setup() {
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.localClippingEnabled = true;
+				document.body.appendChild( renderer.domElement );
+
+				scene = new THREE.Scene();
+
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 200 );
+
+				camera.position.set( - 20, 30, 40 );
+
+				var controls = new THREE.OrbitControls( camera, renderer.domElement );
+				//controls.addEventListener( 'change', render ); // use only if there is no animation loop
+				controls.minDistance = 10;
+				controls.maxDistance = 100;
+				controls.enablePan = false;
+
+				var light = new THREE.HemisphereLight( 0xffffff, 0x080808, 1 );
+				scene.add( light );
+
+				scene.add( new THREE.AmbientLight( 0x505050 ) );
+
+				//
+
+				var group = new THREE.Group();
+
+				for ( var i = 1; i < 25; i ++ ) {
+
+					var geometry = new THREE.SphereBufferGeometry( i / 2, 48, 24 );
+
+					var material = new THREE.MeshLambertMaterial( {
+
+						color: new THREE.Color( Math.sin( i * 0.5 ) * 0.5 + 0.5, Math.cos( i * 1.5 ) * 0.5 + 0.5, Math.cos( i * 4.5 + 0 ) * 0.5 + 0.5 ),
+						side: THREE.DoubleSide,
+						clippingPlanes: clipPlanes,
+						clipIntersection: params.clipIntersection
+
+					} );
+
+					group.add( new THREE.Mesh( geometry, material ) );
+
+				}
+
+				scene.add( group );
+
+				// helpers
+
+				var helpers = new THREE.Group();
+				helpers.add( new THREE.AxisHelper( 20 ) );
+				helpers.add( new THREE.PlaneHelper( clipPlanes[ 0 ], 30, 0xff0000 ) );
+				helpers.add( new THREE.PlaneHelper( clipPlanes[ 1 ], 30, 0x00ff00 ) );
+				//helpers.add( new THREE.PlaneHelper( clipPlanes[ 2 ], 30, 0x0000ff ) );
+				helpers.add( new THREE.PlaneHelper( clipPlanes[ 2 ], 30, 0xff00ff ) );
+				helpers.visible = params.showHelpers;
+				scene.add( helpers );
+
+				// gui
+
+				var gui = new dat.GUI();
+
+				gui.add( params, 'clipIntersection' ).name( 'clip intersection' ).onChange( function ( value ) {
+
+					var children = group.children;
+
+					for ( var i = 0; i < children.length; i ++ ) {
+
+						children[ i ].material.clipIntersection = value;
+
+					}
+
+					//render();
+
+				} );
+
+				gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+
+					for ( var j = 0; j < clipPlanes.length; j ++ ) {
+
+						clipPlanes[ j ].constant = value;
+
+					}
+
+					//render();
+
+				} );
+
+				gui.add( params, 'showHelpers' ).name( 'show helpers' ).onChange( function ( value ) {
+
+					helpers.visible = value;
+
+					//render();
+
+				} );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				//render();
+
+			}
+
+			function draw() {
+				//console.log(clipPlanes[2]);
+				clipPlanes["2"].normal.y = Math.sin(frameNumber/50);
+				clipPlanes["2"].normal.x = Math.cos(frameNumber/50);
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>

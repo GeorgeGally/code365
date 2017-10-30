@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+
+</head>
+
+
+
+<body style="background: #000;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+var ctx4 = createCanvas("canvas4");
+frameRate = 60;
+
+ctx.canvas.style.width = w + 'px';
+ctx.canvas.style.height = h + 'px';
+ctx2.canvas.style.width = w + 'px';
+ctx2.canvas.style.height = h + 'px';
+ctx3.canvas.style.width = w + 'px';
+ctx3.canvas.style.height = h + 'px';
+// canvas.width = w;
+// canvas.height = h;
+
+if (window.devicePixelRatio >= 2) {
+    ctx.canvas.width = w * 2;
+    ctx.canvas.height = h * 2;
+    ctx.scale(2, 2);
+    ctx2.canvas.width = w * 2;
+    ctx2.canvas.height = h * 2;
+    ctx2.scale(2, 2);
+    ctx3.canvas.width = w * 2;
+    ctx3.canvas.height = h * 2;
+    ctx3.scale(2, 2);
+}
+
+
+var num = 100;
+var grid = createGrid(num, 1, w, h);
+
+var engine = new particleEngine(num, grid);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  setParticles(p, engine);
+}
+
+function setParticles(p, _engine) {
+  p.size = randomInt(5, 60);
+  p.size2 = random(20, 40);
+  p.orbit = new Vector(w/2, h/2);
+  p.angle = random(2500, 7500);
+  p.angle2 = random(30);
+  p.speed = new Vector(random(-4,4), posNeg() * random(1,2));
+}
+
+function draw() {
+
+  ctx2.clearRect(0, 0, w, h);
+  // ctx.fillStyle = rgba(255, 0.4);
+  ctx.fillStyle = rgba(random(50, 255), 0.4);
+  for (var i = 0; i < 200; i++) {
+    var x = random(w);
+    var y = random(h);
+    var sz = random(10);
+    ctx.LfillEllipse(x, y, 4, 4);
+    counter+=10;
+  }
+
+  drawGraph();
+
+}
+
+
+function update(p, _engine) {
+    //console.log(p.angle)
+    p.angle += 8.45;
+    p.pos.y = h/2 + Math.sin(p.angle/(p.speed.y *5000))*h/2;;
+    p.angle2 += p.speed.y/60;
+    p.orbit.x = p.pos.x + Math.cos(p.angle2) * p.size2;
+    p.orbit.y = p.pos.y + Math.sin(p.angle2) * p.size2;
+
+}
+
+function drawGraph(){
+  ctx2.font = "16px Arial";
+  var ht = h - 100;
+  ctx2.fillStyle = rgb(255);
+  var pos = map(counter, 0, 50000000, 0, w);
+  ctx2.fillText("Cars Pollution from one super taker " + counter, w - 400, ht - 20);
+  ctx2.fillStyle = rgb(255);
+  ctx2.fillRect(0, ht, w, 6);
+  ctx2.fillStyle = "red";
+  ctx2.fillRect(0, ht, pos, 6);
+}
+
+
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+
+</html>

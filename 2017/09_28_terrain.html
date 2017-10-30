@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/three.min.js"></script>
+<script language="javascript" src="../js/perlin_noise.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+
+<script>
+
+var ctx = createHiddenCanvas("canvas1");
+var ctx2 = createHiddenCanvas("canvas2");
+
+var canvas = ctx.canvas;
+var canvas2 = ctx2.canvas;
+canvas2.style.left = "0px";
+canvas2.style.zIndex = 999;
+canvas2.width = 200;
+canvas2.height = 200;
+
+
+// var img = new Image();
+// img.src = "../img/people/kitty.jpg";
+
+var r = 0;
+var vertices = 100;
+var octaves = 2;
+var falloff = 0.8;
+var sampleSize = 20;
+
+var scene = new THREE.Scene();
+// scene.fog = new THREE.FogExp2( 0xffffff, 0.004 );
+
+var aspect = window.innerWidth / window.innerHeight;
+
+var camera = new THREE.PerspectiveCamera( 90, aspect, 0.001, 1500 );
+
+camera.position.z = 100;
+// camera.near = 80;
+// camera.far  = 125;
+
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+renderer.setClearColor( 0xffffff );
+document.body.appendChild( renderer.domElement );
+
+var dir = 1;
+
+var geometry = new THREE.PlaneGeometry( 100, 100, vertices , vertices );
+geometry.dynamic = true;
+
+texture = new THREE.Texture(canvas);
+texture.needsUpdate = true;
+
+//var material = new THREE.MeshDepthMaterial({side: THREE.DoubleSide});
+var material = new THREE.MeshPhongMaterial( {map: texture, color: 0xffffff, side: THREE.DoubleSide} );
+//material.shading = THREE.SmoothShading;
+material.map.minFilter = THREE.LinearFilter;
+
+
+var light = new THREE.HemisphereLight( 0xffffff, 0x000000, 0.2);
+scene.add( light );
+var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+
+var plane = new THREE.Mesh( geometry, material );
+scene.add(plane);
+
+
+
+
+var engine = new particleEngine(10, 1);
+engine.setColour(rgb(0));
+engine.setSpeed(5, 5);
+var x = w;
+
+function draw() {
+
+	ctx.background(255);
+
+	var noiseXRange = CosOsc(frameCount/250, 90)/10.0;
+  var noiseYRange = SinOsc(frameCount/250, 90)/10.0;
+
+	for (var i = 0; i < engine.particles.length; i++) {
+	var p = engine.particles[i];
+	ctx.fillStyle = p.c;
+
+	//p.pos.y = SinOsc(frameCount/1000, 50);
+	//p.pos.y = p.start.y + 50 * SinOsc(frameCount/1000, 50);
+	// p.pos.x += p.speed.x;
+	//p.pos.x = p.start.x + Math.sin(frameCount/100)*120;
+	if(p.pos.x > w) p.pos.x = 0;
+	if(p.pos.x < 0) p.pos.x = w;
+	//if(bounce(p.pos.y, 0, h)) p.speed.y *=-1;
+	//if(p.pos.x > h - 9)
+	ctx.fillRect(p.pos.x, 0, 10, h);
+	//ctx.fillRect(w/2, p.pos.y, w, 10);
+}
+
+	texture.needsUpdate = true;
+
+  if (chance(2000)) {
+    dir *=-1;
+  }
+
+brightSpark();
+	plane.geometry.verticesNeedUpdate = true;
+  scene.rotation.z+= Math.sin(frameCount/10000)/100;
+	scene.rotation.x+= Math.cos(frameCount/10000)/500;
+  r += 0.1 * dir;
+
+  if (r > 100 ) r = 0;
+  if (r < 0 ) r = 100;
+
+  renderer.render( scene, camera );
+
+};
+
+
+
+var xx = 0;
+var yy = 0;
+
+
+console.log(plane.geometry.vertices.length);
+function brightSpark(){
+
+	drawCanvasBump();
+	//hidden_ctx.drawImage(img, 0, 0, 100, 100);
+
+  imgData = ctx2.getImageData(0, 0, 100, 100).data;
+
+	for (var y = 0; y < 100; y+=1) {
+
+		for (var x = 0; x < 100; x+=1) {
+
+			var pos = (y * 100 + x);
+			var pt = pos * 4;
+
+      var bright = brightness(imgData[pt], imgData[pt+1], imgData[pt+2], 2);
+
+			//if(pos <= plane.geometry.vertices.length) {
+				var v = plane.geometry.vertices[pos];
+				v.z = 10 - bright/10;
+			//}
+
+			}
+
+		 }
+		 plane.geometry.vertices[5000].z = 20;
+
+
+}
+
+
+function drawCanvasBump(){
+  ctx2.clearRect(0, 0, w, h);
+
+	ctx2.fillStyle = rgb(215);
+  ctx2.fillRect(0, 0, 200, 200);
+
+
+    ctx2.fillStyle = rgb(70, 0, 0);
+    ctx2.fillEllipse(50, 50, 50, 50);
+
+	ctx2.fillStyle = rgb(255,200,0);
+	var r = SinOsc(frameCount/50, 150);
+	ctx2.fillEllipse(xx, yy, 40, 40);
+	ctx2.fillStyle = rgb(0);
+	ctx2.fillEllipse(xx, yy, r/4, r/4);
+	ctx2.fillStyle = rgb(255,200,0);
+
+  ctx2.fillStyle = rgb(70, 0, 20);
+  ctx2.fillEllipse(xx, 100, 30, 30);
+  ctx2.fillStyle = rgb(70, 50, 220);
+  ctx2.fillEllipse(100, yy, 30, 30);
+	xx++;
+	yy++;
+	if(xx > 100) xx = 0;
+	if(yy > 100) yy = 0;
+}
+
+
+</script>
+<!-- <script language="javascript" src="../js/soundcloud_new.js"></script> -->
+</body>
+</html>

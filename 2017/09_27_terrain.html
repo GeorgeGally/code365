@@ -1,0 +1,134 @@
+
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>three.js webgl - dynamic procedural terrain</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+		<script language="javascript" src="../js/creative_coding.js"></script>
+		<script language="javascript" src="../js/canvas.js"></script>
+		<script language="javascript" src="../js/particle_engine.js"></script>
+		<script language="javascript" src="../js/three.min.js"></script>
+		<script language="javascript" src="../js/threejs/CanvasRenderer.js"></script>
+	  <script language="javascript" src="../js/threejs/Projector.js"></script>
+	  <script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+		<!-- <script language="javascript" src="../js/timeliner.js"></script> -->
+
+		<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+	</head>
+
+	<body>
+		<script>
+		ctx = createHiddenCanvas('canvas1');
+		$(document).ready(function() {
+		  console.log("START");
+
+		  function render() {
+		      requestAnimationFrame( render );
+		      renderer.render( scene, camera );
+					plane.rotation.x+= 0.002;
+					if(chance(5)) refresh();
+		  }
+
+		  function refresh() {
+		    //console.log("refresh");
+				var v = randomInt(plane.geometry.vertices.length-1);
+		    plane.geometry.vertices[v].z +=  posNeg() * 20;
+				//plane.geometry.vertices[v].y +=  10;
+		    plane.geometry.verticesNeedUpdate = true;
+		  }
+
+		  // var w = 600;
+		  // var h = 400;
+
+
+
+		  var scene = new THREE.Scene();
+			//scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
+
+			var aspect = window.innerWidth / window.innerHeight;
+			//var camera = new THREE.PerspectiveCamera( 70, aspect, 0.1, 1000 );
+			var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+		  var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+		  renderer.setSize( w, h );
+		  document.body.appendChild( renderer.domElement );
+
+			var button = document.createElement("input");
+		 button.type = "button";
+		 button.value = "REFRESH SCENE";
+		 button.style.position = "absolute";
+		 button.onclick = function(){refresh()};
+		 document.body.appendChild(button);
+
+
+		  var geometry = new THREE.PlaneGeometry( 300, 168, 100 , 100 );
+		  var material = new THREE.MeshPhongMaterial( {color: 0xffffff, side: THREE.DoubleSide} );
+			//var material = new THREE.MeshDepthMaterial({side: THREE.DoubleSide} );
+			//material.SmoothShading = true;
+			material.shading = THREE.SmoothShading;
+			//material.flatshading = true;
+		  var plane = new THREE.Mesh( geometry, material );
+			plane.receiveShadow = true;
+			plane.castShadow = true;
+		  scene.add( plane );
+			geometry.mergeVertices();
+
+			var light = new THREE.HemisphereLight( 0xffffff, 0x887979, 0.3);
+			scene.add( light );
+			// var ambientLight = new THREE.AmbientLight(0xffffff);
+			// scene.add(ambientLight);
+			createLights();
+		  // camera.position.set(200,200,200);
+		  // camera.up = new THREE.Vector3(0,0,1);
+		  // camera.lookAt(new THREE.Vector3(50,0,0));
+			camera.position.z = 80;
+			// camera.near = 20;
+			// camera.far  = 95;
+		  scene.add( camera );
+
+			var hemisphereLight, shadowLight;
+
+function createLights() {
+	// A hemisphere light is a gradient colored light;
+	// the first parameter is the sky color, the second parameter is the ground color,
+	// the third parameter is the intensity of the light
+	hemisphereLight = new THREE.HemisphereLight(0xaaaaaa,0x000000, .9)
+
+	// A directional light shines from a specific direction.
+	// It acts like the sun, that means that all the rays produced are parallel.
+	shadowLight = new THREE.DirectionalLight(0xffffff, .9);
+
+	// Set the direction of the light
+	shadowLight.position.set(150, 350, 350);
+
+	// Allow shadow casting
+	shadowLight.castShadow = true;
+
+	// define the visible area of the projected shadow
+	shadowLight.shadow.camera.left = -400;
+	shadowLight.shadow.camera.right = 400;
+	shadowLight.shadow.camera.top = 400;
+	shadowLight.shadow.camera.bottom = -400;
+	shadowLight.shadow.camera.near = 1;
+	shadowLight.shadow.camera.far = 1000;
+
+	// define the resolution of the shadow; the higher the better,
+	// but also the more expensive and less performant
+	shadowLight.shadow.mapSize.width = 2048;
+	shadowLight.shadow.mapSize.height = 2048;
+
+	// to activate the lights, just add them to the scene
+	scene.add(hemisphereLight);
+	scene.add(shadowLight);
+}
+
+		  render();
+
+		});
+		</script>
+
+	</body>
+</html>

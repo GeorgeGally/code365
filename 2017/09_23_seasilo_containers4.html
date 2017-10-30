@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+
+</head>
+
+
+
+<body style="background: #000;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+var ctx4 = createCanvas("canvas4");
+frameRate = 60;
+
+var engine = new particleEngine(20, 150);
+
+ctx.canvas.style.width = w + 'px';
+ctx.canvas.style.height = h + 'px';
+ctx2.canvas.style.width = w + 'px';
+ctx2.canvas.style.height = h + 'px';
+ctx3.canvas.style.width = w + 'px';
+ctx3.canvas.style.height = h + 'px';
+// canvas.width = w;
+// canvas.height = h;
+
+if (window.devicePixelRatio >= 2) {
+    ctx.canvas.width = w * 2;
+    ctx.canvas.height = h * 2;
+    ctx.scale(2, 2);
+    ctx2.canvas.width = w * 2;
+    ctx2.canvas.height = h * 2;
+    ctx2.scale(2, 2);
+    ctx3.canvas.width = w * 2;
+    ctx3.canvas.height = h * 2;
+    ctx3.scale(2, 2);
+}
+
+
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  setParticles(p, engine);
+}
+
+function setParticles(p, _engine) {
+  p.pos.y = random(h + 200);
+  p.speed = new Vector(random(-4,4), random(2, 5));
+  p.sz = random(4);
+  p.c = randomGrey(100, 255);
+}
+
+function draw() {
+  ctx.background(0, 0.8);
+  ctx2.clearRect(0, 0, w, h);
+  // ctx.fillStyle = rgba(255, 0.4);
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.pos.y += p.speed.y;
+    ctx.fillStyle = p.c;
+    ctx.centreFillRect(p.pos.x, p.pos.y, engine.grid.spacing.x, p.sz);
+
+    if(p.pos.y > h + 100) {
+      p.pos.y = random(-400);
+      counter++;
+    }
+  }
+
+  drawGraph();
+
+}
+
+
+function drawArm(p){
+  // ctx3.fillStyle = rgba(0,0,0, 0.8);
+  // ctx3.fillEllipse(p.pos.x, p.pos.y, 40, 40);
+  // ctx.strokeStyle = rgba(0,0.05);
+  ctx2.fillStyle = rgba(255);
+  ctx2.LfillEllipse(p.pos.x, p.pos.y, 3, 3);
+  // c
+}
+
+function drawOrbits(p){
+  ctx.lineWidth = 0.5;
+
+  ctx.fillStyle = rgba(255, 0.1);
+  ctx.HfillEllipse(p.orbit.x, p.orbit.y, p.size, p.size);
+  ctx.strokeStyle = rgba(0, 0.3);
+  if(frameCount%2 == 0) ctx.HstrokeEllipse(p.orbit.x, p.orbit.y, p.size, p.size);
+  //ctx2.fillStyle = rgba(255);
+  //ctx2.fillEllipse(p.orbit.x, p.orbit.y, 5, 5);
+  // ctx.strokeStyle = rgba(0,0.05);
+  // ctx.line(p.pos.x, p.pos.y, p.orbit.x, p.orbit.y);
+  // ctx2.strokeStyle = rgba(255);
+  // ctx2.line(p.pos.x, p.pos.y, p.orbit.x, p.orbit.y);
+  ctx2.strokeStyle = rgba(255);
+  ctx2.HstrokeEllipse(p.orbit.x, p.orbit.y, p.size/1, p.size/1);
+  ctx2.fillStyle = rgb(0);
+  ctx2.LfillEllipse(p.orbit.x, p.orbit.y, 3, 3);
+}
+
+
+function update(p, _engine) {
+    //console.log(p.angle)
+    p.angle += 8.45;
+    p.pos.y = h/2 + Math.sin(p.angle/(p.speed.y *5000))*h/2;;
+    p.angle2 += p.speed.y/60;
+    p.orbit.x = p.pos.x + Math.cos(p.angle2) * p.size2;
+    p.orbit.y = p.pos.y + Math.sin(p.angle2) * p.size2;
+
+}
+
+function drawGraph(){
+  ctx2.font = "16px Arial";
+  var ht = h - 100;
+  ctx2.fillStyle = rgb(255);
+  var pos = map(counter, 0, 60000000, 0, w);
+  ctx2.fillText("Containers entering the US every year " + counter, w - 400, ht - 20);
+  ctx2.fillStyle = rgb(255);
+  ctx2.fillRect(0, ht, w, 6);
+  ctx2.fillStyle = "red";
+  ctx2.fillRect(0, ht, pos, 6);
+}
+
+
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+
+</html>

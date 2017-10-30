@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - clipIntersection</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+			margin: 0px;
+			background: -webkit-radial-gradient(center ellipse,#fff 50%,#c8dad2 100%);
+    	background: radial-gradient(ellipse at center,#fff 50%,#c8dad2 100%);
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+		<div id='WebGL-output'></div>
+
+		<script src="../js/three.min.js"></script>
+		<script src="../js/threejs/controls/OrbitControls.js"></script>
+		<script src="../js/dat.gui.min.js"></script>
+		<script src="../js/canvas.js"></script>
+		<script src="../js/creative_coding.js"></script>
+		<script src="../js/particle_engine.js"></script>
+		<script src="../js/utils/Perlin.js"></script>
+
+		<script>
+		var ctx = createHiddenCanvas('canvas1');
+		var canvas = ctx.canvas;
+		var engine = new particleEngine(1, 20);
+
+		var sphere = [];
+		var sphereGeom = [];
+		var helpers = [];
+		var planetMaterial = [];
+		var num_slices = 30;
+
+		var step = 0;
+
+		var change_constants = [];
+		var speed = [];
+
+
+		var params = {
+			clipIntersection: true,
+			planeConstant: 0,
+			planeConstant2: 0,
+			sliceWidth: 3,
+			showHelpers: false,
+		};
+
+		var controls = new function() {
+			this.sphereColor = '#c8dad2';
+			this.noiseAmount = 2;
+		}
+
+		var sphereVerticesArray = [];
+		var sphereVerticesNormArray = [];
+		var pn;
+		var clock = new THREE.Clock();
+		var clipPlanes = [];
+		var scene, renderer, camera, orbitControls, texture;
+		var num_materials = 2;
+
+		function setup() {
+
+		  scene = new THREE.Scene();
+		  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+			// position and point the camera to the center of the scene
+		  camera.position.x = -20;
+		  camera.position.y = 30;
+		  camera.position.z = 90;
+		  camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+		  renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+		  renderer.setSize(window.innerWidth, window.innerHeight);
+		  renderer.shadowMapEnabled = true;
+			renderer.localClippingEnabled = true;
+			document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+		  var date = new Date();
+
+			orbitControls = new THREE.OrbitControls(camera);
+			orbitControls.autoRotate = true;
+
+			addLights();
+			// // add subtle ambient lighting
+			// var ambientLight = new THREE.AmbientLight(0x111111);
+			// scene.add(ambientLight);
+			//
+			// // add spotlight for the shadows
+			// var spotLight = new THREE.DirectionalLight(0xffffff);
+			// spotLight.position.set(-20, 30, 40);
+			// spotLight.intensity = 1.5;
+			// scene.add(spotLight);
+
+			pn = new Perlin('rnd' + date.getTime());
+
+		  sphereGeom[0] = new THREE.SphereGeometry(15, 100, 100);
+			sphereGeom[1] = new THREE.SphereGeometry(11, 100, 100);
+			sphereGeom[2] = new THREE.SphereGeometry(8, 100, 100);
+		  // save points for later calculation
+		  for (var i = 0; i < sphereGeom[0].vertices.length; i += 1) {
+		    var vertex = sphereGeom[0].vertices[i];
+		    var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
+		    sphereVerticesArray.push(vec);
+		    var mag = vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
+		    mag = Math.sqrt(mag);
+		    var norm = new THREE.Vector3(vertex.x / mag, vertex.y / mag, vertex.z / mag);
+		    sphereVerticesNormArray.push(norm);
+		  }
+
+			addWalls();
+
+			// gui
+			var gui = new dat.GUI();
+			gui.addColor(controls, 'sphereColor').onChange(function(e) {
+					for (var i = 0; i < sphereGeom.length; i++) {
+						planetMaterial[i].color.setStyle(e);
+					}
+
+				console.log(c);
+
+			});
+			gui.add(controls, 'noiseAmount', -10, 10).listen();
+
+			texture = new THREE.Texture(canvas);
+
+			for (var i = 0; i < num_slices; i++) {
+				var sphere_number = randomInt(num_materials);
+				clipPlanes[i] = [
+					new THREE.Plane( new THREE.Vector3( -1, 0, 0 ), 0 ),
+					new THREE.Plane( new THREE.Vector3( 1, 0, 0 ), 0 ),
+				];
+
+				planetMaterial[sphere_number] = new THREE.MeshPhongMaterial({
+					color: 0xc8dad2 ,
+					side: THREE.DoubleSide,
+					map: texture,
+					clippingPlanes: clipPlanes[i],
+					//clipIntersection: params.clipIntersection
+				});
+				planetMaterial[sphere_number].map.minFilter = THREE.LinearFilter;
+
+				sphere[i] = THREE.SceneUtils.createMultiMaterialObject(sphereGeom[sphere_number], [planetMaterial[sphere_number]]);
+				scene.add(sphere[i]);
+				var c = randomColour(50);
+				helpers[i] = new THREE.Group();
+				helpers[i].add( new THREE.AxisHelper( 0 ) );
+				helpers[i].add( new THREE.PlaneHelper( clipPlanes[i][ 0 ], 30, c ) );
+				helpers[i].add( new THREE.PlaneHelper( clipPlanes[i][ 1 ], 30, c ) );
+				helpers[i].visible = params.showHelpers;
+
+				scene.add( helpers[i] );
+
+
+
+			}
+
+			gui.add( params, 'showHelpers' ).name( 'show helpers: 0' ).onChange( function ( value) {
+				for (var i = 0; i < num_slices; i++) {
+					helpers[i].visible = value;
+				}
+			} );
+			// gui.add( params, 'showHelpers[1]' ).name( 'show helpers: 1' ).onChange( function ( value) {
+			// 	helpers[1].visible = value;
+			// } );
+			// gui.add( params, 'showHelpers[2]' ).name( 'show helpers: 2' ).onChange( function ( value) {
+			// 	helpers[2].visible = value;
+			// } );
+			// gui.add( params, 'showHelpers[3]' ).name( 'show helpers: 3' ).onChange( function ( value) {
+			// 	helpers[3].visible = value;
+			// } );
+
+			gui.add( params, 'sliceWidth', 0.1, 10 ).step( 0.1 ).name( 'Slice Width' ).onChange( function ( value ) {
+				sliceWidth = value;
+
+			} );
+
+			// sphere 1
+			gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(0, 0, value)
+			} );
+
+			gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(0, 1, value)
+			} );
+
+			// sphere 1
+			gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(1, 0, value)
+			} );
+
+			gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(1, 1, value)
+			} );
+
+			// sphere 2
+			gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(2, 0, value)
+			} );
+
+			gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(2, 1, value)
+			} );
+
+}
+
+
+			for (var i = 0; i < num_slices; i++) {
+				change_constants[i] = true;
+				speed[i] = randomInt(20, 200);
+			}
+
+
+			function changeClipConstants(s, num, value) {
+				clipPlanes[ s ][ num ].constant = value;
+			}
+
+
+
+		  function draw() {
+
+				ctx.background(255);
+				ctx.fillStyle = rgb(0);
+				for (var i = 0; i < engine.particles.length; i++) {
+					var p = engine.particles[i];
+					p.pos.y +=5;
+					if(p.pos.y > h) p.pos.y = 0;
+					ctx.fillRect(0, p.pos.y, w, 20);
+				}
+				//ctx.fillEllipse
+		    step += 1;
+
+		    var delta = clock.getDelta();
+				// clipPlanes[0][0].normal.y = Math.cos(step/100);
+				// clipPlanes[0][0].normal.x = Math.sin(step/100);
+				// clipPlanes[0][1].normal.y = Math.cos(step/50);
+				// clipPlanes[0][1].normal.x = Math.sin(step/50);
+
+
+				if(chance(500)) {
+					change_constants[0] = !change_constants[0];
+					params.sliceWidth = random(3, 8);
+				}
+				for (var i = 0; i < num_slices; i++) {
+				if(change_constants[i]) {
+					changeClipConstants(i, 0, Math.sin(step/speed[i]) * 16);
+					changeClipConstants(i, 1, -1 * (Math.sin(step/speed[i]) * 16 - params.sliceWidth));
+				}
+				}
+
+		    orbitControls.update(delta);
+
+		    //scene.remove(sphere[0]);
+
+		    for (var i = 0; i < sphereGeom[0].vertices.length; i += 1) {
+		      var vertex = sphereGeom[0].vertices[i];
+
+		      // sphereVerticesArray.push(vec);
+		      var value = pn.noise((vertex.x + step)/ 10, vertex.y / 10, vertex.z / 10);
+		      // value = Math.abs(1 - value);
+		      vertex.x = sphereVerticesArray[i].x + sphereVerticesNormArray[i].x * value * controls.noiseAmount;
+		      vertex.y = sphereVerticesArray[i].y + sphereVerticesNormArray[i].y * value * controls.noiseAmount;
+		      vertex.z = sphereVerticesArray[i].z + sphereVerticesNormArray[i].z * value * controls.noiseAmount;
+		    }
+		    sphereGeom[0].computeFaceNormals();
+		    sphereGeom[0].computeVertexNormals();
+
+		    sphereGeom[0].verticesNeedUpdate = true;
+				// for (var i = 0; i < num_materials; i++) {
+				// 	planetMaterial[i].needsUpdate = true;
+				// }
+				texture.needsUpdate = true;
+		    renderer.render(scene, camera);
+
+		  }
+
+			function addWalls(){
+				// walls
+				var planeGeo = new THREE.PlaneBufferGeometry( 200.1, 200.1 );
+				var planeTop = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: 0xffffff } ) );
+				planeTop.position.y = 100;
+				planeTop.rotateX( Math.PI / 2 );
+				scene.add( planeTop );
+
+				var planeBack = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: 0xffffff } ) );
+				planeBack.position.z = -100;
+				planeBack.position.y = -10;
+				scene.add( planeBack );
+
+				var planeFront = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: 0xffffff } ) );
+				planeFront.position.z = 100;
+				planeFront.position.y = -10;
+				planeFront.rotateY( Math.PI );
+				scene.add( planeFront );
+
+				var planeRight = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: 0xffffff } ) );
+				planeRight.position.x = 100;
+				planeRight.position.y = -10;
+				planeRight.rotateY( - Math.PI / 2 );
+				scene.add( planeRight );
+
+				var planeLeft = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: 0xffffff } ) );
+				planeLeft.position.x = -100;
+				planeLeft.position.y = -10;
+				planeLeft.rotateY( Math.PI / 2 );
+				scene.add( planeLeft );
+			}
+
+			function addLights(){
+				// lights
+				var mainLight = new THREE.PointLight( 0xffffff, 1.5, 250 );
+				mainLight.position.y = 60;
+				scene.add( mainLight );
+
+				var greenLight = new THREE.PointLight( 0xffffff, 0.25, 1000 );
+				greenLight.position.set( 550, -10, 0 );
+				scene.add( greenLight );
+
+				var redLight = new THREE.PointLight( 0xffffff, 0.25, 1000 );
+				redLight.position.set( - 550, -10, 0 );
+				scene.add( redLight );
+
+				var blueLight = new THREE.PointLight( 0xffffff, 0.25, 1000 );
+				blueLight.position.set( 0, -10, 550 );
+				scene.add( blueLight );
+
+				var ambientLight = new THREE.AmbientLight(0x777777);
+				scene.add(ambientLight);
+				
+			}
+
+		</script>
+
+	</body>
+</html>

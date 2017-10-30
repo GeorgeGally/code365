@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - clipIntersection</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+			margin: 0px;
+			background: -webkit-radial-gradient(center ellipse,#fff 50%,#c8dad2 100%);
+    	background: radial-gradient(ellipse at center,#fff 50%,#c8dad2 100%);
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+		<div id='WebGL-output'></div>
+
+		<script src="../js/three.min.js"></script>
+		<script src="../js/threejs/controls/OrbitControls.js"></script>
+		<script src="../js/dat.gui.min.js"></script>
+		<script src="../js/creative_coding.js"></script>
+		<script src="../js/utils/Perlin.js"></script>
+
+		<script>
+
+		var params = {
+			clipIntersection: true,
+			planeConstant1: -16,
+			planeConstant2: -16,
+			planeConstant3: -16,
+			planeConstant4: 16,
+			showHelpers: true
+		};
+		var sphereVerticesArray = [];
+		var sphereVerticesNormArray = [];
+		var pn;
+
+		var clipPlanes = [
+			new THREE.Plane( new THREE.Vector3( 1, 0, 0 ), 0 ),
+			new THREE.Plane( new THREE.Vector3( 0.5, 0, 0 ), 0 ),
+			new THREE.Plane( new THREE.Vector3( -0.5, 0, 0 ), 0 ),
+			// new THREE.Plane( new THREE.Vector3( 0, - 1, 0 ), 0 ),
+			// new THREE.Plane( new THREE.Vector3( 0, 0, - 1 ), 0 ),
+			new THREE.Plane( new THREE.Vector3( -1, 0, 0 ), 0 ),
+			// new THREE.Plane( new THREE.Vector3( 0, 1, 0 ), 0 ),
+			// new THREE.Plane( new THREE.Vector3( 0, 0, 1 ), 0 ),
+		];
+
+		function setup() {
+
+		  var scene = new THREE.Scene();
+		  var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+		  // create a render and set the size
+		  var renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+		  //renderer.setClearColor(new THREE.Color(0x000, 1.0));
+		  renderer.setSize(window.innerWidth, window.innerHeight);
+		  renderer.shadowMapEnabled = true;
+			renderer.localClippingEnabled = true;
+		  var date = new Date();
+
+			pn = new Perlin('rnd' + date.getTime());
+		  var sphereGeom = new THREE.SphereGeometry(15, 100, 100);
+		  // save points for later calculation
+		  for (var i = 0; i < sphereGeom.vertices.length; i += 1) {
+		    var vertex = sphereGeom.vertices[i];
+		    var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
+		    sphereVerticesArray.push(vec);
+		    var mag = vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
+		    mag = Math.sqrt(mag);
+		    var norm = new THREE.Vector3(vertex.x / mag, vertex.y / mag, vertex.z / mag);
+		    sphereVerticesNormArray.push(norm);
+		  }
+
+		  var planetMaterial = new THREE.MeshPhongMaterial({color: 0xc8dad2 ,
+				side: THREE.DoubleSide,
+				clippingPlanes: clipPlanes,
+				//clipIntersection: params.clipIntersection,
+				clipShadows: true});
+		  var wireFrameMat = new THREE.MeshBasicMaterial();
+		  wireFrameMat.wireframe = true;
+		  wireFrameMat.visible = false;
+
+		  var sphere = THREE.SceneUtils.createMultiMaterialObject(sphereGeom, [planetMaterial, wireFrameMat]);
+		  scene.add(sphere);
+
+		  // position and point the camera to the center of the scene
+		  camera.position.x = -20;
+		  camera.position.y = 30;
+		  camera.position.z = 40;
+		  camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+
+		  var orbitControls = new THREE.OrbitControls(camera);
+		  orbitControls.autoRotate = true;
+		  var clock = new THREE.Clock();
+
+		  // add subtle ambient lighting
+		  var ambientLight = new THREE.AmbientLight(0x111111);
+		  scene.add(ambientLight);
+
+		  // add spotlight for the shadows
+		  var spotLight = new THREE.DirectionalLight(0xffffff);
+		  spotLight.position.set(-20, 30, 40);
+		  spotLight.intensity = 1.5;
+		  scene.add(spotLight);
+
+		  // add the output of the renderer to the html element
+		  document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+		  var controls = new function() {
+		    this.ballColor = '#c8dad2';
+		    this.noiseAmount = 2;
+		    this.showWireFrame = false;
+		  }
+
+			// helpers
+
+			var helpers = new THREE.Group();
+			helpers.add( new THREE.AxisHelper( 20 ) );
+			helpers.add( new THREE.PlaneHelper( clipPlanes[ 0 ], 30, 0xff0000 ) );
+			helpers.add( new THREE.PlaneHelper( clipPlanes[ 1 ], 30, 0x00ff00 ) );
+			helpers.add( new THREE.PlaneHelper( clipPlanes[ 2 ], 30, 0x0000ff ) );
+			helpers.add( new THREE.PlaneHelper( clipPlanes[ 3 ], 30, 0xff00ff ) );
+			//helpers.add( new THREE.PlaneHelper( clipPlanes[ 4 ], 30, 0xff00ff ) );
+			// helpers.add( new THREE.PlaneHelper( clipPlanes[ 5 ], 30, 0xff00ff ) );
+			helpers.visible = params.showHelpers;
+			scene.add( helpers );
+
+			// gui
+		  var gui = new dat.GUI();
+		  gui.addColor(controls, 'ballColor').onChange(function(e) {
+		    planetMaterial.color.setStyle(e);
+		  });
+		  gui.add(controls, 'noiseAmount', -10, 10).listen();
+		  gui.add(controls, 'showWireFrame').onChange(function() {
+		    wireFrameMat.visible = !wireFrameMat.visible;
+		  });
+			gui.add( params, 'planeConstant1', - 16, 16 ).step( 1 ).name( 'plane constant 0' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(0, value)
+			});
+
+			gui.add( params, 'planeConstant2', - 16, 16 ).step( 1 ).name( 'plane constant 1' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(1, value)
+			});
+
+			gui.add( params, 'planeConstant3', - 16, 16 ).step( 1 ).name( 'plane constant 2' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(2, value)
+			});
+			gui.add( params, 'planeConstant4', - 16, 16 ).step( 1 ).name( 'plane constant 3' ).onChange( function ( value ) {
+				change_constants = false;
+				changeClipConstants(3, value)
+			});
+			// gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant 4' ).onChange( function ( value ) {
+			// 	change_constants = false;
+			// 	changeClipConstants(3, value)
+			// });
+			// gui.add( params, 'planeConstant', - 16, 16 ).step( 1 ).name( 'plane constant 5' ).onChange( function ( value ) {
+			// 	change_constants = false;
+			// 	changeClipConstants(3, value)
+			// });
+
+			gui.add( params, 'showHelpers' ).name( 'show helpers' ).onChange( function ( value ) {
+
+				helpers.visible = value;
+
+				//render();
+
+			} );
+
+		  var step = 0;
+			var change_constants = false;
+			var roll_planes = false;
+		  render();
+
+			function changeClipConstants(num, value) {
+				clipPlanes[ num ].constant = value;
+			}
+		  function render() {
+
+		    step += 1;
+
+		    var delta = clock.getDelta();
+
+				// if(chance(500)) roll_planes = !roll_planes;
+				// if(roll_planes) {
+				// 	clipPlanes["0"].normal.y = Math.cos(step/100) * 10;
+				// 	clipPlanes["0"].normal.z = Math.sin(step/100) *10;
+				//
+				// 	clipPlanes["1"].normal.x = Math.sin(step/150) * 10;
+				// 	clipPlanes["1"].normal.z = Math.cos(step/50) *10;
+				//
+				// 	clipPlanes["2"].normal.y = Math.sin(step/50);
+				// 	clipPlanes["2"].normal.x = Math.cos(step/80);
+				// }
+				// if(chance(500)) change_constants = !change_constants;
+				// if(change_constants) {
+				// 	changeClipConstants(0, Math.sin(step/50) * 16);
+				// 	changeClipConstants(1, Math.cos(step/150) * 16);
+				// 	changeClipConstants(2, Math.sin(step/80) * 16);
+				// }
+		    orbitControls.update(delta);
+		    //renderer.clear();
+
+		    scene.remove(sphere);
+
+		    for (var i = 0; i < sphereGeom.vertices.length; i += 1) {
+		      var vertex = sphereGeom.vertices[i];
+
+		      // sphereVerticesArray.push(vec);
+		      var value = pn.noise((vertex.x + step)/ 10, vertex.y / 10, vertex.z / 10);
+		      // value = Math.abs(1 - value);
+		      vertex.x = sphereVerticesArray[i].x + sphereVerticesNormArray[i].x * value * controls.noiseAmount;
+		      vertex.y = sphereVerticesArray[i].y + sphereVerticesNormArray[i].y * value * controls.noiseAmount;
+		      vertex.z = sphereVerticesArray[i].z + sphereVerticesNormArray[i].z * value * controls.noiseAmount;
+		    }
+		    sphereGeom.computeFaceNormals();
+		    sphereGeom.computeVertexNormals();
+
+		    sphereGeom.verticesNeedUpdate = true;
+		    scene.add(sphere);
+
+
+		    // render using requestAnimationFrame
+		    requestAnimationFrame(render);
+		    renderer.render(scene, camera);
+
+		  }
+
+
+		}
+
+		</script>
+
+	</body>
+</html>

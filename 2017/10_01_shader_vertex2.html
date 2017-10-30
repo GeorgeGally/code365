@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - gpgpu - water</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+		</style>
+		<script language="javascript" src="../js/creative_coding.js"></script>
+		<script language="javascript" src="../js/three.min.js"></script>
+		<script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+		<script src="../js/stats.js"></script>
+	</head>
+	<body>
+	    <div id="container"></div>
+
+
+
+			<script type="x-shader/x-vertex" id="vertexShader">
+			attribute float vertexDisplacement;
+			uniform float delta;
+			varying float vOpacity;
+			varying vec3 vUv;
+
+			void main()
+			{
+			    vUv = position;
+			    vOpacity = vertexDisplacement;
+
+			    vec3 p = position;
+
+			    p.x += sin(vertexDisplacement) * 50.0;
+			    p.y += cos(vertexDisplacement) * 50.0;
+
+				vec4 modelViewPosition = modelViewMatrix * vec4(p, 1.0);
+				gl_Position = projectionMatrix * modelViewPosition;
+			}
+			</script>
+			<script type="x-shader/x-fragment" id="fragmentShader">
+			uniform float delta;
+			varying float vOpacity;
+			varying vec3 vUv;
+
+			void main() {
+
+			    float r = 1.0 + cos(vUv.x * delta);
+			    float g = 0.5 + sin(delta) * 0.5;
+			    float b = 0.0;
+			    vec3 rgb = vec3(r, g, b);
+
+				gl_FragColor = vec4(rgb, vOpacity);
+			}
+			</script>
+
+
+	    <script>
+	        var container;
+	        var camera, scene, renderer, controls;
+	        var uniforms;
+					var vertexDisplacement;
+
+					var geometry, geometry2, geometry3;
+					var mesh, mesh2, mesh3;
+
+					var delta = 0;
+
+	        function setup() {
+
+	            container = document.getElementById( 'container' );
+
+	            scene = new THREE.Scene();
+
+							renderer = new THREE.WebGLRenderer();
+							renderer.setPixelRatio( window.devicePixelRatio );
+							renderer.setClearColor(0xffffff);
+							renderer.setSize(window.innerWidth, window.innerHeight);
+							container.appendChild( renderer.domElement );
+
+							camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 200, 10000);
+				      camera.position.z = 100;
+
+							controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+
+							var light = new THREE.AmbientLight(0xFFFFFF, 0.5)
+							scene.add(light);
+
+							var light2 = new THREE.PointLight(0xFFFFFF, 0.5)
+							scene.add(light2);
+
+							uniforms = {
+	                //u_time: { type: "f", value: 1.0 },
+									delta: { type: "f", value: 0.0 },
+	                u_resolution: { type: "v2", value: new THREE.Vector2() },
+	                u_mouse: { type: "v2", value: new THREE.Vector2() }
+	            };
+
+							var material = new THREE.ShaderMaterial( {
+	                uniforms: uniforms,
+	                vertexShader: document.getElementById( 'vertexShader' ).textContent,
+	                fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+	            } );
+
+
+	            geometry = new THREE.BoxBufferGeometry( 100, 100, 100, 10, 10, 10 );
+							mesh = new THREE.Mesh( geometry, material );
+							mesh.position.z = -1000;
+							mesh.position.x = -100;
+							scene.add( mesh );
+
+
+							geometry2 = new THREE.SphereGeometry(50, 20, 20 );
+							mesh2 = new THREE.Mesh( geometry2, material );
+							mesh2.position.z = -1000;
+							mesh2.position.x = 100;
+							scene.add( mesh2 );
+
+
+							geometry3 = new THREE.PlaneBufferGeometry( 10000, 10000, 100, 100 );
+							mesh3 = new THREE.Mesh( geometry3, material );
+							mesh3.rotation.x = -90 * Math.PI /180;
+							mesh3.position.y = -100;
+							scene.add( mesh3 );
+
+							vertexDisplacement = new Float32Array(geometry.attributes.position.count);
+							for (var i = 0; i < vertexDisplacement.length; i++) {
+								vertexDisplacement[i] = Math.sin(i);
+							}
+
+							geometry.addAttribute('vertexDisplacement', new THREE.BufferAttribute(vertexDisplacement, 1))
+
+
+	            onWindowResize();
+	            window.addEventListener( 'resize', onWindowResize, false );
+
+	            document.onmousemove = function(e){
+	              uniforms.u_mouse.value.x = e.pageX
+	              uniforms.u_mouse.value.y = e.pageY
+	            }
+	        }
+
+
+
+				function draw() {
+
+			     delta += 0.1;
+			     //uniform
+			     mesh.material.uniforms.delta.value = 0.5 + Math.sin(delta) * 0.5;
+
+			     //attribute
+			     for (var i = 0; i < vertexDisplacement.length; i ++) {
+			         vertexDisplacement[i] = 0.5 + Math.sin(i + delta) * 0.25;
+			     }
+			     mesh.geometry.attributes.vertexDisplacement.needsUpdate = true;
+
+			    renderer.render(scene, camera);
+
+
+			   }
+
+
+					function onWindowResize( event ) {
+							renderer.setSize( window.innerWidth, window.innerHeight );
+							// uniforms.u_resolution.value.x = renderer.domElement.width;
+							// uniforms.u_resolution.value.y = renderer.domElement.height;
+					}
+
+	    </script>
+	</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/three.min.js"></script>
+<script language="javascript" src="../js/perlin_noise.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+
+<script>
+var ctx = createCanvas("canvas1");
+var r = 0;
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+
+var particles = [];
+var num_particles = 80;
+var plane = [];
+var spacing = radians(180 /num_particles);
+var radius = 10;
+var dir = 1;
+
+var octaves = 4;
+var falloff = 0.5;
+var tileSize = 8;
+var actRandomSeed = 1;
+
+var geometry = new THREE.PlaneGeometry( 300, 168, 100 , 100 );
+geometry.dynamic = true;
+
+texture = new THREE.Texture(canvas);
+texture.needsUpdate = true;
+
+//var material = new THREE.MeshDepthMaterial({side: THREE.DoubleSide});
+var material = new THREE.MeshPhongMaterial( {map: texture, color: 0xffffff, side: THREE.DoubleSide} );
+material.shading = THREE.SmoothShading;
+
+scene.fog = new THREE.FogExp2( 0x000000, 0.005 );
+
+var light = new THREE.HemisphereLight( 0xffffff, 0x000000, 0.2);
+scene.add( light );
+var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+
+var plane = new THREE.Mesh( geometry, material );
+scene.add(plane);
+
+renderer.setClearColor( 0xffffff );
+camera.position.z = 100;
+camera.near = 80;
+camera.far  = 195;
+
+
+var engine = new particleEngine(20, 1);
+engine.setColour(rgb(0));
+engine.setSpeed(5, 5);
+var x = w;
+
+function draw() {
+
+	ctx.background(255);
+
+	var noiseXRange = CosOsc(frameCount/250, 100)/10.0;
+  var noiseYRange = SinOsc(frameCount/250, 100)/10.0;
+
+	for (var i = 0; i < engine.particles.length; i++) {
+	var p = engine.particles[i];
+	ctx.fillStyle = p.c;
+
+	//p.pos.y = SinOsc(frameCount/1000, 50);
+	//p.pos.y = p.start.y + 50 * SinOsc(frameCount/1000, 50);
+	// p.pos.x += p.speed.x;
+	p.pos.x = p.start.x + Math.sin(frameCount/100)*120;
+	if(p.pos.x > w) p.pos.x = 0;
+	if(p.pos.x < 0) p.pos.x = w;
+	//if(bounce(p.pos.y, 0, h)) p.speed.y *=-1;
+	//if(p.pos.x > h - 9)
+	ctx.fillRect(p.pos.x, 0, 20, h);
+	//ctx.fillRect(w/2, p.pos.y, w, 10);
+}
+
+	texture.needsUpdate = true;
+
+  if (chance(2000)) {
+    dir *=-1;
+  }
+
+  //drawParticles();
+	//if(chance(5)) refresh();
+	for (var j = 0; j < 100; j+=1) {
+		for (var i = 0; i < 100; i+=1) {
+			var pos = j + i * 100;
+		var v = plane.geometry.vertices[pos];
+		var a = frameCount/100 + pos/400;
+		// v.z = Math.sin(a) * 10;
+		// get noise value
+		var noiseX = map(i, 0, 100, 0, noiseXRange);
+		var noiseY = map(j, 0, 100, 0, noiseYRange);
+
+		var noiseValue = PerlinNoise.noise(noiseX, noiseY, octaves, falloff);
+		var angle = noiseValue*TWO_PI;
+		v.z = Math.sin(angle) * 10;
+	}
+}
+	plane.geometry.verticesNeedUpdate = true;
+  //scene.rotation.z+= Math.sin(frameCount/10000)/100;
+	scene.rotation.x+= Math.cos(frameCount/10000)/500;
+  r = r+ 0.1 * dir;
+
+  if (r > 100 ) r = 0;
+  if (r < 0 ) r = 100;
+
+  renderer.render( scene, camera );
+
+};
+
+
+function refresh() {
+	//console.log("refresh");
+	var v = randomInt(plane.geometry.vertices.length-1);
+	plane.geometry.vertices[v].z +=  posNeg() * 20;
+	plane.geometry.verticesNeedUpdate = true;
+}
+
+
+
+</script>
+<!-- <script language="javascript" src="../js/soundcloud_new.js"></script> -->
+</body>
+</html>

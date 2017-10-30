@@ -12,13 +12,13 @@
 
 <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
 <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
-
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
 
 </head>
 
 
 
-<body style="background: #fff;">
+<body style="background: #000;">
 
 <script>
 
@@ -53,7 +53,7 @@ if (window.devicePixelRatio >= 2) {
 }
 
 
-var num = 40;
+var num = 15;
 var grid = createGrid(num, 1, w, h);
 
 var engine = new particleEngine(num, grid);
@@ -64,7 +64,7 @@ for (var i = 0; i < engine.particles.length; i++) {
 }
 
 function setParticles(p, _engine) {
-  p.size = randomInt(10, 60);
+  p.size = randomInt(20, 120);
   p.size2 = 60;
   p.orbit = new Vector(w/2, h/2);
   p.angle = random(400, 450);
@@ -88,7 +88,7 @@ function draw() {
           drawArm(p);
 
           drawOrbits(p);
-          counter++;
+          counter+=p.sz;
           ctx2.lineWidth = 1;
           //ctx2.line(p.pos.x, p.pos.y, p.pos.x, h);
   }
@@ -100,26 +100,26 @@ function drawArm(p){
   // ctx3.fillStyle = rgba(0,0,0, 0.8);
   // ctx3.fillEllipse(p.pos.x, p.pos.y, 40, 40);
   // ctx.strokeStyle = rgba(0,0.05);
-  ctx2.fillStyle = rgba(255);
+  ctx2.fillStyle = rgba(0);
   ctx2.fillEllipse(p.pos.x, p.pos.y, 5, 5);
   // c
 }
 
 function drawOrbits(p){
   ctx.lineWidth = 0.5;
-  ctx2.fillStyle = rgba(255);
+  ctx2.fillStyle = rgba(0);
   //ctx2.fillEllipse(p.orbit.x, p.orbit.y, 10, 10);
-  ctx.fillStyle = rgba(0,0,0, 0.1);
+  ctx.fillStyle = rgba(255, 0.1);
   ctx.HfillEllipse(p.orbit.x, p.orbit.y, p.size, p.size);
-  ctx.strokeStyle = rgba(255, 0.3);
+  ctx.strokeStyle = rgba(0, 0.3);
   if(frameCount%2 == 0) ctx.HstrokeEllipse(p.orbit.x, p.orbit.y, p.size, p.size);
   //ctx2.fillStyle = rgba(255);
   //ctx2.fillEllipse(p.orbit.x, p.orbit.y, 5, 5);
   // ctx.strokeStyle = rgba(0,0.05);
   // ctx.line(p.pos.x, p.pos.y, p.orbit.x, p.orbit.y);
-  ctx2.strokeStyle = rgba(255);
+  ctx2.strokeStyle = rgba(0);
   ctx2.line(p.pos.x, p.pos.y, p.orbit.x, p.orbit.y);
-  ctx2.fillStyle = rgba(0, 0.5);
+  ctx2.fillStyle = rgba(255, 0.5);
   ctx2.HfillEllipse(p.orbit.x, p.orbit.y, p.size/1, p.size/1);
 }
 
@@ -134,13 +134,24 @@ function update(p, _engine) {
 
 }
 
+
+ctx2.font = "16px Arial";
+ctx2.textAlign = "left";
+
+
 function drawGraph(){
-  ctx2.font = "16px Arial";
+
   var ht = h - 100;
   ctx2.fillStyle = "white";
-  var pos = map(counter, 0, 500000, 0, w);
-  ctx2.fillText("One supertanker is more polluting than " + counter + " cars", w - 400, ht - 20);
+  ctx2.shadowColor= rgba(0);
+  ctx2.shadowBlur= 6;
+  var pos = map(counter, 0, 1200000000, 0, w);
+  ctx2.fillText("Shipping C02 Pollution per year = " + counter + " tonnes", 20, ht - 20);
+  ctx2.fillText("Pollution from one supertanker = 50 million cars", 20, ht + 30);
+  ctx2.fillText("Pollution from 15 supertanker = All the cars in the world.", 20, ht + 55);
+  ctx2.fillStyle = "white";
   ctx2.fillRect(0, ht, w, 6);
+  ctx2.shadowBlur=0;
   ctx2.fillStyle = "red";
   ctx2.fillRect(0, ht, pos, 6);
 }
@@ -149,6 +160,7 @@ function drawGraph(){
 
 </script>
 
+<script language="javascript" src="../js/soundcloud_new.js"></script>
 </body>
 
 </html>

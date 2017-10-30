@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+		<head>
+				<title>Ammo.js terrain heightfield demo</title>
+				<meta charset="utf-8">
+				<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <script language="javascript" src="../js/creative_coding.js"></script>
+       <script language="javascript" src="../js/canvas.js"></script>
+
+       <script language="javascript" src="../js/particle_engine.js"></script>
+       <script language="javascript" src="../js/vector.js"></script>
+       <script language="javascript" src="../js/three.min.js"></script>
+       <script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+       <script language="javascript" src="../js/perlin.js"></script>>
+
+       <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+       <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+       <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+		</head>
+		<body>
+
+
+				<script>
+
+				var ctx = createHiddenCanvas("canvas1");
+
+				noise.seed(0.002);
+					// - Global variables -
+
+					// Heightfield parameters
+					var terrainWidthExtents = 100;
+					var terrainDepthExtents = 100;
+					var terrainWidth = 128;
+					var terrainDepth = 128;
+					var terrainHalfWidth = terrainWidth / 2;
+					var terrainHalfDepth = terrainDepth / 2;
+					var terrainMaxHeight = 8;
+					var terrainMinHeight = -2;
+
+					// Graphics variables
+					var container;
+					var camera, controls, scene, renderer;
+					var geometry, terrainMesh, texture;
+					var clock = new THREE.Clock();
+
+					// - Main code -
+					// init();
+					// animate();
+
+					function setup() {
+
+						heightData = generateHeight( terrainWidth, terrainDepth, terrainMinHeight, terrainMaxHeight );
+
+						initGraphics();
+
+					}
+
+					function initGraphics() {
+
+						container = document.getElementById( 'container' );
+
+						renderer = new THREE.WebGLRenderer();
+						renderer.setPixelRatio( window.devicePixelRatio );
+						renderer.setSize( window.innerWidth, window.innerHeight );
+						renderer.shadowMap.enabled = true;
+
+
+						document.body.appendChild( renderer.domElement );
+
+
+
+						camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.2, 2000 );
+
+						scene = new THREE.Scene();
+						scene.background = new THREE.Color( 0xffffff );
+
+						camera.position.y = heightData[ terrainHalfWidth + terrainHalfDepth * terrainWidth ] * ( terrainMaxHeight - terrainMinHeight ) + 5;
+
+						camera.position.z = terrainDepthExtents / 2;
+						camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
+
+						controls = new THREE.OrbitControls( camera );
+
+						geometry = new THREE.PlaneBufferGeometry( 100, 100, terrainWidth - 1, terrainDepth - 1 );
+						geometry.rotateX( -Math.PI / 2 );
+
+						var vertices = geometry.attributes.position.array;
+
+						for ( var i = 0, j = 0, l = vertices.length; i < l; i++, j += 3 ) {
+
+							// j + 1 because it is the y component that we modify
+							vertices[ j + 1 ] = heightData[ i ];
+
+						}
+
+						geometry.computeVertexNormals();
+
+						texture = new THREE.Texture(canvas);
+						texture.needsUpdate = true;
+
+						var groundMaterial = new THREE.MeshPhongMaterial( { map: texture, color: 0xffffff } );
+						//groundMaterial.flatShading = true;
+						groundMaterial.map.minFilter = THREE.LinearFilter;
+
+						terrainMesh = new THREE.Mesh( geometry, groundMaterial );
+						terrainMesh.receiveShadow = true;
+						terrainMesh.castShadow = true;
+						console.log(terrainMesh);
+						scene.add( terrainMesh );
+
+
+
+						var light = new THREE.DirectionalLight( 0xffffff, 1 );
+						light.position.set( 100, 100, 50 );
+						light.castShadow = true;
+						var dLight = 200;
+						var sLight = dLight * 0.25;
+						light.shadow.camera.left = -sLight;
+						light.shadow.camera.right = sLight;
+						light.shadow.camera.top = sLight;
+						light.shadow.camera.bottom = -sLight;
+
+						light.shadow.camera.near = dLight / 30;
+						light.shadow.camera.far = dLight;
+
+						light.shadow.mapSize.x = 1024 * 2;
+						light.shadow.mapSize.y = 1024 * 2;
+
+						scene.add(light);
+
+
+						window.addEventListener( 'resize', onWindowResize, false );
+
+					}
+
+					function onWindowResize() {
+
+						camera.aspect = window.innerWidth / window.innerHeight;
+						camera.updateProjectionMatrix();
+
+						renderer.setSize( window.innerWidth, window.innerHeight );
+
+					}
+
+
+
+					function generateHeight( width, depth, minHeight, maxHeight ) {
+
+						// Generates the height data (a sinus wave)
+
+						var size = width * depth;
+						var data = new Float32Array(size);
+
+						var hRange = maxHeight - minHeight;
+						var w2 = width / 2;
+						var d2 = depth / 2;
+						var phaseMult = 12;
+
+						var p = 0;
+						for ( var j = 0; j < depth; j++ ) {
+							for ( var i = 0; i < width; i++ ) {
+
+								var radius = Math.sqrt(
+										Math.pow( ( i - w2 ) / w2, 2.0 ) +
+										Math.pow( ( j - d2 ) / d2, 2.0 ) );
+
+								var height = ( Math.sin( radius * phaseMult ) + 1 ) * 0.5 * hRange + minHeight;
+								//var height = random(minHeight, maxHeight);
+								data[ p ] = height;
+
+								p++;
+							}
+						}
+
+						return data;
+
+					}
+
+					var engine = new particleEngine(40, 1);
+					function draw() {
+
+							ctx.background(255);
+							ctx.strokeStyle = rgb(0);
+							for (var i = 0; i < engine.particles.length; i++) {
+								var p = engine.particles[i];
+								p.pos.x +=1;
+								if(p.pos.x > w) p.pos.x = 0;
+								ctx.line(p.pos.x, 0, p.pos.x, h);
+							}
+							texture.needsUpdate = true;
+							scene.rotation.y += 0.001;
+
+							var vertices = terrainMesh.geometry.attributes.position.array;
+							// for ( var i = 0, j = 0, l = vertices.length; i < l; i++, j += 3 ) {
+							//
+							// 	// j + 1 because it is the y component that we modify
+							// 	vertices[ j + 1 ] = random(5)
+							// 	//vertices[ j + 1 ] = 5 + Math.sin(frameCount/100) * 10;
+							// 	//console.log(150 * noise.perlin2(frameCount/1000, i));
+							// 	//vertices[ j + 1 ] = 150 * noise.perlin2(frameCount/1000, 100);
+							// 	var v = terrainMesh.geometry.vertices[i];
+							// 	v.y = random(5);
+							// }
+							for (var i = 0; i < vertices.length; i++) {
+								var v = vertices[i];
+								v.y = random(5);
+							}
+							geometry.computeVertexNormals();
+							terrainMesh.geometry.verticesNeedUpdate = true;
+						render();
+
+
+					}
+
+					function render() {
+
+						var deltaTime = clock.getDelta();
+
+						renderer.render( scene, camera );
+
+					}
+
+
+				</script>
+
+		</body>
+</html>

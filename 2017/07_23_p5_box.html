@@ -1,0 +1,108 @@
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+
+
+<script language="javascript" src="../js/p5.js"></script>
+
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script type="text/javascript">
+
+var w = window.innerWidth;
+var h = window.innerHeight;
+var hidden;
+var particles = [];
+var rot_y = 0;
+
+function setup(){
+	createCanvas(w, h, WEBGL);
+	hidden = createGraphics(w, h);
+	hidden.strokeWeight(8);
+for (var i = 0; i < 80; i++) {
+	var speed = random(-5, 5);
+	particles[i] = {
+		x: random(w),
+		y: 0,
+		sz: random(5, h),
+		sw: random(20),
+		speed: speed
+	}
+}
+
+}
+
+function draw(){
+	background(0);
+	drawHidden();
+	texture(hidden);
+	// var b = Sound.getBassVol(0,1);
+	// var m = Sound.getMidsVol(0,1);
+	// var h = Sound.getHighsVol(0,1);
+	// rot_y += b;
+	rot_y += 1;
+	rotateY(rot_y/100);
+	rotateX(radians(90));
+	//rotateZ(h);
+	box(220, 400);
+}
+
+
+function drawHidden(){
+	hidden.background(225);
+	for (var i = 0; i < particles.length; i++) {
+		var p = particles[i];
+		p.x += p.speed;
+		if(p.x > w || p.x < 0) p.speed*=-1;
+		hidden.stroke(0);
+		hidden.noFill();
+		hidden.strokeWeight(p.sw);
+		hidden.line(p.x, 0, p.x, h);
+	}
+
+}
+
+
+function randomInt(min, max) {
+  if(max===undefined) {
+    max = min;
+    min = 0;
+  }
+  return Math.floor(Math.random() * (max+1-min)) +min;
+}
+
+
+</script>
+
+<section id="page3" class="section" style="height: 100%; display: block; position: absolute; top: 0; left: 0; z-index: 3; background: rgba(0,0,0,0.5); ">
+
+		<div style="text-align: center; width: 80%; padding-left: 10%;" class="add-top">
+
+			<div class="half-bottom add-top" style="width: 100%; margin: 0 4% 0 4%; ; display: inline-block; line-height: 180%; font-family: 'Playfair Display', helvetica, 'Open Sans', sans-serif; text-align: center; color: #fff;">
+				The earth's histroy has always been intrinsicly linked to the sea. Explorers, exploiters and traders made the world a much smaller place. The single greatest driver of globalisation. The sea now brings new changes. In the form of a simple 20ft metal box.
+				Arriving by container ship, 90% everything we own and use, at some point, travels to us , through a vast network of ocean routes and ports that most of us know very little about. It's beautiful. It's scary. This is the shipping industry. The data
+				visualisations and made for you to sit back, and contemplate the enormity of it all.<br><br>
+			</div>
+
+			<br><br>
+			<p>
+				<a class="scroll" href="#page2">
+					<img src="../img/down_arrow.png" style="margin: 0 auto 0 auto" onmouseover="this.src='../img/down_arrow_active.png';" onmouseout="this.src='../img/down_arrow.png';" src="" alt="" width = "30px">
+				</a>
+			</p>
+
+		</div>
+
+	</section>
+
+
+</body>
+<!-- <script language="javascript" src="../js/soundcloud_new.js"></script> -->
+</html>

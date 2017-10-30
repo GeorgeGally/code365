@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+
+var stripe_height = 700;
+var data = [120, 100, 60, 50, 20, 100];
+var names = ["Furniture", "Bananas", "Sculptures", "Motor Vehicles and parts", "Coal", "Others"];
+
+
+var grid = new Grid(2000,1);
+
+var engine = new particleEngine(grid.length, grid);
+//console.log(engine.particles);
+
+var total = 0;
+
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.sz = grid.spacing_x;
+  //p.sz = map(data[i], 0, 450, 0, w);
+  p.pos.x = total;
+  p.pos.y = 0;
+  total += p.sz;
+
+
+  p.c = randomGrey();
+}
+
+//engine.last.pos.x = -new_spacing;
+var highlight = false;
+function draw(){
+
+  ctx.background(100);
+  ctx.fillStyle = rgba(25);
+  ctx.fillRect(0, h/2, w, h/2);
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+
+    p.pos.x += 1;
+    if (p.pos.x > w) p.pos.x = grid.spacing_x;
+
+    ctx.fillStyle = p.c;
+    ctx.fillRect(p.pos.x, 0, p.sz, h);
+    //ctx.fillRect(p.pos.x, 680, p.sz, stripe_height);
+
+  }
+
+  drawGraph();
+
+}
+
+
+ctx2.font = "15px Arial";
+
+function drawGraph(){
+
+
+  var pos = map(counter, 0, 20000000, 0, w);
+
+  ctx.fillStyle = rgb(0, 0.3);
+  ctx.fillRect(pos, 0, 80, h);
+
+  //var ww = map(counter, 0, w, 0, 20000000);
+  ctx.fillStyle = rgb(0, 0.5);
+  ctx.fillRect(pos + 1, 0, 5, h);
+
+  ctx.fillStyle = rgb(200, 0, 0);
+  ctx.fillRect(pos, 0, 5, h);
+
+  ctx2.clearRect(0, 0, w, h);
+  ctx2.fillStyle = "red";
+  ctx2.fillStyle = "#fff";
+  ctx2.fillText(counter + " containers are at sea today", pos + 20, h - 170);
+  ctx2.fillStyle = rgb(200);
+  ctx2.fillText("One line represents 2000 containers", pos + 20, h - 150);
+  counter+=1000;
+}
+
+</script>
+
+</body>
+
+</html>

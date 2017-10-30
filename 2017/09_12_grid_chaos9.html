@@ -30,7 +30,7 @@ ctx2.textAlign = "center";
 var num = 10;
 var sz = 500;
 var sampleSize = 20;
-var engine = new particleEngine(60, 30);
+var engine = new particleEngine(60, 60);
 engine.setSpeed(0, 1);
 engine.setColour("black");
 var particles = engine.particles;
@@ -47,7 +47,7 @@ var words = ['Time'];
 
 for (var i = engine.particles.length-1; i >= 0 ; i--) {
   var p = engine.particles[i];
-  p.sz = 10;
+  p.sz = 12;
   p.c = randomGrey(100);
   p.l = random(0.1,1);
   p.noisy = random(1,8)/10001;
@@ -75,45 +75,15 @@ function draw(){
   for (var i = engine.particles.length-1; i >= 0 ; i--) {
     var p = engine.particles[i];
     ctx.fillStyle = p.c;
-    // p.target.x = p.start.x + random(-mouseX/10, mouseX/10);
-    // p.target.x = p.start.x + CosOsc(frameCount/10 + i + mouseX/10, 10);
-    // p.target.y = p.start.y + SinOsc(frameCount/10 + i + mouseY/10, 10);
     moveParticle(p, i);
-    //p.pos.x = p.start.x + CosOsc(frameCount/10 + i + p.row, 10);
-    //p.pos.y = p.start.y + SinOsc(frameCount/10 + i + p.col, 5);
     ctx.LfillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
   }
-  ctx2.lineWidth = 40;
-  ctx2.save();
-  var line_width = SinOsc(frameCount/10, 300)
-  ctx2.translate(w/2, h/2);
-  ctx2.rotateDegrees(-45);
-  ctx2.strokeStyle = "white";
-  ctx2.strokeRect(-line_width/2, 0, line_width, 20);
-  ctx2.fillStyle = "black";
-  ctx2.fillRect(-line_width/2, 0, line_width, 20);
-  ctx2.restore();
-
-  //ctx.fillStyle = "red";
-  //ctx.fillEllipse(w/2 + line_width/2, h/2 - line_width/2, 10, 10);
-  //addParticle(random(w), random(10));
 
 }
 
 function moveParticle(p, i){
-  // p.target.x += p.speed.x;
-  // p.target.y += p.speed.y;
-  // p.speed.x -= SinOsc(frameCount/10 + i, 2);
-  // p.speed.y += SinOsc(frameCount/5 + i/5, 4);
-
-  // p.target.x = p.start.x + 180 * PerlinNoise.noise(frameCount/120, i, p.noisy*.07) - 90;
   p.pos.x = p.start.x + Math.cos(i + frameCount/100) * 80;
-  //p.target.y = p.start.y + 180 * PerlinNoise.noise(frameCount/100, i, p.noisy) - 90;
   p.pos.y = p.start.y + Math.sin(i + frameCount/50) * 80;
-//  p.sz = CosOsc(frameCount/10 + i + mouseX/10, 20);
-  // p.pos.x = tween(p.pos.x, p.target.x, p.tween_speed);
-  // p.pos.y = tween(p.pos.y, p.target.y, p.tween_speed);
-  //engine.offCanvasTest(p);
 }
 
 function addParticle(x, y){

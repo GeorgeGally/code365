@@ -17,8 +17,8 @@
 			}
 
 		</style>
-		<script src="../js/three.js"></script>
-		<!-- <script src="../js/webgl.js"></script> -->
+		<script src="../js/three.min.js"></script>
+		<script src="../js/stats.js"></script>
 	</head>
 	<body>
 	    <div id="container"></div>
@@ -34,17 +34,17 @@
 			uniform float u_time;
 			uniform vec2 u_resolution;
 
-float Circle(vec2 uv, float r, float blur){
-		float d = length(uv);
-		float c = smoothstep(0.2, 0.1, d)
-		//float c = .2;
-		return .2;
-}
+		float Circle(vec2 uv, float r, float blur){
+				float d = length(uv);
+				float c = smoothstep(0.2, 0.1, d)
+				//float c = .2;
+				//return .2;
+				return c;
+		}
 
-float plot(vec2 st, float pct){
-	return  smoothstep( pct-0.005, pct, st.y) -
-	   
-}
+	float plot(vec2 st, float pct){
+		return  smoothstep( pct-0.005, pct, st.y) -
+	}
 
 
 

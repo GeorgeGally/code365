@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/url.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/three.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+
+<script>
+var ctx = createCanvas("canvas1");
+var r = 0;
+
+var scene = new THREE.Scene();
+var aspect = window.innerWidth / window.innerHeight;
+var camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+var renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+
+var particles = [];
+var num_particles = 80;
+var plane = [];
+var spacing = radians(180 /num_particles);
+var radius = 10;
+var dir = 1;
+
+var geometry = new THREE.PlaneGeometry( 300, 168, 100 , 100 );
+geometry.dynamic = true;
+
+//var material = new THREE.MeshDepthMaterial({side: THREE.DoubleSide});
+var material = new THREE.MeshPhongMaterial( {color: 0xffffff, side: THREE.DoubleSide} );
+material.shading = THREE.SmoothShading;
+
+scene.fog = new THREE.FogExp2( 0xffffff, 0.005 );
+
+// var light = new THREE.HemisphereLight( 0xffffff, 0x000000, 0.2);
+// scene.add( light );
+var ambientLight = new THREE.AmbientLight(0xcccccc, 0.5);
+scene.add(ambientLight);
+
+var plane = new THREE.Mesh( geometry, material );
+scene.add(plane);
+
+renderer.setClearColor( 0x111111 );
+camera.position.z = 200;
+camera.near = 120;
+camera.far  = 295;
+
+function draw() {
+
+  if (chance(2000)) {
+    dir *=-1;
+  }
+
+  //drawParticles();
+	//if(chance(5)) refresh();
+	for (var j = 0; j < 100; j+=1) {
+		for (var i = 0; i < 100; i+=1) {
+			var pos = i + j * 100;
+		var v = plane.geometry.vertices[pos];
+		v.z = Math.sin(frameCount/1000 * pos/1000)* 20;
+	}
+}
+	plane.geometry.verticesNeedUpdate = true;
+  //scene.rotation.z+= Math.sin(frameCount/10000)/100;
+	scene.rotation.x+= Math.cos(frameCount/10000)/100;
+  r = r+ 0.1 * dir;
+
+  if (r > 100 ) r = 0;
+  if (r < 0 ) r = 100;
+
+  renderer.render( scene, camera );
+
+};
+
+
+function refresh() {
+	//console.log("refresh");
+	var v = randomInt(plane.geometry.vertices.length-1);
+	plane.geometry.vertices[v].z +=  posNeg() * 20;
+	plane.geometry.verticesNeedUpdate = true;
+}
+
+
+
+</script>
+<!-- <script language="javascript" src="../js/soundcloud_new.js"></script> -->
+</body>
+</html>

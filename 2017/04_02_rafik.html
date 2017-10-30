@@ -27,8 +27,8 @@ for (var i = 0; i < number_of_balls; i++) {
 
 function addBall(_i){
   var ball = {
-    x: random(w/4, w/2 + w/4),
-    y: random(h, h+ 100),
+    x: random(w),
+    y: random(h, h + 20),
     speed_x: posNeg() * random(0.2, 1),
     speed_y: posNeg() * random(0.2, 1),
     size: 5,

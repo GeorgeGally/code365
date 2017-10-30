@@ -10,6 +10,8 @@
   <!-- <script language="javascript" src="../js/stats.js"></script> -->
 	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
 	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
 <script src="../js/jquery-1.10.1.min.js"></script>
 
 
@@ -127,11 +129,10 @@ function draw(){
   ctx.fillStyle = rgb(80);
 
 
-  if(chance(100)) engine.world.gravity.x *= posNeg();
+  if(chance(100)) engine.world.gravity.x = random(-0.2, 0.2);
   if(chance(200)) engine.world.gravity.y = random(-0.1, 1);
   //for (var i = 0; i < 2; i++) {
-  //if(chance(2))
-  addCircle();
+  if(chance(2)) addCircle();
   //}
 
   for (var i = 0; i < boundries.length; i++) {
@@ -143,12 +144,6 @@ function draw(){
 		b.show();
     if(b.pos.x > w) b.pos.x = 0;
     if(b.pos.x < 0) b.pos.x = w;
-		// if(b.isOffScreen()) {
-		// 		b.removeFromWorld();
-		// 		circles.splice(i, 1);
-		// 		i--;
-		// }
-
 	}
 
 
@@ -191,12 +186,6 @@ var Circle = function(x, y, r){
 		hidden_ctx.restore();
 	}
 
-	// this.isOffScreen = function(){
-	// 	var pos = this.body.position;
-	// 	//console.log(pos.y);
-	// 	return (this.pos.y > h + 100);
-	// }
-
 	this.removeFromWorld = function(){
 		World.remove(world, this.body);
 	}
@@ -238,54 +227,21 @@ this.move = function(){
 
 
 
-function mouseMoved(){
-	circles.push(new Box(mouseX, mouseY, 2));
-}
-
-
-///////////////////////////////////
-
-
-
-
-// var settings = QuickSettings.create(w-200, 30, "Settings");
-// // // settings.addRange(title, min, max, value, step, callback);
-// settings.addRange("threshold_res", 1, 20, threshold_res, 0.1, function(value){
-//   threshold_res = value;
-// });
-//
-// settings.addRange("threshold_ammt", 1, 500, threshold_ammt, 0.1, function(value){
-//   threshold_ammt = value;
-// });
-//
-// settings.addRange("blur_ammt", 1, 50, blur_ammt, 1, function(value){
-//   blur_ammt = value;
-//   $('#canvas1').css('-webkit-filter', 'blur(' + value + 'px)' + ' contrast(13)');
-// });
-//
-// settings.addRange("blur_pass", 1, 20, blur_pass, 0.1, function(value){
-//   blur_pass = value;
-// });
-//
-//
-// settings.addRange("contrast", 1, 200, contrast, 1, function(value){
-//   contrast = value;
-//   $('#canvas1').css('-webkit-filter', 'blur(' + blur_ammt + 'px)' + ' contrast('+ value+')');
-// });
-
 function drawGraph(){
   var ht = h - 100;
-  ctx2.fillStyle = "white";
+  ctx2.fillStyle = rgb(255);
   var pos = map(counter, 0, 1582, 0, w);
-  ctx2.fillText("Number of containers lost a sea each year: " + counter, w - 420, ht - 20);
-  ctx2.fillRect(0, ht, w, 6);
+  ctx2.fillText("Number of containers lost at sea in a  year: " + counter, 10, ht - 20);
+  ctx2.fillStyle = rgb(0);
+  ctx2.fillRect(0, ht, w, 14);
   ctx2.fillStyle = "red";
-  ctx2.fillRect(0, ht, pos, 6);
+  ctx2.fillRect(0, ht, pos, 14);
 }
 
 
 </script>
 
+<script language="javascript" src="../js/soundcloud_new.js"></script>
 
 
 </body>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+
+
+<body style="background: #000;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+var ctx4 = createCanvas("canvas4");
+frameRate = 60;
+
+var engine = new particleEngine(200, 30);
+
+ctx.canvas.style.width = w + 'px';
+ctx.canvas.style.height = h + 'px';
+ctx2.canvas.style.width = w + 'px';
+ctx2.canvas.style.height = h + 'px';
+ctx3.canvas.style.width = w + 'px';
+ctx3.canvas.style.height = h + 'px';
+// canvas.width = w;
+// canvas.height = h;
+
+if (window.devicePixelRatio >= 2) {
+    ctx.canvas.width = w * 2;
+    ctx.canvas.height = h * 2;
+    ctx.scale(2, 2);
+    ctx2.canvas.width = w * 2;
+    ctx2.canvas.height = h * 2;
+    ctx2.scale(2, 2);
+    ctx3.canvas.width = w * 2;
+    ctx3.canvas.height = h * 2;
+    ctx3.scale(2, 2);
+}
+
+
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  setParticles(p, engine);
+}
+
+function setParticles(p, _engine) {
+  p.pos.x = random(-200, w + 200);
+  p.pos.y = random(h);
+  p.speed = new Vector(posNeg() * random(0.4, 1), posNeg() * random(0.4, 1));
+  p.sz = 4;
+  p.c = randomGrey(100, 255);
+}
+
+function draw() {
+  ctx.background(0, 0.1);
+  ctx2.clearRect(0, 0, w, h);
+  // ctx.fillStyle = rgba(255, 0.4);
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.pos.x += p.speed.x;
+    ctx.fillStyle = p.c;
+    // if(p.pos.y > h - 150 & p.pos.y < h - 120){
+    //   ctx.fillStyle = "purple";
+    // }
+    ctx.LfillEllipse(p.pos.x, p.pos.y, p.sz);
+
+    if(p.pos.x > w + 100) {
+      p.pos.x = random(-100);
+      counter++;
+    }
+    if(p.pos.x < -100) {
+      p.pos.x = random(w + 100);
+      counter++;
+    }
+
+  }
+
+  drawGraph();
+
+}
+
+function drawGraph(){
+  ctx2.font = "16px Arial";
+  var ht = h - 100;
+  ctx2.fillStyle = rgb(255);
+  var pos = map(counter, 0, 6000, 0, w);
+  ctx2.fillText("Container ships at sea " + counter, w - 360, ht - 20);
+  ctx2.fillStyle = rgb(255);
+  ctx2.fillRect(0, ht, w, 6);
+  ctx2.fillStyle = "red";
+  ctx2.fillRect(0, ht, pos, 6);
+}
+
+
+
+</script>
+
+</body>
+
+</html>

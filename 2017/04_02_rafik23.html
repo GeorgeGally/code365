@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx4 = createCanvas("canvas4");
+var number_of_balls = 200;
+var MAX_BALLS = 4000;
+var increment = 20;
+counter = number_of_balls;
+var balls = [];
+var max_distance = 40;
+
+// push a ball and it's values into the array
+for (var i = 0; i < number_of_balls; i++) {
+  addBall();
+}
+
+
+function addBall(){
+  var ball = {
+    x: random(w),
+    y: random(h),
+    speed_x: posNeg() * random(0.1, 0.3),
+    speed_y: posNeg() * random(0.1, 5),
+    size: 4,
+    colour: rgb(255),
+  }
+  balls.push(ball);
+  counter+=increment;
+}
+
+function draw(){
+
+  ctx.background(0);
+
+  if(balls.length < MAX_BALLS) {
+    for (var i = 0; i < 5; i++) {
+      addBall();
+    }
+  }
+
+  moveBall();
+  drawBall();
+  // drawGraph("17 million shipping containers in the world, 5/6m on the move at any time", 6000000)
+  drawGraph("Transport ships at sea", 100000)
+}
+
+
+function moveBall(){
+
+  for (var i = 0; i < balls.length; i++) {
+    var b = balls[i];
+    b.speed_y -=0.1;
+    b.x += b.speed_x;
+    b.y += b.speed_y;
+
+    if (bounce(b.x, 0, w)) {
+      b.speed_x *=-1;
+      //counter++;
+    }
+    if (bounce(b.y, 0, h)) {
+      b.speed_y *=-1;
+      //counter++;
+    }
+
+  }
+
+}
+
+
+function drawBall(){
+
+  for (var i = 0; i < balls.length; i++) {
+    var b = balls[i];
+    drawConnections(i);
+    ctx.fillStyle = b.colour;
+    ctx.LfillEllipse(b.x, b.y, b.size, b.size, 7);
+  }
+}
+
+
+
+function drawConnections(_i) {
+
+  for (var j = _i+1; j < balls.length; j++) {
+
+    b1 = balls[_i];
+    b2 = balls[j];
+    var distance = dist(b1.x, b1.y, b2.x, b2.y);
+    if (j!=i) {
+      if ( distance <= max_distance) {
+          ctx.strokeStyle = rgb(255);
+          ctx.lineWidth = 1 - distance/max_distance;
+          ctx.line(b1.x, b1.y, b2.x, b2.y);
+          //counter++;
+      }
+    }
+  }
+
+}
+
+
+ctx4.font = "18px Arial";
+ctx4.textAlign = "left";
+
+function drawGraph(txt, _num){
+	ctx4.clearRect(0,0,w,h);
+  var ht = h - 100;
+  var pos = map(counter, 0, _num, 0, w);
+
+  ctx4.fillStyle = rgb(0, 0.5);
+  ctx4.fillRect(pos, 0, w, ht);
+
+  ctx4.shadowColor="black";
+  ctx4.shadowBlur=3;
+
+
+  ctx4.fillStyle = rgb(255);
+  // ctx4.fillText(txt  + " " + counter + " / " + _num, 20, ht - 20);
+  ctx4.fillText(txt  + " " + Math.round(counter), 20, ht - 20);
+  ctx4.shadowBlur=0;
+  ctx4.fillStyle = rgb(255);
+  ctx4.fillRect(0, ht, w, 6);
+  ctx4.fillStyle = "red";
+  ctx4.fillRect(0, ht, pos, 12);
+  if(counter >= _num) {
+    //currentFile = (currentFile + 1)%totalFiles;
+    //changeFile(currentFile);
+  }
+}
+
+
+
+</script>
+
+</body>
+
+</html>

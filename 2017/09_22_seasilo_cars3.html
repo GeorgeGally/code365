@@ -137,9 +137,11 @@ function update(p, _engine) {
 function drawGraph(){
   ctx2.font = "16px Arial";
   var ht = h - 100;
+  ctx2.fillStyle = rgb(0, 0.8);
+  ctx2.fillRect(0, ht, w, 30);
   ctx2.fillStyle = "white";
   var pos = map(counter, 0, 1200000000, 0, w);
-  ctx2.fillText("Tonnes of CO2 emmitted by ships each year" + counter, w - 400, ht - 20);
+  ctx2.fillText("Tonnes of CO2 emmitted by ships each year" + counter, 20, ht - 20);
   ctx2.fillRect(0, ht, w, 6);
   ctx2.fillStyle = "red";
   ctx2.fillRect(0, ht, pos, 6);

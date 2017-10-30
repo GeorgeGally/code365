@@ -11,7 +11,9 @@
   <!-- <script language="javascript" src="../js/stats.js"></script> -->
 	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
 	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
-  <script src="../js/jquery-1.10.1.min.js"></script>
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+<script src="../js/jquery-1.10.1.min.js"></script>
 
   <script language="javascript" src="../js/matter.min.js"></script>
 
@@ -99,15 +101,26 @@ function moveParticle(p){
 
 function drawParticle(p){
   ctx.fillStyle = rgba(255, p.alpha);
+  //if(p.pos.y > h - 150 && p.pos.y < h - 100) ctx.fillStyle = rgb(255, 0, 0);
   ctx.fillRect(p.pos.x, p.pos.y, p.sz, p.sz);
 }
 
+
 function drawGraph(){
-  var ht = h - 100;
-  ctx2.fillStyle = "white";
+  ctx2.font = "16px Arial";
+  var ht = h - 150;
   var pos = map(counter, 0, 6000000, 0, w);
-  ctx2.fillText("Number of containers entering the US each year: " + counter, w - 450, ht - 20);
-  ctx2.fillRect(0, ht, w, 6);
+  ctx2.fillStyle = rgba(0, 0.2);
+  ctx2.fillRect(0, ht, w, 50);
+  ctx2.strokeStyle = rgb(255);
+  ctx2.lineWidth = 5;
+  ctx2.line(0, ht + 50, w, ht + 50);
+  // ctx2.shadowColor="black";
+  // ctx2.shadowBlur=3;
+  ctx2.fillStyle = rgb(215);
+  ctx2.fillText("Containers entering the US each day: " + counter, 10, ht + 35);
+  ctx2.shadowBlur=0;
+
   ctx2.fillStyle = "red";
   ctx2.fillRect(0, ht, pos, 6);
 }
@@ -115,6 +128,6 @@ function drawGraph(){
 
 </script>
 
-
+<script language="javascript" src="../js/soundcloud_new.js"></script>
 </body>
 </html>

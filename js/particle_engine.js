@@ -120,6 +120,18 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 		}
 	}
 
+	this.setSize = function(min, max) {
+		for (var i = 0; i < this.particles.length; i++) {
+			var p = this.particles[i];
+			if(!max) {
+				p.sz = min;
+			} else {
+				p.sz = random(min, max);
+			}
+
+		}
+	}
+
 	this.setAccel = function(_x1 , _x2, _y1 , _y2) {
 		for (var i = 0; i < this.particles.length; i++) {
 			var p = this.particles[i];
@@ -251,17 +263,17 @@ this.offCanvasTest = function(p){
 	if(!this.edge) {
 		//console.log(this.edge);
 		if (p.pos.x > w || p.pos.y > h || p.pos.x < 0 || p.pos.y < 0) this.delete(p.me);
+
 	} else if(this.border) {
 
 		if (this.bounce) {
-
-			if (bounce(p.x, 0, w)) {
+			if (bounce(p.x, 0, w, p.sz)) {
 				p.speed.x *=-1;
 				if (this.reset) this.resetParticle(p);
 			}
 
 
-			if (bounce(p.y, 0, h)) {
+			if (bounce(p.y, 0, h, p.sz)) {
 				p.speed.y *=-1;
 				if (this.reset) this.resetParticle(p);
 			}

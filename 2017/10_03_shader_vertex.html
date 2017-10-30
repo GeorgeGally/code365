@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - gpgpu - water</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+		</style>
+		<script language="javascript" src="../js/creative_coding.js"></script>
+		<script language="javascript" src="../js/three.min.js"></script>
+		<script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+		<script src="../js/stats.js"></script>
+	</head>
+	<body>
+	    <div id="container"></div>
+
+			<script type="x-shader/x-vertex" id="vertexShader">
+
+			uniform float amplitude;
+		     uniform float frequency;
+		     uniform float time;
+
+		     varying vec3 color;
+		     void main() {
+
+		         //we will transform the original position so we store it a temp variable
+		         vec3 pos = position;
+
+		         //compute the Z position of each vertex
+		         float dist = sin( pos.x + 3.14159 / 2. ) + cos( pos.y );
+		         pos.z = sin( dist * frequency + time ) * amplitude;
+
+		         //passes a color to the fragment shader
+		         color = normalize( pos + vec3(.5) );
+
+		         //projects the coordinates to screen
+		         gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1. );
+
+		     }
+
+			</script>
+			<script type="x-shader/x-fragment" id="fragmentShader">
+			varying vec3 color;
+			    void main() {
+			        gl_FragColor = vec4( color, 1. );
+			    }
+			</script>
+
+
+	    <script>
+
+
+var scene, camera, material, renderer, controls, startTime;
+function init3D(){
+
+	scene = new THREE.Scene();
+	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+
+	renderer = new THREE.WebGLRenderer({antialias:true});
+	renderer.setClearColor( new THREE.Color( 0x101010 ));
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setPixelRatio( window.devicePixelRatio );
+	document.body.appendChild( renderer.domElement );
+
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+	startTime = Date.now();
+	window.addEventListener( 'resize', onResize );
+	onResize();
+
+}
+
+function onResize() {
+	var w = window.innerWidth;
+	var h = window.innerHeight;
+	camera.aspect = w / h;
+	camera.updateProjectionMatrix();
+	renderer.setSize( w, h );
+}
+
+
+function setup() {
+
+	init3D();
+	camera.position.x = 200;
+	camera.position.y = 150;
+	camera.position.z = -200;
+	camera.lookAt(new THREE.Vector3());
+
+	// create a custome material
+	material = new THREE.ShaderMaterial( {
+			uniforms:{
+					amplitude:{type:'f', value:10 },
+					frequency:{type:'f', value:10 },
+					time:{type:'f', value:0 }
+			},
+			vertexShader:   document.getElementById( "vertexShader" ).innerText,
+			fragmentShader: document.getElementById( "fragmentShader" ).innerText,
+			transparent:true,
+			wireframe:true
+	} );
+
+	//initializes a mesh with a bi-unit plane (-1/1) geometry & assign the material
+	mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2,2,100,100 ), material );
+	mesh.scale.multiplyScalar( 100 );
+	mesh.rotation.x = -Math.PI / 2;
+	scene.add( mesh );
+	update();
+
+}
+
+function update(){
+	requestAnimationFrame( update );
+
+	material.uniforms.amplitude.value = 0.05;
+	material.uniforms.frequency.value = 30;
+	material.uniforms.time.value = (Date.now()-startTime) * 0.001;
+
+	renderer.render( scene, camera );
+}
+	    </script>
+	</body>
+</html>

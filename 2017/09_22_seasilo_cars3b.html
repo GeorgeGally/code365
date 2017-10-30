@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+
+
+<body style="background: #fff;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+
+
+
+frameRate = 60;
+
+ctx.canvas.style.width = w + 'px';
+ctx.canvas.style.height = h + 'px';
+ctx2.canvas.style.width = w + 'px';
+ctx2.canvas.style.height = h + 'px';
+ctx3.canvas.style.width = w + 'px';
+ctx3.canvas.style.height = h + 'px';
+// canvas.width = w;
+// canvas.height = h;
+
+if (window.devicePixelRatio >= 2) {
+    ctx.canvas.width = w * 2;
+    ctx.canvas.height = h * 2;
+    ctx.scale(2, 2);
+    ctx2.canvas.width = w * 2;
+    ctx2.canvas.height = h * 2;
+    ctx2.scale(2, 2);
+    ctx3.canvas.width = w * 2;
+    ctx3.canvas.height = h * 2;
+    ctx3.scale(2, 2);
+}
+
+
+var num = 80;
+var grid = createGrid(num, 1, w, h);
+
+var engine = new particleEngine(num, 1);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  setParticles(p, engine);
+}
+
+function setParticles(p, _engine) {
+  p.size = randomInt(10, 60);
+  p.size2 = 60;
+  p.orbit = new Vector(w/2, h/2);
+  p.angle = radians(random(0,60));
+  p.angle2 = random(30);
+  p.speed = new Vector(random(-4,4), posNeg()*random(0.1, 0.5));
+}
+
+function draw() {
+
+  //ctx.background(255, 0.035);
+  ctx2.clearRect(0,0,w,h);
+  ctx3.clearRect(0,0,w,h);
+  // whiteSquareLogo(ctx3, h/2);
+
+
+      for (var i = 0; i < engine.particles.length; i++) {
+          var p = engine.particles[i];
+          ctx2.lineWidth = 0.5;
+          update(p, engine);
+
+          drawArm(p);
+
+          drawOrbits(p);
+          counter+= Math.round(p.size2);
+          ctx2.lineWidth = 1;
+          //ctx2.line(p.pos.x, p.pos.y, p.pos.x, h);
+  }
+  drawGraph();
+}
+
+
+function drawArm(p){
+  ctx2.fillStyle = rgba(255);
+  ctx2.fillEllipse(p.pos.x, p.pos.y, 5, 5);
+}
+
+function drawOrbits(p){
+  ctx.lineWidth = 0.5;
+  ctx2.fillStyle = rgba(255);
+  ctx.fillStyle = rgba(0,0,0, 0.1);
+  ctx.HfillEllipse(p.orbit.x, p.orbit.y, p.size, p.size);
+  ctx.strokeStyle = rgba(255, 0.3);
+  if(frameCount%2 == 0) ctx.HstrokeEllipse(p.orbit.x, p.orbit.y, p.size, p.size);
+  ctx2.strokeStyle = rgba(255);
+  ctx2.line(p.pos.x, p.pos.y, p.orbit.x, p.orbit.y);
+  ctx2.fillStyle = rgba(0, 0.5);
+  ctx2.HfillEllipse(p.orbit.x, p.orbit.y, p.size/1, p.size/1);
+}
+
+
+function update(p, _engine) {
+
+    p.angle += p.speed.y/1000;
+    p.pos.y = h/2 + Math.sin(p.angle)*h/2;
+    p.angle2 += p.speed.y/60;
+    p.size2 = p.size + Math.cos(p.angle2) * p.size/4;
+    p.orbit.x = p.pos.x + Math.cos(p.angle2) * p.size2;
+    p.orbit.y = p.pos.y + Math.sin(p.angle2) * p.size2;
+
+}
+
+function drawGraph(){
+  ctx2.font = "16px Arial";
+  var ht = h - 100;
+  ctx2.fillStyle = rgb(0, 0.8);
+  ctx2.fillRect(0, ht, w, 30);
+  ctx2.fillStyle = "white";
+  var pos = map(counter, 0, 1200000000, 0, w);
+  ctx2.fillText("Tonnes of CO2 emmitted by ships each year: " + counter, 20, ht - 20);
+  ctx2.fillRect(0, ht, w, 6);
+  ctx2.fillStyle = "red";
+  ctx2.fillRect(0, ht, pos, 6);
+}
+
+
+
+</script>
+
+</body>
+
+</html>

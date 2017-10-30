@@ -85,7 +85,7 @@ canvas, #map {
   right: 0;
   background-size: cover;
   z-index: 0;
-  transform: transale3d(0,0,0); 
+  transform: transale3d(0,0,0);
   -webkit-transform: translate3d(0, 0, 0);
 }
 
@@ -101,6 +101,22 @@ canvas, #map {
 
 #stats {
   z-index: 99;
+}
+
+.add-top {
+  margin-top: 120px !important;
+}
+
+.half-top {
+  margin-top: 60px !important;
+}
+
+.add-bottom {
+  margin-bottom: 120px !important;
+}
+
+.half-bottom {
+  margin-bottom: 60px !important;
 }
 
 

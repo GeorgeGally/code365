@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+ <head>
+
+    <meta charset="utf-8">
+    <title>Soundcloud Viz</title>
+
+    <script src='http://connect.soundcloud.com/sdk.js'></script>
+    <script language="javascript" src="../js/creative_coding.js"></script>
+    <script language="javascript" src="../js/canvas.js"></script>
+    <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/particle_engine.js"></script>
+    <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+    <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var engine = new particleEngine(40, 40);
+console.log(engine);
+var FOV = 250;
+
+var hRange = maxHeight - minHeight;
+var depth = 50;
+var w2 = width / 2;
+var d2 = depth / 2;
+var phaseMult = 12;
+
+var maxHeight = 58;
+var minHeight = -2;
+var hRange = maxHeight - minHeight;
+//var terrainWidth = 128;
+
+engine.setSize(4);
+
+var counter = 0;
+
+// for ( var j = 0; j < engine.grid.rows.length; j++ ) {
+//   var r = engine.grid.rows[j].pos;
+//   //console.log(r);
+//   for (var i = 0; i < r.length; i++) {
+//         var row =r[i];
+//         var radius = Math.sqrt(
+//             Math.pow( ( i - w2 ) / w2, 2.0 ) +
+//             Math.pow( ( j - d2 ) / d2, 2.0 ) );
+//
+//         var z = ( Math.sin( radius * phaseMult ) + 1 ) * 0.5 * hRange + minHeight;
+//         var p = engine.particles[counter];
+//         //console.log(p.pos.x);
+//         p.scale = FOV/(z+FOV);
+//         p.pos.x = p.start.x * p.scale;
+//         p.pos.y = p.start.y * p.scale;
+//         // p.pos.x += height;
+//         counter++;
+//         console.log(z);
+//   }
+// }
+// for ( var j = 0; j < depth; j++ ) {
+//   for ( var i = 0; i < width; i++ ) {
+//
+//     var radius = Math.sqrt(
+//         Math.pow( ( i - w2 ) / w2, 2.0 ) +
+//         Math.pow( ( j - d2 ) / d2, 2.0 ) );
+//
+//     var height = ( Math.sin( radius * phaseMult ) + 1 ) * 0.5 * hRange + minHeight;
+//     //var height = random(minHeight, maxHeight);
+//     data[ p ] = height;
+//
+//     p++;
+//   }
+// }
+
+var dirx = 1, diry = 1
+
+function draw(){
+  ctx.background(255, 0.9);
+  ctx.fillStyle = rgb(0);
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    var r = dist(w/2, h/2, p.pos.x, p.pos.y);
+    if(p.pos.x < w/2) dirx = -1;
+    if(p.pos.y < h/2) diry = -1;
+    var centre_dist_x = Math.sin((p.row + frameCount)/20) * r/5;
+    var centre_dist_y = Math.cos(frameCount/20) * r/5;
+    p.scalex = FOV/(centre_dist_x * dirx+FOV);
+    p.scaley = FOV/(centre_dist_y* diry +FOV );
+    p.pos.x = p.start.x * p.scalex;
+    p.pos.y = p.start.y * p.scaley;
+    //var offsetX = Math.sin(i/20 + frameCount/50 + centre_dist_x/10) * 10;
+    //var offsetY = Math.cos(i/20 + frameCount/50 + centre_dist_y/10) * 10;
+    ctx.LfillEllipse(p.pos.x, p.pos.y, p.scalex * p.sz, p.scalex * p.sz);
+  }
+}
+
+
+</script>
+
+</body>
+</html>

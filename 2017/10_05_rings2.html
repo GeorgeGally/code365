@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - gpgpu - water</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+		</style>
+		<script language="javascript" src="../js/creative_coding.js"></script>
+		<script language="javascript" src="../js/canvas.js"></script>
+
+	</head>
+	<body>
+
+	<script language="javascript">
+			ctx = createCanvas('canvas1');
+			var R = 30;
+			var S = 10;
+			var T = 10;
+
+			var N = 6;
+
+		var ringX = [];
+		var ringY = [];
+		var ringY2 = [];
+		var ringK = [];
+
+		function drawCurl(x, y, r, s, t) {
+				//console.log(r);
+		    ctx.save();
+		    ctx.translate(x, y);
+		    ctx.beginPath();
+				ctx.moveTo(-r, -t);
+		    //ctx.vertex(-r, -t);
+		   	ctx.bezierCurveTo(-r, s - t, +r, s - t, +r, -t);
+		    //ctx.vertex(+r, +t);
+				//ctx.closePath();
+				ctx.lineTo(+r, +t);
+		    ctx.bezierCurveTo(+r, s + t, -r, s + t, -r, +t);
+				ctx.lineTo(-r, -t);
+				ctx.closePath();
+				ctx.fill();
+				//ctx.stroke();
+
+
+		    ctx.restore();
+		}
+
+		var paused = false;
+
+		function mouseClicked() {
+		    paused = !paused;
+		}
+
+		function setup() {
+		    for (var i = 0; i < N; i++) {
+		        ringX[i] = 0.5 * width;
+		        ringY[i] = h/2 - 30 * (N-i-1);
+						ringY2[i] = h/2 + 30 * (N-i-1);;
+		        ringK[i] = i + 1;
+		    }
+
+		}
+
+		function draw() {
+		    ctx.background(0);
+
+		    ctx.strokeStyle = "black";
+		    ctx.lineWidth = 2;
+
+		    if (!paused)
+
+
+		    for ( i = 0; i < N; i++) {
+		        ringY[i] += 0.2 * (N - i) * (mouseY - ringY[i]) / N;
+						ringY2[i] += 0.2 * (N - i) * (height - mouseY - ringY2[i]) / N;
+		    }
+
+				// BOTTOM
+				// BACK
+		    for (var i = N - 1; i >= 0; i--) {
+		        ctx.fillStyle = rgb(100);
+		        drawCurl(ringX[i], ringY2[i], R * ringK[i], -S * ringK[i], T);
+		    }
+				// FRONT
+		    for (var i = 0; i < N; i++) {
+		        ctx.fillStyle = rgb(200);
+		        drawCurl(ringX[i], ringY2[i], R * ringK[i], +S * ringK[i], T);
+		    }
+
+				// TOP
+				// BACK
+		    for (var i = N - 1; i >= 0; i--) {
+		        ctx.fillStyle = rgb(100);
+		        drawCurl(ringX[i], ringY[i], R * ringK[i], -S * ringK[i], T);
+		    }
+				// FRONT
+		    for (var i = 0; i < N; i++) {
+		        ctx.fillStyle = rgb(200);
+		        drawCurl(ringX[i], ringY[i], R * ringK[i], +S * ringK[i], T);
+		    }
+
+		}
+
+	    </script>
+	</body>
+</html>

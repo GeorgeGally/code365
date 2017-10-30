@@ -652,14 +652,12 @@ function distributeAngles(me, total) {
 }
 
 
-function bounce(num, min, max, sz) {
-  if (sz === undefined) {
-    sz = 0;
-  }
-  if (num >= max - sz/2 || num - sz/2 <= min ) {
-    return 1;
+function bounce(pos, min, max, sz) {
+  sz  = sz || 0;
+  if (pos > max - sz/2 || pos < min + sz/2 ) {
+    return true;
   } else {
-    return 0;
+    return false;
   }
  //return num > max ? -1 : num < min ? -1 : 1
 }

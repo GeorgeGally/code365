@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>three.js - gpu particle system</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+	<style>
+		body {
+		background: -webkit-radial-gradient(center ellipse,#fff 50%,#c8dad2 100%);
+		background: radial-gradient(ellipse at center,#fff 50%,#c8dad2 100%);
+		}
+	</style>
+
+</head>
+
+<body>
+
+	<div id="container"></div>
+
+	<script src="../js/three.min.js"></script>
+	<script src="../js/threejs/controls/TrackballControls.js"></script>
+	<script src="../js/dat.gui.min.js"></script>
+	<script src="../js/canvas.js"></script>
+	<script src="../js/creative_coding.js"></script>
+	<script src="../js/particle_engine.js"></script>
+	<script src="../js/utils/Perlin.js"></script>
+
+	<script>
+		var camera, tick = 0,
+			scene, renderer, clock = new THREE.Clock(),
+			controls, container, gui = new dat.GUI( { width: 350 } ),
+			options, spawnerOptions, particleSystem;
+
+		var sphere, texture, material, geometry;
+
+		var ctx = createHiddenCanvas('canvas1');
+		var canvas = ctx.canvas;
+		var engine = new particleEngine(2, 20);
+		engine.setSize(10, 30);
+		engine.setSpeed(-10, 10, -10, 10);
+		// engine.bounce = true;
+		// engine.edge = true;
+
+		function setup() {
+
+			container = document.getElementById( 'container' );
+			camera = new THREE.PerspectiveCamera( 28, window.innerWidth / window.innerHeight, 1, 10000 );
+			camera.position.z = 100;
+			scene = new THREE.Scene();
+			scene.fog = new THREE.FogExp2( 0xc8dad2, 0.001 );
+
+			renderer = new THREE.WebGLRenderer({
+				alpha: true,
+				//antialias: true
+			});
+			renderer.shadowMap.enabled = true;
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			container.appendChild( renderer.domElement );
+
+			// add subtle ambient lighting
+			// var ambientLight = new THREE.AmbientLight(0xaaaaaa);
+			// scene.add(ambientLight);
+
+			// add spotlight for the shadows
+			var spotLight = new THREE.DirectionalLight(0xffffff);
+			spotLight.position.set(0, 30, 40);
+			spotLight.intensity = 0.8;
+			spotLight.castShadow = true;
+			scene.add(spotLight);
+
+			var d = 100;
+
+			spotLight.shadow.camera.right = d;
+			spotLight.shadow.camera.left = -d
+			spotLight.shadow.camera.top = d;
+			spotLight.shadow.camera.bottom = -d;
+
+			spotLight.shadow.mapSize.width = 2048;
+			spotLight.shadow.mapSize.height = 2048;
+
+
+			// GROUND
+				var floorGeometry = new THREE.PlaneGeometry(500, 500);
+				var floorMaterial = new THREE.MeshPhongMaterial( { color: rgba(255), transparent: true } );
+				floorMaterial.opacity = 0.02;
+				var floor = new THREE.Mesh( floorGeometry, floorMaterial );
+				floor.rotation.x = -Math.PI / 2;
+				floor.position.y = -15.0;
+				floor.receiveShadow = true;
+				scene.add( floor );
+
+			controls = new THREE.TrackballControls( camera, renderer.domElement );
+			controls.rotateSpeed = 5.0;
+			controls.zoomSpeed = 2.2;
+			controls.panSpeed = 1;
+			controls.dynamicDampingFactor = 0.3;
+			window.addEventListener( 'resize', onWindowResize, false );
+
+			texture = new THREE.Texture(canvas);
+			geometry = new THREE.SphereGeometry( 10, 80, 80 );
+			material = new THREE.MeshPhongMaterial( {
+				color: 0xefefef,
+				map: texture,
+				side: THREE.DoubleSide,
+				transparent: true} );
+			material.map.minFilter = THREE.LinearFilter;
+			sphere = new THREE.Mesh( geometry, material );
+			sphere.castShadow = true;
+			var customDepthMaterial = new THREE.MeshDepthMaterial( {
+    	depthPacking: THREE.RGBADepthPacking,
+    	map: texture, // or, alphaMap: myAlphaMap
+    alphaTest: 0.5
+} );
+
+sphere.customDepthMaterial = customDepthMaterial;
+			scene.add( sphere );
+
+			geometry = new THREE.BoxGeometry( 8, 8, 8 );
+			material = new THREE.MeshPhongMaterial( {
+				color: 0xffffff,
+				} );
+
+			sphere2 = new THREE.Mesh( geometry, material );
+			sphere2.castShadow = true;
+
+			// sphere2 = sphere.clone();
+			// sphere2.scale.set(0.8, 0.8, 0.8);
+			//sphere2.position.x = 10;
+			sphere2.position.z = 3;
+			scene.add( sphere2 );
+			sphere2.customDepthMaterial = customDepthMaterial;
+
+			options = {
+				size: 5,
+			};
+
+			gui.add( options, "size", 1, 20 );
+
+		}
+
+		function draw() {
+
+			ctx.clearRect(0,0, w, h);
+			ctx.fillStyle = rgb(0);
+			for (var i = 0; i < engine.particles.length; i++) {
+				var p = engine.particles[i];
+					p.pos.y += p.speed.y;
+					p.pos.x += p.speed.x;
+					if(bounce(p.pos.x, 0, w)) p.speed.x *=-1;
+					if(bounce(p.pos.y, 0, h)) p.speed.y *=-1;
+				//if(p.pos.y > h) p.pos.y = 0;
+				//ctx.fillRect(0, p.pos.y, w, p.sz);
+				ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+				isNear(p, i);
+			}
+			//engine.update();
+			sphere.rotation.x -= 0.01;
+			sphere2.rotation.y += 0.01;
+
+			sphere.rotation.z -= 0.01;
+			sphere2.rotation.z += 0.01;
+			render();
+
+		}
+
+		function isNear(p, i){
+			for (var j = engine.particles.length-1; j > i +1 ; j--) {
+				var p2 = engine.particles[j];
+				if(dist(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y) < 40) {
+					ctx.line(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y);
+				}
+			}
+		}
+
+		function render() {
+			texture.needsUpdate = true;
+			var delta = clock.getDelta();
+			tick += delta;
+			controls.update();
+			renderer.render( scene, camera );
+		}
+
+		function onWindowResize() {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+		}
+	</script>
+</body>
