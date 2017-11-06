@@ -166,6 +166,16 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 		}
 	}
 
+	this.setRandomColour = function(r1, r2, g1, g2, b1, b2) {
+		// sticky = sticky || 1;
+
+		for (var i = 0; i < this.particles.length; i++) {
+			var p = this.particles[i];
+			var c = rgb(random(r1, r2), random(g1, g2), random(b1, b2))
+			p.c = c;
+		}
+	}
+
 	this.randomize = function() {
 		for (var i = 0; i < this.particles.length; i++) {
 		  var p = this.particles[i];

@@ -50,7 +50,7 @@
 
 		var start_size = 18;
 		var step = 0;
-		var decrease_size = 5;
+		var decrease_size = 10;
 		var slice_width = 2.8;
 
 		var spheres = [];
@@ -87,8 +87,9 @@
 
 		var controls = new function() {
 			this.sphereColor = '#c8dad2';
-			this.noiseAmount = -8;
-			this.sz = 2;
+			this.noiseAmount = 0;
+			this.offset = 0;
+			this.num_slices = 0;
 		}
 
 
@@ -126,7 +127,7 @@
 
 
 
-		var sz = 20;
+		var offset = 10;
 
 		function draw() {
 
@@ -134,14 +135,12 @@
 			ctx.clearRect(0, 0, w, h);
 			ctx.fillStyle = rgb(0);
 
-			//if(chance(100)) sz = random(10, 30);
-
-			for (var i = 0; i < engine.particles.length; i++) {
-				var p = engine.particles[i];
-				p.pos.y +=5;
-				if(p.pos.y > h) p.pos.y = 0;
-				ctx.fillRect(0, p.pos.y, w, params.sz);
-			}
+			// for (var i = 0; i < engine.particles.length; i++) {
+			// 	var p = engine.particles[i];
+			// 	p.pos.y +=5;
+			// 	if(p.pos.y > h) p.pos.y = 0;
+			// 	ctx.fillRect(0, p.pos.y, w, params.sz);
+			// }
 
 
 			//ctx2.clearRect(0,0, w, h);
@@ -171,7 +170,7 @@
 			// for (var i = 0; i < num_materials; i++) {
 			// 	material[i].needsUpdate = true;
 			// }
-			texture.needsUpdate = true;
+			//texture.needsUpdate = true;
 			//texture2.needsUpdate = true;
 			//
 			//water.material.uniforms.time.value += 1.0 / 60.0;
@@ -195,6 +194,9 @@
 					//var pos = Math.sin(step/speed[i]) * 16;
 					s.rotation.x += 0.03;
 					s.rotation.y += 0.03;
+					s.position.x = Math.cos(slice_num + step/20) * controls.offset;
+					s.position.z = Math.sin(slice_num + step/10) * controls.offset * 1.5;
+					//s.position.y = Math.sin(sphere_num + slice_num + step/10) * controls.offset * 1.1;
 					//s.clipPlanes
 					// rotateClipConstants(sphere_num, slice_num, 0, 0.01);
 					// rotateClipConstants(sphere_num, slice_num, 1, 0.01);
@@ -241,7 +243,6 @@
 			clipPlanes[sphere_num][num_slices][num].normal.z += value;
 		}
 
-
 		function addSlices(sphere_num) {
 
 			// make a group
@@ -262,12 +263,12 @@
 
 				material = new THREE.MeshPhongMaterial({
 				//material = new THREE.MeshPhongMaterial({
-					color: 0x000011,
+					color: 0xdddddd,
 					alphaTest: 0.5,
 					shininess: 100,
 					//side: THREE.DoubleSide,
 					side: THREE.FrontSide,
-					//map: texture,
+					map: texture,
 					clippingPlanes: clipPlanes[sphere_num][slice_num],
 					clipShadows: true
 					//clipIntersection: params.clipIntersection
@@ -285,14 +286,14 @@
 				// material.map.minFilter = THREE.LinearFilter;
 				material2.map.minFilter = THREE.LinearFilter;
 
-				//if (sphere_num%2 == 0) {
-					//material.map = texture;
+				if (sphere_num%2 == 0) {
+					material.map = texture;
 					//material.transparent = true;
 					//material.map.minFilter = THREE.LinearFilter;
 				//} else {
 					//material2.map = inside_small;
 					//material[sphere_num].bumpMap = bump;
-				//}
+				}
 
 				slices[slice_num] = THREE.SceneUtils.createMultiMaterialObject(sphereGeom[sphere_num], [material, material2]);
 
@@ -551,16 +552,17 @@
 			// });
 			gui.add(controls, 'noiseAmount', -10, 10).listen();
 
-			//gui.add(controls, 'sz', 1, 40).listen();
-
-			// gui.add(params, 'showHelpers').name('show helpers: 0').onChange(function(value) {
+			gui.add(controls, 'offset', 1, 40).listen();
+			// gui.add(controls, 'num_slices', 1, 40).onChange(function(value) {
 			// 	for (var i = 0; i < num_slices; i++) {
-			// 		helpers[i].visible = value;
+			// 		if(i < value) {
+			// 			slices[i].visible = true;
+			// 		} else {
+			// 			slices[i].visible = false;
+			// 		}
 			// 	}
 			// });
-
-
-			gui.add(params, 'sliceWidth', 0.1, 10).step(0.1).name('Slice Width').onChange(function(value) {
+			gui.add(params, 'sliceWidth', 0.1, 20).step(0.1).name('Slice Width').onChange(function(value) {
 				sliceWidth = value;
 
 			});
@@ -624,8 +626,9 @@
 		function loadTextures() {
 			// TEXTURES
 			//texture = THREE.ImageUtils.loadTexture('../img/textures/voronoi3.jpg');
-			texture = THREE.ImageUtils.loadTexture('../img/textures/snakeskin.jpg');
-			//texture = THREE.ImageUtils.loadTexture('../img/textures/waves.jpg');
+			texture = THREE.ImageUtils.loadTexture('../img/textures/concrete1.jpg');
+			//texture = THREE.ImageUtils.loadTexture('../img/textures/cracked.jpg');
+			// texture = THREE.ImageUtils.loadTexture('../img/textures/waves.jpg');
 			//texture = new THREE.Texture(canvas);
 			bump = THREE.ImageUtils.loadTexture('../img/textures/spotted_fur.jpg');
 			//texture2 = THREE.ImageUtils.loadTexture('../img/textures/rust.jpg');
