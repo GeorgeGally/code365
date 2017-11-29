@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var max_sides = 27;
+var engine = new particleEngine(5, 5);
+
+//var grid = new Grid (5, 5);
+ctx.lineWidth = 1;
+ctx.lineCap = "round";
+// grid.sides = [];
+// grid.r = [];
+
+// for (var i = 0; i < grid.length; i++) {
+//   grid.sides[i] = 2;
+//   grid.r[i] = randomInt(4)*90;
+// }
+
+
+function draw(){
+
+  ctx.background(10);
+  for (var i = 0; i < engine.length; i++) {
+    var p = engine.get(i);
+    var s = Sound.mapSound(i, engine.length * 2, 1, max_sides);
+    p.on = s;
+    drawStripes(p);
+  }
+
+
+}
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+settings.addRange("max_sides", 1, 30, max_sides, 1, function(value){
+max_sides = value;
+});
+
+
+
+
+function drawStripes(p){
+
+    spacing_x = engine.grid.spacing_x/p.on;
+    spacing_y = engine.grid.spacing_y/p.on;
+    //x1, 0, engine.grid.spacing_x, engine.grid.spacing_x-x1
+
+    ctx.save();
+    ctx.translate(p.pos.x - p.w/2, p.pos.y - p.h/2);
+    ctx.fillStyle = rgb(0);
+    ctx.strokeStyle = rgba(255, 0.4);
+    ctx.fillRect(0, 0, p.w-1, p.h-1);
+
+    // for (var x1 = 0; x1 < grid.spacing_x-1; x1+=this.spacing) {
+    //   this.stripes[count] = new Stripes(x1, 0, this.block_size, this.block_size-x1);
+    //   count++;
+    // }
+
+    for (var x = 0; x < p.w; x += spacing_x) {
+      // this.stripes[count] = new Stripes(x, 0, this.block_size, this.block_size-x1);
+      for (var i = 0; i < p.on; i++) {
+        //x1, 0, this.block_size, this.block_size-x1
+        //ctx.line(i * spacing_x, p.h - i * spacing_y, p.w - i * spacing_x, i * spacing_x);
+        ctx.line(x, i * spacing_y, p.w, p.w-x);
+        //ctx.line(x, 0, p.w, p.w-x);
+      }
+    }
+
+    //function Stripes(x1, y1, x2, y2) {
+
+
+    //
+    // for (var i = 0; i < p.on; i+=spacing_x) {
+    //   for (var j = 0; j < p.h; j+=spacing_y) {
+    //     ctx.line(i * spacing_x, i * spacing_y,  spacing_x, spacing_y);
+    //   }
+    //
+    // }
+  ctx.restore();
+}
+
+
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+</html>

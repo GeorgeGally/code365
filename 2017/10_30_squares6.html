@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script src='http://connect.soundcloud.com/sdk.js'></script>
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var num_slices = 10;
+var total_slices = 40;
+var distance = 65;
+var engine = new particleEngine(total_slices, 2);
+engine.setPos();
+engine.tween_speed = 2;
+
+ctx.lineWidth = 20;
+ctx.lineCap = "round";
+var speed = 1;
+
+//engine.setTarget(randomInt(4) * w/4);
+
+function decreasingSize(distance, _w, _h){
+  _w = _w || w;
+  _h = _h || h;
+  for (var i = 0; i < num_slices; i++) {
+    var p = engine.particles[i];
+    p.sz = i * distance;
+    p.w = _w - p.sz;
+    p.h = _h - p.sz;
+  }
+
+}
+
+decreasingSize(distance);
+
+function draw(){
+
+  ctx.background(10);
+  //if(chance(6)) ctx.lineWidth = sticky(Sound.getBassVol(1, 20), 5);
+  if(chance(200)){
+    engine.setTarget(randomInt(4)*w/4, h/2);
+    console.log("go");
+    speed = random(4);
+  //   distance = 65;
+  //   decreasingSize(distance, 50, h);
+  }
+  if(chance(20)){
+  //  var value = 1 + sticky(Sound.getMidsVol(1, total_slices), 2);
+    //distance = (num_slices * distance) / value;
+    //num_slices = value;
+    //var new_spacing = decreasingSize(distance);
+  }//num_slices = sticky(Sound.getMidsVol(3, total_slices), 2);
+  //if(Sound.getHighsVol(10, 200) > 150) distance = Sound.getHighsVol(30, 200);
+  for (var i = 0; i < num_slices; i++) {
+    var p = engine.get(i);
+    moveSquares(p);
+    drawSquares(p);
+    growOut(p);
+  }
+
+}
+
+function moveSquares(p){
+  p.pos.x = tween(p.pos.x, p.target.x, engine.tween_speed + p.me/10);
+}
+
+function drawSquares(p){
+    ctx.save();
+    ctx.translate(p.pos.x, p.pos.y);
+    ctx.fillStyle = rgb(0);
+    ctx.strokeStyle = rgba(255, 0.95);
+    //p.sz = Sound.mapSound(50, 200, -100, 40);
+    //var sz = p.me * 10;
+    ctx.centreStrokeRect(0, 0, p.w, p.h);
+    ctx.restore();
+}
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+settings.addRange("num_slices", 0, total_slices, num_slices, 1, function(value){
+distance = (num_slices * distance) / value;
+num_slices = value;
+// var new_spacing =
+// decreasingSize(distance);
+
+});
+settings.addRange("lineWidth", 0, 100, 20, 1, function(value){
+ctx.lineWidth = value;
+});
+settings.addRange("distance", 0, 800, distance, 1, function(value){
+  distance = value;
+  decreasingSize(value)
+});
+
+function growOut(p){
+  p.w += speed;
+  p.h += speed;
+  if(p.w > w + p.pos.x) {
+    p.w = 10;
+    p.h = 10;
+  }
+}
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+</html>

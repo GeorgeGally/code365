@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var num_slices = 27;
+var total_slices = 30;
+var engine = new particleEngine(total_slices, 1);
+engine.setPos();
+
+ctx.lineWidth = 10;
+ctx.lineCap = "round";
+
+
+//engine.setTarget(randomInt(4) * w/4);
+
+function decreasingSize(distance){
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.sz = i * distance;
+    p.w = w - p.sz;
+    p.h = h - p.sz;
+  }
+}
+decreasingSize(30);
+
+function draw(){
+
+  ctx.background(10);
+  //if(chance(1000)) engine.setPos(randomInt(1, 4) * w/4);
+  if(chance(100)) {
+    var pos = randomInt(4) * w/4;
+    //engine.setPos(pos, h/2);
+  //  if(pos != 2)
+  //var sz = Sound.mapSound(100, 200, 0, w)
+  //engine.setSize(w/2, h/2);
+
+  // } else {
+  //   engine.setSize(w, h);
+  }
+
+  for (var i = 0; i < num_slices; i++) {
+    var p = engine.get(i);
+    drawSquares(p);
+  }
+
+}
+
+
+function drawSquares(p){
+    ctx.save();
+    ctx.translate(p.pos.x, p.pos.y);
+    ctx.fillStyle = rgb(0);
+    ctx.strokeStyle = rgba(255);
+    //p.sz = Sound.mapSound(50, 200, -100, 40);
+    //var sz = p.me * 10;
+    ctx.centreStrokeRect(0, 0, p.w, p.h);
+    ctx.restore();
+}
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+settings.addRange("num_slices", 0, total_slices, num_slices, 1, function(value){
+num_slices = value;
+});
+settings.addRange("lineWidth", 0, 100, 10, 1, function(value){
+ctx.lineWidth = value;
+});
+settings.addRange("distance", 0, 400, 20, 1, function(value){
+decreasingSize(value)
+});
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+</html>

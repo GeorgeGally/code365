@@ -233,12 +233,12 @@ p.Hellipse = function(x, y, width, height) {
 
 p.Lellipse = function(x, y, width, height, sides) {
   var sides = sides || 8;
- if (height == undefined) { height = width; }
- this.beginPath();
- for(var i=0;i<Math.PI*2;i+=Math.PI/sides) {
- this.lineTo(x+(Math.cos(i)*width/2), y+(Math.sin(i)*height/2));
- }
- //this.closePath();
+  if (height == undefined) { height = width; }
+  this.beginPath();
+  for(var i=0;i<Math.PI*2;i+=Math.PI/sides) {
+    this.lineTo(x+(Math.cos(i)*width/2), y+(Math.sin(i)*height/2));
+  }
+  //this.closePath();
 };
 
 p.fillEllipse = function(x, y, width, height) {
@@ -255,9 +255,9 @@ p.HfillEllipse = function(x, y, width, height) {
  this.beginPath();
 };
 
-p.LfillEllipse = function(x, y, width, height, size) {
+p.LfillEllipse = function(x, y, width, height, sides) {
  if (height == undefined) height = width;
- this.Lellipse(x,y,width, height, size);
+ this.Lellipse(x,y,width, height, sides);
  this.fill();
  this.beginPath();
 };
@@ -969,8 +969,8 @@ function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _sta
 
   this.start = {x: _startx || 0 , y: _starty || 0};
 
-  this.grid_w = _grid_w || w;
-  this.grid_h = _grid_h || h;
+  this.grid_w = this.w = _grid_w || w;
+  this.grid_h = this.h = _grid_h || h;
 
   this.width = _grid_w || w;
   this.height = _grid_h || h;
@@ -1057,7 +1057,7 @@ function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _sta
 
   this.add(_horiz, _vert);
 
-  //console.log(this);
+  console.log(this);
   return this;
 
 }

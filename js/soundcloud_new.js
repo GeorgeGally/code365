@@ -349,6 +349,13 @@ var soundCloud = function(_fft_size) {
     return self.volume || 0;;
   }
 
+  this.grey = function(min, max) {
+    min = min || 0;
+    max = max || 255;
+    var vol = this.getVol(0, 255);
+    //if(chance(400)) console.log(vol);
+    return rgb(vol);
+  }
   //this.getVolume = function() { return this.getVol();}
 
   this.getRMS = function (freq) {

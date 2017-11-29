@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/perlin.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+// var ctx2 = createCanvas("canvas2");
+// var ctx3 = createCanvas("canvas3");
+var canvas = ctx.canvas;
+
+noise.seed(randomInt(20));
+
+
+var scl = 10;
+var xvec, yvec;
+var noiseInc = .01;
+var time = 0;
+var particles = [];
+var flowfield;
+var icon = 1;
+var icon_sz = 250;
+ctx.strokeStyle = rgb(0);
+
+
+function setup() {
+  ctx.background(255);
+}
+
+function draw() { // Rotating Vectors
+
+       ctx.background(255, 0.01);
+       //ctx3.clearRect(0,0,w, h);
+
+       FlowField();
+       //ctx2.drawImage(ctx.canvas, 0, 0, w, h);
+
+}
+
+function FlowField(){
+
+       xvec = Math.floor((w+50) / scl);
+       yvec = Math.floor((h+50) / scl);
+       flowfield = new Array(xvec * yvec);
+
+       var yNoise = 0;
+       for (var y = 0; y < yvec; y++) {
+              var xNoise = 0;
+              for (var x = 0; x < xvec; x++) {
+                     var vecDirect = noise.perlin3(xNoise, yNoise, time) * 2*(TWO_PI);
+                     //
+                     //vecDirect = map(degrees(vecDirect), -360, 360, 0, 360);
+                     //vecDirect = radians(vecDirect);
+                    //console.log(vecDirect);
+                    //  var dir = p5.Vector.fromAngle(vecDirect);
+                    var dir = vecDirect * 2.5;
+                    //ctx.fillStyle = rgb(255 - map(dir, 0, scl * 1.5, 0, 255));
+                    var index = x + y * xvec;
+                    flowfield[index] = dir;
+                    //dir.setMag(3);
+                    xNoise += noiseInc;
+
+                    //ctx.save();
+                    //ctx.translate(Math.round(x * scl), Math.round(y * scl));
+                    //ctx.rotate(dir);
+                    //ctx.fillRect(0, 0, dir, dir);
+                    ctx.LfillEllipse(Math.round(x * scl), Math.round(y * scl), dir, dir, 5);
+                    //ctx.line(0, 0, scl, 0);
+                    //ctx.restore();
+              }
+              yNoise += noiseInc;
+              time += .0002;
+       }
+}
+
+
+
+
+
+</script>
+ <!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+</body>
+</html>

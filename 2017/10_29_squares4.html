@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+<script src='http://connect.soundcloud.com/sdk.js'></script>
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+
+var max_sides = 30;
+var engine = new particleEngine(10, 1);
+engine.setPos();
+
+ctx.lineWidth = 10;
+ctx.lineCap = "round";
+
+
+//engine.setTarget(randomInt(4) * w/4);
+for (var i = 0; i < engine.particles.length; i++) {
+  var p = engine.particles[i];
+  p.sz = i * 30
+  p.w = w/2 - p.sz;
+  p.h = h/2 - p.sz;
+}
+
+function draw(){
+
+  ctx.background(10);
+  //if(chance(1000)) engine.setTarget(randomInt(4) * w/4);
+  if(chance(100)) {
+    var pos = randomInt(4) * w/4;
+    //engine.setPos(pos, h/2);
+  //  if(pos != 2)
+  //var sz = Sound.mapSound(100, 200, 0, w)
+  //engine.setSize(w/2, h/2);
+  // } else {
+  //   engine.setSize(w, h);
+  }
+
+  for (var i = 0; i < engine.length; i++) {
+    var p = engine.get(i);
+    drawSquares(p);
+  }
+
+}
+
+
+function drawSquares(p){
+    ctx.save();
+    ctx.translate(p.pos.x, p.pos.y);
+    ctx.fillStyle = rgb(0);
+    ctx.strokeStyle = rgba(255);
+    p.sz = Sound.mapSound(50, 200, -100, 40);
+    //var sz = p.me * 10;
+    ctx.centreStrokeRect(0, 0, p.w + p.sz, p.h + p.sz);
+    ctx.restore();
+}
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+settings.addRange("max_sides", 1, 100, max_sides, 1, function(value){
+max_sides = value;
+});
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+</html>

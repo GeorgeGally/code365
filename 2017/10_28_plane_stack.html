@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>three.js webgl - clipIntersection</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			margin: 0px;
+			/*background: -webkit-radial-gradient(center ellipse, #fff 50%, #bbb 100%);
+			background: radial-gradient(ellipse at center, #fff 50%, #bbb 100%);*/
+			background: #000;
+			overflow: hidden;
+		}
+	</style>
+</head>
+
+<body>
+	<div id='WebGL-output'></div>
+
+	<script src="../js/three.min.js"></script>
+	<!-- <script src="../js/threejs/controls/OrbitControls.js"></script> -->
+	<script src="../js/dat.gui.min.js"></script>
+	<script src="../js/canvas.js"></script>
+	<script src="../js/creative_coding.js"></script>
+	<script src="../js/particle_engine.js"></script>
+	<script src="../js/utils/Perlin.js"></script>
+
+	<script src="../js/threejs/postprocessing/EffectComposer.js"></script>
+	<script src="../js/threejs/postprocessing/ShaderPass.js"></script>
+	<script src="../js/threejs/postprocessing/RenderPass.js"></script>
+
+	<script src="../js/threejs/shaders/CopyShader.js"></script>
+	<script src="../js/threejs/shaders/SepiaShader.js"></script>
+	<script src="../js/threejs/shaders/FilmShader.js"></script>
+	<script src="../js/threejs/shaders/SSAOShader.js"></script>
+
+	<script>
+
+		var ctx = createHiddenCanvas('canvas1');
+		var canvas = ctx.canvas;
+		var engine = new particleEngine(1, 80);
+		engine.setRandomColour(50, 255, 0, 0, 10, 80);
+		engine.setSize(10);
+		engine.setSpeed(0,0, 1, 10);
+		var num_spheres = 1;
+		var max_slices = 10;
+		var slice_width = 200;
+		var slice_height = 10;
+		var step = 0;
+		var size_decrease = 4;
+
+		var spheres = [];
+		var outer_sphere, outer_sphere_mesh;
+		var sphereGeom;
+		var gui;
+		var helpers = [];
+		var material = [], material2 = [];
+
+		var change_constants = [];
+		var speed = [];
+
+		var sphereVerticesArray = [];
+		var sphereVerticesNormArray = [];
+
+		var clock = new THREE.Clock();
+		var date = new Date();
+		var pn = new Perlin('rnd' + date.getTime());
+
+		var clipPlanes = [];
+		var scene, renderer, camera, orbitControls, composer;
+		var texture, texture2;
+
+
+		var controls = new function() {
+
+			this.noiseAmount = 6;
+			this.sliceSpeed = 0;
+			this.num_slices = 6;
+			this.sliceWidth = 10;
+			this.sliceZFactor = 40;
+			this.offset = 50;
+			this.offsetSpeed = 99;
+		}
+
+
+		function setup() {
+
+			//loadTextures();
+			addScene();
+			addLights();
+			setupGeometries();
+
+			addSlices();
+			showSlices(5);
+			//moveSlices();
+			addPostProcessing();
+			addGui();
+
+			javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+
+		}
+
+
+		function draw() {
+
+			ctx.clearRect(0, 0, w, h);
+			ctx.background(255);
+
+			var delta = clock.getDelta();
+
+			moveSlices();
+
+			//warpSpheres();
+
+			//orbitControls.update(delta);
+			renderer.render(scene, camera);
+
+		}
+
+		function addSlices() {
+
+			for (var sphere_num = 0; sphere_num < num_spheres; sphere_num++) {
+
+				var slices = [];
+				spheres[sphere_num] = [];
+				//clipPlanes[sphere_num] = [];
+
+				for (var slice_num = 0; slice_num < max_slices; slice_num++) {
+
+
+
+					material = new THREE.MeshPhongMaterial({
+					//material = new THREE.MeshLambertMaterial({
+						color: rgba(255),
+						opacity: 0.98,
+						//metalic: 0.9,
+						//side: THREE.FrontSide,
+						//side: THREE.DoubleSide,
+						//map: texture,
+						//clippingPlanes: clipPlanes[sphere_num][slice_num],
+						//clipShadows: true,
+						transparent: true
+					});
+
+
+					slices[slice_num] = new THREE.Mesh(sphereGeom, material);
+					slices[slice_num].receiveShadow = true;
+					slices[slice_num].position.z = -slice_num * controls.sliceWidth;
+					scene.add(slices[slice_num]);
+
+
+			}
+
+				spheres[sphere_num]['slices'] = slices;
+
+			}
+
+		}
+
+		function moveSphere(sphere){
+				 sphere.position.z = Math.sin(slice_num + ( sphere_num + frameCount)/controls.offsetSpeed) * controls.offset;
+		}
+
+		function moveSlices(){
+
+			for (var sphere_num = 0; sphere_num < num_spheres; sphere_num++) {
+
+				for (var slice_num = 0; slice_num < controls.num_slices; slice_num++) {
+
+					var s = spheres[sphere_num].slices[slice_num];
+					s.pos = controls.sliceWidth * slice_num/controls.num_slices;
+					// s.pos += s.dir * (s.speed+ controls.sliceSpeed);
+					// if (s.pos > 24 || s.pos < -2) s.dir *= -1;
+
+					moveSlice(sphere_num, slice_num, s.pos);
+
+				}
+			}
+		}
+
+		function moveSlice(sphere_num, slice_num, pos) {
+			spheres[sphere_num]['slices'][slice_num].position.y = 55 + Math.sin(1+ ( sphere_num + frameCount)/controls.offsetSpeed) * controls.offset;
+			spheres[sphere_num]['slices'][slice_num].position.z = slice_num * controls.sliceWidth;
+
+		}
+
+
+		function addScene() {
+			// RENDERER, SCENE AND CAMERA
+			scene = new THREE.Scene();
+			//scene.fog = new THREE.FogExp2(0xc8dad2, 0.001);
+			camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.9, 1000);
+
+			camera.position.x = 0;
+			camera.position.y = 60;
+			camera.position.z = 120;
+			//camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+			renderer = new THREE.WebGLRenderer({
+				alpha: true,
+				//antialias: true
+			});
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.shadowMap.enabled = true;
+			//renderer.shadowMap.renderSingleSided = false;
+			// to antialias the shadow
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+			//renderer.localClippingEnabled = true;
+			document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+			//orbitControls = new THREE.OrbitControls(camera);
+			//orbitControls.autoRotate = true;
+		}
+
+		function addLights() {
+
+			var ambientLight = new THREE.AmbientLight(0xcccccc);
+			scene.add(ambientLight);
+
+			// add spotlight for the shadows
+			var spotLight = new THREE.DirectionalLight(0xffffff);
+			spotLight.position.set(0, 60, -10);
+			spotLight.intensity = 1.0;
+			// spotLight.castShadow = true;
+			// spotLight.shadow.bias = 0.0001;
+			//spotLight.shadowCameraVisible = true;
+			scene.add(spotLight);
+
+		}
+
+		function addGui() {
+
+			// gui
+			gui = new dat.GUI();
+
+			gui.add(controls, 'noiseAmount', -10, 10).listen();
+			gui.add(controls, 'sliceSpeed', 0, 2).step(0.01).listen();
+			gui.add(controls, 'offset', 0, 100).listen();
+			gui.add(controls, 'offsetSpeed', 1, 100).listen();
+			gui.add(controls, 'num_slices', 1, max_slices).step(1).onChange(function(value) {
+					showSlices(value);
+			});
+
+			gui.add(controls, 'sliceWidth', 1, 200).step(1).name('Slice Width').listen();
+
+		}
+
+		function showSlices(value){
+
+			//var i = 0;
+			for (var sphere_num = 0; sphere_num < num_spheres; sphere_num++) {
+				for (var slice_num = 0; slice_num < max_slices; slice_num++) {
+
+					if(slice_num < value) {
+						spheres[sphere_num]['slices'][slice_num].visible = true;
+					} else {
+						spheres[sphere_num]['slices'][slice_num].visible = false;
+					}
+
+				//i++;
+			}
+			}
+		}
+
+		function setupGeometries() {
+
+			//sphereGeom = new THREE.SphereGeometry(start_size  - i * size_decrease, 100, 100);
+			//sphereGeom = new THREE.SphereGeometry(start_size, 60, 60);
+			sphereGeom = new THREE.PlaneGeometry(slice_width, slice_height, 200, 200);
+			//sphereGeom = new THREE.BoxGeometry(start_size, start_size, start_size);
+			//sphereGeom = new THREE.TorusKnotGeometry( start_size/2, start_size/2, 95, 20 );
+
+			//sphereGeom = new THREE.CylinderGeometry( 1, start_size, start_size, 4 );
+			// save points for later calculation
+			// for (var i = 0; i < sphereGeom.vertices.length; i += 1) {
+			// 	var vertex = sphereGeom.vertices[i];
+			// 	var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
+			// 	sphereVerticesArray.push(vec);
+			// 	var mag = vec.x * vec.x + vec.y * vec.y + vec.z * vec.z;
+			// 	mag = Math.sqrt(mag);
+			// 	var norm = new THREE.Vector3(vertex.x / mag, vertex.y / mag, vertex.z / mag);
+			// 	sphereVerticesNormArray.push(norm);
+			// }
+
+		}
+
+		function addPostProcessing() {
+
+			// postprocessing
+			composer = new THREE.EffectComposer(renderer);
+
+			var renderPass = new THREE.RenderPass(scene, camera);
+			composer.addPass(renderPass);
+			//renderPass.renderToScreen = true;
+
+			var pass1 = new THREE.ShaderPass( THREE.SepiaShader );
+			composer.addPass( pass1 );
+
+			// var pass2 = new THREE.ShaderPass( THREE.FilmShader );
+			// composer.addPass( pass2 );
+
+			// var pass2 = new THREE.ShaderPass( THREE.SSAOShader );
+			// composer.addPass( pass2 );
+			//pass2.renderToScreen = true;
+
+			// var dotScreenPass = new THREE.DotScreenPass();
+			// composer.addPass(dotScreenPass);
+			//
+			// var rgbEffect = new THREE.ShaderPass( THREE.RGBShiftShader );
+			// rgbEffect.uniforms[ 'amount' ].value = 0.0015;
+			// rgbEffect.renderToScreen = true;
+			// composer.addPass( rgbEffect );
+
+			// var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
+			// effectCopy.renderToScreen = true;
+			// composer.addPass(effectCopy);
+		}
+
+</script>
+
+</body>
+
+</html>

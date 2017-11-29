@@ -65,6 +65,8 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 				end: new Vector(x, y),
 				row: row,
 				col: col,
+				w: this.grid.spacing.x,
+				h: this.grid.spacing.y,
 				speed: speed,
 				start_speed: speed,
 				accel: accel,
@@ -79,7 +81,7 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 				me: _me,
 				//parent: null,
 				r: 0,
-				sz: 5,
+				sz: this.grid.w,
 				orig_sz: 5,
 				target_sz: 5,
 				target_size: 5,
@@ -123,6 +125,8 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 	this.setSize = function(min, max) {
 		for (var i = 0; i < this.particles.length; i++) {
 			var p = this.particles[i];
+			p.w = min;
+			p.h = max || h;
 			if(!max) {
 				p.sz = min;
 			} else {
@@ -131,6 +135,23 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 
 		}
 	}
+
+	this.setPos = function(x, y) {
+		for (var i = 0; i < this.particles.length; i++) {
+			var p = this.particles[i];
+			p.pos.x = p.start.x = x || w/2;
+			p.pos.y = p.start.y = y || h/2;
+		}
+	}
+
+	this.setTarget = function(x, y) {
+		for (var i = 0; i < this.particles.length; i++) {
+			var p = this.particles[i];
+			p.target.x = x || w/2;
+			p.target.y = y || h/2;
+		}
+	}
+
 
 	this.setAccel = function(_x1 , _x2, _y1 , _y2) {
 		for (var i = 0; i < this.particles.length; i++) {
@@ -149,15 +170,7 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 		}
 	}
 
-	this.setSize = function(min, max) {
-		max = max || min;
 
-		for (var i = 0; i < this.particles.length; i++) {
-			var sz = random(min, max);
-			this.particles[i].sz = sz || 0;
-			this.particles[i].target_sz = sz || 0;
-		}
-	}
 
 	this.setColour = function(c) {
 		for (var i = 0; i < this.particles.length; i++) {
@@ -262,11 +275,14 @@ this.move = function(p){
 			p.pos.y = tween(p.pos.y, p.target.y, p.tween_speed);
 		}
 
-		//if (p.me == 2) console.log(p.speed.x);
-
 }
 
-
+this.tweenToTarget= function(p, target_x, target_y){
+	p.target.x = target_x || p.target.x;
+	p.target.y = target_y || p.target.y;
+	p.pos.x = tween(p.pos.x, p.target.x, p.tween_speed);
+	p.pos.y = tween(p.pos.y, p.target.y, p.tween_speed);
+}
 
 this.offCanvasTest = function(p){
 
