@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+  <meta charset="utf-8">
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/raw_video.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var particles = [];
+var FOV = 150;
+var MAX_PARTICLES = 1000;
+var engine = new particleEngine(10, 5);
+
+var old_red = [];
+var old_green = [];
+var old_blue = [];
+var pixelsize = 40;
+
+function setup(){
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.scale = 1;
+    p.pos3d.x = 1;
+    p.pos3d.y = 1;
+    p.speed.z = 5;
+    p.pos.x -= w/2;
+    p.pos.y -= h/2;
+    p.sz = 10;
+  }
+}
+console.log(engine);
+
+function draw(){
+  ctx.background(245);
+  videoshit();
+  moveParticles();
+  drawParticles();
+}
+
+
+function moveParticles(){
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+
+    moveParticle(p);
+    calc3DPos(p);
+
+  }
+
+}
+
+
+function drawParticles(){
+  ctx.save();
+  ctx.translate(w/2, h/2);
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    ctx.fillStyle = p.c;
+    //ctx.fillEllipse(p.pos.x, p.pos.y, 10, 10);
+    //console.log(p.pos3d.x);
+    ctx.LfillEllipse(p.pos3d.x, p.pos3d.y, p.sz * p.scale, p.sz * p.scale);
+  }
+  ctx.restore();
+}
+
+
+function calc3DPos(p){
+  p.scale = FOV/(p.pos.z + FOV);
+  p.pos3d.x = p.pos.x * p.scale;
+  p.pos3d.y = p.pos.y * p.scale;
+}
+
+
+function moveParticle(p){
+
+  p.x = p.x + p.speed.x;
+  p.y = p.y + p.speed.y;
+  p.pos.z -= p.speed.z;
+  p.sz *= 0.99;
+  p.speed_y += 0.2;
+  //p.z += p.speed.z;
+
+  if (p.pos.z < -FOV/2 || p.sz < 0.1) {
+    //p.pos.z = FOV;
+    engine.delete(p.me)
+    //particles.splice(i,1);
+  }
+
+  //if (p.pos.x < p.sz/2 || p.pos.x > w - p.sz/2) {
+    p.speed.x = p.speed.x * -1;
+  //}
+  //if (p.pos.y < p.sz/2 || p.pos.y > h - p.sz/2) {
+    p.speed.y = p.speed.y * -1;
+  //}
+
+}
+
+
+function addParticle(x, y, c, b){
+  engine.add(x, y, c);
+  var last = engine.last;
+  last.pos.x -= w/2;
+  last.pos.y -= h/2;
+  last.c = c;
+  last.pos.z = 0;
+  last.speed.x = random(-4,4);
+  last.speed.y = random(-5,2);
+  last.speed.z = 2;
+  last.sz = 10;
+
+if(particles.length > MAX_PARTICLES) engine.delete(particles.length-1);
+}
+
+
+function videoshit(){
+  hidden_ctx.drawImage(video, 0,0, w, h);
+  sample = hidden_ctx.getImageData(0,0,w,h);
+
+  ctx.fillStyle = rgba(255, 0.3);
+  for (var y = 0; y < h; y+= pixelsize) {
+    for (var x = 0; x < w; x+= pixelsize) {
+    var pos = (x  + y * w) * 4;
+    var r = sample.data[pos];
+    var g = sample.data[pos+1];
+    var b = sample.data[pos+2];
+    if (!old_red[pos]) old_red[pos] = r;
+
+    if(Math.abs(r - old_red[pos]) > sensitivity) {
+      var c = rgb(r,g,b);
+      addParticle(x, y, c, brightness(r,g,b, 40))
+    }
+    old_red[pos] = r;
+    old_green[pos] = g;
+    old_blue[pos] = b;
+    }
+  }
+}
+
+
+</script>
+
+</body>
+
+</html>

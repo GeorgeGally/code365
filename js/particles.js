@@ -10,8 +10,8 @@ var particles = [];
 // var num_particles = grid_w * grid_h;
 
 
-for (var i = 0; i < num_particles; i++) {	
-	
+for (var i = 0; i < num_particles; i++) {
+
 	var x = w/2 + (-3 + i) * 100;
     var m = map(i, 0, num_particles, 0, 360);
     var cc = hsl(m, 96, 60);
@@ -33,10 +33,11 @@ function draw(){
 
 
 function addParticle(_x, _y, _colour, _me){
-	
+
 	var particle = {
 		x: _x,
 		y: _y,
+		z: 0, 
 		xx: w/2,
 		yy: h/2,
 		c: _colour,
@@ -49,7 +50,7 @@ function addParticle(_x, _y, _colour, _me){
 		sz: 0,
 		angle: radians((2.2*_me)%360)
 	}
-	
+
 	particles.push(particle);
 
 }
@@ -58,7 +59,7 @@ function addParticle(_x, _y, _colour, _me){
 function moveParticles(){
 
 	for (var i = 0; i < particles.length; i++) {
-		
+
 		p = particles[i];
 		p.sz =  tween(p.sz, map(audioChannelVolume[20+(p.me2)%120], 0, 150,
 			100,400), 4);
@@ -70,7 +71,7 @@ function moveParticles(){
 		ctx.fillTriangle(p.x-sz/3, p.y, p.x + sz/3, p.y, p.x, p.y - sz/2);
 		ctx.strokeStyle = rgb(255);
 		ctx.strokeTriangle(p.x-sz/3, p.y, p.x + sz/3, p.y, p.x, p.y - sz/2);
-		
+
 	};
 
 }

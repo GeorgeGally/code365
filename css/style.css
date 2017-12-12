@@ -19,7 +19,7 @@ time, mark, audio, video {
   vertical-align: baseline;
 }
 
-@font-face {
+/*@font-face {
   font-family: 'SquareFont';
   src: url('SquareFont.eot');
   src: url('../fonts/SquareFont.eot?#iefix') format('embedded-opentype'),
@@ -27,7 +27,7 @@ time, mark, audio, video {
     url('../fonts/SquareFont.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
-}
+}*/
 
 
 html {
@@ -157,7 +157,7 @@ canvas, #map {
 }
 
 #warning {
-  font: 700 12px Consolas, system, monospace;
+  font: 700 12px monospace;
   color: #fff;
   background: #c82222;
   position: absolute;

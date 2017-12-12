@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+ <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+ </head>
+ <body style="background: #fff">
+
+<script>
+
+var hidden_ctx = createCanvas("hidden_canvas");
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+var engine = new particleEngine(120, 15);
+//engine.setSpeed(0, 1);
+console.log(engine);
+// engine.setColour("black");
+//engine.setRandomColour(50, 100);
+var particles = engine.particles;
+//console.log(engine.grid.pos[100].col);
+function draw(){
+
+  ctx.background(255, 0.1);
+
+
+  for (var i = 1; i < engine.particles.length; i++) {
+
+    var p = engine.particles[i-1];
+    var p2 = engine.particles[i];
+    ctx.fillStyle = "black";
+    //p.pos.x += 0.1;
+    //if(i%2==0)
+    p.pos.y = p.start.y + Math.sin(frameCount/30 + p.angle + p.col/10 ) * 30;
+    //ctx.LfillEllipse(p.pos.x, p.pos.y, 4, 4);
+
+    //if (engine.grid.pos[i-1].col == 0) {
+
+      // ctx.beginPath();
+      // ctx.moveTo(0, p.pos.y);
+      //ctx.lineTo(0, p.pos.y, p2.pos.x, p2.pos.y);
+    //} else if (engine.grid.pos[i-1].col == 19) {
+      //ctx.lineTo(w, p.pos.y, p2.pos.x, p2.pos.y);
+      // ctx.stroke();
+      // ctx.closePath();
+      //ctx.line(p2.pos.x, p2.pos.y, w, p.pos.y);
+    //} else {
+      ctx.LfillEllipse(p.pos.x, p.pos.y, 4, 4);
+      //ctx.quadraticCurveTo(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y);
+    //}
+
+		///ctx.fillRect(p.pos.x, y, 5, 5);
+    if(p.pos.x > w) p.pos.x = 0;
+  }
+
+  //engine.update();
+
+}
+
+
+
+</script>
+
+</body>
+</html>

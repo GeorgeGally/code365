@@ -52,10 +52,10 @@ function draw(){
   ctx.background(10);
   //if(chance(6)) ctx.lineWidth = sticky(Sound.getBassVol(1, 20), 5);
   if(chance(200)){
-    engine.setTarget(randomInt(4)*w/4, h/2);
+    engine.setTarget(randomInt(2)*w/2, h/2);
     console.log("go");
     speed = random(4);
-    ctx.lineWidth = 20;
+    ctx.lineWidth = 30;
   //   distance = 65;
   //   decreasingSize(distance, 50, h);
   }
@@ -83,7 +83,7 @@ function drawSquares(p){
     ctx.save();
     ctx.translate(p.pos.x, p.pos.y);
     ctx.fillStyle = rgb(0);
-    ctx.strokeStyle = rgba(255, 0.95);
+    ctx.strokeStyle = rgba(255, 0.95 - (1 - map(p.w  + p.pos.x, 0, w, 0, 1)));
     //p.sz = Sound.mapSound(50, 200, -100, 40);
     //var sz = p.me * 10;
     ctx.centreStrokeRect(0, 0, p.w, p.h);

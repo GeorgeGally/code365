@@ -58,15 +58,19 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 			var accel = new Vector(1,1);
 
 			var particle = {
-				pos: new Vector(x, y),
-				start: new Vector(x, y),
-				target: new Vector(x, y),
-				old: new Vector(x, y),
-				end: new Vector(x, y),
+				me: _me,
+				pos: new Vector(x, y, 1),
+				start: new Vector(x, y, 1),
+				target: new Vector(x, y, 1),
+				old: new Vector(x, y, 1),
+				end: new Vector(x, y, 1),
+				pos3d: new Vector(x, y, 1),
 				row: row,
 				col: col,
 				w: this.grid.spacing.x,
+				w: this.grid.spacing.x,
 				h: this.grid.spacing.y,
+				ht: this.grid.spacing.y,
 				speed: speed,
 				start_speed: speed,
 				accel: accel,
@@ -78,10 +82,9 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 				alpha: 1,
 				tween_speed: this.tween_speed,
 				tween: true,
-				me: _me,
-				//parent: null,
 				r: 0,
-				sz: this.grid.w,
+				sz: this.grid.spacing.x,
+				scale: 1,
 				orig_sz: 5,
 				target_sz: 5,
 				target_size: 5,
@@ -93,8 +96,8 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 				angle: angle,
 				engine: []
 		}
-
-			//console.log(particle)
+			// console.log(this.grid.spacing.y);
+			// console.log(particle)
 			this.particles.push(particle);
 			this.last = particle;
 			this.length = this.particles.length;
@@ -184,7 +187,12 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 
 		for (var i = 0; i < this.particles.length; i++) {
 			var p = this.particles[i];
-			var c = rgb(random(r1, r2), random(g1, g2), random(b1, b2))
+			if(g1 == undefined) {
+				var c = rgb(random(r1, r2));
+			} else {
+				var c = rgb(random(r1, r2), random(g1, g2), random(b1, b2));
+			}
+
 			p.c = c;
 		}
 	}

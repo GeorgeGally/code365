@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+  <meta charset="utf-8">
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/raw_video.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var particles = [];
+var FOV = 220;
+var MAX_PARTICLES = 1000;
+var engine = new particleEngine(80, 60);
+
+var old_red = [];
+var old_green = [];
+var old_blue = [];
+var pixelsize = 40;
+var video_scale;
+
+function setup(){
+  video_scale = new Vector(video.width/w, video.height/h);
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.scale = 1;
+    p.pos3d.x = 1;
+    p.pos3d.y = 1;
+    p.target.z = random(-15, 15);
+    //p.pos.x -= w/2;
+    //p.pos.y -= h/2;
+    p.sz = 10;
+  }
+}
+console.log(engine);
+
+function draw(){
+  ctx.background(245);
+  videoshit();
+  moveParticles();
+  drawParticles();
+}
+
+
+function moveParticles(){
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    moveParticle(p);
+    calc3DPos(p);
+
+  }
+
+}
+
+
+function drawParticles(){
+  ctx.save();
+  ctx.translate(w/2, h/2);
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    ctx.fillStyle = p.c;
+    ctx.LfillEllipse(p.pos3d.x, p.pos3d.y, p.sz * p.scale);
+  }
+  ctx.restore();
+}
+
+
+function calc3DPos(p){
+  p.scale = FOV/(p.pos.z + FOV);
+  p.pos3d.x = (p.pos.x - w/2) * p.scale;
+  p.pos3d.y = (p.pos.y - h/2) * p.scale;
+}
+
+
+function moveParticle(p){
+  p.pos.z = tween(p.pos.z, p.target.z, 20);
+}
+
+
+
+function videoshit(){
+
+  hidden_ctx.drawImage(video, 0,0, w, h);
+  sample = hidden_ctx.getImageData(0,0,w,h);
+
+  ctx.fillStyle = rgba(255, 0.3);
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+
+    var pos = Math.round(Math.round(p.pos.x)  + Math.round(p.pos.y) * w) * 4;
+    var r = sample.data[pos];
+    var g = sample.data[pos+1];
+    var b = sample.data[pos+2];
+    p.c = rgb(r,g,b);
+    p.target.z = 1 * brightness(r,g,b, 5);
+
+  }
+}
+
+
+</script>
+
+</body>
+
+</html>

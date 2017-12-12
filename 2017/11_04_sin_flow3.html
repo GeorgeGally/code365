@@ -21,25 +21,25 @@ var hidden_ctx = createCanvas("hidden_canvas");
 var ctx = createCanvas("canvas1");
 var ctx2 = createCanvas("canvas2");
 
-var engine = new particleEngine(300, 200, w, h);
+var engine = new particleEngine(200, 100);
 //engine.setSpeed(0, 1);
-engine.setColour("black");
+// engine.setColour("black");
+engine.setRandomColour(100, 300);
 var particles = engine.particles;
 
 ctx.strokeStyle = rgb(0);
 
 function draw(){
 
-  ctx.clearRect(0, 0, w, h);
-  ctx2.clearRect(0, 0, w, h);
-  //brightSpark();
+  ctx.background(255, 0.1);
+
   for (var i = 0; i < engine.particles.length; i++) {
     var p = engine.particles[i];
     ctx.fillStyle = "black";
-    var x = p.pos.x + CosOsc(frameCount/10 + i, 15)
-    var y = p.pos.y + SinOsc(frameCount/10 + i, 5)
-    // ctx.LfillEllipse(p.pos.x, p.pos.y, 4, 4);
-		ctx.fillRect(x, y, 1, 1);
+    var x = p.pos.x + CosOsc(frameCount/10 + i*2, 25)
+    var y = p.pos.y + SinOsc(frameCount/10 + i*2, 25)
+    ctx.LfillEllipse(x, y, 4, 4);
+		//ctx.fillRect(x, y, 5, 5);
   }
 
   //engine.update();

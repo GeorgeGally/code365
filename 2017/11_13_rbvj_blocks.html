@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+  <script language="javascript" src="../js/creative_coding.js"></script>
+
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/raw_video.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/three.min.js"></script>
+
+  <script language="javascript" src="../js/threejs/CanvasRenderer.js"></script>
+  <script language="javascript" src="../js/threejs/Projector.js"></script>
+  <script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background: #333">
+
+  <script>
+
+
+    var ctx = createCanvas('canvas1');
+    var canvas = document.getElementById('canvas1');
+    canvas.style.zindex = 100;
+    var boxes = [];
+
+
+    var engine = new particleEngine(11, 4);
+    engine.setSize(1, 20);
+    var particles = engine.particles;
+
+    var animate = true;
+
+
+    function draw() {
+
+      ctx.background(255);
+      ctx.fillStyle = rgba(0);
+      ctx.strokeStyle = rgba(0, 0.5);
+      ctx.drawImage(video, 0, 0, w, h);
+      // for (var i = 0; i < particles.length; i++) {
+      //
+      //   var p = particles[i];
+      //   ctx.fillRect(p.pos.x - 40, p.pos.y, 80, p.ht);
+      //   moveParticles(p);
+      //
+      // }
+
+      texture.needsUpdate = true;
+      //threeShuffle(showMainBlock);
+      //threeLine();
+      //square();
+      //twistBlock(1, 0, 0);
+      var b = boxes[randomInt(boxes.length - 1)];
+      twistIndivBlock(b, random(-1, 1), 0, 0);
+
+
+      //if (chance(600));
+      //scene.target_rotation.x += 0.001;
+      scene.target_rotation.y += 0.0001;
+      scene.rotation.y = tween(scene.rotation.y, scene.target_rotation.y, 20);
+      tweenBlocks();
+      renderer.clear();
+      renderer.render(scene, camera);
+    }
+
+
+
+
+
+    ///// THREE STUFF
+
+
+    ///////////////// ANIMATIONS
+
+    function twistIndivBlock(b, x, y, z) {
+      y = y | 0;
+      z = z | 0;
+      //threeShowAll();
+      var all_done = false;
+
+      //if (chance(10)) {
+        b.target_rotation.x += x;
+        //b.target_rotation.y += y;
+        //b.target_rotation.z += z;
+      //}
+
+    }
+
+
+    function twistBlock(x, y, z) {
+      y = y | 0;
+      z = z | 0;
+      threeShowAll();
+      var all_done = false;
+      for (var i = 0; i < boxes.length; i++) {
+        var b = boxes[i];
+
+        if (chance(50)) {
+          b.target_rotation.x += x;
+          b.target_rotation.y += y;
+          b.target_rotation.z += z;
+        }
+      }
+    }
+
+    function threeShuffle(doThis) {
+      threeShowAll();
+      var all_done = false;
+      for (var i = 0; i < boxes.length; i++) {
+        var b = boxes[i];
+
+        if (chance(550)) {
+          b.target.x = 1;
+          b.target.y = 1;
+          b.target.z = 1;
+
+          //if (i == 0) b.target_scale.x = b.target_scale.y = b.target_scale.z = 2;
+        }
+
+        if (b.position.x < 1.01 && b.position.x > -1.01 && b.position.y < 1.01 && b.position.y > -1.01 && b.position.z < 1.01) {
+
+          all_done = true;
+        } else {
+          all_done = false;
+        }
+
+      }
+      if (all_done == true) {
+        threeHideAll()
+        if (doThis) doThis();
+
+      }
+
+    }
+
+
+    function threeLine(doThis) {
+      threeShowAll();
+      var all_done = false;
+      for (var i = 0; i < boxes.length; i++) {
+        var b = boxes[i];
+
+        if (chance(50)) {
+          b.target.x = 1;
+          //b.target.y = 1;
+          //b.target.z = 1;
+
+          //if (i == 0) b.target_scale.x = b.target_scale.y = b.target_scale.z = 2;
+        }
+
+        if (b.position.x < 1.001 && b.position.x > -1.001) {
+
+          all_done = true;
+        } else {
+          all_done = false;
+        }
+
+      }
+      if (all_done == true) {
+        threeHideAll();
+        if (doThis) doThis();
+
+      }
+
+    }
+
+    function threeShowAll() {
+      for (var i = 0; i < boxes.length; i++) {
+        var b = boxes[i];
+        b.visible = true;
+      }
+    }
+
+
+    function threeHideAll() {
+      for (var i = 0; i < boxes.length; i++) {
+        var b = boxes[i];
+        b.visible = false;
+      }
+    }
+
+
+    function showMainBlock() {
+      main_block.visible = true;
+      main_block.scale = new THREE.Vector3(0.01, 0.01, 0.01);
+      main_block.target_scale = new THREE.Vector3(3, 3, 3);
+    }
+
+
+
+
+    function square() {
+      var x = 0,
+        y = 0,
+        z = 0;
+      for (var i = 0; i < boxes.length; i++) {
+        var b = boxes[i];
+        b.start.x = b.target.x = b.target.x = (block_size * -3) / 2 + x * block_size;
+        b.start.y = b.target.y = (block_size * -3) / 2 + y * block_size;
+        b.start.z = b.target.z = (block_size * -3) / 2 + z * block_size;
+
+        x++;
+
+        if (x > 3) {
+          x = 0;
+          y++;
+        }
+        if (y > 3) {
+          y = 0;
+          z++;
+        }
+        if (z > 3) animate = false;
+      }
+    }
+
+
+
+    function moveParticles(p) {
+
+      // p.pos.x += p.speed.x;
+      // if (p.pos.x > w) p.pos.x = 0;
+      p.pos.y += p.speed.y;
+      if (p.pos.y > h) p.pos.y = 0;
+      // p.pos.x = tween(p.pos.x, p.target.x, 100);
+      // p.pos.y = tween(p.pos.y, p.target.y, 100);
+      // p.pos.z = tween(p.pos.z, p.target.z, 100);
+
+    }
+
+
+
+    function circleMove() {
+      for (var i = 0; i < boxes.length; i++) {
+        var b = boxes[i];
+        if (chance(100)) b.target.x = Math.cos(i) * 300;
+        if (chance(100)) b.target.y = Math.sin(i) * 300;
+        if (chance(100)) b.target_scale.x = b.target_scale.y = b.target_scale.z = 0.4;
+        //if(chance(1000)) b.target.z = sticky(random(-250, 250),block_size);
+
+      }
+    }
+
+    function shuffle() {
+      for (var i = 0; i < boxes.length; i++) {
+        var b = boxes[i];
+        if (chance(1000)) b.target.x = sticky(random(-250, 250), block_size);
+        if (chance(1000)) b.target.y = sticky(random(-250, 250), block_size);
+        if (chance(1000)) b.target.z = sticky(random(-250, 250), block_size);
+      }
+    }
+
+
+    function change_uvs(geometry, unitx, unity, offsetx, offsety) {
+
+      var faceVertexUvs = geometry.faceVertexUvs[0];
+
+      for (var i = 0; i < faceVertexUvs.length; i++) {
+
+        var uvs = faceVertexUvs[i];
+
+        for (var j = 0; j < uvs.length; j++) {
+
+          var uv = uvs[j];
+
+          uv.x = (uv.x + offsetx) * unitx;
+          uv.y = (uv.y + offsety) * unity;
+
+        }
+
+      }
+
+    }
+
+
+    function getColours() {
+
+      //hidden_ctx.drawImage(video,0,0,video.width, video.height);
+      sample = ctx.getImageData(0, 0, w, h);
+
+      var buffer = new Uint32Array(sample.data.buffer);
+
+      var num = 0;
+
+      for (var y = 0; y < blocks_y; y++) {
+
+        for (var x = 0; x < blocks_x; x++) {
+
+          var pos = (x + y * canvas.width) * block_size;
+          var r = buffer[pos] >> 0 & 0xff;
+          var g = buffer[pos] >> 8 & 0xff;
+          var b = buffer[pos] >> 16 & 0xff;
+
+          // var r1 = buffer[pos] >> 0 & 0xff;
+          // var g1 = buffer[pos] >> 8 & 0xff;
+          // var b1 = buffer[pos] >> 16 & 0xff;
+
+          // var pos2 = x + resolution/2 + (y + resolution/2) * canvas.width;
+          // var r2 = buffer[pos2] >> 0 & 0xff;
+          // var g2 = buffer[pos2] >> 8 & 0xff;
+          // var b2 = buffer[pos2] >> 16 & 0xff;
+          //
+          // var r = (r1 + r2) / 2;
+          // var g = (g1 + g2) / 2;
+          // var b = (b1 + b2) / 2;
+
+
+          var bright = brightness(r, g, b);
+          var bb = 31 - map(brightness(r, g, b), 0, 100, 0, 30);
+          // boxes[num].scale.z = bb;
+          boxes[num].position.z = bb / 2;
+          boxes[num].scale.z = bb;
+
+          num++;
+
+        }
+      }
+
+    }
+
+
+
+    //////////////////////// THREE tween
+
+    function tweenBlocks() {
+
+      var b = main_block;
+
+      b.position.x = tween(b.position.x, b.target.x, 40);
+      b.position.y = tween(b.position.y, b.target.y, 40);
+      b.position.z = tween(b.position.z, b.target.z, 40);
+
+      b.scale.x = tween(b.scale.x, b.target_scale.x, 20);
+      b.scale.y = tween(b.scale.y, b.target_scale.y, 20);
+      b.scale.z = tween(b.scale.z, b.target_scale.z, 20);
+
+      for (var i = 0; i < boxes.length; i++) {
+
+        var b = boxes[i];
+
+        b.position.x = tween(b.position.x, b.target.x, 20);
+        b.position.y = tween(b.position.y, b.target.y, 20);
+        b.position.z = tween(b.position.z, b.target.z, 20);
+
+        b.scale.x = tween(b.scale.x, b.target_scale.x, 20);
+        b.scale.y = tween(b.scale.y, b.target_scale.y, 20);
+        b.scale.z = tween(b.scale.z, b.target_scale.z, 20);
+
+        b.rotation.x = tween(b.rotation.x, b.target_rotation.x, 20);
+        b.rotation.y = tween(b.rotation.y, b.target_rotation.y, 20);
+        b.rotation.z = tween(b.rotation.z, b.target_rotation.z, 20);
+
+      }
+
+    }
+  </script>
+  <script language="javascript" src="../js/three_matrix_setup.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>three.js webgl - clipIntersection</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			margin: 0px;
+			/*background: -webkit-radial-gradient(center ellipse, #fff 50%, #bbb 100%);
+			background: radial-gradient(ellipse at center, #fff 50%, #bbb 100%);*/
+			background: #000;
+			overflow: hidden;
+		}
+	</style>
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body>
+	<div id='WebGL-output'></div>
+
+	<script src="../js/three.min.js"></script>
+	<script src="../js/threejs/controls/OrbitControls.js"></script>
+	<script src="../js/dat.gui.min.js"></script>
+	<script src="../js/canvas.js"></script>
+	<script src="../js/creative_coding.js"></script>
+	<script src="../js/particle_engine.js"></script>
+	<script src="../js/utils/Perlin.js"></script>
+
+	<script src="../js/threejs/postprocessing/EffectComposer.js"></script>
+	<script src="../js/threejs/postprocessing/ShaderPass.js"></script>
+	<script src="../js/threejs/postprocessing/RenderPass.js"></script>
+
+	<script src="../js/threejs/shaders/CopyShader.js"></script>
+	<script src="../js/threejs/shaders/SepiaShader.js"></script>
+	<script src="../js/threejs/shaders/FilmShader.js"></script>
+	<script src="../js/threejs/shaders/SSAOShader.js"></script>
+
+<script>
+
+var controls = {
+			noiseAmount: 6,
+			sliceSpeed: 0,
+			num_slices:10,
+			sliceWidth: 10,
+			sliceZFactor: 40,
+			offset_x: 0,
+			offset_y: 0,
+			offsetSpeed: 5,
+			distance: 9,
+			scale_slices: 0.4,
+		}
+
+var engine = new particleEngine(4, 1);
+engine.setRandomColour(50, 255, 0, 0, 10, 80);
+engine.setSize(10);
+engine.setSpeed(0,0, 1, 10);
+
+var num_spheres = 1;
+var max_slices = 20;
+var slice_width = 200;
+var slice_height = 10;
+var step = 0;
+var size_decrease = 4;
+
+var slices = [];
+var square;
+var gui;
+
+var material = [], material2 = [];
+
+var change_constants = [];
+var speed = [];
+
+var clock = new THREE.Clock();
+var date = new Date();
+var pn = new Perlin('rnd' + date.getTime());
+
+var clipPlanes = [];
+var scene, renderer, camera, orbitControls, composer;
+var texture, texture2;
+
+
+
+
+function setup() {
+
+			//loadTextures();
+			addScene();
+			addLights();
+			setupGeometries();
+
+			addSquares();
+			showSlices(5);
+			//moveSlices();
+			addPostProcessing();
+			addGui();
+
+			javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+		}
+
+function draw() {
+
+			var delta = clock.getDelta();
+			moveSquares();
+			//warpSpheres();
+			//orbitControls.update(delta);
+			//showSlices(Sound.getMids(1, max_slices));
+			renderer.render(scene, camera);
+
+		}
+
+function addSquares() {
+
+		for (var i = 0; i < max_slices; i++) {
+
+					//material = new THREE.MeshPhongMaterial({
+					material = new THREE.MeshLambertMaterial({
+						color: rgba(255),
+						opacity: 0.925,
+						//metalic: 0.9,
+						//side: THREE.FrontSide,
+						side: THREE.DoubleSide,
+						//map: texture,
+						//clippingPlanes: clipPlanes[sphere_num][slice_num],
+						//clipShadows: true,
+						transparent: true
+					});
+
+					slices[i] = new THREE.Mesh(square, material);
+					slices[i].receiveShadow = true;
+					//slices[i].castShadow = true;
+					slices[i].position.z = -i * controls.sliceWidth;
+					scene.add(slices[i]);
+
+			}
+
+}
+
+function moveSquares(){
+
+		for (var i = 0; i < controls.num_slices; i++) {
+
+			var s = slices[i];
+			s.pos = controls.sliceWidth * i/controls.num_slices;
+			//slices[i].position.x = - 40
+			//slices[i].position.x = 30 * Math.sin(frameCount/100) - 15;
+			slices[i].position.x = -40 + Math.sin(frameCount/(100- controls.offsetSpeed)) * controls.offset_x;
+			slices[i].position.y = Math.sin(frameCount/(100-controls.offsetSpeed/2)) * controls.offset_y;
+			slices[i].position.z += 1.2;
+			if (slices[i].position.z > 90) slices[i].position.z = -500;
+			//
+
+		}
+
+}
+
+function showSlices(value){
+
+			//var i = 0;
+			//for (var sphere_num = 0; sphere_num < num_spheres; sphere_num++) {
+				for (var slice_num = 0; slice_num < max_slices; slice_num++) {
+
+					if(slice_num < value) {
+						slices[slice_num].visible = true;
+					} else {
+						slices[slice_num].visible = false;
+					}
+
+				//i++;
+			}
+			//}
+		}
+
+function setupGeometries() {
+
+			//square = new THREE.squareetry(start_size  - i * size_decrease, 100, 100);
+			//square = new THREE.squareetry(start_size, 60, 60);
+			//square = new THREE.PlaneGeometry(slice_width, slice_height, 200, 200);
+			//square = new THREE.BufferGeometry();
+
+			var shape = new THREE.Shape();
+				shape.moveTo(0, -100);
+				shape.lineTo(400, -100);
+				shape.lineTo(400, 100);
+				shape.lineTo(0, 100);
+
+				var hole = new THREE.Path();
+				hole.moveTo(35, -85);
+				hole.lineTo(365, -85);
+				hole.lineTo(365, 85);
+				hole.lineTo(35, 85);
+
+				shape.holes.push(hole);
+	     	square = new THREE.ShapeGeometry(shape);
+				square.castShadow = true;
+				//square.receiveShadow = true;
+				square.scale(0.2, 0.4, 1);
+
+
+		}
+
+function addScene() {
+					// RENDERER, SCENE AND CAMERA
+					scene = new THREE.Scene();
+					//scene.fog = new THREE.FogExp2(0xc8dad2, 0.001);
+					camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.9, 800);
+
+					camera.position.x = 0;
+					camera.position.y = 0;
+					camera.position.z = 100;
+					//camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+					renderer = new THREE.WebGLRenderer({
+						alpha: true,
+						//antialias: true
+					});
+					renderer.setSize(window.innerWidth, window.innerHeight);
+					renderer.shadowMap.enabled = true;
+					renderer.shadowMap.renderSingleSided = false;
+					// to antialias the shadow
+					//renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+					//renderer.localClippingEnabled = true;
+					document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+					orbitControls = new THREE.OrbitControls(camera);
+					orbitControls.autoRotate = true;
+				}
+
+function addLights() {
+
+					var ambientLight = new THREE.AmbientLight(0x333333);
+					scene.add(ambientLight);
+
+					// add spotlight for the shadows
+					// var spotLight = new THREE.DirectionalLight(0x00ffff);
+					// spotLight.position.set(0, 40, 20);
+					// spotLight.intensity = 1.0;
+					// spotLight.castShadow = true;
+					// //spotLight.shadow.bias = 0.001;
+					// spotLight.shadowCameraVisible = true;
+          //
+					// spotLight.shadowCameraRight    =  5;
+					// spotLight.shadowCameraLeft     = -5;
+					// spotLight.shadowCameraTop      =  5;
+					// spotLight.shadowCameraBottom   = -5;
+					// scene.add(spotLight);
+
+					//Create a DirectionalLight and turn on shadows for the light
+var light = new THREE.DirectionalLight( 0xffffff, 1, 100 );
+light.position.set( 0, 80, 140 ); 			//default; light shining from top
+light.castShadow = true;            // default false
+scene.add( light );
+light.shadowCameraVisible = true;
+//Set up shadow properties for the light
+light.shadow.mapSize.width = 1024;  // default
+light.shadow.mapSize.height = 1024; // default
+light.shadow.camera.near = 0.5;    // default
+light.shadow.camera.far = 500;     // default
+
+				}
+
+function addGui() {
+
+					// gui
+					gui = new dat.GUI();
+
+					gui.add(controls, 'noiseAmount', -10, 10).listen();
+					gui.add(controls, 'sliceSpeed', 0, 2).step(0.01).listen();
+					gui.add(controls, 'offset_x', 0, 100).listen();
+					gui.add(controls, 'offset_y', 0, 100).listen();
+					gui.add(controls, 'offsetSpeed', 1, 100).onChange(function(value) {
+							offsetSpeed = value;
+					});
+					gui.add(controls, 'distance', 0, 200).step(0.1).onChange(function(value) {
+							changeDist(value);
+					});
+					gui.add(controls, 'num_slices', 1, max_slices).step(1).onChange(function(value) {
+							showSlices(value);
+					});
+					gui.add(controls, 'scale_slices', 0.01, 1).step(0.01).onChange(function(value) {
+							scaleSlices(value);
+					});
+					gui.add(controls, 'sliceWidth', 1, 200).step(1).name('Slice Width').listen();
+
+				}
+
+function changeDist(val){
+	for (var i = 0; i < controls.num_slices; i++) {
+			var square = slices[i];
+			square.position.z = -i * controls.distance;
+	}
+}
+
+
+function scaleSlices(val){
+	for (var i = 0; i < controls.num_slices; i++) {
+		var square = slices[i];
+		square.scale(val/2, val, 1);
+	}
+}
+
+function addPostProcessing() {
+
+			// postprocessing
+			composer = new THREE.EffectComposer(renderer);
+
+			var renderPass = new THREE.RenderPass(scene, camera);
+			composer.addPass(renderPass);
+			//renderPass.renderToScreen = true;
+
+			var pass1 = new THREE.ShaderPass( THREE.SepiaShader );
+			composer.addPass( pass1 );
+
+			var pass2 = new THREE.ShaderPass( THREE.FilmShader );
+			composer.addPass( pass2 );
+
+			// var pass2 = new THREE.ShaderPass( THREE.SSAOShader );
+			// composer.addPass( pass2 );
+			//pass2.renderToScreen = true;
+
+			// var dotScreenPass = new THREE.DotScreenPass();
+			// composer.addPass(dotScreenPass);
+			//
+			// var rgbEffect = new THREE.ShaderPass( THREE.RGBShiftShader );
+			// rgbEffect.uniforms[ 'amount' ].value = 0.0015;
+			// rgbEffect.renderToScreen = true;
+			// composer.addPass( rgbEffect );
+
+			// var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
+			// effectCopy.renderToScreen = true;
+			// composer.addPass(effectCopy);
+		}
+
+</script>
+
+<!-- <script language="javascript" src="../js/soundcloud_new.js"></script> -->
+
+</body>
+
+</html>

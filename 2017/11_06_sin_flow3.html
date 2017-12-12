@@ -21,25 +21,36 @@ var hidden_ctx = createCanvas("hidden_canvas");
 var ctx = createCanvas("canvas1");
 var ctx2 = createCanvas("canvas2");
 
-var engine = new particleEngine(300, 200, w, h);
+var engine = new particleEngine(100, 20);
 //engine.setSpeed(0, 1);
-engine.setColour("black");
+console.log(engine);
+// engine.setColour("black");
+//engine.setRandomColour(50, 100);
 var particles = engine.particles;
-
-ctx.strokeStyle = rgb(0);
-
+//console.log(engine.grid.pos[100].col);
 function draw(){
 
-  ctx.clearRect(0, 0, w, h);
-  ctx2.clearRect(0, 0, w, h);
-  //brightSpark();
-  for (var i = 0; i < engine.particles.length; i++) {
-    var p = engine.particles[i];
+  ctx.background(255, 0.1);
+
+  for (var i = 1; i < engine.particles.length; i++) {
+
+    var p = engine.particles[i-1];
+    var p2 = engine.particles[i];
     ctx.fillStyle = "black";
-    var x = p.pos.x + CosOsc(frameCount/10 + i, 15)
-    var y = p.pos.y + SinOsc(frameCount/10 + i, 5)
-    // ctx.LfillEllipse(p.pos.x, p.pos.y, 4, 4);
-		ctx.fillRect(x, y, 1, 1);
+    //p.pos.x += 0.1;
+    if(i%2==0) p.pos.y = p.start.y + Math.sin(frameCount/30 + p.row) * 60;
+    //ctx.LfillEllipse(p.pos.x, p.pos.y, 4, 4);
+
+    if (engine.grid.pos[i-1].col == 0) {
+      ctx.line(0, p.pos.y, p2.pos.x, p2.pos.y);
+    } else if (engine.grid.pos[i-1].col == 99) {
+      //ctx.line(p2.pos.x, p2.pos.y, w, p.pos.y);
+    } else {
+      ctx.line(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y);
+    }
+
+		///ctx.fillRect(p.pos.x, y, 5, 5);
+    if(p.pos.x > w) p.pos.x = 0;
   }
 
   //engine.update();

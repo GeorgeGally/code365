@@ -4,21 +4,22 @@
  <meta charset="utf-8">
  <title>Soundcloud Viz</title>
 <!--  <script src='http://connect.soundcloud.com/sdk.js'></script> -->
- <script language="javascript" src="js/creative_coding.js"></script>
-<script language="javascript" src="js/canvas.js"></script>
-<script language="javascript" src="js/vector.js"></script>
-<script language="javascript" src="js/vector_particles.js"></script>
-<script language="javascript" src="js/tween.min.js"></script>
-<script type="text/javascript" src="js/controlKit.min.js"></script>
-	<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
-	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
-	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+<script language="javascript" src="../js/tween.min.js"></script>
+<script type="text/javascript" src="../js/controlKit.min.js"></script>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
 
 <script>
 
 var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
 window.frameRate = 240;
 var num_balls = 3;
 var balls = new particleEngine(num_balls);
@@ -28,12 +29,12 @@ var stop = false;
 var springs = [];
 damping = 0.98;
 
-
+ctx2.strokeStyle = rgba(150, 0.05);
 
 // Spring simulation constants
-var M = 0.8;   // Mass
-var K = 0.2;   // Spring constant
-var D = 0.92;  // Damping
+var M = 0.9;   // Mass
+var K = 0.5;   // Spring constant
+var D = 0.22;  // Damping
 var R = h/2;   // Rest position
 
 // Spring simulation variables
@@ -87,7 +88,7 @@ function resetBalls(){
 		b.position.y = h/2;
 	}
 	if (i==1) {
-		myTween = new Tween(b.y-100, 100, 3000, 'expoInOut', 'loop');
+		//myTween = new Tween(b.y-100, 100, 3000, 'expoInOut', 'loop');
 		b.position.x = w-w/4;
 		b.position.y = h/2;
 	}
@@ -131,6 +132,7 @@ function draw(){
 		bb1 = new Vector(balls.particles[1].position.x, balls.particles[1].position.y);
 		thirdPoint = ps + midpoint(balls.particles[0], balls.particles[1]);
 		ctx.fillEllipse (midpoint(balls.particles[0], balls.particles[1]).x, midpoint(balls.particles[0], balls.particles[1]).y, 20, 20);
+    //ctx2.fillEllipse (midpoint(balls.particles[0], balls.particles[1]).x, midpoint(balls.particles[0], balls.particles[1]).y, 2, 2);
 		drawArc(bb0, thirdPoint, bb1);
 	}
 }
@@ -149,20 +151,7 @@ function updateSpring() {
   if(Math.abs(vs) < 0.1) {
     vs = 0.0;
   }
-  //console.log(ps)
-  //thirdPoint.y = ps;
-  // // Test if mouse is over the top bar
-  // if(mouseX > left && mouseX < right && mouseY > ps && mouseY < ps + springHeight) {
-  //   over = true;
-  // } else {
-  //   over = false;
-  // }
 
-  // Set and constrain the position of top bar
-  // if(move) {
-  //   ps = mouseY - springHeight/2;
-  //   ps = constrain(ps, min, max);
-  // }
 }
 
 
@@ -182,20 +171,6 @@ function moveParticles(){
 		if (b.position.y >= h-b.sz/2 || b.position.y <= b.sz/2) b.speed.y *=-1;
 
 
-
-		if (b.c == "green" ) {
-			b.sz2 += 0.6;
-			b.alpha -= 0.008;
-			// ctx.fillStyle = rgba(0, b.alpha/2);
-			// ctx.fillEllipse (b.position.x , b.position.y, b.sz2*1.4, b.sz2*1.4);
-			ctx.fillStyle = rgba(0, b.alpha);
-			ctx.fillEllipse (b.position.x , b.position.y, b.sz2, b.sz2);
-		}
-
-		ctx.strokeStyle = b.c;
-		ctx.fillStyle = b.c;
-		ctx.fillEllipse (b.position.x , b.position.y, b.sz, b.sz);
-
 		if (b.friend >= 0 ) {
 			f = balls.particles[b.friend];
 			cx = (b.position.x + f.position.x)/2;
@@ -206,27 +181,17 @@ function moveParticles(){
 			//b.mid.limit(8);
 			//b.mid.setMag(200);
 			b.mid.max(60);
-			//b.mid.min(60);
-			//console.log(b.mid)
-			ctx.line(b.mid.x, b.mid.y, midpoint(b, f).x, midpoint(b, f).y);
 			circleLineCollide(b);
+			ctx2.line(b.mid.x, b.mid.y, midpoint(b, f).x, midpoint(b, f).y);
+
 		}
 
+    ctx.strokeStyle = b.c;
+    ctx.fillStyle = b.c;
+    ctx.fillEllipse (b.position.x , b.position.y, b.sz, b.sz);
 
-		//reset colour
-		// if (b.counter + 140 < frameCount) {
-		// 	turnOff(b);
-		// }
 
 	}
-}
-
-
-function turnOff(b){
-	b.c = "black";
-	b.friend = -1;
-	b.sz2 = b.sz;
-	b.alpha = 0.5;
 }
 
 
@@ -269,7 +234,7 @@ function mouseLineCollide(){
 
     var angle = Math.atan2(centerX-startPoint.x, centerY-startPoint.y);
 
-    if (!angle || angle <0.1 ){ 
+    if (!angle || angle <0.1 ){
         ctx.line(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
 
     	} else {
@@ -306,7 +271,7 @@ function circleLineCollide(b) {
 					var bb = new Vector(b.position.x, b.position.y);
 					var ff = new Vector(f.position.x, f.position.y);
 					if (lineCircleCollide(bb, ff, circle, c.sz)) {
-						//turnOff(b);
+
 						c.c = "orange";
 						console.log("hit")
 						// c.speed.x *=-1;
