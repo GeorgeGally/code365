@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<script language="javascript" src="../js/utils.js"></script>
+<script language="javascript" src="../js/map_styles.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+<script src="../js/three.min.js"></script>
+<script src="../js/threejs/controls/OrbitControls.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+var canvas = ctx.canvas;
+canvas.width = w = 800;
+canvas.height = h = 800;
+var scene, camera, renderer, controls, material, geometry, plane, texture;
+var height_multiplier = 200;
+var wireframe = true;
+var engine = new particleEngine(20, 1);
+engine.setColour(rgb(0));
+engine.setSpeed(5, 5);
+
+function setup(){
+  scene = new THREE.Scene();
+  // camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  // camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 1, 5000 );
+  camera = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+	//camera.position.z = 500;
+  renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+  controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+setupCamera();
+addLights();
+addGround();
+
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+}
+
+
+function draw() {
+  ctx2.background(255);
+  var x = random(0, w);
+  var y = random(0, h);
+  var sz = random(1,20);
+  ctx.fillStyle = rgba(randomInt(255),randomInt(255),randomInt(255), 0.2);
+  ctx.fillRect(x,y, sz,sz);
+
+  for (var i = 0; i < engine.particles.length; i++) {
+	var p = engine.particles[i];
+	ctx2.fillStyle = p.c;
+
+	//p.pos.y = SinOsc(frameCount/1000, 50);
+	//p.pos.y = p.start.y + 50 * SinOsc(frameCount/1000, 50);
+	// p.pos.x += p.speed.x;
+	p.pos.x = p.start.x + Math.sin(frameCount/200)*120;
+	if(p.pos.x > w) p.pos.x = 0;
+	if(p.pos.x < 0) p.pos.x = w;
+	//if(bounce(p.pos.y, 0, h)) p.speed.y *=-1;
+	//if(p.pos.x > h - 9)
+	ctx2.fillRect(p.pos.x, 0, 20, h);
+	//ctx.fillRect(w/2, p.pos.y, w, 10);
+}
+
+
+  updateTerrain();
+  texture.needsUpdate = true;
+  renderer.render(scene, camera);
+}
+
+function addLights() {
+ // var ambientLight = new THREE.AmbientLight(0x444444);
+ // ambientLight.intensity = 0.0;
+ // scene.add(ambientLight);
+
+ var directionalLight = new THREE.DirectionalLight(0xffffff);
+
+ directionalLight.position.set(900, 400, 0000).normalize();
+ scene.add(directionalLight);
+
+ var light = new THREE.HemisphereLight( 0xffffff, 0x000000, 0.2);
+ scene.add( light );
+ var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+ scene.add(ambientLight);
+
+}
+
+function setupCamera() {
+  camera.position.z = 1000;
+  camera.position.y = 240;
+  camera.position.x = 0;
+  camera.lookAt(new THREE.Vector3(0,0,0));
+}
+
+
+function addGround() {
+  var numSegments = w/4;
+  texture = new THREE.Texture(ctx2.canvas);
+  texture.needsUpdate = true;
+  geometry = new THREE.PlaneGeometry(2400, 2400, numSegments, numSegments);
+  material = new THREE.MeshPhongMaterial({
+    color: 0xeeeeee,
+    wireframe: false,
+    map: texture
+  });
+  material.shading = THREE.SmoothShading;
+  material.map.minFilter = THREE.LinearFilter;
+
+  //scene.fog = new THREE.FogExp2( 0x000000, 0.005 );
+
+  updateTerrain();
+
+  plane = new THREE.Mesh(geometry, material);
+
+  plane.position = new THREE.Vector3(0,0,0);
+  // rotate the plane so up is where y is growing..
+
+  var q = new THREE.Quaternion();
+  q.setFromAxisAngle( new THREE.Vector3(-1,0,0), 90 * Math.PI / 180 );
+  plane.quaternion.multiplyQuaternions( q, plane.quaternion );
+
+  scene.add(plane);
+}
+
+
+function updateTerrain(){
+  terrain = getTerrainPixelData();
+
+  // keep in mind, that the plane has more vertices than segments. If there's one segment, there's two vertices, if
+  // there's 10 segments, there's 11 vertices, and so forth.
+  // The simplest is, if like here you have 100 segments, the image to have 101 pixels. You don't have to worry about
+  // "skewing the landscape" then..
+
+  // to check uncomment the next line, numbers should be equal
+  //console.log("length: " + terrain.length + ", vertices length: " + geometry.vertices.length);
+
+  for (var i = 0, l = geometry.vertices.length; i < l; i++)
+  {
+    var terrainValue = terrain[i] / 255;
+    geometry.vertices[i].z = tween(geometry.vertices[i].z, terrainValue * height_multiplier, 20);
+    //geometry.vertices[i].z = terrainValue * 100 ;
+  }
+
+  geometry.computeFaceNormals();
+  geometry.computeVertexNormals();
+  geometry.verticesNeedUpdate = true;
+}
+
+
+function getTerrainPixelData()
+{
+  //var img = document.getElementById("landscape-image");
+
+
+  // //canvas.width = img.width;
+  // canvas.height = img.height;
+  // canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+
+  var data = canvas.getContext('2d').getImageData(0,0, w, h).data;
+  var normPixels = [];
+
+  for (var i = 0, n = data.length; i < n; i += 4) {
+    // get the average value of R, G and B.
+    //normPixels.push(data[i]);
+    normPixels.push((data[i] + data[i+1] + data[i+2]) / 3);
+  }
+//chanceLog(normPixels)
+  return normPixels;
+}
+
+
+var settings = QuickSettings.create();
+// QuickSettings.useExtStyleSheet();
+settings.setGlobalChangeHandler(draw);
+//settings.addRange(title, min, max, value, step, callback);
+settings.addRange("height_multiplier", 10, 500, 150, 1, function(value) {
+  height_multiplier = value;
+  draw();
+});
+settings.addBoolean("wireframe", 0, function(value) {
+  material.wireframe = value;
+  draw();
+});
+
+
+</script>
+
+</body>
+
+</html>

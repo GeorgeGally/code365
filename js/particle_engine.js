@@ -27,7 +27,6 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 	this.setup = function() {
 
 		for (var i = 0; i < num_particles; i++) {
-
 		  var cc = rgb(0);
 			this.add(this.grid.x[i], this.grid.y[i], cc, i);
 
@@ -45,6 +44,8 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 			var me = _me || this.particles.length;
 
 			var angle = radians(distributeAngles(me, this.particles.length));
+			var speed =  new Vector(random(0.2,2), random(0.2,2));
+			var accel = new Vector(1,1);
 
 			if (this.grid.grid[me]) {
 				row = this.grid.grid[me].row
@@ -54,9 +55,11 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 				col = 1;
 			}
 
-			var speed =  new Vector(random(0.2,2), random(0.2,2));
-			var accel = new Vector(1,1);
-
+			var top = col - 1 >= 0 ? col + (row-1) * this.grid.num_items_horiz: -1;
+			var left = col - 1 >= 0 ? (col-1) + (row * this.grid.num_items_horiz): -1;
+			var bottom = row + 1 < this.grid.num_items_vert ? col + (row + 1) * this.grid.num_items_horiz: -1;
+			var right = col + 1 < this.grid.num_items_horiz ? col + 1 + (row * this.grid.num_items_horiz): -1;
+			var neighbours = { top: top, right: right, bottom: bottom, left: left};
 			var particle = {
 				me: _me,
 				pos: new Vector(x, y, 1),
@@ -71,11 +74,13 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 				w: this.grid.spacing.x,
 				h: this.grid.spacing.y,
 				ht: this.grid.spacing.y,
+				neighbours: neighbours,
 				speed: speed,
 				start_speed: speed,
 				accel: accel,
 				start_accel: new Vector(accel.x, accel.y),
 				vel: speed,
+				velocity: speed,
 				dir: new Vector(1, 1),
 				acceleration: new Vector(1,1),
 				c: _colour,
@@ -83,6 +88,7 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 				tween_speed: this.tween_speed,
 				tween: true,
 				r: 0,
+				target_r: 0,
 				sz: this.grid.spacing.x,
 				scale: 1,
 				orig_sz: 5,
@@ -132,8 +138,10 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 			p.h = max || h;
 			if(!max) {
 				p.sz = min;
+				p.target_sz = min;
 			} else {
 				p.sz = random(min, max);
+				p.target_sz = p.sz;
 			}
 
 		}
@@ -142,8 +150,8 @@ var particleEngine = function(_gw, _gh, _grid_w, _grid_h, _startx, _starty){
 	this.setPos = function(x, y) {
 		for (var i = 0; i < this.particles.length; i++) {
 			var p = this.particles[i];
-			p.pos.x = p.start.x = x || w/2;
-			p.pos.y = p.start.y = y || h/2;
+			p.pos.x = p.start.x = x || random(w);
+			p.pos.y = p.start.y = y || random(h);
 		}
 	}
 

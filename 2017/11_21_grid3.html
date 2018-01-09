@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(40, 30);
+console.log(engine);
+
+function draw(){
+  ctx.background(255, 0.02);
+  ctx.fillStyle = rgb(0);
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.pos.x = p.start.x + Math.cos(i + frameCount/60)* 10;
+    p.pos.y = p.start.y + Math.sin(p.col + frameCount/60)* 20;
+
+  }
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    //ctx.fillEllipse(p.pos.x, p.pos.y, 5, 5);
+    if( p.neighbours.right > 0) ctx.line(p.pos.x, p.pos.y, engine.particles[p.neighbours.right].pos.x, engine.particles[p.neighbours.right].pos.y);
+    if( p.neighbours.bottom > 0) ctx.line(p.pos.x, p.pos.y, engine.particles[p.neighbours.bottom].pos.x,  engine.particles[p.neighbours.bottom].pos.y);
+  }
+}
+
+</script>
+
+</body>
+</html>

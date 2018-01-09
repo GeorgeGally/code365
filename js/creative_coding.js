@@ -21,12 +21,13 @@ var TWO_PI = Math.PI * 2;
 var p = CanvasRenderingContext2D.prototype;
 
 p.clearScreen = function(_x, _y, _w, _h) {
-  var x = _x || 0;
-  var y = _y || 0;
-  var w = _w || w;
-  var h = _h || h;
+  var _x = _x || 0;
+  var _y = _y || 0;
+  var _w = _w || w;
+  var _h = _h || h;
   this.clearRect(_x, _y, _w, _h)
 }
+
 
 p.background = function(r, g, b, a) {
   var c = this.getCurrentFill();
@@ -56,6 +57,11 @@ function hsla(h, s, l, a) {
 };
 
 function brightness(r, g, b, min, max) {
+  if (min == undefined) {
+    min = 0;
+    max = 100;
+  }
+
   if (max == undefined) {
     max = min;
     min = 0;
@@ -485,8 +491,29 @@ p.eqStrokeTriangle = function(x, y, sz, down) {
 
 
 function chanceLog(val, _chance){
+
   var c = _chance || 200;
-  if(chance(c)) console.log(val);
+  if(chance(c)) {
+    var err = new Error();
+    var caller_line = err.stack.split("\n")[2];
+    var index = caller_line.indexOf("at ");
+    var clean = caller_line.slice(index+2, caller_line.length);
+    var url_index = clean.indexOf("(.html:");
+    //clean = clean.slice(url_index+6, clean.length);
+    //clean = clean.splice(clean.length-1, clean.length);
+    //console.log(typeof(val));
+    //console.log(val);
+
+    if(typeof(val) == "object") {
+      console.log('%c' + clean, 'color: blue');
+      console.log(val);
+    } else {
+      console.log('%c >> ' + val + '\n' + clean, 'background: #000; color: red');
+    }
+
+    //console.log(clean);
+
+  }
 }
 
 
@@ -513,6 +540,11 @@ function dist(x1, y1, x2, y2) {
   x2 -= x1;
   y2 -= y1;
   return Math.sqrt((x2 * x2) + (y2 * y2));
+}
+
+function distVector(x1, x2) {
+  var d = dist(x1.x, x2.x, x1.y, x2.y);
+  return d;
 }
 
 p.rotateDegrees = function(deg) {
@@ -1130,9 +1162,10 @@ function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _sta
 
       }
 
-      this.cols[y] = {
-        x: this.x[y],
-        y: yy
+      this.cols[x] = {
+        col: x,
+        x: xx,
+        y: yy,
       };
       this.rows[r] = {
         row: r,
@@ -1153,7 +1186,7 @@ function Grid(_num_items_horiz, _num_items_vert, _grid_w, _grid_h, _startx, _sta
 
   this.add(_horiz, _vert);
 
-  console.log(this);
+  //console.log(this);
   return this;
 
 }

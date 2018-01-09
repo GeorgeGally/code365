@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+  <script language="javascript" src="../js/utils.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var ctx2 = createCanvas("canvas2");
+    var ctx3 = createCanvas("canvas3");
+
+    // years for timeline 1995 - 2055
+    var years = [];
+    for (var i = 1996; i < 2056; i++) {
+      years.push(i);
+    }
+
+
+    var start_dt;
+    ctx2.font = "16px Arial";
+    ////////////// GET DATA ////////////////
+    var url = '/data/ams_births_predict.csv';
+    var url2 = '/data/ams_deaths_predict.csv';
+    var url3 = '/data/ams_population_predict.csv';
+
+    var births = [];
+    var deaths = [];
+    var population = [];
+
+    var births2015 = [];
+    var deaths2015 = [];
+    var population2015 = [];
+
+
+    var counter = 0, old_counter = -1;
+    var bar_ht = 20;
+
+    var posx = 0;
+    var posy = 300;
+    var old = new Vector(0, 0);
+    var ht = [];
+    var locs = [];
+
+    var min_lat = 10000;
+    var min_lng = 10000;
+    var max_lat = -10000;
+    var max_lng = -10000;
+
+    var engine = new particleEngine(0,0);
+
+    var xCount = 100;
+    var yCount = 240;
+    var gridSize_x = w;
+    var gridSize_y = h;
+
+    // nodes array
+    var myNodes = [];
+    for (var i = 0; i < xCount*yCount; i++) {
+      myNodes[i]  = new Node();
+    }
+    // setup attractor
+    var myAttractor = new Attractor(0, 0);
+
+
+
+    function setup() {
+      //reset();
+      frameRate = 240;
+      // load(url, births);
+      // load(url2, deaths);
+      load(url3, population);
+
+    }
+
+
+    function load(url, vals) {
+      //var vals = [];
+      d3.csv(url, function(error, d) {
+
+        if (error) console.log(error);
+        data = d;
+        for (var i = 0; i < data.length; i++) {
+          var d = data[i];
+          //console.log(d);
+          var b = Object.values(d);
+          //console.log(b[b.length-1]);
+          b[b.length-1] = b[b.length-1].substr(9, b[b.length-1].length-4);
+          b[b.length-1] = b[b.length-1].split(',');
+          for (var j = 0; j < b[b.length-1].length; j++) {
+            b[b.length-1][j] = b[b.length-1][j].split(' ');
+          }
+          vals.push(b);
+
+        }
+        minMax(vals);
+        addParticles(vals);
+        console.log(vals);
+        initGrid();
+      });
+    }
+
+    function minMax(locs){
+
+      for (var i = 0; i < locs.length; i++) {
+        var loc = locs[i][locs[i].length-1];
+        for (var j = 0; j < loc.length; j++) {
+          var l = loc[j];
+          l[0] = parseFloat(l[0]);
+          l[1] = parseFloat(l[1]);
+          //engine.add(l[0], l[1]);
+          //console.log(l);
+          if(l[0] > max_lat) max_lat = l[0];
+          if(l[0] < min_lat) min_lat = l[0];
+          if(l[1] > max_lng) max_lng = l[1];
+          if(l[1] < min_lng) min_lng = l[1];
+        }
+      }
+      //console.log(min_lat);
+      console.log(min_lng);
+      //console.log(max_lat);
+      console.log(max_lng);
+
+    }
+
+
+
+    ctx2.fillStyle = rgba(0);
+    frameRate = 120;
+
+    var x = 0,
+      xx = 0;
+
+    function draw() {
+
+      ctx.background(255);
+
+      if (population[0]) {
+        timeline();
+        //console.log(births);
+        for (var i = 0; i < population.length; i++) {
+          var p = engine.particles[i];
+          // var p2 = engine2.particles[i];
+          // var p3 = engine3.particles[i];
+          ctx2.fillStyle = "red";
+          ctx2.LfillEllipse(p.pos.x, p.pos.y, 5, 5);
+          //move(i, p);
+          newPopulationSize(i, p);
+          //if(old_counter != counter) attractNodes(p3);
+          if (chance(50)) attractNodes(p);
+        }
+
+      }
+      old_counter = counter;
+      drawNodes();
+    }
+
+    function drawNodes(){
+      // for (var i = 0; i < myNodes.length; i++) {
+      //   myNodes[i].update();
+      //   ctx.fillStyle = rgb(0);
+      //   ctx.fillRect(myNodes[i].x, myNodes[i].y, 2, 2);
+      // }
+      var i = 0;
+      for (var y = 0; y < yCount; y++) {
+        for (var x = 0; x < xCount; x++) {
+      // for (var i = 0; i < engine.particles.length; i++) {
+      //   var p = engine.particles[i]
+          var xPos = x*(gridSize_x/(xCount-1))+(width-gridSize_x)/2;
+          var yPos = y*(gridSize_y/(yCount-1))+(height-gridSize_y)/2;
+          //myNodes[i] = new Node(xPos, yPos);
+          myNodes[i].update();
+          //myNodes[i].setBoundary(0, 0, width, height);
+          //myNodes[i].setDamping(0.05);  //// 0.0 - 1.0
+          //ctx.fillStyle = rgb(0);
+          //ctx.fillRect(myNodes[i].x, myNodes[i].y, 2, 2);
+          if(x > 0) {
+            ctx.line(myNodes[i].x, myNodes[i].y, myNodes[i-1].x, myNodes[i-1].y)
+          } else {
+            ctx.line(myNodes[i].x, myNodes[i].y, 0, myNodes[i].y)
+          }
+
+          if(y > 0) {
+            ctx.line(myNodes[i].x, myNodes[i].y, myNodes[i-xCount].x, myNodes[i-xCount].y)
+          } else {
+            ctx.line(myNodes[i].x, myNodes[i].y, myNodes[i].x, 0)
+          }
+          i++;
+        }
+        ctx.line(myNodes[i-1].x, myNodes[i-1].y, myNodes[i-1].x, h)
+      }
+    }
+
+    function attractNodes(p){
+      myAttractor.x = p.pos.x;
+      myAttractor.y = p.pos.y;
+      for (var i = 0; i < myNodes.length; i++) {
+      myAttractor.radius = p.sz;
+      myAttractor.attract(myNodes[i]);
+      //myNodes[i].update();
+      }
+    }
+
+
+
+    function addParticles(locs){
+
+      for (var i = 0; i < locs.length; i++) {
+        var loc = locs[i][locs[i].length-1];
+        var min = new Vector(10000,10000);
+        var max = new Vector(-10000,-10000);
+        //loc.midpoint = new Vector();
+        for (var j = 1; j < loc.length; j++) {
+
+          var l = loc[j];
+          var x1 = map(l[0], min_lat, max_lat, 0, w);
+          var y1 = map(l[1], min_lng, max_lng, 0, h);
+
+          if(x1 < min.x) min.x = x1;
+          if(y1 < min.y) min.y = y1;
+          if(x1 > max.x) max.x = x1;
+          if(y1 > max.y) max.y = y1;
+        }
+
+        var midpoint = getMidPoint(min, max);
+        //console.log(midpoint);
+        engine.add(midpoint.x, midpoint.y);
+      }
+    }
+
+
+    function getMidPoint(min, max){
+      return new Vector((min.x + max.x)/2, (min.y + max.y)/2);
+    }
+
+    function initGrid() {
+      var i = 0;
+      for (var y = 0; y < yCount; y++) {
+        for (var x = 0; x < xCount; x++) {
+      // for (var i = 0; i < engine.particles.length; i++) {
+      //   var p = engine.particles[i]
+          var xPos = x*(gridSize_x/(xCount-1))+(width-gridSize_x)/2;
+          var yPos = y*(gridSize_y/(yCount-1))+(height-gridSize_y)/2;
+          myNodes[i] = new Node(xPos, yPos);
+          myNodes[i].setBoundary(0, 0, width, height);
+          myNodes[i].setDamping(0.05);  //// 0.0 - 1.0
+          i++;
+        }
+      }
+      console.log(myNodes)
+    }
+
+    function newPopulationSize(i, p){
+      if(counter > 0) {
+        var pop = parseInt(population[i][counter]) - parseInt(population[i][counter-1]);
+      } else {
+        //var pop = parseInt(population[i][counter]);
+      }
+
+      if (!pop) pop = 0;
+      //console.log(pop);
+      var amt = map(pop, -700, 2800, 0, 400);
+      //chanceLog(amt);
+      p.target_sz = amt;
+      p.sz = tween(p.sz, p.target_sz, Math.round(p.speed.x));
+
+      // myAttractor.x = p3.pos.x;
+      // myAttractor.y = p3.pos.y;
+      //p.sz = tween(p.sz, p.target_sz, Math.round(p.speed.x));
+      //p2.sz = tween(p2.sz, p2.target_sz, Math.round(p2.speed.x));
+    }
+
+    function reset() {
+      // engine.setSize(1);
+      // engine2.setSize(1);
+      // engine3.setSize(1);
+      // engine.setSpeed(15, 150, 15, 150);
+      // engine2.setSpeed(15, 150, 15, 150);
+      // engine3.setSpeed(15, 150, 15, 150);
+      // for (var i = 0; i < engine.length; i++) {
+      //   p = engine.particles[i];
+      //   p.pos.x += random(-50, 50);
+      //   p.pos.y += random(-50, 50);
+      // }
+      initGrid();
+    }
+
+    function timeline() {
+      if (frameCount % 10 == 0) {
+        old_counter = counter;
+        counter++;
+      }
+
+      if (counter > years.length) {
+        counter = 0;
+        x = 0;
+        reset();
+      }
+
+
+      ctx2.clearRect(0, 0, w, h);
+      ctx2.fillStyle = rgba(255, 0.4);
+      ctx2.fillRect(0, h-60, w, h);
+      var xx = map(counter, 0, population[0].length - 2, 0, w);
+      x = tween(x, xx, 20);
+      ctx2.line(x, h - 40, x, h);
+      ctx2.fillStyle = rgb(0);
+      ctx2.fillText(years[counter], x + 10, h - 20);
+
+    }
+
+
+//////////////////////////// NODES
+
+function Attractor(theX, theY) {
+
+  this.x = theX, this.y = theY;
+
+  // radius of impact
+  this.radius = 0;
+
+  this.attract = function(theNode) {
+
+    // calculate distance
+    var dx = this.x - theNode.x;
+    var dy = this.y - theNode.y;
+    var d = mag(dx, dy);
+
+    if (d > 0 && d < this.radius) {
+      // calculate force
+      var s = d/this.radius;
+      var f = 1 / Math.pow(s, 0.5) - 1;
+      f = f / this.radius;
+
+      // apply force to node velocity
+      theNode.velocity.x += dx * f;
+      theNode.velocity.y += dy * f;
+    }
+  }
+
+}
+
+//////////////////// NODE //////////////////
+
+
+function Node(theX, theY, theZ) {
+  if(typeof theX == Vector) {
+    this.x = theVector.x;
+    this.y = theVector.y;
+    this.z = theVector.z;
+  } else {
+    this.x = theX;
+    this.y = theY;
+    this.z = theZ;
+  }
+
+
+	// ------ public properties ------
+	// if needed, an ID for the node
+	this.id = "";
+
+	/**
+	 * Diameter of the node (useful if a click on the node has to be checked)
+	 */
+	this.diameter = 0;
+
+	/**
+	 * Minimum x position
+	 */
+   var MAX_VALUE = 1000000;
+	this.minX = -MAX_VALUE;
+	this.maxX = MAX_VALUE;
+	this.minY = -MAX_VALUE;
+	this.maxY = MAX_VALUE;
+	this.minZ = -MAX_VALUE;
+	this.maxZ = MAX_VALUE;
+
+  this.velocity = new Vector();
+	this.pVelocity = new Vector();
+
+  this.maxVelocity = 10;
+	this.damping = 0.2;
+
+	// inertia of node: 0=no inertia (not used for now)
+  // this.inertia = 0.5;
+
+	// radius of impact
+	this.radius = 100;
+	// strength: positive for attraction, negative for repulsion (default for
+	// Nodes)
+	this.strength = -1;
+	// parameter that influences the form of the function
+	this.ramp = 1.0;
+
+	// ------ rotate position around origin ------
+	this.rotateX = function(theAngle) {
+		var newy = this.y * Math.cos(theAngle) - this.z * Math.sin(theAngle);
+		var newz = this.y * Math.sin(theAngle) + this.z * Math.cos(theAngle);
+		this.y = newy;
+		this.z = newz;
+	}
+
+	this.rotateY = function(theAngle) {
+		var newx = this.x * Math.cos(-theAngle) - this.z * Math.sin(-theAngle);
+		var newz = this.x * Math.sin(-theAngle) + this.z * Math.cos(-theAngle);
+		this.x = newx;
+		this.z = newz;
+	}
+
+	this.rotateZ = function(theAngle) {
+		var newx = this.x * Math.cos(theAngle) - this.y * Math.sin(theAngle);
+		var newy = this.x * Math.sin(theAngle) + this.y * Math.cos(theAngle);
+		this.x = newx;
+		this.y = newy;
+	}
+
+	// ------ calculate attraction ------
+	this.attract = function(theNodes) {
+     if(typeof(theNodes) == array) {
+		// attraction or repulsion part
+		for (var i = 0; i < theNodes.length; i++) {
+			var otherNode = theNodes[i];
+			// stop when empty
+			if (otherNode == null)
+				break;
+			// not with itself
+			if (otherNode == this)
+				continue;
+
+			this.attract(otherNode);
+		}
+  } else {
+    var d = Vector.dist(this, theNode);
+
+    if (d > 0 && d < radius) {
+      var s = PApplet.pow(d / radius, 1 / ramp);
+      var f = s * 9 * strength * (1 / (s + 1) + ((s - 3) / 4)) / d;
+      var df = Vector.sub(this, theNode);
+      df.mult(f);
+
+      theNode.velocity.x += df.x;
+      theNode.velocity.y += df.y;
+      theNode.velocity.z += df.z;
+    }
+  }
+	}
+
+
+	// ------ update positions ------
+
+
+	this.update = function (theLockX,  theLockY, theLockZ) {
+
+		this.velocity.limit(this.maxVelocity);
+
+		// prevent oscillating by reducing velocity if angle to previous
+		// velocity is very large
+		/*float da = PVector.angleBetween(velocity, pVelocity);
+		if (!Float.isNaN(da)) {
+			da = PApplet.abs(1 - (da / PApplet.PI));
+			//da = PApplet.pow(da, 4);
+			if (da < 0.5) da = 0;
+			PApplet.println(id + ", " + da);
+			velocity.mult(da);
+		}*/
+		pVelocity = this.velocity;
+
+		if (!theLockX) this.x += this.velocity.x;
+		if (!theLockY) this.y += this.velocity.y;
+		if (!theLockZ) this.z += this.velocity.z;
+
+		if (this.x < this.minX) {
+			this.x = this.minX - (this.x - this.minX);
+			this.velocity.x = -this.velocity.x;
+		}
+		if (this.x > this.maxX) {
+			this.x = this.maxX - (this.x - this.maxX);
+			this.velocity.x = -this.velocity.x;
+		}
+
+		if (this.y < this.minY) {
+			this.y = this.minY - (this.y - this.minY);
+			this.velocity.y = -this.velocity.y;
+		}
+		if (this.y > this.maxY) {
+			this.y = this.maxY - (this.y - this.maxY);
+			this.velocity.y = -this.velocity.y;
+		}
+
+		if (this.z < this.minZ) {
+			this.z = this.minZ - (this.z - this.minZ);
+			velocity.z = -velocity.z;
+		}
+		if (this.z > this.maxZ) {
+			this.z = this.maxZ - (this.z - this.maxZ);
+			this.velocity.z = -this.velocity.z;
+		}
+
+		// x = PApplet.constrain(x, minX, maxX);
+		// y = PApplet.constrain(y, minY, maxY);
+		// z = PApplet.constrain(z, minZ, maxZ);
+
+		this.velocity.mult(1 - this.damping);
+	}
+
+	// ------ getters and setters ------
+	this.getID = function() {
+		return this.id;
+	}
+
+	this.setID = function(theID) {
+		this.id = theID;
+	}
+
+	this.getDiameter = function() {
+		return this.diameter;
+	}
+
+	this.setDiameter = function(theDiameter) {
+		this.diameter = theDiameter;
+	}
+
+	// this.setBoundary = function(theMinX, theMinY, theMinZ,
+	// 		theMaxX, theMaxY, theMaxZ) {
+	// 	this.minX = theMinX;
+	// 	this.maxX = theMaxX;
+	// 	this.minY = theMinY;
+	// 	this.maxY = theMaxY;
+	// 	this.minZ = theMinZ;
+	// 	this.maxZ = theMaxZ;
+	// }
+
+	this.setBoundary = function(theMinX, theMinY, theMaxX, theMaxY) {
+		this.minX = theMinX;
+		this.maxX = theMaxX;
+		this.minY = theMinY;
+		this.maxY = theMaxY;
+	}
+
+	this.getMinX = function() {
+		return this.minX;
+	}
+
+	this.setMinX = function(theMinX) {
+		this.minX = theMinX;
+	}
+
+	this.getMaxX = function() {
+		return this.maxX;
+	}
+
+	this.setMaxX = function(theMaxX) {
+		this.maxX = theMaxX;
+	}
+
+	this.getMinY = function() {
+		return this.minY;
+	}
+
+	this.setMinY = function(theMinY) {
+		this.minY = theMinY;
+	}
+
+	this.getMaxY = function() {
+		return this.maxY;
+	}
+
+	this.setMaxY = function(theMaxY) {
+		this.maxY = theMaxY;
+	}
+
+	this.getMinZ = function() {
+		return minZ;
+	}
+
+	this.setMinZ = function(theMinZ) {
+		this.minZ = theMinZ;
+	}
+
+	this.getMaxZ = function() {
+		return this.maxZ;
+	}
+
+	this.setMaxZ = function(theMaxZ) {
+		this.maxZ = theMaxZ;
+	}
+
+	this.getVelocity = function() {
+		return this.velocity;
+	}
+
+	this.setVelocity = function(theVelocity) {
+		this.velocity = theVelocity;
+	}
+
+	this.getMaxVelocity = function() {
+		return this.maxVelocity;
+	}
+
+	this.setMaxVelocity = function(theMaxVelocity) {
+		this.maxVelocity = theMaxVelocity;
+	}
+
+	this.getDamping = function() {
+		return this.damping;
+	}
+
+	this.setDamping = function(theDamping) {
+		this.damping = theDamping;
+	}
+
+	this.getRadius = function() {
+		return this.radius;
+	}
+
+	this.setRadius = function(theRadius) {
+		this.radius = theRadius;
+	}
+
+	this.getStrength = function() {
+		return this.strength;
+	}
+
+	this.setStrength = function(theStrength) {
+		this.strength = theStrength;
+	}
+
+	this.getRamp = function() {
+		return this.ramp;
+	}
+
+	this.setRamp = function(theRamp) {
+		this.ramp = theRamp;
+	}
+
+}
+
+
+////////////////////////////////////////////
+
+
+
+
+  </script>
+
+</body>
+
+</html>

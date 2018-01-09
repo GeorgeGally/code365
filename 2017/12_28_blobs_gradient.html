@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+<meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body style="background: #000;">
+
+<script>
+
+    var ctx = createCanvas("canvas1");
+
+    (function() {
+      var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+                                  window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+      window.requestAnimationFrame = requestAnimationFrame;
+    })();
+
+
+    var canvas = document.getElementById("canvas"),
+        ctx = canvas.getContext("2d"),
+        tempCanvas = document.createElement("canvas"),
+        tempCtx = tempCanvas.getContext("2d"),
+        width = 800,
+        height = 600,
+        threshold = 310,
+        colors = {r:255,g:255,b:255}, cycle = 0,
+        numPoints = 55,
+        points = [];
+
+    canvas.width = tempCanvas.width = width;
+    canvas.height= tempCanvas.height= height;
+
+    for(var i = 0; i < numPoints; i++){
+        var x = Math.random()*width,
+            y = Math.random()*height,
+            vx = (Math.random()*8)-4,
+            vy = (Math.random()*8)-4,
+            size = Math.floor(Math.random()*60)+60;
+
+        points.push({x:x,y:y,vx:vx,vy:vy, size:size});
+
+    };
+
+    function update(){
+        var len = points.length;
+        tempCtx.clearRect(0,0,width,height);
+        while(len--){
+            var point = points[len];
+            point.x+=point.vx;
+            point.y+=point.vy;
+
+            if(point.x > width+point.size){
+                point.x = 0-point.size;
+            }
+            if(point.x < 0-point.size){
+                point.x = width+point.size;
+            }
+            if(point.y > height+point.size){
+                point.y = 0-point.size;
+            }
+            if(point.y < 0-point.size){
+                point.y = height+point.size;
+           }
+
+            tempCtx.beginPath();
+            var grad = tempCtx.createRadialGradient(point.x, point.y, 1, point.x, point.y, point.size);
+            grad.addColorStop(0, 'rgba(' + colors.r +',' + colors.g + ',' + colors.b + ',1)');
+            grad.addColorStop(1, 'rgba(' + colors.r +',' + colors.g + ',' + colors.b + ',0)');
+            tempCtx.fillStyle = grad;
+            tempCtx.arc(point.x, point.y, point.size, 0, Math.PI*2);
+            tempCtx.fill();
+        }
+        metabalize();
+        //colorCycle();
+        requestAnimationFrame(update);
+    }
+
+    function colorCycle(){
+        cycle+=0.1;
+        if(cycle>100){
+            cycle = 0;
+        }
+        colors.r = ~~(Math.sin(.3*cycle + 0) * 127+ 128);
+        colors.g =  ~~(Math.sin(.3*cycle + 2) * 127+ 128);
+        colors.b = ~~( Math.sin(.3*cycle + 4) * 127+ 128);
+    }
+
+    function metabalize(){
+        var imageData = tempCtx.getImageData(0,0,width,height),
+            pix = imageData.data;
+
+        for (var i = 0, n = pix.length; i <n; i += 4) {
+            if(pix[i+3]<threshold){
+               pix[i+3]/=6;
+                if(pix[i+3]>threshold/4){
+                    pix[i+3]=0;
+                }
+            }
+        }
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    update();
+
+
+</script>
+
+</body>
+
+</html>

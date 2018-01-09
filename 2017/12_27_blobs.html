@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body style="background: #000;">
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var imagedata = ctx.getImageData(0, 0, w, h);
+var engine = new particleEngine(40, 1);
+var threshhold = 5;
+
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+  p.size = randomInt(10, 80);
+  p.bounce = true;
+  p.speed = new Vector(0,0);
+  p.pos = new Vector(random(w),random(h));
+}
+
+
+function draw() {
+  if(frameCount%10 == 0){
+    ctx.background(0);
+    for( var y = 0 ; y < h; y+=2 ) {
+      for( var x = 0 ; x < w; x+=2 ) {
+        setPixel(x, y);
+      }
+    }
+
+};
+
+}
+
+
+
+function setPixel(x, y) {
+
+  var c = 0;
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    p = engine.particles[i];
+
+    for (var j = i+1; j < engine.particles.length-1; j++) {
+      p2 = engine.particles[j];
+      d = dist(x,y, p2.pos.x, p2.pos.y);
+      c +=  (p.size / d);
+    }
+
+  }
+
+  c = sticky(c, threshhold);
+  ctx.fillStyle = rgb(c);
+  ctx.fillRect(x, y, 2, 2);
+}
+
+
+
+var settings = QuickSettings.create(w-200, 30, "Settings");
+// // settings.addRange(title, min, max, value, step, callback);
+
+settings.addRange("threshhold", 1, 50, threshhold, 5, function(value){
+  threshhold = value;
+
+});
+
+
+
+</script>
+
+</body>
+
+</html>

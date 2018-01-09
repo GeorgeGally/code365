@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body style="background: #000;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var hidden_ctx = createCanvas("hidden_canvas1");
+
+var MetaBalls = function(screen_ctx, engine){
+
+  var hidden_ctx = createCanvas("hidden_canvas1");
+  var imagedata = hidden_ctx.getImageData(0, 0, w, h);
+
+  this.resolution = 1;
+  this.engine = engine;
+
+  this.draw = function() {
+
+    for (var i = 0; i < this.engine.particles.length; i++) {
+      p = this.engine.particles[i];
+
+      for( var y = 0 ; y < h; y+= this.resolution ) {
+        for( var x = 0 ; x < w; x+= this.resolution ) {
+          this.setPixel(p, x, y);
+        }
+      }
+
+    }
+
+    hidden_ctx.putImageData( imagedata, 0, 0 );
+    ctx.drawImage(hidden_ctx.canvas, 0,0, w, h);
+  }
+
+
+   this.setPixel = function(p, x, y) {
+
+    var c = 0;
+
+    for (var j = 0; j < engine.particles.length; j++) {
+      p2 = engine.particles[j];
+      d = dist(x, y, p2.pos.x, p2.pos.y);
+      c +=  p.size / d;
+    }
+    var i = (y * w + x) * 4;
+
+    imagedata.data[i++] = c;
+    imagedata.data[i++] = c;
+    imagedata.data[i++] = c;
+    imagedata.data[i] = 255;
+  }
+
+}
+
+
+var engine = new particleEngine(2, 2);
+
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+  p.size = 5000;
+  p.pos = new Vector(random(w),random(h));
+}
+
+
+var Meta = new MetaBalls(ctx, engine)
+Meta.resolution = 2;
+
+
+function draw() {
+  Meta.draw();
+
+}
+
+
+
+
+
+
+</script>
+
+</body>
+
+</html>

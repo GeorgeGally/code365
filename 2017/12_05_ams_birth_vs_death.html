@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<script language="javascript" src="../js/utils.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+
+/// POPULATION data
+
+// 11016 births/yr = 30/day
+// 5425 deaths/year = 15/day
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+
+var years = [1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015]
+
+var start_dt;
+ctx2.font = "16px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/ams_births.csv';
+var url2 = '/data/ams_deaths.csv';
+
+
+var births = [];
+var deaths = [];
+
+var counter = 0;
+var bar_ht = 20;
+
+var posx = 0;
+var posy = 300;
+var old = new Vector(0,0);
+var ht = [];
+
+var engine = new particleEngine(10, 10, w, h-100);
+engine.setSize(2);
+var engine2 = new particleEngine(10, 10, w,h-100);
+engine2.setSize(2);
+
+function setup(){
+
+  load(url, births);
+  load(url2, deaths);
+  //console.log(births);
+}
+
+
+function load(url, vals){
+  //var vals = [];
+  d3.csv(url, function(error, d) {
+
+    if (error) console.log(error);
+    data = d;
+    for (var i = 0; i < data.length; i++) {
+      var d = data[i];
+      //console.log(d);
+      vals.push(Object.values(d))
+    }
+    //console.log(data);
+    console.log(vals);
+    //return vals;
+  });
+}
+
+
+ctx2.strokeStyle = rgba(255);
+ctx2.fillStyle = rgba(255);
+ctx3.strokeStyle = rgba(255, 0, 0);
+ctx2.lineWidth = 0.6;
+ctx3.lineWidth = 0.9;
+ctx.background(100);
+
+frameRate = 120;
+ctx2.lineWidth = 4;
+var x = 0, xx = 0;
+
+function draw() {
+
+  ctx.background(0);
+  ctx2.clearRect(0,0,w,h);
+  ctx.fillStyle = rgb(255);
+
+  var xx = map(counter, 0, 19, 0, w);
+  x = tween(x, xx, 50);
+  ctx2.line(x, h-40, x, h);
+  ctx2.fillText(years[counter], x + 10, h - 20);
+
+  if (births && deaths) {
+    //console.log(births);
+    for (var i = 0; i < births.length; i++) {
+
+      //births
+      var b = births[i][counter];
+      var p = engine.particles[i];
+      if(!b) b = 0;
+      var b_amt = map(b, 0, 543, 0, 120);
+      p.sz = tween(p.sz, b_amt, 20);
+      ctx.fillStyle = rgb(255);
+      ctx.HfillEllipse(p.pos.x, p.pos.y, p.sz);
+
+      // ams_deaths
+      var d = deaths[i][counter];
+      var p = engine2.particles[i];
+      if(!d) d = 0;
+      var d_amt = map(d, 0, 543, 0, 120);
+      p.sz = tween(p.sz, d_amt, 20);
+      ctx.fillStyle = rgb(255, 0, 0, 0.8);
+      ctx.HfillEllipse(p.pos.x, p.pos.y, p.sz);
+
+    }
+
+      if(frameCount%50 == 0) {
+        counter++;
+      }
+
+      if(births[0] && counter > births[0].length-2) {
+        counter = 0;
+      }
+  }
+
+
+}
+
+
+
+
+
+</script>
+
+</body>
+
+</html>

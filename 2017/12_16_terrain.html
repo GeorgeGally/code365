@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/url.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/three.min.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+  <script language="javascript" src="../js/utils.js"></script>
+  <script src="../js/utils/chroma.min.js"></script>
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background: #f3f3f3">
+
+  <script>
+  var ctx = createCanvas("canvas1");
+
+  var url3 = '/data/ams_population_predict.csv';
+  var population = [];
+  var min_lat = 10000;
+  var min_lng = 10000;
+  var max_lat = -10000;
+  var max_lng = -10000;
+  var engine = new particleEngine(0,0);
+
+      var MAX_HEIGHT = 6;
+      var renderer;
+      var scene;
+      var camera;
+      var control;
+      var stats;
+      var scale = chroma.scale(['blue','green','red']).domain([0,MAX_HEIGHT]);
+
+      //------------------------------------------------------
+      // Set up the main scene
+      //------------------------------------------------------
+
+      /**
+       * Initializes the scene, camera and objects. Called when the window is
+       * loaded by using window.onload (see below)
+       */
+
+       function setup() {
+         //reset();
+         frameRate = 60;
+         // load(url, births);
+         // load(url2, deaths);
+         load(url3, population);
+
+       }
+
+
+      function init() {
+
+          // create a scene, that will hold all our elements such as objects, cameras and lights.
+          scene = new THREE.Scene();
+
+          // create a camera, which defines where we're looking at.
+          camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+          // create a render, sets the background color and the size
+          renderer = new THREE.WebGLRenderer();
+          renderer.setClearColor(0x000000, 1.0);
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          renderer.shadowMapEnabled = true;
+
+          // position and point the camera to the center of the scene
+          camera.position.x = 40;
+          camera.position.y = 40;
+          camera.position.z = 50;
+          camera.lookAt(scene.position);
+
+          // add spotlight for the shadows
+          var spotLight = new THREE.SpotLight(0xffffff);
+          spotLight.position.set(10, 100, 10);
+
+          scene.add(spotLight);
+
+          scene.add(new THREE.AmbientLight(0x252525));
+
+          // setup the control object for the control gui
+          control = new function() {
+              this.toFaceMaterial = function(){
+                  var mesh = scene.getObjectByName('terrain');
+                  var mat = new THREE.MeshLambertMaterial();
+                  mat.vertexColors = THREE.FaceColors;
+                  mat.shading = THREE.NoShading;
+                  mesh.material = mat;
+
+              };
+              this.toNormalMaterial = function(){
+                  var mesh = scene.getObjectByName('terrain');
+                  var mat = new THREE.MeshNormalMaterial();
+                  mesh.material = mat;
+              };
+
+              this.smoothShading = false;
+              this.onSmoothShadingChange = function() {
+                  var material = scene.getObjectByName('terrain').material;
+                  var geom = scene.getObjectByName('terrain').geometry;
+
+                  // if (this.object.smoothShading) {
+                  //     material.shading = THREE.SmoothShading;
+                  // } else {
+                  //     material.shading = THREE.NoShading;
+                  // }
+
+                  material.needsUpdate = true;
+                  geom.normalsNeedUpdate = true;
+              }
+          };
+
+          // add the control gui and the stats UI
+          //addControlGui(control);
+          //addStatsObject();
+
+          // add the output of the renderer to the html element
+          document.body.appendChild(renderer.domElement);
+
+          // set up the example specific stuff
+          //create3DTerrain(180, 180, 4, 4, MAX_HEIGHT);
+
+          // call the render function, after the first render, interval is determined
+          // by requestAnimationFrame
+          render();
+      }
+
+      //------------------------------------------------------
+      // Functions specific to this example
+      //------------------------------------------------------
+
+      function addParticles(locs){
+
+        engine = new particleEngine(locs.length, 1);
+        var geometry = new THREE.Geometry();
+
+        for (var i = 0; i < locs.length; i++) {
+
+          var loc = locs[i][locs[i].length-1];
+          var min = new Vector(10000,10000);
+          var max = new Vector(-10000,-10000);
+          //loc.midpoint = new Vector();
+          for (var j = 1; j < loc.length; j++) {
+
+            var l = loc[j];
+            var x1 = map(l[0], min_lat, max_lat, 0, w);
+            var y1 = map(l[1], min_lng, max_lng, 0, h);
+
+            if(x1 < min.x) min.x = x1;
+            if(y1 < min.y) min.y = y1;
+            if(x1 > max.x) max.x = x1;
+            if(y1 > max.y) max.y = y1;
+          }
+
+          var midpoint = getMidPoint(min, max);
+          //console.log(midpoint);
+          engine.add(midpoint.x, midpoint.y);
+          create3DTerrain(geometry, midpoint);
+          addFaces(geometry, engine.last);
+        }
+
+
+
+        // compute the normals
+        geometry.computeVertexNormals(true);
+        geometry.computeFaceNormals();
+
+        // setup the material
+        var mat = new THREE.MeshPhongMaterial();
+        mat.vertexColors = THREE.FaceColors;
+        mat.shading = THREE.NoShading;
+
+        // create the mesh
+        var groundMesh = new THREE.Mesh(geometry,mat);
+        groundMesh.translateX(-width/1.5);
+        groundMesh.translateZ(-depth/4);
+        groundMesh.name = 'terrain';
+
+        scene.add(groundMesh);
+
+      }
+
+      //create3DTerrain(180, 180, 4, 4, MAX_HEIGHT);
+      //function create3DTerrain(width, depth, spacingX, spacingZ, height) {
+      function create3DTerrain(geometry, midpoint) {
+          // first create all the individual vertices
+
+          //for (var z = 0 ; z < depth ; z++) {
+            //  for (var x = 0 ; x < width ; x++) {
+                  var vertex = new THREE.Vector3(midpoint.x, Math.random()*height,midpoint.y);
+                  geometry.vertices.push(vertex);
+            //  }
+          //}
+
+
+
+
+      }
+
+      function getMidPoint(min, max){
+        return new Vector((min.x + max.x)/2, (min.y + max.y)/2);
+      }
+
+
+      function addFaces(geometry, p){
+        // for (var z = 0 ; z < depth-1 ; z++) {
+        //     for (var x = 0 ; x < width-1 ; x++) {
+        //for (var i = 0; i < engine.particles.length; i++) {
+          //var p = engine.particles[i]
+          var x = p.pos.x;
+          var z = p.pos.y;
+                // we need to point to the position in the array
+                // a - - b
+                // |  x  |
+                // c - - d
+                var a = x + z*width;
+                var b = (x+1) + (z * width);
+                var c = x + ((z+1) * width);
+                var d = (x+1) + ((z+1) * width);
+                console.log(c);
+
+                var face1 = new THREE.Face3(b, a, c );
+                var face2 = new THREE.Face3(c ,d, b );
+                //console.log(face1);
+                face1.color = new THREE.Color(scale(getHighPoint(geometry, face1)).hex());
+                face2.color = new THREE.Color(scale(getHighPoint(geometry, face2)).hex())
+                geometry.faces.push(face1);
+                geometry.faces.push(face2);
+
+      //  }
+      }
+
+
+      function getHighPoint(geometry, face) {
+        console.log(geometry.vertices[face.a]);
+        var v1 = geometry.vertices[face.a].y;
+        var v2 = geometry.vertices[face.b].y;
+        var v3 = geometry.vertices[face.c].y;
+        return Math.max(v1, v2, v3);
+      }
+
+      //------------------------------------------------------
+      // Main render loop
+      //------------------------------------------------------
+
+
+      /**
+       * Called when the scene needs to be rendered. Delegates to requestAnimationFrame
+       * for future renders
+       */
+      function render() {
+          // update the camera
+  //        var rotSpeed = control.rotationSpeed;
+  //        camera.position.x = camera.position.x * Math.cos(rotSpeed) + camera.position.z * Math.sin(rotSpeed);
+  //        camera.position.z = camera.position.z * Math.cos(rotSpeed) - camera.position.x * Math.sin(rotSpeed);
+  //        camera.lookAt(scene.position);
+
+          // update stats
+        //  stats.update();
+
+          // and render the scene
+          renderer.render(scene, camera);
+
+          // render using requestAnimationFrame
+          requestAnimationFrame(render);
+      }
+
+
+      function load(url, vals) {
+        //var vals = [];
+        d3.csv(url, function(error, d) {
+
+          if (error) console.log(error);
+          data = d;
+          for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            //console.log(d);
+            var b = Object.values(d);
+            //console.log(b[b.length-1]);
+            b[b.length-1] = b[b.length-1].substr(9, b[b.length-1].length-4);
+            b[b.length-1] = b[b.length-1].split(',');
+            for (var j = 0; j < b[b.length-1].length; j++) {
+              b[b.length-1][j] = b[b.length-1][j].split(' ');
+            }
+            vals.push(b);
+
+          }
+          minMax(vals);
+          init();
+          addParticles(vals);
+          console.log(vals);
+          //initGrid();
+        });
+      }
+
+      function minMax(locs){
+
+        for (var i = 0; i < locs.length; i++) {
+          var loc = locs[i][locs[i].length-1];
+          for (var j = 0; j < loc.length; j++) {
+            var l = loc[j];
+            l[0] = parseFloat(l[0]);
+            l[1] = parseFloat(l[1]);
+            //engine.add(l[0], l[1]);
+            //console.log(l);
+            if(l[0] > max_lat) max_lat = l[0];
+            if(l[0] < min_lat) min_lat = l[0];
+            if(l[1] > max_lng) max_lng = l[1];
+            if(l[1] < min_lng) min_lng = l[1];
+          }
+        }
+        //console.log(min_lat);
+        console.log(min_lng);
+        //console.log(max_lat);
+        console.log(max_lng);
+
+      }
+
+
+
+      //------------------------------------------------------
+      // Some generic helper functions
+      //------------------------------------------------------
+
+      /**
+       * Create the control object, based on the supplied configuration
+       *
+       * @param controlObject the configuration for this control
+       */
+      // function addControlGui(controlObject) {
+      //     var gui = new dat.GUI();
+      //     gui.add(controlObject,'toFaceMaterial');
+      //     gui.add(controlObject,'toNormalMaterial');
+      //     gui.add(controlObject,'smoothShading').onChange(controlObject.onSmoothShadingChange);
+      // }
+
+      /**
+       * Add the stats object to the top left border
+       */
+      function addStatsObject() {
+          stats = new Stats();
+          stats.setMode(0);
+
+          stats.domElement.style.position = 'absolute';
+          stats.domElement.style.left = '0px';
+          stats.domElement.style.top = '0px';
+
+          document.body.appendChild( stats.domElement );
+      }
+
+
+      /**
+       * Function handles the resize event. This make sure the camera and the renderer
+       * are updated at the correct moment.
+       */
+      function handleResize() {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      //------------------------------------------------------
+      // Init the scene and register the resize handler
+      //------------------------------------------------------
+
+      // calls the init function when the window is done loading.
+      //window.onload = init;
+      // calls the handleResize function when the window is resized
+      window.addEventListener('resize', handleResize, false);
+
+  </script>
+
+</body>
+
+</html>

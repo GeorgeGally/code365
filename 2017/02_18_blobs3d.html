@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+<meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body style="background: #000;">
+
+<script>
+
+    var ctx = createCanvas("canvas1");
+
+
+    var MetaBalls = function(screen_ctx, engine) {
+
+      this.resolution = 1;
+      this.engine = engine;
+      this.scale = 0.3;
+      this.fade = 0.5;
+      this.w, this.h;
+      var imagedata;
+      var hidden_ctx = createHiddenCanvas("hidden_canvas1");
+
+      this.scaleCanvas = function(){
+        this.w = hidden_ctx.canvas.width = hidden_ctx.canvas.width * this.scale;
+        this.h = hidden_ctx.canvas.height = hidden_ctx.canvas.height * this.scale;
+        imagedata = hidden_ctx.getImageData(0, 0, this.w, this.h);
+      }
+
+      this.draw = function() {
+
+        for (var i = 0; i < this.engine.particles.length; i++) {
+          p = this.engine.particles[i];
+
+          for (var y = 0; y < this.h; y += this.resolution) {
+            for (var x = 0; x < this.w; x += this.resolution) {
+              this.setPixel(p, x, y, i);
+            }
+          }
+
+        }
+
+        hidden_ctx.putImageData(imagedata, 0, 0);
+        screen_ctx.drawImage(hidden_ctx.canvas, 0, 0, screen_ctx.canvas.width, screen_ctx.canvas.height);
+      }
+
+
+      this.setPixel = function(p, x, y, i) {
+
+        var c = 0;
+
+        for (var j = 0; j < engine.particles.length; j++) {
+          p2 = engine.particles[j];
+          d = dist(x, y, p2.pos.x * this.scale, p2.pos.y * this.scale);
+          c += (p.sz * this.scale) / d;
+        }
+        var pos = (y * this.w + x) * 4;
+
+        imagedata.data[pos++] = c;
+        imagedata.data[pos++] = c;
+        imagedata.data[pos++] = c;
+        imagedata.data[pos] = 255 * this.fade;
+      }
+
+      this.scaleCanvas();
+
+    }
+
+
+    var engine = new particleEngine(10, 1);
+    engine.setSize(1500);
+    engine.setPos();
+
+
+    var Meta = new MetaBalls(ctx, engine)
+    Meta.resolution = 2;
+
+
+    function draw() {
+      Meta.draw();
+      engine.update();
+
+    }
+
+</script>
+
+</body>
+
+</html>

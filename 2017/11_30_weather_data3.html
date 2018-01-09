@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<script language="javascript" src="../js/utils.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+
+/// WEATHER data
+
+// # STN      LON(east)   LAT(north)     ALT(m)  NAME
+// # 215:         4.436       52.140      -0.11  Voorschoten
+// # 315:         3.998       51.446       0.00  Hansweert
+
+// # YYYYMMDD = Date (YYYY=year MM=month DD=day);
+// # DDVEC    = Vector mean wind direction in degrees (360=north, 90=east, 180=south, 270=west, 0=calm/variable);
+// # FHVEC    = Vector mean windspeed (in 0.1 m/s);
+// # FHX      = Maximum hourly mean windspeed (in 0.1 m/s);
+// # FHXH     = Hourly division in which FHX was measured;
+// # FHN      = Minimum hourly mean windspeed (in 0.1 m/s);
+// # TG       = Daily mean temperature in (0.1 degrees Celsius);
+// # DR       = Precipitation duration (in 0.1 hour);
+// # PX       = Maximum hourly sea level pressure (in 0.1 hPa);
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+
+var start_dt;
+ctx.font="16px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/netherland_weather_sample2.csv';
+
+var data = [];
+
+d3.csv(url, function(error, d) {
+
+  if (error) console.log(error);
+  data = d;
+  //movements = data;
+  start_dt = data[0].YYYYMMDD;
+  for (var i = 0; i < data.length; i++) {
+    var d = data[i];
+    //if (d.waterhoogte < min_ht) min_ht = d.waterhoogte;
+    //if (d.waterhoogte > max_ht) max_ht = d.waterhoogte;
+  }
+  console.log(data);
+  console.log(start_dt);
+});
+
+
+
+
+
+////////////////
+
+var counter = 0;
+var bar_ht = 20;
+
+var min_ht = 10000;
+var max_ht = 0;
+
+// var min_pressure = 10000;
+// var max_pressure = 0;
+
+var posx = 0;
+var posy = 300;
+var old = new Vector(0,0);
+var ht = [];
+//var pressure = [];
+
+ctx2.strokeStyle = rgba(255);
+ctx2.fillStyle = rgba(50, 0, 155, 0. );
+ctx3.strokeStyle = rgba(255, 0, 0);
+ctx2.lineWidth = 0.6;
+ctx3.lineWidth = 0.9;
+ctx.background(100);
+
+frameRate = 120;
+ctx2.lineWidth = 4;
+//ctx3.line(0, posy-100, w, posy-100);
+
+function draw() {
+
+  ctx.background(0);
+  ctx2.background(0, 0.01);
+  ctx3.clearRect(0,0,w,h);
+  ctx.fillStyle = rgb(255);
+  if (data.length > 0) {
+    var d = data[counter];
+      //console.log(d.DDVEC);
+      ctx3.fillText(start_dt + " - " + d.YYYYMMDD, 50, 20);
+      // // if (getTime(d.tijd) == "0000") {
+      // //   ctx2.line(posx, 100, posx, h);
+      // // }
+      // drawGraph(d.waterhoogte, 100, min_ht, max_ht);
+      //
+      // var ww = map(d.waterhoogte, -200, 200, 0, 200);
+      //
+      // current_ht = new Vector(posx, ww);
+      // //ht.push(current_ht);
+      //
+      //
+      // lineGraph(current_ht, posy);
+      //
+      // //if (getTime(d.tijd) == "0000") {
+      //   posx+=0.3;
+      // //}
+      //
+      //
+      ctx2.save();
+      ctx3.save();
+      //if(parseInt(d.STN) == 215) {
+        ctx2.translate(w/2, h/2);
+        ctx3.translate(w/2, h/2);
+      //} else {
+        //ctx2.translate(w/2 + 200, h/2);
+      //}
+
+      ctx2.rotateDeg(d.DDVEC);
+      //console.log(parseInt(d.FHVEC));
+      var temp = map(parseInt(d.TG), -40, 160, 0, 250);
+      //console.log(d.TG);
+      ctx3.fillStyle = rgba(10, 0, 100, 0.9);
+      ctx3.fillEllipse(0,0, temp, temp);
+      ctx2.line(0,0, 0, -3 * parseInt(d.FHVEC));
+      ctx2.restore();
+      ctx3.restore();
+
+      if(frameCount%5 == 0) counter++;
+      //console.log(d.STN);
+      if(counter > data.length-1) {
+        counter = 0;
+        //ctx2.clearRect(0,0,w,h);
+      }
+  }
+
+
+}
+
+function lineGraph(d, ypos){
+  //for (var i = 0; i < data.length; i++) {
+    //var d = data[i];
+    //if (posx==0) {
+      //ctx2.line(0, ypos, d.x, ypos+ d.y);
+    //} else {
+      ctx2.line(d.x, ypos - d.y, old.x, ypos - old.y);
+    //}
+    old = d;
+  //}
+
+}
+
+function drawGraph(d, posy, _min, _max){
+  var wi = map(parseInt(d), _min, _max, 0, w);
+  var max = map(_max, _min, _max, 0, w -50)
+  ctx.fillStyle = "grey";
+  // ctx.fillRect(0, posy, max, bar_ht);
+  // ctx.fillStyle = "white";
+  // ctx.fillRect(0, posy, wi, bar_ht);
+  ctx.fillText(d, 50, posy -20);
+}
+
+
+
+
+</script>
+
+</body>
+
+</html>

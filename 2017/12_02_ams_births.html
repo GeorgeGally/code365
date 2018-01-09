@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<script language="javascript" src="../js/utils.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+
+/// AMS BIRTH data
+
+var FOV = 220;
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+
+var years = [1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015]
+
+var start_dt;
+ctx.font="16px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/ams_births.csv';
+
+var data = [];
+var vals = [];
+var min_ht = 100000;
+var max_ht = 0;
+
+var engine = new particleEngine(10, 12);
+engine.setSize(2);
+
+function setup(){
+
+  d3.csv(url, function(error, d) {
+
+    if (error) console.log(error);
+    data = d;
+    for (var i = 0; i < data.length; i++) {
+      var d = data[i];
+      //console.log(d);
+      vals.push(Object.values(d))
+    }
+    console.log(data);
+    console.log(vals);
+  });
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.scale = 1;
+    p.pos3d.x = 1;
+    p.pos3d.y = 1;
+    p.pos.z = 1;
+    calc3DPos(p);
+    //p.pos.x -= w/2;
+    //p.pos.y -= h/2;
+    p.sz = 5;
+  }
+
+}
+
+var counter = 0;
+var bar_ht = 20;
+
+var posx = 0;
+var posy = 300;
+var old = new Vector(0,0);
+var ht = [];
+
+ctx2.strokeStyle = rgba(255);
+ctx2.fillStyle = rgba(250, 0, 0);
+ctx3.strokeStyle = rgba(255, 0, 0);
+ctx2.lineWidth = 0.6;
+ctx3.lineWidth = 0.9;
+ctx.background(100);
+
+frameRate = 120;
+ctx2.lineWidth = 2;
+
+function draw() {
+
+  ctx.background(0, 0.04);
+  ctx2.clearRect(0,0,w,h);
+  ctx.fillStyle = rgb(255);
+  ctx2.fillText(years[counter], w- 50, h - 20);
+  if (vals.length > 0) {
+
+    for (var i = 0; i < vals.length; i++) {
+      var v = vals[i][counter];
+      var p = engine.particles[i];
+      if(v == undefined || v == "-") v = 0;
+      //console.log(v);
+      var amt = map(v, 0, 543, 0, 220);
+
+      p.pos.z = tween(p.pos.z, amt, 20);
+      calc3DPos(p);
+
+    }
+
+    drawParticles();
+
+      if(frameCount%20 == 0) {
+        counter++;
+      }
+
+      if(counter > vals[0].length-2) {
+        counter = 0;
+      }
+  }
+
+
+}
+
+
+function drawParticles(){
+  ctx.save();
+  ctx.translate(w/2, h/2);
+  ctx.strokeStyle = rgb(255);
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+
+
+    //ctx.fillEllipse(p.pos.x, p.pos.y, 5, 5);
+    if( p.neighbours.right > 0) ctx.line(p.pos3d.x, p.pos3d.y, engine.particles[p.neighbours.right].pos3d.x, engine.particles[p.neighbours.right].pos3d.y);
+    if( p.neighbours.bottom > 0) ctx.line(p.pos3d.x, p.pos3d.y, engine.particles[p.neighbours.bottom].pos3d.x,  engine.particles[p.neighbours.bottom].pos3d.y);
+  }
+  ctx.restore();
+}
+
+
+
+
+function calc3DPos(p){
+  p.scale = FOV/(p.pos.z + FOV);
+  //p.pos3d.x = projection(p.pos.x, p.pos.z, w/2, h/2, 400);
+  //p.pos3d.y = projection(p.pos.y, p.pos.z, height/2, h/2, FOV);
+  p.pos3d.x = (w - p.pos.x - w/2) * p.scale;
+  p.pos3d.y = (p.pos.y - h/2) * p.scale;
+}
+
+
+</script>
+
+</body>
+
+</html>

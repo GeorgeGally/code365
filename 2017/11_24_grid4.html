@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine, xosc, yosc;
+reset();
+
+ctx.lineWidth = 2;
+function draw(){
+  ctx.background(255, 0.1);
+  if(mousePressed) reset();
+  if (chance(200)) reset();
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.pos.x = p.start.x + Math.cos(i + frameCount/30)* xosc;
+    p.pos.y = p.start.y + Math.sin(p.col + frameCount/20)* yosc;
+
+  }
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    ctx.strokeStyle = p.c;
+    //ctx.fillEllipse(p.pos.x, p.pos.y, 5, 5);
+    if( p.neighbours.right > 0) ctx.line(p.pos.x, p.pos.y, engine.particles[p.neighbours.right].pos.x, engine.particles[p.neighbours.right].pos.y);
+    if( p.neighbours.bottom > 0) ctx.line(p.pos.x, p.pos.y, engine.particles[p.neighbours.bottom].pos.x,  engine.particles[p.neighbours.bottom].pos.y);
+  }
+}
+
+function reset(){
+  ctx.lineWidth = randomInt(0.1, 5);
+  engine = new particleEngine(randomInt(4,40), randomInt(4,40), w + 200, h+200, -100, -100);
+  engine.setRandomColour(10, 145, 0, 50, 25, 155);
+  xosc = randomInt(10, 80);
+  yosc = randomInt(10, 80);
+}
+
+</script>
+
+</body>
+</html>

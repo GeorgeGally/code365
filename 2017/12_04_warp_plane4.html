@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/url.js"></script>
+  <script language="javascript" src="../js/physics2.js"></script>
+  <script language="javascript" src="../js/three.min.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+  <script language="javascript" src="../js/utils.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body style="background: #f3f3f3">
+
+  <script>
+
+  var years = [1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015]
+
+  var url = '/data/ams_births.csv';
+  var counter = 0;
+  var data = [];
+  var vals = [];
+  var scene, plane, camera, ctx;
+
+  function setup(){
+
+    d3.csv(url, function(error, d) {
+
+      if (error) console.log(error);
+      data = d;
+      for (var i = 0; i < data.length; i++) {
+        var d = data[i];
+        //console.log(d);
+        vals.push(Object.values(d))
+      }
+      console.log(data);
+      console.log(vals);
+    });
+
+    scene = new THREE.Scene();
+    var aspect = window.innerWidth / window.innerHeight;
+    camera = new THREE.PerspectiveCamera(70, aspect, 1, 1000);
+    //camera = new THREE.PerspectiveCamera(70, width / height, 1, 1000);
+
+    renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      logarithmicDepthBuffer: true,
+      alpha: true
+    });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    var geometry = new THREE.PlaneGeometry(160, 160, 10, 10);
+    geometry.dynamic = true;
+
+    var material = new THREE.MeshDepthMaterial({
+      //map: texture
+      side: THREE.DoubleSide,
+      color: '#FFFFFF',
+      wireframe: true
+    });
+    material.shading = THREE.SmoothShading;
+    plane = new THREE.Mesh(geometry, material);
+    // var dMaterial = new THREE.MeshDepthMaterial({ map: texture });
+    // dMaterial.shading = THREE.SmoothShading;
+    // var plane = new THREE.Mesh( geometry, dMaterial );
+    scene.add(plane);
+    plane.position.y = -20;
+    camera.position.z = 100;
+    scene.rotation.x = 68;
+    camera.near = 30;
+    camera.far = 95;
+    ctx = createCanvas("canvas2");
+    ctx.canvas.zindex = 10;
+    ctx.font = "16px Arial";
+  }
+
+    function draw() {
+
+      Mode2();
+      plane.geometry.verticesNeedUpdate = true
+      renderer.render(scene, camera);
+      if (frameCount % 50 == 0) counter++;
+      //if (counter > plane.geometry.vertices.length - 1) counter = 0;
+      if(vals[0] && counter > vals[0].length-2) {
+        counter = 0;
+      }
+    }
+
+
+    function Mode1() {
+
+      for (var i = 0; i < plane.geometry.vertices.length; i++) {
+        // t = map(audioChannelVolume[i],0,180, 0, 0.8);
+        t = i + (i / 10 + frameCount) / 40;
+        //plane.geometry.vertices[i].z += Math.sin(t)*Math.cos(i)*0.5;
+        if (i == counter) plane.geometry.vertices[i].z += Math.sin(t) * 0.99;
+      }
+
+      scene.rotation.y = SinOsc(frameCount / 400, 1);
+    }
+
+
+    function Mode2() {
+      ctx.clearScreen();
+      ctx.fillText(years[counter], w- 150, h - 20);
+
+      if (vals.length > 0) {
+
+        for (var i = 0; i < vals.length; i++) {
+          var v = vals[i][counter];
+        //  var p = engine.particles[i];
+          if(v == undefined || v == "-") v = 0;
+          //console.log(v);
+          var amt = map(v, 0, 543, 0, 30);
+          var p = plane.geometry.vertices[i];
+          p.z = tween(p.z, amt, 20);
+
+          //calc3DPos(p);
+          //p = rotateX(p, radians(35));
+
+        }
+    }
+}
+
+    var settings = QuickSettings.create();
+    // QuickSettings.useExtStyleSheet();
+    settings.setGlobalChangeHandler(draw);
+    //settings.addRange(title, min, max, value, step, callback);
+    settings.addRange("camera.position.z", -100, 100, 60, 1, function(value) {
+      camera.position.z = value;
+      draw();
+    });
+    settings.addRange("plane.position.z", -100, 100, 80, 1, function(value) {
+      plane.position.z = value;
+      draw();
+    });
+    settings.addRange("scene.rotation.x", -180, 180, 0, 0.01, function(value) {
+      scene.rotation.x = radians(value);
+      draw();
+    });
+    settings.addRange("scene.rotation.y", -180, 180, 0, 0.01, function(value) {
+      scene.rotation.y = radians(value);
+      draw();
+    });
+    settings.addRange("plane.scale.x", 0.1, 5, 1, 0.1, function(value) {
+      plane.scale.x = value;
+      draw();
+    });
+    settings.addRange("plane.scale.y", 0.1, 5, 1, 0.1, function(value) {
+      plane.scale.y = value;
+      draw();
+    });
+  </script>
+
+</body>
+
+</html>

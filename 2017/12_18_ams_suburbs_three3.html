@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+ <script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/three.min.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+ </head>
+ <body style="background: #fff">
+
+<script>
+var ctx2 = createCanvas("canvas2");
+var ctx = createCanvas("canvas1");
+var canvas2 = ctx2.canvas;
+canvas2.width = canvas2.height = 100;
+var r = 0;
+var numSegments = 100;
+var height_multiplier = 100;
+
+var scene, camera, renderer, geometry, plane, material, texture;
+
+function setup(){
+  scene = new THREE.Scene();
+aspect = window.innerWidth / window.innerHeight;
+camera = new THREE.PerspectiveCamera( 80, aspect, 0.1, 1000 );
+renderer = new THREE.WebGLRenderer({antialias: true, logarithmicDepthBuffer: true});
+renderer.setSize( w, h );
+document.body.appendChild( renderer.domElement );
+geometry = new THREE.PlaneGeometry( 300, 168, numSegments , numSegments );
+geometry.dynamic = true;
+
+texture = new THREE.Texture(canvas);
+texture.needsUpdate = true;
+
+
+//var material = new THREE.MeshDepthMaterial({side: THREE.DoubleSide});
+material = new THREE.MeshPhongMaterial( {map: texture, color: 0xffffff, side: THREE.DoubleSide} );
+material.flatShading = THREE.SmoothShading;
+material.map.minFilter = THREE.LinearFilter;
+
+
+scene.fog = new THREE.FogExp2( 0x000000, 0.005 );
+
+var light = new THREE.HemisphereLight( 0xffffff, 0x000000, 0.2);
+scene.add( light );
+var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+
+plane = new THREE.Mesh( geometry, material );
+scene.add(plane);
+
+geometry.computeFaceNormals();
+geometry.computeVertexNormals();
+
+renderer.setClearColor( 0xffffff );
+camera.position.z = 100;
+camera.near = 80;
+camera.far  = 195;
+
+}
+
+
+
+
+
+var engine = new particleEngine(20, 1);
+engine.setColour(rgb(0));
+engine.setSpeed(5, 5);
+var x = w;
+
+function draw() {
+
+	ctx.background(255);
+
+  var x = random(0, w);
+  var y = random(0, h);
+  var sz = random(1,20);
+  ctx2.fillStyle = rgba(randomInt(255),randomInt(255),randomInt(255), 0.2);
+  ctx2.fillRect(x,y, sz,sz);
+
+  moveParticles();
+
+
+	texture.needsUpdate = true;
+  updateTerrain();
+
+  //scene.rotation.z+= Math.sin(frameCount/10000)/100;
+	scene.rotation.x -=Math.cos(frameCount/10000)/500;
+
+
+  renderer.render( scene, camera );
+
+};
+
+
+function moveParticles(){
+  for (var i = 0; i < engine.particles.length; i++) {
+	var p = engine.particles[i];
+	ctx.fillStyle = p.c;
+
+	p.pos.x = p.start.x + Math.sin(frameCount/200)*120;
+	if(p.pos.x > w) p.pos.x = 0;
+	if(p.pos.x < 0) p.pos.x = w;
+
+	ctx.fillRect(p.pos.x, 0, 20, h);
+}
+}
+
+function updateTerrain(){
+
+//   for (var j = 0; j < numSegments; j+=1) {
+//     for (var i = 0; i < numSegments; i+=1) {
+//       var pos = i + j * numSegments;
+//     var v = plane.geometry.vertices[pos];
+//     var a = frameCount/1500 + pos/200;
+//     v.z = Math.sin(a) * 10;
+//   }
+// }
+
+
+  terrain = getTerrainPixelData();
+
+  // keep in mind, that the plane has more vertices than segments. If there's one segment, there's two vertices, if
+  // there's 10 segments, there's 11 vertices, and so forth.
+  // The simplest is, if like here you have 100 segments, the image to have 101 pixels. You don't have to worry about
+  // "skewing the landscape" then..
+
+  // to check uncomment the next line, numbers should be equal
+  //console.log("length: " + terrain.length + ", vertices length: " + geometry.vertices.length);
+
+  for (var i = 0, l = geometry.vertices.length; i < l; i++)
+  {
+    var terrainValue = terrain[i] / 255;
+    if(!terrainValue) terrainValue = 1;
+    if(terrain[i]) geometry.vertices[i].z = tween(geometry.vertices[i].z, terrainValue * height_multiplier, 20);
+    //geometry.vertices[i].z = terrainValue * height_multiplier ;
+  }
+
+
+  geometry.verticesNeedUpdate = true;
+}
+
+
+function getTerrainPixelData()
+{
+  //var img = document.getElementById("landscape-image");
+
+
+  // //canvas.width = img.width;
+  // canvas.height = img.height;
+  // canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+
+  var data = canvas2.getContext('2d').getImageData(0,0, canvas2.width, canvas2.height).data;
+  var normPixels = [];
+
+  for (var i = 0, n = data.length; i < n; i += 4) {
+    // get the average value of R, G and B.
+    //normPixels.push(data[i]);
+    normPixels.push((data[i] + data[i+1] + data[i+2]) / 3);
+  }
+//chanceLog(normPixels)
+  return normPixels;
+}
+
+
+var settings = QuickSettings.create();
+// QuickSettings.useExtStyleSheet();
+settings.setGlobalChangeHandler(draw);
+//settings.addRange(title, min, max, value, step, callback);
+settings.addRange("height_multiplier", 10, 500, 150, 1, function(value) {
+  height_multiplier = value;
+  draw();
+});
+settings.addBoolean("wireframe", 0, function(value) {
+  material.wireframe = value;
+  draw();
+});
+
+
+
+
+</script>
+<!-- <script language="javascript" src="../js/soundcloud_new.js"></script> -->
+</body>
+</html>

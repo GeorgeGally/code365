@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<script language="javascript" src="../js/utils.js"></script>
+<script language="javascript" src="../js/map_styles.js"></script>
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+var years = [];
+for (var i = 1996; i < 2056; i++) {
+  years.push(i);
+}
+
+
+var counter, old_counter;
+////////////// GET DATA ////////////////
+var url = '/data/ams_suburb_locs.csv';
+var engine = new particleEngine(0,0);
+
+var suburbs = [];
+var url = '/data/ams_births_predict.csv';
+
+var url3 = '/data/ams_population_predict.csv';
+
+    var births = [];
+    var deaths = [];
+    var population = [];
+
+    var min_lat = 10000;
+    var min_lng = 10000;
+    var max_lat = -10000;
+    var max_lng = -10000;
+
+
+function setup(){
+
+  load(url3, suburbs);
+  //load(url3, population);
+
+}
+
+var min_max = [];
+
+function load(url, vals) {
+  //var vals = [];
+  d3.csv(url, function(error, d) {
+
+    if (error) console.log(error);
+    data = d;
+    for (var i = 0; i < data.length; i++) {
+      var d = data[i];
+      //console.log(d);
+      var b = Object.values(d);
+      //console.log(b[b.length-1]);
+
+      getPolygons(b);
+      vals.push(b);
+
+    }
+    minMax(vals);
+
+    drawBounds(vals);
+    //addParticles(vals);
+    console.log(vals);
+    //initGrid();
+  });
+}
+
+
+
+// function getDateMinMax(){
+//   var min = new Vector(10000,10000);
+//   var max = new Vector(-10000,-10000);
+//   for (var i = 0; i < locs.length; i++) {
+//     var loc = locs[i][locs[i].length-1];
+//     for (var j = 0; j < loc.length-1; j++) {
+//     var pop = parseInt(locs[i][counter]);
+//     if(!pop) pop = 0;
+//
+//     }
+// }
+
+function getPolygons(b){
+  b[b.length-1] = b[b.length-1].substr(9, b[b.length-1].length-4);
+  b[b.length-1] = b[b.length-1].split(',');
+  for (var j = 0; j < b[b.length-1].length; j++) {
+    b[b.length-1][j] = b[b.length-1][j].split(' ');
+  }
+}
+
+
+function minMax(locs){
+  var min = 100000;
+  var max = -100000;
+  for (var i = 0; i < locs.length; i++) {
+    var loc = locs[i][locs[i].length-1];
+
+    if(!pop) pop = 0;
+    for (var j = 0; j < loc.length; j++) {
+      var l = loc[j];
+      l[0] = parseFloat(l[0]);
+      l[1] = parseFloat(l[1]);
+      //engine.add(l[0], l[1]);
+      //console.log(l);
+      if(l[0] > max_lat) max_lat = l[0];
+      if(l[0] < min_lat) min_lat = l[0];
+      if(l[1] > max_lng) max_lng = l[1];
+      if(l[1] < min_lng) min_lng = l[1];
+    }
+    for (var j = 0; j < locs[i].length; j++) {
+        var pop = parseInt(locs[i][j]);
+        if(pop > max) max = pop;
+        if(pop < min) min = pop;
+    }
+    min_max.push({min: min, max: max});
+  }
+  //console.log(min_lat);
+  console.log(min_lng);
+  //console.log(max_lat);
+  console.log(max_lng);
+  //locs.push({min_lat: min_lat, max_lat: max_lat, min_lng: min_lng, max_lng: max_lng});
+}
+
+ctx.strokeStyle = rgb(190);
+
+function drawBounds(locs){
+  for (var i = 0; i < locs.length; i++) {
+    var loc = locs[i][locs[i].length-1];
+    //console.log(loc);
+
+    var min_x = 10000;
+    var min_y = 10000;
+    var max_x = -10000;
+    var max_y = -10000;
+    var min = new Vector(10000,10000);
+    var max = new Vector(-10000,-10000);
+    var pop = parseInt(locs[i][counter]);
+    if(!pop) pop = 0;
+    //chanceLog(pop);
+    var c = 255 - map(pop, 0, 48000, 0, 255);
+    ctx.fillStyle = rgb(c);
+    ctx.beginPath();
+    //ctx2.beginPath();
+    //ctx.moveTo(loc[0][0], loc[0][1]);
+    var ave = new Vector(0,0);
+    for (var j = 1; j < loc.length; j++) {
+      var l = loc[j];
+      var l2 = loc[j-1];
+      //console.log(l);
+      var x1 = map(l[0], min_lat, max_lat, 0, w);
+      var y1 = map(l[1], min_lng, max_lng, 0, h);
+      var x2 = map(l2[0], min_lat, max_lat, 0, w);
+      var y2 = map(l2[1], min_lng, max_lng, 0, h);
+      //chanceLog(parseInt(l[1]),1000);
+      //ctx.line(x1, y1, x2, y2);
+      ave.x += x1;
+      ave.y += y1;
+      // if(i%3 == 0) {
+      //   ctx2.fillStyle = rgba(20);
+      //   y1 -= Math.abs(Math.sin(frameCount/10) * 20);
+      //   y2 -= Math.abs(Math.sin(frameCount/10) * 20);
+      //   ctx2.lineTo(x1, y1, x2, y2);
+      // } else {
+
+        ctx.lineTo(x1, y1, x2, y2);
+      //}
+
+
+      if(x1 < min.x) min.x = x1;
+      if(y1 < min.y) min.y = y1;
+      if(x1 > max.x) max.x = x1;
+      if(y1 > max.y) max.y = y1;
+    }
+
+    //ctx.stroke();
+    ctx.fill();
+    ctx.closePath();
+    //loc.push({min:min, max:max})
+    //drawAvePt(ave);
+
+    // can hardcode this in
+    drawMidPoint(pop, min, max)
+
+  }
+}
+
+function drawMidPoint(pop, min, max){
+  ctx2.font = "16px Arial";
+  //ctx2.fillStyle = "blue";
+  engine.add((min.x + max.x)/2, (min.y + max.y)/2);
+  var x = (min.x + max.x)/2;
+  var y = (min.y + max.y)/2;
+  //ctx2.fillEllipse(x, y, 5, 5);
+  ctx2.font = "11px Arial";
+  ctx2.fillStyle = "white";
+  ctx2.fillText(pop, x - 10, y + 15)
+}
+
+
+function drawAvePt(ave) {
+  ctx2.fillStyle = "red";
+  var x = ave.x/(loc.length-1);
+  var y = ave.y/(loc.length-1);
+  ctx2.fillEllipse(x, y, 4, 4);
+}
+
+var x = 0, xx = 0;
+
+function draw() {
+  ctx.background(255);
+  if(suburbs[0]) {
+  timeline();
+   drawBounds(suburbs)
+  // ctx.background(255);
+  // ctx2.clearRect(0,0,w,h);
+  // if (locs[0]) drawBounds(locs);
+  }
+
+}
+
+
+var getCentroid = function (coord)
+{
+	var center = coord.reduce(function (x,y) {
+		return [x[0] + y[0]/coord.length, x[1] + y[1]/coord.length]
+	}, [0,0])
+	return center;
+
+}
+
+
+
+
+
+function render(p, p2, p3){
+
+  //ctx.line(p3.pos.x, p3.pos.y, p3.start.x, p3.start.y)
+  ctx.fillStyle = rgb(0, 0.8);
+  ctx.LfillEllipse(p3.pos.x, p3.pos.y, 5);
+  var n = engine.particles[p3.neighbours.left];
+
+  if( p3.neighbours.right > -1) ctx.line(p3.pos.x, p3.pos.y, engine.particles[p.neighbours.right].pos.x, engine.particles[p.neighbours.right].pos.y);
+
+}
+
+
+
+
+
+function move(i, p, p2, p3){
+    var pop = parseInt(population[i][counter]);
+    if (!pop) pop = 0;
+    var amt = map(pop, 2, 28491, 0, 50);
+    //chanceLog(amt);
+    p3.target_sz = amt;
+    p3.target.y = p3.start.y - amt;
+    p3.pos.y = tween(p3.pos.y, p3.target.y, 10);
+  p3.sz = tween(p3.sz, p3.target_sz, Math.round(p3.speed.x));
+  //p.sz = tween(p.sz, p.target_sz, Math.round(p.speed.x));
+  //p2.sz = tween(p2.sz, p2.target_sz, Math.round(p2.speed.x));
+}
+
+
+function timeline() {
+  if (frameCount % 10 == 0) {
+    old_counter = counter;
+    counter++;
+    //springBackNodes();
+  }
+
+  if (counter > years.length) {
+    counter = 0;
+    x = 0;
+    //reset();
+  }
+
+
+  ctx2.clearRect(0, 0, w, h);
+  ctx2.fillStyle = rgba(0, 0.4);
+  ctx2.fillRect(0, h-60, w, h);
+  var xx = map(counter, 0, suburbs[0].length - 2, 0, w);
+  x = tween(x, xx, 20);
+  ctx2.strokeStyle = rgb(255);
+  ctx2.line(x, h - 40, x, h);
+  ctx2.fillStyle = rgb(255);
+  ctx2.fillText(years[counter], x + 10, h - 20);
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

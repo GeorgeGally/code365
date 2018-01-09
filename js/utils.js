@@ -19,11 +19,21 @@ weekday[6] = "Saturday";
 return weekday[d.getDay()];
 }
 
+function getTime(dt){
+  var date = new Date(dt);
+  var hour = date.getHours();
+  var min = date.getMinutes();
+  if (hour < 10) hour = "0" + hour;
+	if (min < 10) min = "0" + min;
+  return hour + min;
+}
+
+
 
 function getDate(dt, clock){
 
   var clock = clock || false;
-	var date = new Date(dt)
+	var date = new Date(dt);
 	var day = date.getDate();
   var day_name = getDay(date);
 	var monthIndex = date.getMonth();

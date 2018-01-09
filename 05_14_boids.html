@@ -14,7 +14,7 @@
 	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -65,15 +65,15 @@ var Wave = function(_num_particles, _x, _y, _me) {
 		}
 		particles.push(particle);
 	}
-	
+
 
 	this.moveParticles = function(){
 
 		for (var i = 0; i < particles.length; i++) {
-			
+
 			p = particles[i];
 
-			//DISTRIBUTED MAPPED SOUND VALUE  
+			//DISTRIBUTED MAPPED SOUND VALUE
 			var s = mapSound(num_waves - p.me, num_waves);
 			p.speedx = tween(p.speedx, map(s, 0, 255, 0, 360)-180, 2);
 			var arc =  p.speedx * Math.PI;
@@ -97,11 +97,11 @@ var Wave = function(_num_particles, _x, _y, _me) {
 			ctx.fillEllipse(p.x, p.y, 16, 16);
 
 			for (var j = 0; j < flies[i].particles.length; j++) {
-            
+
             var mouse = new Vector(this.x, this.y);
-            
+
             b = flies[i].particles[j];
-         
+
             mouse = mouse.subtract(b.position);
             mouse.setMag(random(1));
             //console.log(mouse)
@@ -113,7 +113,7 @@ var Wave = function(_num_particles, _x, _y, _me) {
             //ctx.line(b.position.x, b.position.y, x, y);
             ctx.fillRect(b.position.x, b.position.y, b.sz, b.sz);
 
-           
+
 
         }
 
@@ -140,9 +140,9 @@ console.log(spacing_y)
 var grid = makeGrid(grid_w, grid_h);
 var num_particles = 1;
 
-for (var i = 0; i < num_waves; i++) {	
+for (var i = 0; i < num_waves; i++) {
 	waves[i] = new Wave(num_particles, grid[i][0]*spacing_x+spacing_x/2,grid[i][1]*spacing_y + spacing_y/2, i);
-	
+
 };
 
 

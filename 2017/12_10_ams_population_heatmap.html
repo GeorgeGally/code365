@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<script language="javascript" src="../js/utils.js"></script>
+<script language="javascript" src="../js/heatmap.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<div class="map">
+</div>
+<script>
+
+var gmap = document.getElementById('map');
+var heatmap = h337.create({
+  container: document.querySelector('.map')
+});
+
+
+/// POPULATION data
+
+// 11016 births/yr = 30/day
+// 5425 deaths/year = 15/day
+
+// work out chance for each suburb
+// how many times must it flicker per year
+// seeing that each year is 60 frames
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+
+var years = [];
+for (var i = 1996; i < 2056; i++) {
+  years.push(i);
+}
+
+//var years = [1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015]
+
+var start_dt;
+ctx2.font = "16px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/ams_births_predict.csv';
+var url2 = '/data/ams_deaths_predict.csv';
+var url3 = '/data/ams_population_predict.csv';
+
+var births = [];
+var deaths = [];
+var population = [];
+
+var births2015 = [];
+var deaths2015 = [];
+var population2015 = [];
+
+
+var counter = 0, old_counter = -1;
+var bar_ht = 20;
+
+var posx = 0;
+var posy = 300;
+var old = new Vector(0,0);
+var ht = [];
+
+var engine = new particleEngine(10, 10, w, h-100);
+var engine2 = new particleEngine(10, 10, w,h-100);
+var engine3 = new particleEngine(10, 10, w,h-100);
+
+reset();
+
+function setup(){
+  frameRate = 240;
+  load(url, births);
+  load(url2, deaths);
+  load(url3, population);
+}
+
+
+function load(url, vals){
+  //var vals = [];
+  d3.csv(url, function(error, d) {
+
+    if (error) console.log(error);
+    data = d;
+    for (var i = 0; i < data.length; i++) {
+      var d = data[i];
+      //console.log(d);
+      var b = Object.values(d);
+      vals.push(b);
+      // var v = {x: }
+      // heatmapdata
+    }
+    //console.log(data);
+    console.log(vals);
+    //return vals;
+  });
+}
+
+
+
+ctx2.fillStyle = rgba(0);
+frameRate = 120;
+
+var x = 0, xx = 0;
+
+function draw() {
+
+  ctx.background(255);
+
+
+
+  if (population[0]) {
+    timeline();
+    //console.log(births);
+    for (var i = 0; i < population.length; i++) {
+      var p = engine.particles[i];
+      var p2 = engine2.particles[i];
+      var p3 = engine3.particles[i];
+      move(i, p, p2, p3);
+      render(p, p2, p3);
+    }
+    old_counter = counter;
+  }
+
+
+}
+
+
+
+
+function render(p, p2, p3){
+
+  ctx.fillStyle = rgb(0, 0.8);
+  ctx.HfillEllipse(p3.pos.x, p3.pos.y, p3.sz);
+
+  // if(p.sz > 0) {
+  //   ctx.fillStyle = rgb(255);
+  // } else {
+  //   ctx.fillStyle = rgb(255, 0, 0, 0.8);
+  // }
+
+  //births
+
+  if(frameCount%p.on == 0) {
+    ctx.fillStyle = rgb(255);
+    ctx.fillEllipse(p.pos.x, p.pos.y, 16);
+    ctx.fillStyle = p.c;
+    ctx.fillEllipse(p.pos.x, p.pos.y, 12);
+  }
+
+  // deaths
+
+  //chanceLog(p.on);
+if(frameCount%p2.on == 0) {
+  ctx.fillStyle = rgb(255);
+  ctx.fillEllipse(p.pos.x, p.pos.y, 16);
+    ctx.fillStyle = rgb(255, 0, 0);
+    ctx.HfillEllipse(p2.pos.x-1, p2.pos.y-1, 10);
+  }
+
+
+
+  // ctx.HfillEllipse(p2.pos.x, p2.pos.y, p2.sz);
+}
+
+
+// 1 frame = 365/60 days
+var days_per_frame = 365/frameRate;
+
+
+function move(i, p, p2, p3){
+
+  // if(old_counter != counter) {
+  // var b = parseInt(births[i][counter]) - parseInt(deaths[i][counter]);
+  var b = parseInt(births[i][counter]);
+  if (!b) b = 0;
+  var birth_flicker_time = frameRate - Math.round(b/days_per_frame);
+  if(birth_flicker_time == 0 && b > 0) b = days_per_frame;
+  p.on = birth_flicker_time;
+  //chanceLog(birth_flicker_time)
+  var amt = map(b, 0, 543, 0, 40);
+  p.target_sz = amt;
+  // if (b > 0) {
+  //   p.c = rgb(0, 0, 200);
+  // } else {
+    p.c = rgb(200, 0, 0);
+  //}
+
+  var b = parseInt(deaths[i][counter]);
+  if (!b) b = 0;
+  var death_flicker_time = frameRate - Math.round(b/days_per_frame);
+  if(death_flicker_time <= 0 && b > 0) b = days_per_frame;
+  p2.on = death_flicker_time;
+  //chanceLog(death_flicker_time)
+  var amt = map(b, 0, 543, 0, 40);
+  p2.target_sz = amt;
+
+
+    var pop = parseInt(population[i][counter]);
+    if (!pop) pop = 0;
+    var amt = map(pop, 2, 28491, 0, 220);
+    //chanceLog(amt);
+    p3.target_sz = amt;
+
+  p3.sz = tween(p3.sz, p3.target_sz, Math.round(p3.speed.x));
+  //p.sz = tween(p.sz, p.target_sz, Math.round(p.speed.x));
+  //p2.sz = tween(p2.sz, p2.target_sz, Math.round(p2.speed.x));
+}
+
+
+function reset(){
+  engine.setSize(1);
+  engine2.setSize(1);
+  engine3.setSize(1);
+  engine.setSpeed(15, 150, 15, 150);
+  engine2.setSpeed(15, 150, 15, 150);
+  engine3.setSpeed(15, 150, 15, 150);
+}
+
+function timeline(){
+  if(frameCount%10 == 0) {
+    counter++;
+  }
+
+  if(counter > years.length) {
+    counter = 0;
+    x = 0;
+    reset();
+  }
+
+
+  ctx2.clearRect(0,0,w,h);
+  var xx = map(counter, 0, population[0].length-2, 0, w);
+  x = tween(x, xx, 20);
+  ctx2.line(x, h-40, x, h);
+  ctx2.fillText(years[counter], x + 10, h - 20);
+
+}
+
+</script>
+
+</body>
+
+</html>

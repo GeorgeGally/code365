@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+<meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body style="background: #000;">
+
+<script>
+
+    var ctx = createCanvas("canvas1");
+    var t = 0;
+
+    var x, y;
+
+    //Blob b;
+    var blobs = [];
+
+    function setup() {
+      //createCanvas(windowWidth, windowHeight);
+
+
+    var numBlobs = randomInt(10,20);
+
+      for (var i = 0; i < numBlobs; i++) {
+        //float _x, float _y, float _sz,
+        blobs[i] = new Blob(width / 2, height / 2, random(30, 70));
+      }
+
+    } // setup
+
+    function draw() {
+       ctx.background(185);
+      //noStroke();
+
+        // display radial lines
+      for (var i = 0; i < blobs.length; i++) {
+        blobs[i].displayOutline5();
+      }
+
+      for (var i = 0; i < blobs.length; i++) {
+        blobs[i].displayOutline4();
+      }
+
+      for (var i = 0; i < blobs.length; i++) {
+        blobs[i].displayOutline3();
+      }
+
+      for (var i = 0; i < blobs.length; i++) {
+        blobs[i].displayOutline2();
+      }
+
+      for (var i = 0; i < blobs.length; i++) {
+        blobs[i].display();
+        blobs[i].oscillate();
+      }
+
+      //animate
+      if (frameCount % 16 == 0) {
+        blobs[randomInt(blobs.length-1)].animate();
+      }
+
+      // reset
+      if (frameCount % 500 == 0) {
+        for (var i = 0; i < blobs.length; i++) {
+          blobs[i].newX = width / 2;
+          blobs[i].newY = height / 2;
+          blobs[i].oscSpd = random(0.1, 3);
+          blobs[i].origSz = random(200, 90);
+        }
+      }
+
+      t += 0.1;
+
+    } // draw
+
+    function Blob(x, y, sz) {
+      this.x = x;
+      this.y = y;
+      this.sz = sz;
+      this.origSz = sz;
+      this.maxSz = this.origSz * 2;
+      this.oscSpd = random(0.1, 3);
+
+      this.newX = width / 2; // init in center screen
+      this.newY = height / 2; // init center screen
+
+      this.display = function() {
+        //noStroke();
+        // CENTER FILL
+        ctx.fillStyle = rgb(255, 0, 0);
+        ctx.fillEllipse(this.x, this.y, this.sz, this.sz);
+
+        this.x = lerp(this.x, this.newX, 0.1);
+        this.y = lerp(this.y, this.newY, 0.1);
+      }
+
+      this.displayOutline5 = function() {
+        ctx.fillStyle = rgb(0);
+        ctx.fillEllipse(this.x, this.y, this.sz + 250, this.sz + 250);
+      }
+
+      this.displayOutline4 = function() {
+        ctx.fillStyle = rgb(100, 0, 200);
+        ctx.fillEllipse(this.x, this.y, this.sz + 200, this.sz + 200);
+      }
+
+      this.displayOutline3 = function() {
+        ctx.fillStyle = rgb(190, 0, 150);
+        ctx.fillEllipse(this.x, this.y, this.sz + 150, this.sz + 150);
+      }
+
+      this.displayOutline2 = function() {
+        ctx.fillStyle = rgb(190, 100, 150);
+        ctx.fillEllipse(this.x, this.y, this.sz + 100, this.sz + 100);
+      }
+
+      this.displayOutline = function() {
+        //noStroke();
+        ctx.fillStyle = rgb(255, 0, 100);
+        // if (frameCount % 4 == 0) {
+        ctx.fillEllipse(this.x, this.y, this.sz, this.sz);
+        // }
+      }
+
+      this.animate = function() {
+        this.newX = random(width);
+        this.newY = random(height);
+      }
+
+      this.oscillate = function() {
+        this.sz = map(Math.sin(t) * this.oscSpd, -1, 1, this.origSz, this.maxSz);
+      }
+    } // Blob
+
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
+
+</script>
+
+</body>
+
+</html>

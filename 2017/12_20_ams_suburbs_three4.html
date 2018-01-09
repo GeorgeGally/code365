@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/three.min.js"></script>
+  <script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/utils/simplify.js"></script>
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+  <style>
+  #canvas1, #canvas2, #canvas3 {
+    pointer-events: none;
+    //display: none;
+  }
+  </style>
+</head>
+
+<body style="background: #fff">
+
+  <script>
+
+    var counter, old_counter;
+    var controls, scene, camera, renderer, geometry, geometry2, plane2, material, material2, texture;
+
+    var blur_pass = 1;
+    var blur_ammt = 1;
+
+    var ctx3 = createCanvas("canvas3");
+    var ctx2 = createCanvas("canvas2");
+    var ctx = createCanvas("canvas1");
+
+    var canvas2 = ctx2.canvas;
+    var canvas3 = ctx3.canvas;
+
+    canvas2.width = 240, canvas2.height = 120;
+    canvas2.style.zIndex = 99;
+    var w2 = canvas2.width;
+    var h2 = canvas2.height;
+    canvas3.style.zIndex = 90;
+    //canvas.style.zIndex = 90;
+    ctx3.font = "16px Arial";
+
+    var engine = new particleEngine(60, 1);
+    engine.setColour(rgb(0));
+    //engine.setSpeed(5, 5);
+    engine.setSize(2);
+    var x = w;
+    //console.log(engine.particles);
+    //var r = 0;
+    //var numSegments = 100;
+    var height_multiplier = 350;
+
+    var years = [];
+    for (var i = 1996; i < 2056; i++) {
+      years.push(i);
+    }
+    var url3 = '/data/ams_population_predict.csv';
+
+    var suburbs = [];
+    var population = [];
+
+    var min_lat = 10000;
+    var min_lng = 10000;
+    var max_lat = -10000;
+    var max_lng = -10000;
+
+
+    function setup() {
+      ctx3.background(0);
+      load(url3, suburbs);
+      addScene();
+
+      moveParticles();
+     texture.needsUpdate = true;
+
+    }
+
+
+    function draw() {
+
+
+
+      if (suburbs[0]) {
+        timeline();
+        if(old_counter != counter) {
+ drawBounds(suburbs);
+ old_counter = counter;
+ moveParticles();
+//texture.needsUpdate = true;
+}
+
+        // ctx2.background(0);
+        // ctx2.fillStyle = rgb(255);
+        // ctx2.fillEllipse(w2/2, h2 / 2, 50, 50);
+        // if (locs[0]) drawBounds(locs);
+      }
+
+
+
+      updateTerrain();
+
+      //scene.rotation.z+= Math.sin(frameCount/10000)/100;
+      //scene.rotation.x -=Math.cos(frameCount/10000)/500;
+
+
+      renderer.render(scene, camera);
+
+    };
+
+
+    function moveParticles() {
+      ctx.background(255)
+      for (var i = 0; i < engine.particles.length; i++) {
+    	var p = engine.particles[i];
+    	ctx.fillStyle = p.c;
+
+    	//p.pos.y = SinOsc(frameCount/1000, 50);
+    	//p.pos.y = p.start.y + 50 * SinOsc(frameCount/1000, 50);
+    	// p.pos.x += p.speed.x;
+    	//p.pos.x = p.start.x + Math.sin(frameCount/200)*120;
+    	if(p.pos.x > w) p.pos.x = 0;
+    	if(p.pos.x < 0) p.pos.x = w;
+    	//if(bounce(p.pos.y, 0, h)) p.speed.y *=-1;
+    	//if(p.pos.x > h - 9)
+    	ctx.fillRect(p.pos.x, 0, p.sz, h);
+    	//ctx.fillRect(w/2, p.pos.y, w, 10);
+    }
+    }
+
+
+    function updateTerrain() {
+
+      terrain = getTerrainPixelData();
+      var l = geometry.vertices.length;
+      for (var i = 0 ; i < l; i++) {
+        var terrainValue = terrain[i] / 255 || -1;
+        if (terrain[i]) {
+          geometry.vertices[i].z = tween(geometry.vertices[i].z, terrainValue * height_multiplier, 40);
+          // geometry2.vertices[i].z = tween(geometry.vertices[i].z, terrainValue * height_multiplier, 40);
+        }
+      }
+      var f = frameCount%l-1 || 1;
+      //console.log(f);
+      //if(geometry.vertices[f]) geometry.vertices[f].z = SinOsc(frameCount/100, 50);
+
+
+      geometry.verticesNeedUpdate = true;
+    }
+
+
+
+    function getTerrainPixelData(){
+
+      var data = canvas2.getContext('2d').getImageData(0,0, w2, h2).data;
+      var normPixels = [];
+      var n = data.length
+      for (var i = 0; i < n; i += 4) {
+        // get the average value of R, G and B.
+        //normPixels.push(data[i]);
+        var j = Math.round((w2/1.5*4 + i)%n);
+        //var j = i;
+        var b = sticky(brightness(data[j], data[j+1],data[j+2], 80), 4) - 60;
+        normPixels.push(b)
+        //normPixels.push((data[j] + data[j+1] + data[j+2]) / 3);
+      }
+    //chanceLog(normPixels)
+      return normPixels;
+    }
+
+
+
+    var min_max = [];
+
+    function load(url, vals) {
+      //var vals = [];
+      d3.csv(url, function(error, d) {
+
+        if (error) console.log(error);
+        data = d;
+        for (var i = 0; i < data.length; i++) {
+          var d = data[i];
+          //console.log(d);
+          var b = Object.values(d);
+          //console.log(b[b.length-1]);
+
+          getPolygons(b);
+          vals.push(b);
+
+        }
+        minMax(vals);
+
+        //drawBounds(vals);
+        //addParticles(vals);
+        //console.log(vals);
+        //initGrid();
+      });
+    }
+
+    function getPolygons(b) {
+      b[b.length - 1] = b[b.length - 1].substr(9, b[b.length - 1].length - 4);
+      b[b.length - 1] = b[b.length - 1].split(',');
+      for (var j = 0; j < b[b.length - 1].length; j++) {
+        b[b.length - 1][j] = b[b.length - 1][j].split(' ');
+      }
+    }
+
+
+    function minMax(locs) {
+      var min = 100000;
+      var max = -100000;
+      for (var i = 0; i < locs.length; i++) {
+        var loc = locs[i][locs[i].length - 1];
+
+        if (!pop) pop = 0;
+        for (var j = 0; j < loc.length; j++) {
+          var l = loc[j];
+          l[0] = parseFloat(l[0]);
+          l[1] = parseFloat(l[1]);
+          //engine.add(l[0], l[1]);
+          //console.log(l);
+          if (l[0] > max_lat) max_lat = l[0];
+          if (l[0] < min_lat) min_lat = l[0];
+          if (l[1] > max_lng) max_lng = l[1];
+          if (l[1] < min_lng) min_lng = l[1];
+        }
+        for (var j = 0; j < locs[i].length; j++) {
+          var pop = parseInt(locs[i][j]);
+          if (pop > max) max = pop;
+          if (pop < min) min = pop;
+        }
+        min_max.push({
+          min: min,
+          max: max
+        });
+      }
+      //console.log(min_lat);
+      console.log(min_lng);
+      //console.log(max_lat);
+      console.log(max_lng);
+      //locs.push({min_lat: min_lat, max_lat: max_lat, min_lng: min_lng, max_lng: max_lng});
+    }
+
+
+
+    function drawPolys(s, loc, locs, pop){
+      //var loc = locs[i][locs[i].length-1];
+      var min_x = 10000;
+      var min_y = 10000;
+      var max_x = -10000;
+      var max_y = -10000;
+      var min = new Vector(10000,10000);
+      var max = new Vector(-10000,-10000);
+
+      if(!pop) pop = 0;
+      //chanceLog(pop);
+      //var c = 255 - map(pop, min_max[counter].min, min_max[counter].max, 0, 255);
+      var c = map(pop, 0, 40000, 0, 255);
+      var cc = 255 - map(j, 0, 40000, 0, 255);
+      ctx.fillStyle = rgb(c);
+      ctx.strokeStyle = rgb(cc, 0.4);
+      ctx.lineCap = 'round';
+      ctx.lineWidth = s * 2;
+      ctx.beginPath();
+      //ctx2.beginPath();
+      //ctx.moveTo(loc[0][0], loc[0][1]);
+      var ave = new Vector(0,0);
+      var simp = [];
+      for (var j = 1; j < loc.length; j++) {
+        var l = loc[j];
+        var l2 = loc[j-1];
+        //console.log(l);
+        var x1 = map(l[0], min_lat, max_lat, 0, w);
+        var y1 = map(l[1], min_lng, max_lng, 0, h);
+        var x2 = map(l2[0], min_lat, max_lat, 0, w);
+        var y2 = map(l2[1], min_lng, max_lng, 0, h);
+        ave.x += x1;
+        ave.y += y1;
+        ctx.lineTo(x1, y1, x2, y2);
+        simp.push({x1, x2});
+        if(x1 < min.x) min.x = x1;
+        if(y1 < min.y) min.y = y1;
+        if(x1 > max.x) max.x = x1;
+        if(y1 > max.y) max.y = y1;
+
+
+      }
+      //if(s == 10)
+      ctx.fill();
+      //if(s >= cc)
+      ctx.stroke();
+      ctx.closePath();
+
+
+      ctx.strokeStyle = "green";
+      ctx.lineCap = 'round';
+      ctx.lineWidth = s * 2;
+      ctx.beginPath();
+
+      loc2 = simplify(simp, 12, true);
+      for (var j = 1; j < loc2.length; j++) {
+        var l = loc2[j];
+        var l2 = loc2[j-1];
+        ctx.lineTo(l[0], l[1], l2[0], l2[1]);
+      }
+
+      ctx.stroke();
+      ctx.closePath();
+      //loc.push({min:min, max:max})
+      //drawAvePt(ave);
+
+      // can hardcode this in
+      //drawMidPoint(pop, min, max)
+    }
+
+
+    function drawBounds(locs) {
+
+      ctx2.background(0, 0.2);
+      for (var i = 0; i < locs.length; i++) {
+        var loc = locs[i][locs[i].length - 1];
+        //console.log(loc);
+
+        var min_x = 10000;
+        var min_y = 10000;
+        var max_x = -10000;
+        var max_y = -10000;
+        var min = new Vector(10000, 10000);
+        var max = new Vector(-10000, -10000);
+        var pop = parseInt(locs[i][counter]);
+        if (!pop) pop = 0;
+        // var c = 255 - map(pop, min_max[counter].min, min_max[counter].max, 0, 255);
+        var c = map(pop, 0, 40000, 0, 255);
+        ctx2.fillStyle = rgb(c);
+        ctx2.lineWidth = 1;
+        ctx2.strokeStyle = rgb(c);
+        ctx2.beginPath();
+
+        var ave = new Vector(0, 0);
+        for (var j = 1; j < loc.length; j++) {
+          var l = loc[j];
+          var l2 = loc[j - 1];
+          var x1 = map(l[0], min_lat, max_lat, 0, canvas2.width);
+          var y1 = map(l[1], min_lng, max_lng, 0, canvas2.height);
+          var x2 = map(l2[0], min_lat, max_lat, 0, canvas2.width);
+          var y2 = map(l2[1], min_lng, max_lng, 0, canvas2.height);
+          ave.x += x1;
+          ave.y += y1;
+
+          ctx2.lineTo(x1, y1, x2, y2);
+          //}
+
+
+          if (x1 < min.x) min.x = x1;
+          if (y1 < min.y) min.y = y1;
+          if (x1 > max.x) max.x = x1;
+          if (y1 > max.y) max.y = y1;
+        }
+
+        ctx2.stroke();
+        ctx2.fill();
+        ctx2.closePath();
+        //loc.push({min:min, max:max})
+        //drawAvePt(ave);
+
+        // can hardcode this in
+        //drawMidPoint(pop, min, max)
+
+      }
+      boxBlurCanvasRGB( 'canvas2', 0, 0, w, h, blur_ammt, blur_pass );
+    }
+
+    function drawMidPoint(pop, min, max) {
+      ctx2.font = "16px Arial";
+      //ctx2.fillStyle = "blue";
+      engine.add((min.x + max.x) / 2, (min.y + max.y) / 2);
+      var x = (min.x + max.x) / 2;
+      var y = (min.y + max.y) / 2;
+      //ctx2.fillEllipse(x, y, 5, 5);
+      ctx2.font = "11px Arial";
+      ctx2.fillStyle = "white";
+      ctx2.fillText(pop, x - 10, y + 15)
+    }
+
+
+    function drawAvePt(ave) {
+      ctx2.fillStyle = "red";
+      var x = ave.x / (loc.length - 1);
+      var y = ave.y / (loc.length - 1);
+      ctx2.fillEllipse(x, y, 4, 4);
+    }
+
+
+    function timeline() {
+      if (frameCount % 10 == 0) {
+        counter++;
+        //springBackNodes();
+      }
+
+      if (counter > years.length) {
+        counter = 0;
+        x = 0;
+        //reset();
+      }
+
+
+      ctx3.clearRect(0, 0, w, h);
+      ctx3.fillStyle = rgba(255, 0.4);
+      ctx3.fillRect(0, h - 60, w, h);
+      var xx = map(counter, 0, suburbs[0].length - 2, 0, w);
+      x = tween(x, xx, 20);
+      ctx3.strokeStyle = rgb(0);
+      ctx3.fillStyle = rgb(0);
+      ctx3.line(x, h - 40, x, h);
+      ctx3.fillText(years[counter], x + 10, h - 20);
+
+    }
+
+
+    function addScene(){
+      scene = new THREE.Scene();
+      aspect = window.innerWidth / window.innerHeight;
+      camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 1000);
+      camera.position.z = 250;
+      camera.near = 10;
+      camera.far = 295;
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        logarithmicDepthBuffer: true
+      });
+      renderer.setSize(w, h);
+      document.body.appendChild(renderer.domElement);
+
+
+      addPlane();
+      addLights();
+
+      renderer.setClearColor(0xeeeeee);
+      // renderer.setClearColor(0xffffff);
+      controls = new THREE.OrbitControls( camera );
+    }
+
+    function addPlane(){
+      geometry = new THREE.PlaneGeometry(w2*3, h2*3, w2, h2);
+      geometry.dynamic = true;
+
+      // geometry2 = new THREE.PlaneGeometry(w2*5, h2*5, w2, h2);
+      // geometry2.dynamic = true;
+
+      texture = new THREE.Texture(canvas);
+      texture.needsUpdate = true;
+
+      material = new THREE.MeshPhongMaterial({
+      //material = new THREE.MeshLambertMaterial({
+        map: texture,
+        color: 0xffffff,
+        //side: THREE.DoubleSide,
+        //wireframe: true
+      });
+
+      //var material = new THREE.MeshDepthMaterial({side: THREE.DoubleSide});
+      // material2 = new THREE.MeshLambertMaterial({
+      //   //map: texture,
+      //   color: 0x000000,
+      //   side: THREE.FrontSide,
+      //   wireframe: true
+      // });
+      material.flatShading = THREE.SmoothShading;
+      material.map.minFilter = THREE.LinearFilter;
+
+      plane = new THREE.Mesh(geometry, material);
+      scene.add(plane);
+      // plane.position.z -=1;
+      // plane2 = new THREE.Mesh(geometry, material2);
+      // scene.add(plane2);
+
+      //plane.geometry.mergeVertices();
+      geometry.computeFaceNormals();
+      //geometry.computeVertexNormals();
+      geometry.computeFlatVertexNormals();
+
+      // geometry2.computeFaceNormals();
+      // geometry2.computeVertexNormals();
+    }
+    function addLights(){
+      // var light = new THREE.HemisphereLight(0xffffff, 0xeeeeee, 0.5);
+      // scene.add(light);
+      var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambientLight);
+      //scene.fog = new THREE.FogExp2(0xffffff, 0.005);
+
+      // add spotlight for the shadows
+			var spotLight = new THREE.DirectionalLight(0xffffff);
+			spotLight.position.set(-20, 30, 40);
+			spotLight.intensity = 1.5;
+			scene.add(spotLight);
+
+    }
+
+
+    var settings = QuickSettings.create();
+    // // QuickSettings.useExtStyleSheet();
+     settings.setGlobalChangeHandler(draw);
+    // //settings.addRange(title, min, max, value, step, callback);
+     settings.addRange("height_multiplier", 10, 500, 100, 1, function(value) {
+       height_multiplier = value;
+       draw();
+     });
+    settings.addRange("camera.z", 0, 1500, 400, 1, function(value) {
+      camera.position.z = value;
+      draw();
+    });
+
+     settings.addBoolean("wireframe", 0, function(value) {
+       material.wireframe = value;
+       draw();
+     });
+  </script>
+
+</body>
+
+</html>

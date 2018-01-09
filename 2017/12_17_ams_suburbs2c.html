@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<script language="javascript" src="../js/utils.js"></script>
+<script language="javascript" src="../js/map_styles.js"></script>
+<!-- <script language="javascript" src="../js/utils/offset.js"></script> -->
+<script language="javascript" src="../js/utils/simplify.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+
+var cw=canvas.width;
+var ch=canvas.height;
+
+
+var shapePadding = 10;
+var dragVertexIndex = null;
+var hoverLocation = null;
+var polygonVertexRadius = 9;
+var polygon, marginPolygon, paddingPolygon;
+
+var polygonVertices = [];
+polygonVertices[0] =  [
+  {x: 551, y: 170},
+  {x: 562, y: 203},
+  {x: 646, y: 31},
+  {x: 635, y: 7},
+  {x: 631, y: 14},
+  {x: 617, y: 0},
+  {x: 601, y: 2},
+  {x: 533, y: 144},
+  {x: 551, y: 170},
+];
+
+polygonVertices[1] =  [
+{x: 370, y: 338},
+{x: 363, y: 358},
+{x: 380, y: 366},
+{x: 419, y: 347},
+{x: 417, y: 327},
+{x: 405, y: 335},
+{x: 370, y: 325},
+{x: 370, y: 338}
+];
+
+polygonVertices[2] =  [
+{x: 469, y: 629},
+{x: 509, y: 684},
+{x: 537, y: 659},
+{x: 523, y: 639},
+{x: 514, y: 598},
+{x: 494, y: 609},
+{x: 479, y: 606},
+{x: 461, y: 622},
+{x: 469, y: 629}
+]
+
+polygonVertices[3] =  [
+{x: 215, y: 576},
+{x: 230, y: 562},
+{x: 282, y: 562},
+{x: 284, y: 579},
+{x: 307, y: 578},
+{x: 308, y: 528},
+{x: 80, y: 523},
+{x: 76, y: 586},
+{x: 83, y: 603},
+{x: 113, y: 594},
+{x: 118, y: 576},
+{x: 123, y: 597},
+{x: 190, y: 603},
+{x: 203, y: 575},
+{x: 215, y: 576}
+];
+
+polygonVertices[4] =  [
+{x: 568, y: 288},
+{x: 527, y: 304},
+{x: 562, y: 344},
+{x: 595, y: 307},
+{x: 568, y: 288}
+];
+
+polygonVertices[5] =  [
+{x: 566, y: 237},
+{x: 582, y: 247},
+{x: 595, y: 220},
+{x: 606, y: 227},
+{x: 645, y: 147},
+{x: 602, y: 120},
+{x: 555, y: 223},
+{x: 566, y: 237}
+]
+
+
+polygonVertices[6] =  [
+{x: 444, y: 592},
+{x: 478, y: 569},
+{x: 471, y: 547},
+{x: 463, y: 544},
+{x: 460, y: 556},
+{x: 441, y: 552},
+{x: 433, y: 578},
+{x: 444, y: 592}
+];
+
+polygonVertices[7] =  [
+{x: 568, y: 581},
+{x: 548, y: 567},
+{x: 520, y: 578},
+{x: 559, y: 638},
+{x: 593, y: 615},
+{x: 568, y: 581}
+];
+
+polygonVertices[8] =  [
+{x: 436, y: 218},
+{x: 397, y: 217},
+{x: 398, y: 281},
+{x: 428, y: 279},
+{x: 429, y: 286},
+{x: 452, y: 270},
+{x: 445, y: 219},
+{x: 436, y: 218}
+];
+
+polygonVertices[9] =  [
+{x: 314, y: 294},
+{x: 342, y: 300},
+{x: 342, y: 267},
+{x: 372, y: 266},
+{x: 372, y: 281},
+{x: 398, y: 281},
+{x: 397, y: 217},
+{x: 340, y: 214},
+{x: 335, y: 258},
+{x: 305, y: 257},
+{x: 294, y: 243},
+{x: 238, y: 234},
+{x: 248, y: 260},
+{x: 291, y: 263},
+{x: 312, y: 276},
+{x: 314, y: 294}
+];
+
+polygonVertices[10] =  [
+{x: 434, y: 488},
+{x: 452, y: 517},
+{x: 472, y: 503},
+{x: 464, y: 486},
+{x: 454, y: 490},
+{x: 438, y: 471},
+{x: 437, y: 438},
+{x: 423, y: 446},
+{x: 434, y: 488}
+];
+
+polygonVertices[11] = [
+  {"x":356,"y":505},
+  {"x":350,"y":529},{"x":374,"y":530},{"x":376,"y":482},{"x":368,"y":466},{"x":356,"y":505}]
+polygonVertices[11] = [{"x":374,"y":447},{"x":368,"y":462},{"x":390,"y":470},{"x":393,"y":446},{"x":377,"y":438},{"x":374,"y":447}]
+polygonVertices[12] = [{"x":522,"y":404},{"x":514,"y":423},{"x":540,"y":437},{"x":540,"y":409},{"x":554,"y":393},{"x":530,"y":381},{"x":522,"y":404}]
+polygonVertices[13] = [{"x":306,"y":492},{"x":312,"y":493},{"x":314,"y":465},{"x":283,"y":469},{"x":294,"y":528},{"x":308,"y":528},{"x":306,"y":492}]
+polygonVertices[14] = [{"x":501,"y":337},{"x":509,"y":319},{"x":495,"y":314},{"x":490,"y":333},{"x":501,"y":337}]
+polygonVertices[15] = [{"x":157,"y":368},{"x":128,"y":388},{"x":151,"y":417},{"x":168,"y":370},{"x":157,"y":368}]
+polygonVertices[16] = [{"x":405,"y":420},{"x":400,"y":428},{"x":409,"y":435},{"x":423,"y":417},{"x":462,"y":418},{"x":467,"y":400},{"x":429,"y":396},{"x":405,"y":420}]
+polygonVertices[17] = [{"x":477,"y":371},{"x":484,"y":355},{"x":466,"y":350},{"x":463,"y":366},{"x":477,"y":371}]
+polygonVertices[18] = [{"x":747,"y":149},{"x":713,"y":174},{"x":764,"y":229},{"x":778,"y":120},{"x":758,"y":126},{"x":747,"y":149}]
+polygonVertices[19] = [{"x":420,"y":378},{"x":419,"y":366},{"x":407,"y":370},{"x":420,"y":378}]
+polygonVertices[20] = [{"x":80,"y":523},{"x":174,"y":525},{"x":168,"y":477},{"x":161,"y":483},{"x":138,"y":452},{"x":81,"y":507},{"x":80,"y":523}]
+polygonVertices[21] = [{"x":329,"y":470},{"x":314,"y":465},{"x":310,"y":479},{"x":312,"y":493},{"x":332,"y":503},{"x":340,"y":487},{"x":329,"y":470}]
+polygonVertices[22] = [{"x":507,"y":323},{"x":487,"y":345},{"x":530,"y":381},{"x":562,"y":344},{"x":527,"y":304},{"x":507,"y":323}]
+polygonVertices[23] = [{"x":397,"y":495},{"x":390,"y":470},{"x":366,"y":461},{"x":386,"y":506},{"x":401,"y":512},{"x":397,"y":495}]
+polygonVertices[24] = [{"x":667,"y":115},{"x":742,"y":115},{"x":714,"y":54},{"x":673,"y":61},{"x":667,"y":115}]
+polygonVertices[25] = [{"x":212,"y":487},{"x":209,"y":465},{"x":171,"y":472},{"x":174,"y":525},{"x":221,"y":526},{"x":212,"y":487}]
+polygonVertices[26] = [{"x":410,"y":473},{"x":424,"y":505},{"x":439,"y":497},{"x":423,"y":446},{"x":409,"y":435},{"x":410,"y":473}]
+polygonVertices[27] = [{"x":462,"y":418},{"x":423,"y":417},{"x":409,"y":435},{"x":422,"y":446},{"x":431,"y":438},{"x":452,"y":440},{"x":462,"y":418}]
+polygonVertices[28] = [{"x":410,"y":532},{"x":414,"y":544},{"x":442,"y":546},{"x":452,"y":517},{"x":439,"y":497},{"x":406,"y":523},{"x":410,"y":532}]
+polygonVertices[29] = [{"x":359,"y":419},{"x":395,"y":438},{"x":400,"y":431},{"x":366,"y":406},{"x":359,"y":419}]
+polygonVertices[30] = [{"x":673,"y":90},{"x":676,"y":57},{"x":646,"y":31},{"x":602,"y":120},{"x":645,"y":147},{"x":673,"y":90}]
+polygonVertices[31] = [{"x":332,"y":394},{"x":314,"y":296},{"x":307,"y":296},{"x":300,"y":333},{"x":312,"y":338},{"x":308,"y":382},{"x":332,"y":394}]
+polygonVertices[32] = [{"x":344,"y":425},{"x":320,"y":421},{"x":318,"y":452},{"x":340,"y":459},{"x":344,"y":425}]
+polygonVertices[33] = [{"x":397,"y":560},{"x":363,"y":568},{"x":379,"y":578},{"x":392,"y":574},{"x":417,"y":599},{"x":442,"y":546},{"x":397,"y":560}]
+polygonVertices[34] = [{"x":748,"y":395},{"x":715,"y":353},{"x":685,"y":382},{"x":680,"y":399},{"x":659,"y":397},{"x":646,"y":417},{"x":678,"y":452},{"x":724,"y":447},{"x":748,"y":395}]
+polygonVertices[35] = [{"x":760,"y":341},{"x":755,"y":329},{"x":734,"y":324},{"x":717,"y":336},{"x":715,"y":353},{"x":738,"y":379},{"x":760,"y":341}]
+polygonVertices[36] = [{"x":508,"y":507},{"x":475,"y":502},{"x":461,"y":509},{"x":504,"y":551},{"x":512,"y":597},{"x":521,"y":556},{"x":547,"y":559},{"x":560,"y":549},{"x":557,"y":536},{"x":519,"y":540},{"x":506,"y":531},{"x":508,"y":507}]
+polygonVertices[37] = [{"x":489,"y":342},{"x":465,"y":335},{"x":442,"y":345},{"x":484,"y":355},{"x":489,"y":342}]
+polygonVertices[38] = [{"x":561,"y":412},{"x":560,"y":437},{"x":605,"y":446},{"x":618,"y":400},{"x":611,"y":393},{"x":564,"y":396},{"x":561,"y":412}]
+polygonVertices[39] = [{"x":560,"y":437},{"x":564,"y":396},{"x":554,"y":393},{"x":540,"y":409},{"x":538,"y":430},{"x":540,"y":437},{"x":560,"y":437}]
+polygonVertices[40] = [{"x":401,"y":512},{"x":407,"y":523},{"x":424,"y":504},{"x":410,"y":477},{"x":409,"y":434},{"x":400,"y":428},{"x":387,"y":466},{"x":401,"y":512}]
+polygonVertices[41] = [{"x":451,"y":703},{"x":452,"y":723},{"x":509,"y":684},{"x":479,"y":641},{"x":449,"y":677},{"x":451,"y":703}]
+polygonVertices[42] = [{"x":357,"y":445},{"x":368,"y":462},{"x":377,"y":438},{"x":350,"y":426},{"x":357,"y":445}]
+polygonVertices[43] = [{"x":360,"y":480},{"x":337,"y":475},{"x":332,"y":503},{"x":306,"y":492},{"x":308,"y":528},{"x":350,"y":529},{"x":360,"y":480}]
+polygonVertices[44] = [{"x":154,"y":417},{"x":103,"y":361},{"x":73,"y":383},{"x":74,"y":492},{"x":83,"y":510},{"x":138,"y":452},{"x":161,"y":483},{"x":171,"y":472},{"x":203,"y":467},{"x":209,"y":438},{"x":154,"y":417}]
+polygonVertices[45] = [{"x":116,"y":379},{"x":127,"y":391},{"x":153,"y":369},{"x":168,"y":370},{"x":178,"y":336},{"x":166,"y":313},{"x":103,"y":361},{"x":116,"y":379}]
+polygonVertices[46] = [{"x":604,"y":323},{"x":595,"y":306},{"x":530,"y":381},{"x":562,"y":396},{"x":611,"y":393},{"x":618,"y":400},{"x":640,"y":386},{"x":604,"y":323}]
+polygonVertices[47] = [{"x":386,"y":409},{"x":411,"y":414},{"x":421,"y":405},{"x":419,"y":347},{"x":377,"y":365},{"x":363,"y":398},{"x":386,"y":409}]
+polygonVertices[48] = [{"x":758,"y":126},{"x":742,"y":115},{"x":665,"y":115},{"x":645,"y":147},{"x":712,"y":195},{"x":713,"y":174},{"x":744,"y":154},{"x":758,"y":126}]
+polygonVertices[49] = [{"x":419,"y":347},{"x":419,"y":366},{"x":471,"y":385},{"x":477,"y":371},{"x":441,"y":361},{"x":442,"y":345},{"x":419,"y":347}]
+polygonVertices[50] = [{"x":494,"y":606},{"x":514,"y":598},{"x":522,"y":558},{"x":548,"y":567},{"x":594,"y":534},{"x":557,"y":536},{"x":557,"y":556},{"x":521,"y":556},{"x":512,"y":598},{"x":494,"y":606}]
+polygonVertices[51] = [{"x":491,"y":461},{"x":469,"y":436},{"x":442,"y":440},{"x":472,"y":503},{"x":483,"y":502},{"x":491,"y":461}]
+polygonVertices[52] = [{"x":554,"y":515},{"x":616,"y":511},{"x":602,"y":493},{"x":603,"y":442},{"x":541,"y":436},{"x":535,"y":470},{"x":485,"y":491},{"x":483,"y":502},{"x":554,"y":515}]
+polygonVertices[53] = [{"x":485,"y":478},{"x":487,"y":491},{"x":535,"y":470},{"x":543,"y":456},{"x":539,"y":437},{"x":514,"y":423},{"x":483,"y":452},{"x":491,"y":461},{"x":485,"y":478}]
+polygonVertices[54] = [{"x":514,"y":423},{"x":526,"y":394},{"x":497,"y":376},{"x":485,"y":383},{"x":477,"y":407},{"x":514,"y":423}]
+polygonVertices[55] = [{"x":450,"y":685},{"x":449,"y":677},{"x":417,"y":674},{"x":400,"y":696},{"x":389,"y":681},{"x":369,"y":692},{"x":358,"y":670},{"x":337,"y":682},{"x":356,"y":750},{"x":381,"y":750},{"x":399,"y":728},{"x":451,"y":723},{"x":450,"y":685}]
+polygonVertices[56] = [{"x":177,"y":426},{"x":199,"y":355},{"x":178,"y":336},{"x":154,"y":417},{"x":177,"y":426}]
+polygonVertices[57] =polygonVertices[10] = [{"x":181,"y":411},{"x":177,"y":426},{"x":210,"y":438},{"x":224,"y":394},{"x":239,"y":396},{"x":244,"y":363},{"x":199,"y":355},{"x":181,"y":411}]
+polygonVertices[58] =polygonVertices[10] = [{"x":421,"y":405},{"x":445,"y":394},{"x":467,"y":400},{"x":471,"y":385},{"x":419,"y":366},{"x":421,"y":405}]
+polygonVertices[59] =polygonVertices[10] = [{"x":335,"y":393},{"x":342,"y":412},{"x":359,"y":419},{"x":363,"y":399},{"x":336,"y":386},{"x":335,"y":393}]
+polygonVertices[60] =polygonVertices[10] = [{"x":281,"y":454},{"x":283,"y":469},{"x":304,"y":464},{"x":302,"y":451},{"x":318,"y":452},{"x":319,"y":394},{"x":280,"y":394},{"x":281,"y":454}]
+polygonVertices[61] =polygonVertices[10] = [{"x":393,"y":328},{"x":405,"y":335},{"x":417,"y":327},{"x":416,"y":315},{"x":362,"y":312},{"x":366,"y":324},{"x":393,"y":328}]
+polygonVertices[62] =polygonVertices[10] = [{"x":432,"y":346},{"x":469,"y":336},{"x":472,"y":319},{"x":447,"y":317},{"x":448,"y":308},{"x":460,"y":307},{"x":459,"y":296},{"x":436,"y":279},{"x":429,"y":286},{"x":435,"y":317},{"x":417,"y":328},{"x":419,"y":347},{"x":432,"y":346}]
+polygonVertices[63] = [{"x":333,"y":387},{"x":342,"y":342},{"x":317,"y":319},{"x":333,"y":387}]
+polygonVertices[64] = [{"x":235,"y":241},{"x":183,"y":282},{"x":166,"y":312},{"x":183,"y":347},{"x":221,"y":363},{"x":246,"y":363},{"x":250,"y":329},{"x":281,"y":333},{"x":287,"y":301},{"x":315,"y":290},{"x":312,"y":276},{"x":291,"y":263},{"x":248,"y":260},{"x":235,"y":241}]
+polygonVertices[65] = [{"x":346,"y":547},{"x":362,"y":547},{"x":361,"y":530},{"x":308,"y":528},{"x":307,"y":579},{"x":340,"y":579},{"x":346,"y":547}]
+polygonVertices[66] = [{"x":246,"y":510},{"x":239,"y":526},{"x":294,"y":528},{"x":287,"y":485},{"x":252,"y":495},{"x":246,"y":510}]
+polygonVertices[67] = [{"x":214,"y":500},{"x":222,"y":506},{"x":221,"y":526},{"x":239,"y":526},{"x":244,"y":501},{"x":287,"y":485},{"x":281,"y":455},{"x":270,"y":452},{"x":261,"y":464},{"x":222,"y":403},{"x":203,"y":458},{"x":214,"y":500}]
+polygonVertices[68] = [{"x":279,"y":424},{"x":280,"y":394},{"x":224,"y":394},{"x":261,"y":464},{"x":270,"y":452},{"x":281,"y":455},{"x":279,"y":424}]
+polygonVertices[69] = [{"x":244,"y":363},{"x":239,"y":393},{"x":280,"y":394},{"x":281,"y":333},{"x":250,"y":329},{"x":244,"y":363}]
+polygonVertices[70] = [{"x":409,"y":530},{"x":361,"y":530},{"x":362,"y":547},{"x":346,"y":547},{"x":340,"y":579},{"x":360,"y":566},{"x":393,"y":566},{"x":432,"y":552},{"x":414,"y":544},{"x":409,"y":530}]
+polygonVertices[71] = [{"x":389,"y":531},{"x":409,"y":530},{"x":376,"y":482},{"x":369,"y":513},{"x":377,"y":515},{"x":374,"y":530},{"x":389,"y":531}]
+polygonVertices[72] = [{"x":342,"y":316},{"x":341,"y":300},{"x":314,"y":296},{"x":317,"y":319},{"x":342,"y":342},{"x":342,"y":354},{"x":367,"y":357},{"x":370,"y":325},{"x":342,"y":316}]
+polygonVertices[73] = [{"x":512,"y":366},{"x":499,"y":355},{"x":494,"y":360},{"x":497,"y":377},{"x":526,"y":394},{"x":530,"y":381},{"x":512,"y":366}]
+polygonVertices[74] = [{"x":519,"y":576},{"x":545,"y":563},{"x":522,"y":558},{"x":519,"y":576}]
+polygonVertices[75] = [{"x":548,"y":567},{"x":562,"y":575},{"x":592,"y":559},{"x":594,"y":536},{"x":583,"y":536},{"x":548,"y":567}]
+polygonVertices[76] = [{"x":461,"y":622},{"x":455,"y":609},{"x":437,"y":625},{"x":436,"y":636},{"x":389,"y":679},{"x":396,"y":695},{"x":417,"y":674},{"x":452,"y":674},{"x":475,"y":641},{"x":461,"y":622}]
+polygonVertices[77] = [{"x":340,"y":459},{"x":302,"y":451},{"x":304,"y":464},{"x":335,"y":475},{"x":340,"y":459}]
+polygonVertices[78] = [{"x":377,"y":438},{"x":395,"y":442},{"x":342,"y":412},{"x":349,"y":427},{"x":377,"y":438}]
+polygonVertices[79] = [{"x":512,"y":597},{"x":504,"y":551},{"x":461,"y":509},{"x":455,"y":513},{"x":474,"y":532},{"x":473,"y":561},{"x":478,"y":569},{"x":489,"y":563},{"x":479,"y":606},{"x":512,"y":597}]
+polygonVertices[80] = [{"x":363,"y":398},{"x":361,"y":405},{"x":400,"y":426},{"x":406,"y":420},{"x":400,"y":410},{"x":363,"y":398}];
+
+polygonVertices[81] = [{"x":652,"y":474},{"x":614,"y":513},{"x":594,"y":516},{"x":594,"y":534},{"x":633,"y":552},{"x":614,"y":591},{"x":588,"y":620},{"x":534,"y":656},{"x":572,"y":672},{"x":592,"y":717},{"x":604,"y":710},{"x":650,"y":714},{"x":675,"y":734},{"x":686,"y":714},{"x":695,"y":728},{"x":723,"y":727},{"x":768,"y":696},{"x":777,"y":706},{"x":791,"y":701},{"x":800,"y":679},{"x":814,"y":692},{"x":851,"y":676},{"x":894,"y":687},{"x":918,"y":670},{"x":930,"y":545},{"x":759,"y":453},{"x":698,"y":445},{"x":652,"y":474}];
+
+polygonVertices[82] = [{"x":501,"y":415},{"x":467,"y":400},{"x":458,"y":433},{"x":483,"y":452},{"x":512,"y":432},{"x":514,"y":422},{"x":501,"y":415}]
+polygonVertices[83] = [{"x":497,"y":376},{"x":499,"y":355},{"x":487,"y":345},{"x":467,"y":400},{"x":477,"y":407},{"x":485,"y":383},{"x":497,"y":376}]
+polygonVertices[84] = [{"x":205,"y":574},{"x":190,"y":603},{"x":123,"y":597},{"x":118,"y":576},{"x":113,"y":594},{"x":96,"y":600},{"x":83,"y":603},{"x":76,"y":586},{"x":0,"y":605},{"x":28,"y":755},{"x":338,"y":684},{"x":368,"y":663},{"x":417,"y":599},{"x":392,"y":574},{"x":379,"y":578},{"x":360,"y":566},{"x":344,"y":579},{"x":297,"y":573},{"x":293,"y":583},{"x":284,"y":579},{"x":282,"y":562},{"x":230,"y":562},{"x":213,"y":579},{"x":205,"y":574}]
+polygonVertices[85] = [{"x":335,"y":394},{"x":319,"y":394},{"x":321,"y":421},{"x":344,"y":425},{"x":335,"y":394}]
+polygonVertices[86] = [{"x":308,"y":365},{"x":312,"y":338},{"x":300,"y":333},{"x":300,"y":309},{"x":314,"y":294},{"x":299,"y":293},{"x":282,"y":313},{"x":280,"y":394},{"x":319,"y":394},{"x":319,"y":382},{"x":308,"y":382},{"x":308,"y":365}]
+polygonVertices[87] = [{"x":365,"y":359},{"x":342,"y":354},{"x":335,"y":386},{"x":363,"y":399},{"x":377,"y":365},{"x":365,"y":359}]
+polygonVertices[88] = [{"x":679,"y":452},{"x":646,"y":417},{"x":659,"y":397},{"x":683,"y":396},{"x":685,"y":382},{"x":715,"y":353},{"x":719,"y":334},{"x":734,"y":324},{"x":755,"y":329},{"x":744,"y":314},{"x":716,"y":315},{"x":652,"y":379},{"x":619,"y":398},{"x":601,"y":485},{"x":611,"y":509},{"x":679,"y":452}]
+
+
+
+
+for (var i = 60; i > 8; i-=8) {
+
+  for (var j = 0; j < polygonVertices.length-1; j+=1) {
+  shapePadding = i
+  var polygon = createPolygon(polygonVertices[j]);
+  //polygon = simplify(polygon, 3, true);
+  var paddingPolygon = createPaddingPolygon(polygon);
+  var c = rgba(255 - i * 3)
+  drawAll(c);
+}
+  }
+
+  // polygonVertices = simplify(polygon, 3, true);
+  // for (var i = 60; i > 8; i-=8) {
+  //
+  //   for (var j = 0; j < polygonVertices.length-1; j+=1) {
+  //   shapePadding = i
+  //   var polygon = createPolygon(polygonVertices[j]);
+  //   //polygon = simplify(polygon, 3, true);
+  //   var paddingPolygon = createPaddingPolygon(polygon);
+  //   var c = rgba(255 - i * 3)
+  //   drawAll(c);
+  // }
+  //   }
+
+var url3 = '/data/ams_population_predict.csv';
+var suburbs = [];
+
+function setup(){
+  load(url3, suburbs);
+}
+
+function load(url, vals) {
+  //var vals = [];
+  d3.csv(url, function(error, d) {
+
+    if (error) console.log(error);
+    data = d;
+    for (var i = 0; i < data.length; i++) {
+      var d = data[i];
+      //console.log(d);
+      var b = Object.values(d);
+      //console.log(b[b.length-1]);
+
+      cleanPolygonData(b);
+      vals.push(b);
+
+    }
+
+    minMax(vals);
+
+    calcPolys(vals);
+    //addParticles(vals);
+    //console.log(vals);
+
+    //initGrid();
+  });
+}
+
+
+function cleanPolygonData(b){
+  b[b.length-1] = b[b.length-1].substr(10, b[b.length-1].length-4);
+  b[b.length-1] = b[b.length-1].split(',');
+  for (var j = 0; j < b[b.length-1].length; j++) {
+    b[b.length-1][j] = b[b.length-1][j].split(' ');
+  }
+}
+
+
+var min_lat = 10000;
+var min_lng = 10000;
+var max_lat = -10000;
+var max_lng = -10000;
+
+
+var polyVec = [];
+
+function calcPolys(locs){
+      i = 13;
+ for (var i = 0; i < locs.length; i++) {
+
+    var loc = locs[i][locs[i].length-1];
+polyVec = []
+    var min = new Vector(10000,10000);
+    var max = new Vector(-10000,-10000);
+
+    var ave = new Vector(0,0);
+    for (var j = 0; j < loc.length; j++) {
+      var l = loc[j];
+      var x1 = Math.round(map(l[0], min_lat, max_lat, 0, w));
+      var y1 = Math.round(map(l[1], min_lng, max_lng, 0, h));
+      // l = new Vector(x1, y1);
+      loc[j] = {x: x1, y: y1};
+      polyVec.push({x: x1, y: y1});
+      if(x1 < min.x) min.x = x1;
+      if(y1 < min.y) min.y = y1;
+      if(x1 > max.x) max.x = x1;
+      if(y1 > max.y) max.y = y1;
+    }
+
+    polyVec = simplify(polyVec, 10, true);
+    console.log(JSON.stringify(polyVec));
+    ///var polygon = createPolygon(polyVec);
+    //console.log(polygon);
+    //var paddingPolygon = createPaddingPolygon(polygon);
+    //console.log(paddingPolygon);
+  //  drawAll("red");
+
+}
+
+}
+
+function minMax(locs){
+  var min = 100000;
+  var max = -100000;
+  for (var i = 0; i < locs.length; i++) {
+    var loc = locs[i][locs[i].length-1];
+
+    for (var j = 0; j < loc.length; j++) {
+      var l = loc[j];
+      l[0] = parseFloat(l[0]);
+      l[1] = parseFloat(l[1]);
+
+      if(l[0] > max_lat) max_lat = l[0];
+      if(l[0] < min_lat) min_lat = l[0];
+      if(l[1] > max_lng) max_lng = l[1];
+      if(l[1] < min_lng) min_lng = l[1];
+    }
+  //   for (var j = 0; j < locs[i].length; j++) {
+  //       var pop = parseInt(locs[i][j]);
+  //       if(pop > max) max = pop;
+  //       if(pop < min) min = pop;
+  //   }
+  //   min_max.push({min: min, max: max});
+  }
+  //console.log(min_lat);
+  console.log(min_lng);
+  //console.log(max_lat);
+  console.log(max_lng);
+}
+
+
+
+/////////////////////////////////
+// Polygon creation and drawing
+
+function drawAll(c){
+  drawMe(polygon,'black');
+  drawMe(paddingPolygon,c);
+}
+
+function drawMe(p,stroke){
+  var v=p.vertices;
+  ctx.beginPath();
+  ctx.moveTo(v[0].x,v[0].y);
+  for(var i=0;i<v.length;i++){
+    ctx.lineTo(v[i].x,v[i].y);
+  }
+  ctx.closePath();
+  ctx.strokeStyle=stroke;
+  ctx.fillStyle=stroke;
+  ctx.fill();
+  ctx.stroke();
+}
+
+function createPolygon(vertices){
+  var polygon = {vertices: vertices};
+  var edges = [];
+  var minX = (vertices.length > 0) ? vertices[0].x : undefined;
+  var minY = (vertices.length > 0) ? vertices[0].y : undefined;
+  var maxX = minX;
+  var maxY = minY;
+
+  for (var i = 0; i < polygon.vertices.length; i++) {
+    vertices[i].label = String(i);
+    vertices[i].isReflex = isReflexVertex(polygon, i);
+    var edge = {
+      vertex1: vertices[i],
+      vertex2: vertices[(i + 1) % vertices.length],
+      polygon: polygon,
+      index: i
+    };
+    edge.outwardNormal = outwardEdgeNormal(edge);
+    edge.inwardNormal = inwardEdgeNormal(edge);
+    edges.push(edge);
+    var x = vertices[i].x;
+    var y = vertices[i].y;
+    minX = Math.min(x, minX);
+    minY = Math.min(y, minY);
+    maxX = Math.max(x, maxX);
+    maxY = Math.max(y, maxY);
+  }
+
+  polygon.edges = edges;
+  polygon.minX = minX;
+  polygon.minY = minY;
+  polygon.maxX = maxX;
+  polygon.maxY = maxY;
+  polygon.closed = true;
+
+  return polygon;
+}
+
+function createPaddingPolygon(polygon){
+  var offsetEdges = [];
+  for (var i = 0; i < polygon.edges.length; i++) {
+    var edge = polygon.edges[i];
+    var dx = edge.inwardNormal.x * shapePadding;
+    var dy = edge.inwardNormal.y * shapePadding;
+    //console.log(dy);
+    offsetEdges.push(createOffsetEdge(edge, dx, dy));
+  }
+  //console.log(offsetEdges);
+  var vertices = [];
+  for (var i = 0; i < offsetEdges.length; i++) {
+    var thisEdge = offsetEdges[i];
+    //console.log(thisEdge);
+    var prevEdge = offsetEdges[(i + offsetEdges.length - 1) % offsetEdges.length];
+    var vertex = edgesIntersection(prevEdge, thisEdge);
+
+    if (vertex)
+      vertices.push(vertex);
+    else {
+      var arcCenter = polygon.edges[i].vertex1;
+      appendArc(vertices, arcCenter, shapePadding, prevEdge.vertex2, thisEdge.vertex1, true);
+    }
+  }
+  //console.log(vertices);
+  var paddingPolygon = createPolygon(vertices);
+  paddingPolygon.offsetEdges = offsetEdges;
+
+  return paddingPolygon;
+}
+
+
+//////////////////////
+// Support functions
+
+
+function isReflexVertex(polygon, vertexIndex){
+  // Assuming that polygon vertices are in clockwise order
+  var thisVertex = polygon.vertices[vertexIndex];
+  var nextVertex = polygon.vertices[(vertexIndex + 1) % polygon.vertices.length];
+  var prevVertex = polygon.vertices[(vertexIndex + polygon.vertices.length - 1) % polygon.vertices.length];
+  if (leftSide(prevVertex, nextVertex, thisVertex) < 0){return true;}  // TBD: return true if thisVertex is inside polygon when thisVertex isn't included
+  return false;
+}
+
+function inwardEdgeNormal(edge){
+  // Assuming that polygon vertices are in clockwise order
+  var dx = edge.vertex2.x - edge.vertex1.x;
+  var dy = edge.vertex2.y - edge.vertex1.y;
+  var edgeLength = Math.sqrt(dx*dx + dy*dy);
+  return {x: -dy/edgeLength, y: dx/edgeLength};
+}
+
+function outwardEdgeNormal(edge){
+  var n = inwardEdgeNormal(edge);
+  return {x: -n.x, y: -n.y};
+}
+
+// If the slope of line vertex1,vertex2 greater than the slope of vertex1,p then p is on the left side of vertex1,vertex2 and the return value is > 0.
+// If p is colinear with vertex1,vertex2 then return 0, otherwise return a value < 0.
+function leftSide(vertex1, vertex2, p){
+  return ((p.x - vertex1.x) * (vertex2.y - vertex1.y)) - ((vertex2.x - vertex1.x) * (p.y - vertex1.y));
+}
+
+function createOffsetEdge(edge, dx, dy){
+  return {
+    vertex1: {x: edge.vertex1.x + dx, y: edge.vertex1.y + dy},
+    vertex2: {x: edge.vertex2.x + dx, y: edge.vertex2.y + dy}
+  };
+}
+
+// based on http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/, edgeA => "line a", edgeB => "line b"
+function edgesIntersection(edgeA, edgeB){
+  var den = (edgeB.vertex2.y - edgeB.vertex1.y) * (edgeA.vertex2.x - edgeA.vertex1.x) - (edgeB.vertex2.x - edgeB.vertex1.x) * (edgeA.vertex2.y - edgeA.vertex1.y);
+  if (den == 0){return null;}  // lines are parallel or conincident
+
+  var ua = ((edgeB.vertex2.x - edgeB.vertex1.x) * (edgeA.vertex1.y - edgeB.vertex1.y) - (edgeB.vertex2.y - edgeB.vertex1.y) * (edgeA.vertex1.x - edgeB.vertex1.x)) / den;
+  var ub = ((edgeA.vertex2.x - edgeA.vertex1.x) * (edgeA.vertex1.y - edgeB.vertex1.y) - (edgeA.vertex2.y - edgeA.vertex1.y) * (edgeA.vertex1.x - edgeB.vertex1.x)) / den;
+
+  if (ua < 0 || ub < 0 || ua > 1 || ub > 1){ return null; }
+
+  return {x: edgeA.vertex1.x + ua * (edgeA.vertex2.x - edgeA.vertex1.x),  y: edgeA.vertex1.y + ua * (edgeA.vertex2.y - edgeA.vertex1.y)};
+}
+
+function appendArc(vertices, center, radius, startVertex, endVertex, isPaddingBoundary){
+  const twoPI = Math.PI * 2;
+  var startAngle = Math.atan2(startVertex.y - center.y, startVertex.x - center.x);
+  var endAngle = Math.atan2(endVertex.y - center.y, endVertex.x - center.x);
+  if (startAngle < 0)
+    startAngle += twoPI;
+  if (endAngle < 0)
+    endAngle += twoPI;
+  var arcSegmentCount = 5; // An odd number so that one arc vertex will be eactly arcRadius from center.
+  var angle = ((startAngle > endAngle) ? (startAngle - endAngle) : (startAngle + twoPI - endAngle));
+  var angle5 =  ((isPaddingBoundary) ? -angle : twoPI - angle) / arcSegmentCount;
+
+  vertices.push(startVertex);
+  for (var i = 1; i < arcSegmentCount; ++i) {
+    var angle = startAngle + angle5 * i;
+    var vertex = {
+      x: center.x + Math.cos(angle) * radius,
+      y: center.y + Math.sin(angle) * radius,
+    };
+    vertices.push(vertex);
+  }
+  vertices.push(endVertex);
+}
+
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.font="16px Arial";
+////////////// GET DATA ////////////////
+var url = '/data/amsterdam_tides.csv';
+
+var data = [];
+
+d3.csv(url, function(error, d) {
+
+  if (error) console.log(error);
+  data = d;
+  //movements = data;
+
+  for (var i = 0; i < data.length; i++) {
+    var d = data[i];
+    if (d.FHX < min_wind) min_wind = d.FHX;
+    if (d.FHX > max_wind) max_wind = d.FHX;
+
+    if (d.PX < min_pressure) min_pressure = d.PX;
+    if (d.PX > max_pressure) max_pressure = d.PX;
+  }
+  console.log(data);
+
+});
+
+
+
+
+
+////////////////
+
+var counter = 0;
+var bar_ht = 20;
+
+var min_wind = 10000;
+var max_wind = 0;
+
+var min_pressure = 10000;
+var max_pressure = 0;
+
+var windx = 0;
+var old_wind = new Vector(0,0);
+var wind = [];
+var pressure = [];
+ctx.strokeStyle = "white";
+ctx.background(100);
+
+function draw() {
+
+  ctx.background(0);
+  if (data.length > 0) {
+    var d = data[counter];
+      //console.log(max_wo);
+      ctx.fillText(d.STN + " " + d.DATE, 50, 20);
+
+      drawGraph(d.FHX, 100, min_wind, max_wind);
+      drawGraph(d.PX, 400, min_pressure, max_pressure);
+
+      var ww = map(d.FHX, min_wind, max_wind, 0, 100);
+      current_wind = new Vector(windx, ww);
+      wind.push(current_wind);
+
+      var p = map(d.PX, min_pressure, max_pressure, 0, 100);
+      current_pressure = new Vector(windx, p);
+      pressure.push(current_pressure);
+
+
+      lineGraph(wind, 300);
+      lineGraph(pressure, 600);
+
+      windx+=1;
+
+      if(windx>w) {
+        windx = 0;
+        wind = [];
+        pressure = [];
+      }
+      if(frameCount%25 == 0) counter++;
+      if(counter > data.length-1) counter = 0;
+  }
+
+
+}
+
+function lineGraph(data, ypos){
+  for (var i = 0; i < data.length; i++) {
+    var d = data[i];
+    if (i==0) {
+      ctx.line(0, ypos, d.x, ypos+ d.y);
+    } else {
+      ctx.line(d.x, ypos - d.y, data[i-1].x, ypos - data[i-1].y);
+    }
+
+  }
+
+}
+
+function drawGraph(d, posy, _min, _max){
+  var wi = map(parseInt(d), _min, _max, 0, w);
+  var max = map(_max, _min, _max, 0, w -50)
+  ctx.fillStyle = "grey";
+  ctx.fillRect(0, posy, max, bar_ht);
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, posy, wi, bar_ht);
+  ctx.fillText(d, 50, posy -20);
+}
+
+
+
+
+</script>
+
+</body>
+
+</html>

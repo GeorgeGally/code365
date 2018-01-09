@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/new_vector.js"></script>
+
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+ <body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var num_boids = 100;
+
+
+var flock;
+
+function setup() {
+
+  flock = new Flock();
+  // Add an initial set of boids into the system
+  for (var i = 0; i < num_boids; i++) {
+    var b = new Boid(random(w), random(h), i);
+    flock.addBoid(b);
+  }
+}
+
+function draw() {
+  ctx.background(51);
+  flock.run();
+}
+
+// Add a new boid into the System
+// function mouseDragged() {
+//   flock.addBoid(new Boid(mouseX,mouseY));
+// }
+
+
+function Flock() {
+  // An array for all the boids
+  this.boids = []; // Initialize the array
+
+	this.run = function() {
+	  for (var i = 0; i < this.boids.length; i++) {
+	    this.boids[i].run(this.boids);
+	  }
+	}
+
+	this.addBoid = function(b) {
+	  this.boids.push(b);
+	}
+
+	//console.log(this.boids);
+
+}
+
+
+// Boid class
+// Methods for Separation, Cohesion, Alignment added
+
+function Boid(x,y,i) {
+  this.acceleration = new Vector(0,0);
+  this.velocity = new Vector(random(-1,1),random(-1,1));
+  this.position = new Vector(x,y);
+  this.r = 3.0;
+	this.me = i;
+  this.maxspeed = 3;    // Maximum speed
+  this.maxforce = 0.05; // Maximum steering force
+	//console.log(this.position);
+
+this.run = function(boids) {
+  this.flock(boids);
+  this.update();
+  this.borders();
+  this.render();
+}
+
+
+this.applyForce = function(force) {
+  // We could add mass here if we want A = F / M
+  //this.acceleration.add(force);
+	this.acceleration.x+=force.x;
+	this.acceleration.y+=force.y;
+
+	//console.log(this.acceleration);
+	//console.log(force);
+	//chanceLog(this.acceleration, 1000)
+}
+
+
+
+// We accumulate a new acceleration each time based on three rules
+this.flock = function(boids) {
+  var sep = this.separate(boids);   // Separation
+	//chanceLog(sep, 1000)
+  var ali = this.align(boids);      // Alignment
+  var coh = this.cohesion(boids);   // Cohesion
+  // Arbitrarily weight these forces
+  //sep.mult(1.5);
+	sep.x *= 1.5;
+	sep.y *= 1.5;
+  ali.x *= 1.0;
+  ali.y *= 1.0;
+  //ali.mult(1.0);
+  coh.mult(1.0);
+	//chanceLog(coh);
+  // Add the force vectors to acceleration
+  this.applyForce(sep);
+  this.applyForce(ali);
+  this.applyForce(coh);
+}
+
+
+// Method to update location
+this.update = function() {
+  // Update velocity
+	//chanceLog(this.acceleration)
+  //this.velocity.add(this.acceleration);
+	this.velocity.x += this.acceleration.x;
+	this.velocity.y += this.acceleration.y;
+
+  // Limit speed
+  this.velocity.limit(this.maxspeed);
+
+	//this.velocity.y = 0;
+  //this.position.add(this.velocity);
+	this.position.x += this.velocity.x;
+	this.position.y += this.velocity.y;
+	//chanceLog(this.velocity)
+	//if(this.me == 50) chanceLog(this.position, 1000);
+  // Reset accelertion to 0 each cycle
+  //this.acceleration.mult(0);
+  this.acceleration.x = 0;
+  this.acceleration.y = 0;
+}
+
+// A method that calculates and applies a steering force towards a target
+// STEER = DESIRED MINUS VELOCITY
+this.seek = function(target) {
+  //var desired = target.subtract(this.position);  // A vector pointing from the location to the target
+	var desired = new Vector();
+	desired.x = target.x - this.position.x;
+	desired.y = target.y - this.position.y;
+	//target.subtract(this.position);
+	target.x -= this.position.x;
+	target.y -= this.position.y;
+  // Normalize desired and scale to maximum speed
+  desired.normalize();
+  //desired.mult(this.maxspeed);
+  desired.x *= this.maxspeed;
+  desired.y *= this.maxspeed;
+  // Steering = Desired minus Velocity
+  //var steer = desired.subtract(this.velocity);
+	var steer = new Vector();
+	steer.x = desired.x - this.velocity.x;
+	steer.y = desired.y - this.velocity.y;
+
+  steer.limit(this.maxforce);  // Limit to maximum steering force
+	//console.log(steer);
+  return steer;
+}
+
+this.render = function() {
+  // Draw a triangle rotated in the direction of velocity
+  var theta = this.velocity.getDirection() + radians(90);
+	//chanceLog(theta);
+  ctx.fillStyle = rgb(255);
+  ctx.strokeStyle = rgb(255);
+	if(this.me == 5) ctx.fillStyle = rgb(255, 0, 0);
+  ctx.save();
+  ctx.translate(this.position.x,this.position.y);
+  ctx.rotate(theta);
+	ctx.line(0,0, 0, -10);
+	ctx.fillEqTriangle(0,0, this.r*2);
+
+  ctx.restore();
+}
+
+// Wraparound
+this.borders = function() {
+  if (this.position.x < -this.r)  this.position.x = width +this.r;
+  if (this.position.y < -this.r)  this.position.y = height+this.r;
+  if (this.position.x > width +this.r) this.position.x = -this.r;
+  if (this.position.y > height+this.r) this.position.y = -this.r;
+}
+
+// Separation
+// Method checks for nearby boids and steers away
+this.separate = function(boids) {
+  var desiredseparation = 25.0;
+  var steer = new Vector(0,0);
+  var count = 0;
+
+  // For every boid in the system, check if it's too close
+  for (var i = 0; i < boids.length; i++) {
+
+		var d = dist(
+			this.position.x, boids[i].position.x,
+			this.position.y, boids[i].position.y
+		);
+
+    //var d = dist(this.position,boids[i].position);
+		//chanceLog(Math.round(d), 10000)
+    // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
+    if ((d > 0) && (d < desiredseparation)) {
+      // Calculate vector pointing away from neighbor
+			//chanceLog(Math.round(d), 200)
+      //var diff = this.position.subtract(boids[i].position);
+			var diff = new Vector(
+				this.position.x - boids[i].position.x,
+				this.position.y - boids[i].position.y
+			);
+
+			//if(!diff.x) {
+				//chanceLog(diff.y);
+			//}
+      diff.normalize();
+      //diff.divide(d);        // Weight by distance
+			diff.x = diff.x/d;
+			diff.y = diff.y/d;
+      //steer.add(diff);
+			steer.x+=diff.x;
+			steer.y+=diff.y;
+      //chanceLog(steer.y);
+      count++;            // Keep track of how many
+    }
+  }
+  // Average -- divide by how many
+  if (count > 0) {
+    //steer.divide(count);
+		steer.x/=count;
+		steer.y/=count;
+  }
+
+  // As long as the vector is greater than 0
+  if (steer.getMagnitude() > 0) {
+  //chanceLog(steer.getMagnitude());
+    // Implement Reynolds: Steering = Desired - Velocity
+    steer.normalize();
+
+    //steer.mult(this.maxspeed);
+    steer.x *= this.maxspeed;
+    steer.y *= this.maxspeed;
+    //steer.subtract(this.velocity);
+		steer.x-=this.velocity.x;
+		steer.y-=this.velocity.y;
+    steer.limit(this.maxforce);
+//		chanceLog(steer);
+  }
+  return steer;
+}
+}
+// Alignment
+// For every nearby boid in the system, calculate the average velocity
+Boid.prototype.align = function(boids) {
+  var neighbordist = 50;
+  var sum = new Vector(0,0);
+  var count = 0;
+  for (var i = 0; i < boids.length; i++) {
+    //var d = distVector(this.position,boids[i].position);
+    var d = dist(this.position.x,boids[i].position.x, this.position.y,boids[i].position.y);
+		//chanceLog(Math.round(d), 10000)
+    if ((d > 0) && (d < neighbordist)) {
+      //sum.add(boids[i].velocity);
+			sum.x+=boids[i].velocity.x;
+			sum.y+=boids[i].velocity.y;
+			//
+      count++;
+    }
+  }
+  if (count > 0) {
+    //sum.divide(count);
+		sum.x/=count;
+		sum.y/=count;
+    sum.normalize();
+    //sum.mult(this.maxspeed);
+		sum.x *= this.maxspeed.x;
+		sum.y *= this.maxspeed.y;
+		var steer = new Vector(sum.x, sum.y);
+    //var steer = sum.subtract(this.velocity);
+		steer.x-=this.velocity.x;
+		steer.y-=this.velocity.y;
+    //chanceLog(steer)
+    steer.limit(this.maxforce);
+		//console.log(steer);
+    return steer;
+  } else {
+    return new Vector(0,0);
+  }
+}
+
+// Cohesion
+// For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
+Boid.prototype.cohesion = function(boids) {
+  var neighbordist = 80;
+  var sum = new Vector(0,0,0);   // Start with empty vector to accumulate all locations
+  var count = 0;
+
+  for (var i = 0; i < boids.length; i++) {
+    //var d = distVector(this.position,boids[i].position);
+		var d = dist(this.position.x, boids[i].position.x, this.position.y, boids[i].position.y);
+
+    if ((d > 0) && (d < neighbordist)) {
+      //chanceLog(d)
+			//console.log(boids[i].position);
+      //sum.add(boids[i].position); // Add location
+			sum.x += boids[i].position.x;
+			sum.y += boids[i].position.y;
+			//console.log(sum);
+			//chanceLog(boids[i].position, 100);
+      count++;
+    }
+  }
+  //chanceLog(sum);
+	//console.log(sum);
+	// chanceLog(sum, 100);
+  if (count > 0) {
+    //sum.divide(count);
+		sum.x/=count;
+		sum.y/=count;
+		//console.log(sum)
+    return this.seek(sum);  // Steer towards the location
+  } else {
+    return new Vector(0,0);
+  }
+}
+
+</script>
+
+</body>
+</html>

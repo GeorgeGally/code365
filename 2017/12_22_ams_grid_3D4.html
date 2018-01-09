@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Soundcloud Viz</title>
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<script language="javascript" src="../js/fx/fast_blur.js"></script>
+
+<script src="../js/dat.gui.min.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<style>
+#canvas1, #canvas2, #canvas3 {
+  pointer-events: none;
+  //display: none;
+}
+</style>
+</head>
+ <body>
+
+<script>
+var x = 0;
+var blur_pass = 1;
+var blur_ammt = 1;
+var ctx = createCanvas("canvas1");
+var ctx2 = createHiddenCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+//ctx2.canvas.style.zIndex = 99;
+
+var canvas2 = ctx2.canvas;
+var canvas3 = ctx3.canvas;
+//canvas2.width = 120, canvas2.height = 80;
+//canvas2.style.zIndex = 99;
+var w2 = canvas2.width;
+var h2 = canvas2.height;
+//canvas3.style.zIndex = 90;
+
+  ctx3.font = "16px Arial";
+
+var FOV = 220;
+var engine, xosc, yosc;
+var old_red = [];
+var old_green = [];
+var old_blue = [];
+
+
+var controls = {
+			dark: 8,
+      light: 43,
+		}
+
+    var height_multiplier = 300;
+    var counter, old_counter;
+
+    var years = [];
+    for (var i = 1996; i < 2056; i++) {
+      years.push(i);
+    }
+    var url3 = '/data/ams_population_predict.csv';
+
+    var suburbs = [];
+    var population = [];
+
+    var min_lat = 10000;
+    var min_lng = 10000;
+    var max_lat = -10000;
+    var max_lng = -10000;
+
+
+
+
+function setup(){
+  load(url3, suburbs);
+  //video_scale = new Vector(video.width/w, video.height/h);
+  reset();
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.scale = 1;
+    p.pos3d.x = 1;
+    p.pos3d.y = 1;
+    p.target.z = random(-15, 15);
+    //p.pos.x -= w/2;
+    //p.pos.y -= h/2;
+    p.sz = 5;
+  }
+
+}
+
+
+
+function draw(){
+  ctx.background(0);
+  //if(mousePressed) reset();
+  //if (chance(100)) reset();
+
+  if (suburbs[0]) {
+    timeline();
+    if(old_counter != counter) {
+drawBounds(suburbs);
+old_counter = counter;
+//texture.needsUpdate = true;
+}
+  }
+
+  videoshit();
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    // p.pos.x = p.start.x + Math.sin(p.row + frameCount/30)* xosc;
+    // p.pos.y = p.start.y + Math.cos(p.col + frameCount/30)* yosc;
+    moveParticle(p);
+    calc3DPos(p);
+
+  }
+
+  drawParticles();
+}
+
+
+function moveParticle(p){
+  //if(chance(30)) p.target.z = random(-10,20);
+  p.pos.z = tween(p.pos.z, p.target.z, 10);
+}
+
+
+function calc3DPos(p){
+  p.scale = FOV/(p.pos.z + FOV);
+  //p.pos3d.x = projection(p.pos.x, p.pos.z, w/2, h/2, 400);
+  //p.pos3d.y = projection(p.pos.y, p.pos.z, height/2, h/2, FOV);
+  p.pos3d.x = (w - p.pos.x - w/2) * p.scale;
+  p.pos3d.y = (p.pos.y - h/2) * p.scale;
+}
+
+
+
+function drawParticles(){
+  ctx.save();
+  ctx.translate(w/2, h/2);
+  ctx.fillStyle = rgb(255);
+  ctx.strokeStyle = rgb(255);
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+
+    var sz = map(p.pos.z, 0, 20, 3, 8);
+    //chanceLog(sz)
+    // ctx.LfillEllipse(p.pos3d.x, p.pos3d.y, sz, sz);
+    ctx.LfillEllipse(p.pos.x - w/2, p.pos.y - h/2, sz, sz);
+    //if( p.neighbours.right > 0) ctx.line(p.pos3d.x, p.pos3d.y, engine.particles[p.neighbours.right].pos3d.x, engine.particles[p.neighbours.right].pos3d.y);
+    //if( p.neighbours.bottom > 0) ctx.line(p.pos3d.x, p.pos3d.y, engine.particles[p.neighbours.bottom].pos3d.x,  engine.particles[p.neighbours.bottom].pos3d.y);
+  }
+  ctx.restore();
+}
+
+
+function reset(){
+  ctx.lineWidth = 1;
+  engine = new particleEngine(200, 100, w + w/4, h+h/4, -w/8, -h/8);
+  engine.setRandomColour(255);
+  //engine.setRandomColour(10, 145, 0, 50, 25, 155);
+  xosc = randomInt(5, 100);
+  yosc = randomInt(5, 100);
+}
+
+function videoshit(){
+
+  //hidden_ctx.drawImage(video, 0,0, w, h);
+  sample = ctx2.getImageData(0,0,w,h);
+
+  ctx.fillStyle = rgba(255, 0.3);
+
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+
+    var pos = Math.round(Math.round(p.pos.x)  + Math.round(p.pos.y) * w) * 4;
+    var r = sample.data[pos];
+    var g = sample.data[pos+1];
+    var b = sample.data[pos+2];
+    p.c = rgb(r,g,b);
+    p.target.z = -1 *brightness(r,g,b, controls.dark, controls.light);
+    //chanceLog(p.target.z);
+
+  }
+}
+
+
+
+    var min_max = [];
+
+    function load(url, vals) {
+      //var vals = [];
+      d3.csv(url, function(error, d) {
+
+        if (error) console.log(error);
+        data = d;
+        for (var i = 0; i < data.length; i++) {
+          var d = data[i];
+          //console.log(d);
+          var b = Object.values(d);
+          //console.log(b[b.length-1]);
+
+          getPolygons(b);
+          vals.push(b);
+
+        }
+        minMax(vals);
+
+        //drawBounds(vals);
+        //addParticles(vals);
+        //console.log(vals);
+        //initGrid();
+      });
+    }
+
+    function getPolygons(b) {
+      b[b.length - 1] = b[b.length - 1].substr(9, b[b.length - 1].length - 4);
+      b[b.length - 1] = b[b.length - 1].split(',');
+      for (var j = 0; j < b[b.length - 1].length; j++) {
+        b[b.length - 1][j] = b[b.length - 1][j].split(' ');
+      }
+    }
+
+
+    function minMax(locs) {
+      var min = 100000;
+      var max = -100000;
+      for (var i = 0; i < locs.length; i++) {
+        var loc = locs[i][locs[i].length - 1];
+
+        if (!pop) pop = 0;
+        for (var j = 0; j < loc.length; j++) {
+          var l = loc[j];
+          l[0] = parseFloat(l[0]);
+          l[1] = parseFloat(l[1]);
+          //engine.add(l[0], l[1]);
+          //console.log(l);
+          if (l[0] > max_lat) max_lat = l[0];
+          if (l[0] < min_lat) min_lat = l[0];
+          if (l[1] > max_lng) max_lng = l[1];
+          if (l[1] < min_lng) min_lng = l[1];
+        }
+        for (var j = 0; j < locs[i].length; j++) {
+          var pop = parseInt(locs[i][j]);
+          if (pop > max) max = pop;
+          if (pop < min) min = pop;
+        }
+        min_max.push({
+          min: min,
+          max: max
+        });
+      }
+      //console.log(min_lat);
+      console.log(min_lng);
+      //console.log(max_lat);
+      console.log(max_lng);
+      //locs.push({min_lat: min_lat, max_lat: max_lat, min_lng: min_lng, max_lng: max_lng});
+    }
+
+
+
+    function drawBounds(locs) {
+
+      ctx2.background(0, 0.2);
+      for (var i = 0; i < locs.length; i++) {
+        var loc = locs[i][locs[i].length - 1];
+        //console.log(loc);
+
+        var min_x = 10000;
+        var min_y = 10000;
+        var max_x = -10000;
+        var max_y = -10000;
+        var min = new Vector(10000, 10000);
+        var max = new Vector(-10000, -10000);
+        var pop = parseInt(locs[i][counter]);
+        if (!pop) pop = 0;
+        // var c = 255 - map(pop, min_max[counter].min, min_max[counter].max, 0, 255);
+        var c = map(pop, -200, 20000, 0, 255);
+        ctx2.fillStyle = rgb(c);
+        ctx.lineWidth = 3;
+        ctx2.lineWidth = 3;
+        ctx2.strokeStyle = rgb(c);
+        ctx2.beginPath();
+
+        var ave = new Vector(0, 0);
+        for (var j = 1; j < loc.length; j++) {
+          var l = loc[j];
+          var l2 = loc[j - 1];
+          var x1 = map(l[0], min_lat, max_lat, 0, canvas2.width);
+          var y1 = map(l[1], min_lng, max_lng, 0, canvas2.height);
+          var x2 = map(l2[0], min_lat, max_lat, 0, canvas2.width);
+          var y2 = map(l2[1], min_lng, max_lng, 0, canvas2.height);
+          ave.x += x1;
+          ave.y += y1;
+
+          ctx2.lineTo(x1, y1, x2, y2);
+          //}
+
+
+          if (x1 < min.x) min.x = x1;
+          if (y1 < min.y) min.y = y1;
+          if (x1 > max.x) max.x = x1;
+          if (y1 > max.y) max.y = y1;
+        }
+
+        ctx2.stroke();
+        ctx2.fill();
+        ctx2.closePath();
+        //loc.push({min:min, max:max})
+        //drawAvePt(ave);
+
+        // can hardcode this in
+        //drawMidPoint(pop, min, max)
+
+      }
+      //boxBlurCanvasRGB( 'canvas2', 0, 0, w, h, blur_ammt, blur_pass );
+
+    }
+
+    function drawMidPoint(pop, min, max) {
+      ctx2.font = "16px Arial";
+      //ctx2.fillStyle = "blue";
+      engine.add((min.x + max.x) / 2, (min.y + max.y) / 2);
+      var x = (min.x + max.x) / 2;
+      var y = (min.y + max.y) / 2;
+      //ctx2.fillEllipse(x, y, 5, 5);
+      ctx2.font = "11px Arial";
+      ctx2.fillStyle = "white";
+      ctx2.fillText(pop, x - 10, y + 15)
+    }
+
+
+    function drawAvePt(ave) {
+      ctx2.fillStyle = "red";
+      var x = ave.x / (loc.length - 1);
+      var y = ave.y / (loc.length - 1);
+      ctx2.fillEllipse(x, y, 4, 4);
+    }
+
+
+    function timeline() {
+      if (frameCount % 5 == 0) {
+        //old_counter = counter;
+        counter++;
+        //springBackNodes();
+      }
+
+      if (counter > years.length) {
+        counter = 0;
+        x = 0;
+        //reset();
+      }
+
+
+      ctx3.clearRect(0, 0, w, h);
+      ctx3.fillStyle = rgba(255, 0.4);
+      ctx3.fillRect(0, h - 60, w, h);
+      var xx = map(counter, 0, suburbs[0].length - 2, 0, w);
+      x = tween(x, xx, 20);
+      ctx3.strokeStyle = rgb(0);
+      ctx3.fillStyle = rgb(0);
+      ctx3.line(x, h - 40, x, h);
+      ctx3.fillText(years[counter], x + 10, h - 20);
+
+    }
+
+
+
+
+gui = new dat.GUI();
+
+gui.add(controls, 'dark', -200, 200).listen();
+gui.add(controls, 'light', -200, 200).listen();
+
+</script>
+
+</body>
+</html>

@@ -82,14 +82,20 @@ this.limit = function(max) {
   this.z = Math.min(this.z, max);
 };
 
-
-this.normalize = function(a) {
-    var magnitude = this.getMagnitude();
-    var iLen = 1 / magnitude;
-    this.multiplyBy(1 / magnitude);
-    // this.x = multiplyBy
-    // return new Float32Array([a[0] * iLen, a[1] * iLen]);
+this.normalize = function() {
+  var m = this.getMagnitude();
+  if (m > 0) {
+    this.divideBy(m);
+  }
 }
+
+// this.normalize = function(a) {
+//     var magnitude = this.getMagnitude();
+//     var iLen = 1 / magnitude;
+//     this.multiplyBy(1 / magnitude);
+//     // this.x = multiplyBy
+//     // return new Float32Array([a[0] * iLen, a[1] * iLen]);
+// }
 
 
 // Aliases

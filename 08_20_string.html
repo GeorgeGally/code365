@@ -15,7 +15,7 @@
 	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -23,7 +23,7 @@ window.frameRate = 240;
 var num_balls = 3;
 var balls = new particleEngine(num_balls);
 var max_size = 20;
-var accelerate = 1; 
+var accelerate = 1;
 var stop = false;
 damping = 0.98;
 
@@ -45,7 +45,7 @@ var thirdPoint = new Vector(w/2, h/2);
 	resetBalls();
 	var lastclick = 0;
 	var pixelWidth = 10;
-	var object = { 
+	var object = {
     accelerate : accelerate,
     num_balls : num_balls,
     max_size: max_size,
@@ -66,17 +66,17 @@ function resetBalls(){
 	b.position.x = random(w);
 	b.position.y = random(h);
 	b.c = "black";
-	
+
 	if (i==1) b.friend = 0;
 	if (i==0) {
-		b.position.x = w/4; 
-		b.position.y = h/2; 
+		b.position.x = w/4;
+		b.position.y = h/2;
 	}
 	if (i==1) {
-		b.position.x = w-w/4; 
-		b.position.y = h/2; 
+		b.position.x = w-w/4;
+		b.position.y = h/2;
 	}
-	
+
 
 	}
 
@@ -94,16 +94,16 @@ function setBall(b) {
 	var controlKit = new ControlKit();
 	controlKit.addPanel({label: 'Control Panel', align: 'left', fixed: false, position: [w-250, h-280], width: 200})
     //.addSubGroup({label: 'System Colors'})
-     .addSlider(object, 'num_balls', 'ball_range', { label: 'Particles', dp: 0, onChange: function(index){ 
+     .addSlider(object, 'num_balls', 'ball_range', { label: 'Particles', dp: 0, onChange: function(index){
     	num_balls =  object.num_balls;
     	//balls.addParticle(w/2, h/2, "#000000", balls.particles.length);
     	balls = new particleEngine(num_balls);
     	resetBalls();
     	 }})
-      .addSlider(object, 'accelerate', 'speed_range', { label: 'Speed', onChange: function(index){ 
+      .addSlider(object, 'accelerate', 'speed_range', { label: 'Speed', onChange: function(index){
     	accelerate =  object.accelerate;
     	 }})
-      .addSlider(object, 'max_size', 'size_range', { dp: 0, label: 'Max Size', onChange: function(index){ 
+      .addSlider(object, 'max_size', 'size_range', { dp: 0, label: 'Max Size', onChange: function(index){
     	max_size =  object.max_size;
     	//balls = new particleEngine(num_balls);
     	resetBalls();
@@ -111,11 +111,11 @@ function setBall(b) {
     	.addButton('Pause', function(){ pauseMe();  });
 
 function draw(){
-	
+
 	if (!stop) {
 
 		ctx.background(240);
-		
+
 		moveParticles();
 		//mouseLineCollide();
 		updateSpring();
@@ -126,12 +126,12 @@ function draw(){
 		drawArc(bb0, thirdPoint, bb1);
 
 		if (mousePressed == 1) {
-			
+
 		}
 	}
 }
 
-document.onmouseup = function() { 
+document.onmouseup = function() {
 	console.log("addParticle")
 	balls.addParticle(mouseX, mouseY, hsl(randomInt(20,300), 100, 30), balls.particles.length);
 	b = balls.particles[balls.particles.length-1];
@@ -159,7 +159,7 @@ function updateSpring() {
   // } else {
   //   over = false;
   // }
-  
+
   // Set and constrain the position of top bar
   // if(move) {
   //   ps = mouseY - springHeight/2;
@@ -173,18 +173,18 @@ function moveParticles(){
 		var b = balls.particles[i];
 
 
-		
+
 		if(i>1) {
 		hittest(b);
 		b.position.x += b.speed.x * accelerate;
 		b.position.y += b.speed.y * accelerate;
-		}		
+		}
 		if (dist(b.position.x, b.position.y, mouseX, mouseY) < b.sz/2) hit(b);
 		if (b.position.x >= w-b.sz/2 || b.position.x <= b.sz/2) b.speed.x *=-1;
 		if (b.position.y >= h-b.sz/2 || b.position.y <= b.sz/2) b.speed.y *=-1;
-		
-		
-		
+
+
+
 		if (b.c == "green" ) {
 			b.sz2 += 0.6;
 			b.alpha -= 0.008;
@@ -232,8 +232,8 @@ function mouseLineCollide(){
 				console.log("up" + mouseSpeedY);
 				ps = h/2 - 30 + (4 * mouseSpeedY);
 			}
-		
-		
+
+
 	}
 }
 
@@ -246,13 +246,13 @@ function drawArc(startPoint, thirdPoint, endPoint){
     var dx2 = endPoint.x - thirdPoint.x;
 
     var aSlope = dy1/dx1;
-    var bSlope = dy2/dx2;  
+    var bSlope = dy2/dx2;
 
     console.log(dy1);
     var centerX = (aSlope*bSlope*(startPoint.y - endPoint.y) + bSlope*(startPoint.x + thirdPoint.x)
         - aSlope*(thirdPoint.x+endPoint.x) )/( 2* (bSlope-aSlope) );
     var centerY = -1*(centerX - (startPoint.x+thirdPoint.x)/2)/aSlope +  (startPoint.y+thirdPoint.y)/2;
-    
+
     // var centerX = (aSlope*bSlope*(y0 - y2) + bSlope*(x0 + x1)
     //     - aSlope*(x1+x2) )/( 2* (bSlope-aSlope) );
     // var centerY = -1*(centerX - (x0+x1)/2)/aSlope +  (y0+y1)/2;
@@ -287,7 +287,7 @@ function drawArc(startPoint, thirdPoint, endPoint){
 	    }
     // } else {
 
-   
+
 
     }
     // ctx.strokeStyle = "black"
@@ -321,7 +321,7 @@ function circleLineCollide(b) {
 						ps = h/2 - (0.1 * (c.position.y - c.old.y));
 						//console.log(ps-h/2-30)
 						//c.sz *= 1.2;
-						
+
 					}
 				}
 			}
@@ -338,13 +338,13 @@ function hit(b){
 
 
 function hittest(b){
-		
+
 	for (var j = 0; j < balls.particles.length; j++) {
-		
+
 		if (j != b.me) {
-			
+
 			p2 = balls.particles[j];
-			
+
 			if (hittestBall(b, p2)) {
 
 				b.friend = p2.me;
@@ -353,17 +353,17 @@ function hittest(b){
 				hit(b);
 				//hit(p2);
 
-			} 
+			}
 		}
-				
+
 		}
 	}
 
-function hittestBall(p, p2){ 
-	
+function hittestBall(p, p2){
+
 	if (dist(p.position.x, p.position.y, p2.position.x, p2.position.y) < p.sz/2) {
         return true;
-      } 
+      }
     }
 
 

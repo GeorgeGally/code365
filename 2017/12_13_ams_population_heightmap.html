@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+  <script language="javascript" src="../js/utils.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var ctx2 = createCanvas("canvas2");
+    var ctx3 = createCanvas("canvas3");
+
+    // years for timeline 1995 - 2055
+    var years = [];
+    for (var i = 1996; i < 2056; i++) {
+      years.push(i);
+    }
+
+
+    var start_dt;
+    ctx2.font = "16px Arial";
+    ////////////// GET DATA ////////////////
+    var url = '/data/ams_births_predict.csv';
+    var url2 = '/data/ams_deaths_predict.csv';
+    var url3 = '/data/ams_population_predict.csv';
+
+    var births = [];
+    var deaths = [];
+    var population = [];
+
+    var births2015 = [];
+    var deaths2015 = [];
+    var population2015 = [];
+
+
+    var counter = 0, old_counter = -1;
+    var bar_ht = 20;
+
+    var posx = 0;
+    var posy = 300;
+    var old = new Vector(0, 0);
+    var ht = [];
+    var locs = [];
+
+    var min_lat = 10000;
+    var min_lng = 10000;
+    var max_lat = -10000;
+    var max_lng = -10000;
+
+    var engine = new particleEngine(0,0);
+
+    var xCount = 120;
+    var yCount = 220;
+    var gridSize_x = w;
+    var gridSize_y = h;
+
+    // nodes array
+    // var myNodes = [];
+    // for (var i = 0; i < xCount*yCount; i++) {
+    //   myNodes[i]  = new Node();
+    // }
+    // // setup attractor
+    // var myAttractor = new Attractor(0, 0);
+    //
+
+
+    function setup() {
+      //reset();
+      frameRate = 60;
+      // load(url, births);
+      // load(url2, deaths);
+      load(url3, population);
+
+    }
+
+
+    function load(url, vals) {
+      //var vals = [];
+      d3.csv(url, function(error, d) {
+
+        if (error) console.log(error);
+        data = d;
+        for (var i = 0; i < data.length; i++) {
+          var d = data[i];
+          //console.log(d);
+          var b = Object.values(d);
+          //console.log(b[b.length-1]);
+          b[b.length-1] = b[b.length-1].substr(9, b[b.length-1].length-4);
+          b[b.length-1] = b[b.length-1].split(',');
+          for (var j = 0; j < b[b.length-1].length; j++) {
+            b[b.length-1][j] = b[b.length-1][j].split(' ');
+          }
+          vals.push(b);
+
+        }
+        minMax(vals);
+        addParticles(vals);
+        console.log(vals);
+        //initGrid();
+      });
+    }
+
+    function minMax(locs){
+
+      for (var i = 0; i < locs.length; i++) {
+        var loc = locs[i][locs[i].length-1];
+        for (var j = 0; j < loc.length; j++) {
+          var l = loc[j];
+          l[0] = parseFloat(l[0]);
+          l[1] = parseFloat(l[1]);
+          //engine.add(l[0], l[1]);
+          //console.log(l);
+          if(l[0] > max_lat) max_lat = l[0];
+          if(l[0] < min_lat) min_lat = l[0];
+          if(l[1] > max_lng) max_lng = l[1];
+          if(l[1] < min_lng) min_lng = l[1];
+        }
+      }
+      //console.log(min_lat);
+      console.log(min_lng);
+      //console.log(max_lat);
+      console.log(max_lng);
+
+    }
+
+
+
+
+    var x = 0,
+      xx = 0;
+
+    function draw() {
+
+      //if(counter != old_counter)
+      ctx.background(0, 0.02);
+
+      if (population[0]) {
+        //timeline();
+        //console.log(births);
+        for (var i = 0; i < population.length; i++) {
+          var p = engine.particles[i];
+          ctx2.fillStyle = "white";
+          incrementPop(p);
+          ctx.fillStyle = rgb(255, p.on/50);
+          ctx.fillEllipse(p.pos.x, p.pos.y, p.sz)
+        }
+
+      }
+      old_counter = counter;
+
+    }
+
+    function incrementPop(p) {
+        p.target_sz += p.on;
+        p.sz = tween(p.sz, p.target_sz, 2);
+    }
+
+    function newPopulationSize(){
+      for (var i = 0; i < population.length; i++) {
+          var p = engine.particles[i];
+          ctx2.fillStyle = "white";
+
+      if(counter == 0) {
+        var pop = parseInt(population[i][counter]);
+        if (!pop) pop = 0;
+        var amt = map(pop, 0, 48000, 0, 200);
+        var popPerFrame = amt/frameRate;
+      } else {
+        var pop = parseInt(population[i][counter]);
+        if (!pop) pop = 0;
+        var pop2 = parseInt(population[i][counter-1]);
+        if (!pop2) pop2 = 0;
+
+        var amt2 = map(pop2, 0, 48000, 0, 200);
+        var diff = amt2-amt;
+        var popPerFrame = diff/frameRate;
+      }
+
+        // p.target_sz = amt;
+        p.on = popPerFrame;
+    }
+    }
+
+
+
+    function addParticles(locs){
+
+      for (var i = 0; i < locs.length; i++) {
+        var loc = locs[i][locs[i].length-1];
+        var min = new Vector(10000,10000);
+        var max = new Vector(-10000,-10000);
+        //loc.midpoint = new Vector();
+        for (var j = 1; j < loc.length; j++) {
+
+          var l = loc[j];
+          var x1 = map(l[0], min_lat, max_lat, 0, w);
+          var y1 = map(l[1], min_lng, max_lng, 0, h);
+
+          if(x1 < min.x) min.x = x1;
+          if(y1 < min.y) min.y = y1;
+          if(x1 > max.x) max.x = x1;
+          if(y1 > max.y) max.y = y1;
+        }
+
+        var midpoint = getMidPoint(min, max);
+        //console.log(midpoint);
+        engine.add(midpoint.x, midpoint.y);
+      }
+    }
+
+
+    function getMidPoint(min, max){
+      return new Vector((min.x + max.x)/2, (min.y + max.y)/2);
+    }
+
+
+    function reset() {
+      // engine.setSize(1);
+      // engine2.setSize(1);
+      // engine3.setSize(1);
+      // engine.setSpeed(15, 150, 15, 150);
+      // engine2.setSpeed(15, 150, 15, 150);
+      // engine3.setSpeed(15, 150, 15, 150);
+      // for (var i = 0; i < engine.length; i++) {
+      //   p = engine.particles[i];
+      //   p.pos.x += random(-50, 50);
+      //   p.pos.y += random(-50, 50);
+      // }
+      //initGrid();
+    }
+
+    function timeline() {
+      if (frameCount % 25 == 0) {
+        old_counter = counter;
+        counter++;
+        engine.setSize(1);
+        newPopulationSize();
+        // springBackNodes();
+        // springBackNodes();
+      }
+
+      if (counter > years.length) {
+        counter = 0;
+        x = 0;
+        reset();
+      }
+
+
+      ctx2.clearRect(0, 0, w, h);
+      ctx2.fillStyle = rgba(0, 0.4);
+      ctx2.fillRect(0, h-60, w, h);
+      var xx = map(counter, 0, population[0].length - 2, 0, w);
+      x = tween(x, xx, 20);
+      ctx2.strokeStyle = rgb(255);
+      ctx2.line(x, h - 40, x, h);
+      ctx2.fillStyle = rgb(255);
+      ctx2.fillText(years[counter], x + 10, h - 20);
+
+    }
+
+
+
+  </script>
+
+</body>
+
+</html>
