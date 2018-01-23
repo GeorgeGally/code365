@@ -50,8 +50,7 @@ function drawCone(startx, starty){
   for (var i = 0; i < 80; i++) {
     var p = engine.particles[i];
     ctx.fillStyle = p.c;
-    ctx.HfillEllipse(startx - i*map(w/2-mouseX, 0, w/2, 0, 10), starty - i*map(h/2-mouseY, 0, h/2, 0, 10), map(getTotalVolume(), 0,255, 500,800) -i*7.0
-  );
+    ctx.HfillEllipse(startx - i*map(w/2-mouseX, 0, w/2, 0, 10), starty - i*map(h/2-mouseY, 0, h/2, 0, 10), map(getTotalVolume(), 0,255, 500,800) -i*7.0);
   }
 }
 

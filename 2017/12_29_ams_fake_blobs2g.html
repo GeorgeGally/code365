@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+<meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<script language="javascript" src="../js/fx/fast_blur.js"></script>
+<script language="javascript" src="../js/utils/simplify.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body style="background: #000;">
+
+<script>
+
+var threshhold = 20;
+var posterize_amt = 39;
+var resolution = 25;
+var max_sz = 68;
+
+var blur_pass = 1;
+var blur_ammt = 10;
+var num_outlines = 10;
+var outline_sz = 8;
+var colour_step = 25;
+//var size_inc = 50;
+
+
+var engine = new particleEngine(0, 0);
+// there's a bug in particleEngine that makes one particle;
+engine.particles = [];
+
+
+var years = [];
+for (var i = 1996; i < 2056; i++) {
+  years.push(i);
+}
+
+var timeline = new Timeline(years);
+
+    var ctx = createCanvas("canvas1");
+    var hidden_ctx = createHiddenCanvas("hidden_canvas1");
+
+    var x, y;
+
+    var blobs = [];
+    var suburbs = [];
+
+    var url = '/data/ams_population_predict.csv';
+
+function setup() {
+
+      load(url, suburbs);
+      addQuickSettings();
+
+} // setup
+
+function draw() {
+
+      hidden_ctx.background(0);
+      timeline.update();
+
+      if(timeline.updated) {
+        updatePopulation(timeline.counter);
+      }
+
+
+
+      for (var j = 0; j < num_outlines; j++) {
+        for (var i = 0; i < blobs.length; i++) {
+          var b = blobs[i];
+          b.maxSz = b.sz + num_outlines * outline_sz;
+          circ_inc = b.maxSz/num_outlines;
+          var sz = b.maxSz - circ_inc * j;
+          b.outline(j, rgb(colour_step * j), sz);
+        }
+      }
+
+      for (var i = 0; i < blobs.length; i++) {
+        blobs[i].display();
+        blobs[i].animate();
+      }
+
+      //boxBlurCanvasRGB( 'hidden_canvas1', 0, 0, w, h, blur_ammt, blur_pass );
+      //hidden_ctx.posterize(1, posterize_amt);
+      ctx.drawImage(hidden_ctx.canvas, 0, 0, w, h);
+
+} // draw
+
+
+
+function updateBlobSz(){
+  for (var i = 0; i < blobs.length; i++) {
+    var b = blobs[i];
+    b.maxSz = b.sz + num_outlines * outline_sz;
+    b.inc = b.maxSz/num_outlines;
+  }
+}
+
+
+
+
+
+function Blob(x, y, sz) {
+
+      this.x = x;
+      this.y = y;
+      this.sz = sz;
+      //this.target_sz = sz;
+      this.outline_sz = this.sz
+      var stroke_on;
+
+      var me = randomInt(num_outlines-1);
+      var me2 = randomInt(num_outlines-1);
+      var me3 = randomInt(num_outlines-1);
+      var me4 = randomInt(num_outlines-1);
+      var me5 = randomInt(num_outlines-1);
+      var me6 = randomInt(num_outlines-1);
+      this.display = function() {
+        // CENTER FILL
+        //hidden_ctx.fillStyle = rgb(255, 0, 0);
+        //hidden_ctx.HfillEllipse(this.x, this.y, this.sz, this.sz);
+      }
+
+      this.outline = function(j, c, sz) {
+        stroke_on = false;
+        if (chance(10)) {
+          stroke_on = true;
+        }
+        hidden_ctx.strokeStyle = rgb(0);
+        hidden_ctx.fillStyle = rgb(255);
+
+
+        if (j == num_outlines-1){
+          hidden_ctx.fillStyle = rgb(0);
+        } else if (j == me || j == me2 || j == me3 || j == me4 || j == me5 || j == me6) {
+          //hidden_ctx.HstrokeEllipse(this.x, this.y, this.sz + sz, this.sz + sz);
+          hidden_ctx.fillStyle = rgb(0);
+          if (stroke_on) {
+            hidden_ctx.fillStyle = rgb(255, 0, 0);
+          }
+        } else {
+          hidden_ctx.HstrokeEllipse(this.x, this.y, this.sz + sz, this.sz + sz);
+        }
+
+
+        // if (stroke_on) {
+        hidden_ctx.fillEllipse(this.x, this.y, this.sz + sz, this.sz + sz);
+        // }
+      }
+
+      this.animate = function() {
+        this.sz = tween(this.sz, this.target_sz, 2);
+      }
+
+
+    } // Blob
+
+
+
+
+function addQuickSettings(){
+    var settings = QuickSettings.create(w - 200, 30, "Settings");
+    // // settings.addRange(title, min, max, value, step, callback);
+
+    settings.addRange("resolution", 1, 50, resolution, 1, function(value) {
+      resolution = value;
+    });
+
+    settings.addRange("max_sz", 1, 350, max_sz, 1, function(value) {
+      max_sz = value;
+    });
+
+
+    settings.addRange("outline_sz", 1, 30, outline_sz, 1, function(value) {
+      outline_sz = value;
+    });
+
+    settings.addRange("colour_step", 1, 50, colour_step, 1, function(value) {
+      colour_step = value;
+    });
+
+    settings.addRange("threshhold", 1, 50, threshhold, 5, function(value) {
+      threshhold = value;
+    });
+    settings.addRange("blur_ammt", 1, 20, blur_ammt, 1, function(value) {
+      blur_ammt = value;
+    });
+
+    settings.addRange("posterize_amt", 1, 80, posterize_amt, 1, function(value) {
+      posterize_amt = value;
+    });
+}
+
+
+function Timeline(labels) {
+
+  var timeline_ctx = createCanvas('timeline');
+  timeline_ctx.canvas.style.zIndex = 99;
+  timeline_ctx.canvas.style.pointerEvents = 'none';
+  timeline_ctx.font = "16px Arial";
+
+  this.counter = 0;
+  var x = xx = 0;
+  this.updated;
+  this.speed = 10;
+
+  this.update = function(){
+
+    this.updated = false;
+
+    if (frameCount % this.speed == 0) {
+
+      this.counter++;
+      xx = map(this.counter, 0, labels.length - 1, 0, w);
+      this.updated = true;
+
+      if (this.counter > labels.length) {
+        this.counter = 0;
+        x = xx = 0;
+      }
+    }
+
+    x = tween(x, xx, 20, 1);
+    this.draw();
+  }
+
+  this.draw = function(){
+    timeline_ctx.clearRect(0, 0, w, h);
+    timeline_ctx.fillStyle = rgba(0, 0.4);
+    timeline_ctx.fillRect(0, h-60, w, h);
+    timeline_ctx.strokeStyle = rgb(255);
+    timeline_ctx.line(x, h - 50, x, h -10);
+    timeline_ctx.fillStyle = rgb(255);
+    timeline_ctx.fillText(labels[this.counter], x + 10, h - 25);
+  }
+
+
+}
+
+
+
+var min_lat = 10000;
+var min_lng = 10000;
+var max_lat = -10000;
+var max_lng = -10000;
+
+var suburbs_minmax = [];
+var min_max_population = [];
+
+function load(url, vals) {
+  //var vals = [];
+  d3.csv(url, function(error, d) {
+
+    if (error) console.log(error);
+    data = d;
+    for (var i = 0; i < data.length; i++) {
+      var d = data[i];
+      //console.log(d);
+      var b = Object.values(d);
+      //console.log(b[b.length-1]);
+
+      formatPolygonInfo(b);
+      vals.push(b);
+
+    }
+
+    minMax(vals);
+
+    addPolys(vals);
+
+
+  });
+}
+
+
+function addPolys(locs) {
+  //ctx.background(0);
+  for (var i = 0; i < locs.length; i++) {
+    drawPoly(i);
+  }
+
+}
+
+
+function updatePopulation(counter){
+  for (var i = 0; i < suburbs.length; i++) {
+    setMidpointSize(i, counter);
+  }
+}
+
+
+function drawPoly(i) {
+  var loc = suburbs[i][suburbs[i].length - 1];
+  var pop = parseInt(suburbs[i][counter]) || 0;
+  var min_x = 10000;
+  var min_y = 10000;
+  var max_x = -10000;
+  var max_y = -10000;
+  var min = new Vector(10000, 10000);
+  var max = new Vector(-10000, -10000);
+
+  for (var j = 1; j < loc.length; j++) {
+
+    var l = loc[j];
+    var l2 = loc[j - 1];
+
+    var x1 = map(l[0], min_lat, max_lat, 0, w);
+    var y1 = map(l[1], min_lng, max_lng, 0, h);
+    var x2 = map(l2[0], min_lat, max_lat, 0, w);
+    var y2 = map(l2[1], min_lng, max_lng, 0, h);
+
+    //hidden_ctx2.lineTo(x1, y1, x2, y2);
+
+    if (x1 < min.x) min.x = x1;
+    if (y1 < min.y) min.y = y1;
+    if (x1 > max.x) max.x = x1;
+    if (y1 > max.y) max.y = y1;
+
+  }
+
+  // hidden_ctx2.fill();
+  // hidden_ctx2.closePath();
+
+  // can hardcode this in
+  addMidPoint(min, max);
+  setMidpointSize(i, 0);
+}
+
+function addMidPoint(min, max) {
+
+  var x = (min.x + max.x) / 2;
+  var y = (min.y + max.y) / 2;
+  var b = new Blob(x, y, random(2, 20))
+  blobs.push(b);
+  engine.add(x,y);
+  engine.last.c = rgba(255, 0, 0, 0.9);
+  engine.last.target_sz = 5;
+  engine.last.sz = 5;
+}
+
+function setMidpointSize(i, counter){
+  var pop = parseInt(suburbs[i][counter]) || 0;
+  var sz = Math.round(map(pop, 0, 46300, 0, max_sz));
+  var p = engine.particles[i];
+  p.target_sz = sz;
+  blobs[i].target_sz = sz;
+  //chanceLog(sz)
+}
+
+
+
+function minMax(locs) {
+  var min_population = 100000;
+  var max_population = -100000;
+  for (var i = 0; i < locs.length; i++) {
+    var loc = locs[i][locs[i].length - 1];
+    var pop = locs[i][counter] || 0;
+
+    for (var j = 0; j < loc.length; j++) {
+      var l = loc[j];
+      l[0] = parseFloat(l[0]);
+      l[1] = parseFloat(l[1]);
+
+      if (l[0] > max_lat) max_lat = l[0];
+      if (l[0] < min_lat) min_lat = l[0];
+      if (l[1] > max_lng) max_lng = l[1];
+      if (l[1] < min_lng) min_lng = l[1];
+    }
+    suburbs_minmax.push({min_lat: min_lat, max_lat: max_lat, min_lng: min_lng, max_lng: max_lng});
+    for (var j = 0; j < locs[i].length; j++) {
+      var pop = parseInt(locs[i][j]);
+      if (pop > max_population) max_population = pop;
+      if (pop < min_population) min_population = pop;
+    }
+    //
+  }
+  //console.log(suburbs_minmax);
+
+  min_max_population.push({
+    min: min_population,
+    max: max_population
+  });
+
+  console.log(min_lng);
+  console.log(max_lng);
+  //console.log(min_max);
+}
+
+function formatPolygonInfo(b) {
+  b[b.length - 1] = b[b.length - 1].substr(10, b[b.length - 1].length - 4);
+  b[b.length - 1] = b[b.length - 1].split(',');
+  for (var j = 0; j < b[b.length - 1].length; j++) {
+    b[b.length - 1][j] = b[b.length - 1][j].split(' ');
+  }
+}
+
+
+
+</script>
+
+</body>
+
+</html>
