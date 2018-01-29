@@ -27,42 +27,53 @@
     //Blob b;
     var blobs = [];
 
-    var colour_add = 34;
-    var sz_reduce = 15;
+    var colour_add = 60;
+    var sz_reduce = 30;
+    var start_sz = 150;
     var numBlobs = 20;
-    var num_outlines = 8;
+
     function setup() {
-      //createCanvas(windowWidth, windowHeight);
-
-
 
       for (var i = 0; i < numBlobs; i++) {
         //float _x, float _y, float _sz,
-        blobs[i] = new Blob(width / 2, height / 2, random(20, 60));
+        blobs[i] = new Blob(width / 2, height / 2, random(40, 150));
       }
 
     } // setup
 
+    
     function draw() {
-       ctx.background(0);
+       ctx.background(185);
       //noStroke();
+      for (var i = 0; i < blobs.length; i++) {
+        ctx.shadowBlur = 0;
+      for (var j = 0; j < 5; j++) {
 
-      for (var j = 0; j < num_outlines; j++) {
-        for (var i = 0; i < blobs.length; i++) {
-          var b = blobs[i];
-          var sz = b.sz + (blobs.length - 1) * sz_reduce
-          b.outline(rgb(colour_add * j), b.maxSz - j * sz_reduce);
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+        ctx.shadowColor = rgba(0, 0.8);
+
+        if(j%2 == 0) {
+
+        }
+
+          ctx.shadowBlur = 2;
+          blobs[i].outline(rgb(colour_add * j), start_sz - j * sz_reduce);
         }
       }
 
+
       for (var i = 0; i < blobs.length; i++) {
-        blobs[i].display();
+        //blobs[i].display();
+        //blobs[i].oscillate();
+        blobs[i].animate();
       }
 
       //animate
-      if (frameCount % 16 == 0) {
-        blobs[randomInt(blobs.length-1)].animate();
-      }
+      //if (frameCount % 16 == 0) {
+        //blobs[randomInt(blobs.length-1)].animate();
+      //}
 
       t += 0.1;
 
@@ -73,31 +84,36 @@
       this.y = y;
       this.sz = sz;
       this.origSz = sz;
-      this.maxSz = this.origSz + num_outlines * sz_reduce;
+      this.maxSz = this.origSz * 2;
       this.oscSpd = random(0.1, 3);
       this.colours = [rgb(0), rgb(50), rgb(90), rgb(120), rgb(255)]
       this.newX = random(w); // init in center screen
       this.newY = random(h); // init center screen
 
       this.display = function() {
+        //noStroke();
         // CENTER FILL
         ctx.fillStyle = rgb(255);
         ctx.fillEllipse(this.x, this.y, this.sz, this.sz);
-        this.x = lerp(this.x, this.newX, 0.1);
-        this.y = lerp(this.y, this.newY, 0.1);
+
+
       }
 
       this.outline = function(c, sz) {
         ctx.fillStyle = c;
-        ctx.fillEllipse(this.x, this.y, this.sz + sz, this.sz + sz);
+        ctx.HfillEllipse(this.x, this.y, this.sz + sz, this.sz + sz);
       }
 
       this.animate = function() {
-        this.newX = random(width);
-        this.newY = random(height);
+        this.x = lerp(this.x, this.newX, 0.1);
+        this.y = lerp(this.y, this.newY, 0.1);
+        //this.newX = random(width);
+        //this.newY = random(height);
       }
 
-
+      this.oscillate = function() {
+        //this.sz = map(Math.sin(t) * this.oscSpd, -1, 1, this.origSz, this.maxSz);
+      }
     } // Blob
 
 

@@ -28,7 +28,7 @@
     var blobs = [];
 
     var colour_add = 34;
-    var sz_reduce = 15;
+    var sz_reduce = 20;
     var numBlobs = 20;
     var num_outlines = 8;
     function setup() {
@@ -38,7 +38,7 @@
 
       for (var i = 0; i < numBlobs; i++) {
         //float _x, float _y, float _sz,
-        blobs[i] = new Blob(width / 2, height / 2, random(20, 60));
+        blobs[i] = new Blob(width / 2, height / 2, random(20, 120));
       }
 
     } // setup
@@ -55,9 +55,18 @@
         }
       }
 
+      ctx.shadowColor = rgba(0, 0.6);
+      ctx.shadowBlur = 1;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
+
       for (var i = 0; i < blobs.length; i++) {
         blobs[i].display();
       }
+
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
 
       //animate
       if (frameCount % 16 == 0) {

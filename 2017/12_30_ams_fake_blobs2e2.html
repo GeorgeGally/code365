@@ -60,14 +60,6 @@ hidden_ctx.shadowBlur = blur_ammt;
 hidden_ctx.shadowOffsetY = 1;
 
 
-
-
-
-
-
-
-
-
 function setup() {
   frameRate = 120;
   load(url, suburbs);
@@ -83,8 +75,8 @@ function draw() {
     updatePopulation(timeline.counter);
   }
 
-    for (var j = 0; j < max_outlines; j++) {
-    for (var i = 0; i < blobs.length; i++) {
+  for (var j = 0; j < max_outlines; j++) {
+  for (var i = 0; i < blobs.length; i++) {
       var b = blobs[i];
       b.num_outlines = tween(b.num_outlines, map(b.sz, 0, max_sz, 1, max_outlines), 2, 1);
       if(j < b.num_outlines) {

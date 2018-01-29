@@ -23,11 +23,15 @@
     var ctx = createCanvas("canvas1");
     var t = 0;
 
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.shadowColor = rgba(0, 0.7);
     var x, y;
 
     //Blob b;
     var blobs = [];
-    ctx.shadow = "black";
+
     function setup() {
       //createCanvas(windowWidth, windowHeight);
 
@@ -36,7 +40,7 @@
 
       for (var i = 0; i < numBlobs; i++) {
         //float _x, float _y, float _sz,
-        blobs[i] = new Blob(width / 2, height / 2, random(30, 70));
+        blobs[i] = new Blob(random(w), random(h), random(30, 70));
       }
 
     } // setup
@@ -44,61 +48,61 @@
     function draw() {
        ctx.background(185);
       //noStroke();
-      ctx.shadowBlur = 1;
-      ctx.shadowOffsetX = 1;
-      ctx.shadowOffsetY = 1;
-      
+      ctx.shadowBlur = 0;
         // display radial lines
       for (var i = 0; i < blobs.length; i++) {
-        ctx.shadowBlur = 1;
-		    ctx.shadowOffsetX = 1;
-		    ctx.shadowOffsetY = 1;
+        //ctx.shadowBlur = 1;
         blobs[i].displayOutline5();
       }
 
       for (var i = 0; i < blobs.length; i++) {
-        ctx.shadowBlur = 0;
-		    ctx.shadowOffsetX = 0;
-		    ctx.shadowOffsetY = 0;
+        //ctx.shadowBlur = 0;
         blobs[i].displayOutline4();
       }
 
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+
       for (var i = 0; i < blobs.length; i++) {
-        ctx.shadowBlur = 1;
-		    ctx.shadowOffsetX = 1;
-		    ctx.shadowOffsetY = 1;
+
         blobs[i].displayOutline3();
       }
 
+      ctx.shadowBlur = 1;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
+
       for (var i = 0; i < blobs.length; i++) {
-        ctx.shadowBlur = 0;
-		    ctx.shadowOffsetX = 0;
-		    ctx.shadowOffsetY = 0;
+        // ctx.shadowBlur = 0;
         blobs[i].displayOutline2();
       }
 
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+
+
       for (var i = 0; i < blobs.length; i++) {
-        ctx.shadowBlur = 1;
-		    ctx.shadowOffsetX = 1;
-		    ctx.shadowOffsetY = 1;
+        //ctx.shadowBlur = 1;
         blobs[i].display();
         blobs[i].oscillate();
       }
 
       //animate
-      if (frameCount % 16 == 0) {
-        blobs[randomInt(blobs.length-1)].animate();
-      }
+      // if (frameCount % 16 == 0) {
+      //   blobs[randomInt(blobs.length-1)].animate();
+      // }
 
       // reset
-      if (frameCount % 500 == 0) {
-        for (var i = 0; i < blobs.length; i++) {
-          blobs[i].newX = width / 2;
-          blobs[i].newY = height / 2;
-          blobs[i].oscSpd = random(0.1, 3);
-          blobs[i].origSz = random(200, 90);
-        }
-      }
+      // if (frameCount % 500 == 0) {
+      //   for (var i = 0; i < blobs.length; i++) {
+      //     // blobs[i].newX = width / 2;
+      //     // blobs[i].newY = height / 2;
+      //     blobs[i].oscSpd = random(0.1, 3);
+      //     blobs[i].origSz = random(200, 90);
+      //   }
+      // }
 
       t += 0.1;
 
@@ -112,16 +116,17 @@
       this.maxSz = this.origSz * 2;
       this.oscSpd = random(0.1, 3);
 
-      this.newX = random(w); // init in center screen
-      this.newY = random(h); // init center screen
+      //this.newX = width / 2; // init in center screen
+      //this.newY = height / 2; // init center screen
 
       this.display = function() {
         //noStroke();
         // CENTER FILL
-        ctx.fillStyle = rgb(255);
-        ctx.HfillEllipse(this.x, this.y, this.sz, this.sz);
-        this.x = lerp(this.x, this.newX, 0.1);
-        this.y = lerp(this.y, this.newY, 0.1);
+        ctx.fillStyle = rgb(255, 0, 0);
+        ctx.fillEllipse(this.x, this.y, this.sz, this.sz);
+
+        //this.x = lerp(this.x, this.newX, 0.1);
+        //this.y = lerp(this.y, this.newY, 0.1);
       }
 
       this.displayOutline5 = function() {
@@ -130,12 +135,12 @@
       }
 
       this.displayOutline4 = function() {
-        ctx.fillStyle = rgb(50);
+        ctx.fillStyle = rgb(100, 0, 200);
         ctx.HfillEllipse(this.x, this.y, this.sz + 200, this.sz + 200);
       }
 
       this.displayOutline3 = function() {
-        ctx.fillStyle = rgb(90);
+        ctx.fillStyle = rgb(190, 0, 150);
         ctx.HfillEllipse(this.x, this.y, this.sz + 150, this.sz + 150);
       }
 
@@ -153,17 +158,19 @@
       }
 
       this.animate = function() {
-        this.newX = random(width);
-        this.newY = random(height);
+        //this.newX = random(width);
+        //this.newY = random(height);
       }
 
       this.oscillate = function() {
-        this.sz = map(Math.sin(t) * this.oscSpd, -1, 1, this.origSz, this.maxSz);
+        //this.sz = map(Math.sin(t) * this.oscSpd, -1, 1, this.origSz, this.maxSz);
       }
     } // Blob
 
 
-
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
 
 </script>
 

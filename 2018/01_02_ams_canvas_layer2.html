@@ -1,0 +1,677 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <title>CanvasLayer 2d Example</title>
+  <style>
+    html,
+    body,
+    #map-div {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    canvas {
+      pointer-events: none;
+      position: absolute;
+    }
+  </style>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/utils/simplify.js"></script>
+  <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+  <script language="javascript" src="../js/map_styles.js"></script>
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body>
+  <div id="map"></div>
+
+  <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDEKAnXP_v0EOZxJ5bv0K4UNqYFRM1JAj0&libraries=visualization"></script>
+  <script src="../js/CanvasLayer.js"></script>
+
+  <script>
+    var blobs = [];
+    var suburbs = [];
+    var totals = [];
+    var url = '/data/ams_population_predict.csv';
+    var canvas_scale = 0.0358625;
+
+    var max_sz = 755 * canvas_scale;
+    var max_outlines = 16;
+    var outline_sz = 6.4 * canvas_scale;
+    var colour_step = 10;
+    var blur_ammt = 10;
+    var offset = 3;
+    var speed = 0.10;
+
+
+
+
+    var mapLoaded;
+
+    var years = [];
+    for (var i = 1996; i < 2056; i++) {
+      years.push(i);
+    }
+
+    var timeline = new Timeline(years);
+    timeline.speed = 10;
+
+    var gmap, mapProjection;
+    //var canvasLayer;
+    var ctx = createCanvas('canvas1');
+    var ctx2 = createCanvas('canvas2');
+    //var ctx;
+    var loc = {
+      lat: 52.3545653,
+      lng: 4.885408
+    }
+    var rectLatLng = new google.maps.LatLng(loc.lat, loc.lng);
+    var rectWidth = 0.1;
+
+    var resolutionScale = window.devicePixelRatio || 1;
+
+    function setup() {
+      frameRate = 120;
+      addMap();
+      // addQuickSettings();
+    }
+
+
+    function draw() {
+      // clear previous canvas contents
+
+
+      timeline.update();
+
+      if (mapLoaded) {
+        //var canvasWidth = canvasLayer.canvas.width;
+        //var canvasHeight = canvasLayer.canvas.height;
+        ctx2.clearRect(0, 0, w, h);
+        updateMap();
+        //updateBlobs();
+      }
+
+
+
+    }
+
+    function updateBlobs() {
+
+      ctx.fillStyle = rgb(200, 0, 0);
+
+      /* We need to scale and translate the map for current view.*/
+      //mapProjection = gmap.getProjection();
+
+      /**
+       * Clear transformation from last update by setting to identity matrix.
+       * Could use context.resetTransform(), but most browsers don't support
+       * it yet.
+       */
+      //ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+      // scale is just 2^zoom
+      // If canvasLayer is scaled (with resolutionScale), we need to scale by
+      // the same amount to account for the larger canvas.
+      //var scale = Math.pow(2, gmap.zoom) * resolutionScale;
+      //ctx.scale(scale, scale);
+
+      /* If the map was not translated, the topLeft corner would be 0,0 in
+       * world coordinates. Our translation is just the vector from the
+       * world coordinate of the topLeft corder to 0,0.
+       */
+      //var offset = mapProjection.fromLatLngToPoint(canvasLayer.getTopLeft());
+      //ctx.translate(-offset.x, -offset.y);
+
+      // project rectLatLng to world coordinates and draw
+
+
+      for (var j = 0; j < max_outlines; j++) {
+        for (var i = 0; i < blobs.length; i++) {
+          var b = blobs[i];
+          b.num_outlines = tween(b.num_outlines, map(b.sz, 0, max_sz, 1, max_outlines), 2, 1);
+          if (j < b.num_outlines) {
+            b.maxSz = b.sz;
+            circ_inc = b.maxSz / (b.num_outlines + 1);
+            var sz = b.maxSz - circ_inc * j;
+            b.outline(j, rgb(colour_step * j), sz);
+          }
+        }
+      }
+
+      for (var i = 0; i < blobs.length; i++) {
+        blobs[i].display();
+        blobs[i].animate();
+      }
+    }
+
+    function updateMap() {
+      // we like our rectangles hideous
+      ctx2.fillStyle = rgb(200, 0, 0);
+
+      /* We need to scale and translate the map for current view.*/
+      mapProjection = gmap.getProjection();
+
+      /**
+       * Clear transformation from last update by setting to identity matrix.
+       * Could use context.resetTransform(), but most browsers don't support
+       * it yet.
+       */
+      //ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+      // scale is just 2^zoom
+      // If canvasLayer is scaled (with resolutionScale), we need to scale by
+      // the same amount to account for the larger canvas.
+      // var scale = Math.pow(2, gmap.zoom) * resolutionScale;
+      // ctx.scale(scale, scale);
+
+      /* If the map was not translated, the topLeft corner would be 0,0 in
+       * world coordinates. Our translation is just the vector from the
+       * world coordinate of the topLeft corder to 0,0.
+       */
+      // var offset = mapProjection.fromLatLngToPoint(canvasLayer.getTopLeft());
+      // ctx.translate(-offset.x, -offset.y);
+
+      // project rectLatLng to world coordinates and draw
+      // var worldPoint = mapProjection.fromLatLngToPoint(rectLatLng);
+      // ctx.fillRect(worldPoint.x, worldPoint.y, rectWidth, rectWidth);
+      //console.log(worldPoint);
+      if (blobs[0]) {
+        for (var i = 0; i < blobs.length; i++) {
+          var b = blobs[i];
+
+          //console.log(blobs[0]);
+          var pos = getLocation(b.x, b.y);
+          //console.log(pos.y);
+          //var blob_loc = new google.maps.LatLng(b.x,b.y);
+          //  var worldPoint = mapProjection.fromLatLngToPoint(blob_loc);
+
+          ctx2.fillStyle = "blue";
+          // ctx.LfillEllipse(worldPoint.x, worldPoint.y, 0.033, 0.033, 9);
+          // ctx.fillRect(worldPoint.x, worldPoint.y, 0.0033, 0.0033);
+          //ctx2.fillRect(pos.x/4, pos.y/4, 5, 5);
+          ctx2.fillEllipse(pos.x / 2, pos.y / 2, 2, 2);
+        }
+      }
+
+
+    }
+
+
+
+    function getLocation(x, y) {
+
+      var loc = new google.maps.LatLng(x, y);
+      var px = fromLatLngToPixel(loc, gmap);
+      return px;
+
+    }
+
+    function fromLatLngToPixel(position) {
+
+      //var scale = Math.pow(2, gmap.zoom) * resolutionScale;
+      var scale = Math.pow(2, gmap.getZoom());
+      var proj = gmap.getProjection();
+      var bounds = gmap.getBounds();
+
+      var nw = proj.fromLatLngToPoint(
+        new google.maps.LatLng(
+          bounds.getNorthEast().lat(),
+          bounds.getSouthWest().lng()
+        ));
+      var point = proj.fromLatLngToPoint(position);
+
+      return new google.maps.Point(
+        Math.floor((point.x - nw.x) * scale),
+        Math.floor((point.y - nw.y) * scale));
+    }
+
+
+    var min_lat = 10000;
+    var min_lng = 10000;
+    var max_lat = -10000;
+    var max_lng = -10000;
+
+    var suburbs_minmax = [];
+    var min_max_population = [];
+
+
+    function load(url, vals) {
+      //var vals = [];
+      d3.csv(url, function(error, d) {
+
+        if (error) console.log(error);
+        data = d;
+        for (var i = 0; i < data.length; i++) {
+          var d = data[i];
+          //console.log(d);
+          var b = Object.values(d);
+          //console.log(b[b.length-1]);
+
+          formatPolygonInfo(b);
+          vals.push(b);
+
+        }
+
+        //jsonLocs(vals);
+        minMax(vals);
+
+        getTotals(vals)
+        addPolys();
+
+        //lineGraph(totals,300);
+        console.log(totals);
+        //testParticleCloseness();
+
+      });
+    }
+
+    function Blob(x, y, sz) {
+
+      //console.log(x)
+      this.x = x;
+      this.y = y;
+      this.sz = sz;
+      this.target_sz = sz;
+      this.outline_sz = this.sz
+      this.num_outlines = map(this.sz, 0, max_sz, 3, max_outlines);
+      var block;
+      if (chance(2)) block = true;
+
+      this.display = function() {
+        // CENTER FILL
+        ctx.shadowBlur = 1;
+        ctx.shadowOffsetY = 1;
+
+        ctx.fillStyle = rgb(0);
+        // if(this.sz * scale > 20 && this.num_outlines > 2) hidden_ctx.HfillEllipse(this.x * scale, this.y * scale, this.sz * scale, this.sz * scale);
+      }
+
+      this.outline = function(j, c, sz) {
+        ctx.shadowBlur = blur_ammt;
+        ctx.shadowOffsetX = offset;
+        ctx.shadowOffsetY = offset;
+        ctx.fillStyle = c;
+
+        ctx.fillStyle = rgb(255);
+        if (j % 2 == 0) {
+          ctx.fillStyle = rgb(0);
+        }
+
+        ctx.HfillEllipse(this.x, this.y, (sz) * canvas_scale, (sz) * canvas_scale);
+        //ctx.HstrokeEllipse(this.x * scale, this.y * scale, (sz) * scale, (sz) * scale);
+      }
+
+      this.animate = function() {
+        this.sz = tween(this.sz, this.target_sz, 2);
+      }
+
+
+    } // Blob
+
+    function formatPolygonInfo(b) {
+      b[b.length - 1] = b[b.length - 1].substr(10, b[b.length - 1].length - 4);
+      b[b.length - 1] = b[b.length - 1].split(',');
+      for (var j = 0; j < b[b.length - 1].length; j++) {
+        b[b.length - 1][j] = b[b.length - 1][j].split(' ');
+      }
+    }
+
+    function minMax(locs) {
+      var min_population = 100000;
+      var max_population = -100000;
+      for (var i = 0; i < locs.length; i++) {
+        var loc = locs[i][locs[i].length - 1];
+        var pop = locs[i][counter] || 0;
+
+        for (var j = 0; j < loc.length; j++) {
+          var l = loc[j];
+          l[0] = parseFloat(l[0]);
+          l[1] = parseFloat(l[1]);
+
+          if (l[0] > max_lat) max_lat = l[0];
+          if (l[0] < min_lat) min_lat = l[0];
+          if (l[1] > max_lng) max_lng = l[1];
+          if (l[1] < min_lng) min_lng = l[1];
+        }
+        suburbs_minmax.push({
+          min_lat: min_lat,
+          max_lat: max_lat,
+          min_lng: min_lng,
+          max_lng: max_lng
+        });
+        for (var j = 0; j < locs[i].length; j++) {
+          var pop = parseInt(locs[i][j]);
+          if (pop > max_population) max_population = pop;
+          if (pop < min_population) min_population = pop;
+        }
+        //
+      }
+      //console.log(suburbs_minmax);
+
+      min_max_population = {
+        min: min_population,
+        max: max_population
+      };
+
+      console.log("min_lng: " + min_lng);
+      console.log("max_lng: " + max_lng);
+      //console.log(min_max);
+    }
+
+    function getTotals(locs) {
+      for (var i = 0; i < years.length; i++) {
+        var total = 0;
+        for (var j = 0; j < locs.length; j++) {
+          // console.log(parseInt(locs[i][j]))
+          total += (parseInt(locs[j][i]) || 0);
+        }
+        //console.log(total)
+        totals.push(total);
+      }
+    }
+
+    function addPolys() {
+      //console.log('addPolys')
+      //ctx.background(0);
+      for (var i = 0; i < suburbs.length; i++) {
+        drawPoly(i);
+      }
+      console.log(blobs);
+    }
+
+    function drawPoly(i) {
+
+      //console.log('drawPoly')
+      var loc = suburbs[i][suburbs[i].length - 1];
+      var pop = parseInt(suburbs[i][counter]) || 0;
+      var min_x = 10000;
+      var min_y = 10000;
+      var max_x = -10000;
+      var max_y = -10000;
+      var min = new Vector(10000, 10000);
+      var max = new Vector(-10000, -10000);
+
+
+      for (var j = 1; j < loc.length; j++) {
+
+        var l = loc[j];
+        var l2 = loc[j - 1];
+
+        // var x1 = map(l[0], min_lat, max_lat, 0, w - 250);
+        // var y1 = map(l[1], min_lng, max_lng, 0, h);
+        // var x2 = map(l2[0], min_lat, max_lat, 0, w - 250);
+        // var y2 = map(l2[1], min_lng, max_lng, 0, h);
+
+        var x1 = l[0];
+        var y1 = l[1];
+        var x2 = l2[0];
+        var y2 = l2[1];
+
+        if (x1 < min.x) min.x = x1;
+        if (y1 < min.y) min.y = y1;
+        if (x1 > max.x) max.x = x1;
+        if (y1 > max.y) max.y = y1;
+
+      }
+
+
+      // can hardcode this in
+      addMidPoint(min, max);
+      setMidpointSize(i, timeline.counter);
+    }
+
+    function addMidPoint(min, max) {
+
+
+      ctx.fillStyle = rgb(200, 0, 0);
+      // mapProjection = gmap.getProjection();
+      // ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+      // scale is just 2^zoom
+      // If canvasLayer is scaled (with resolutionScale), we need to scale by
+      // the same amount to account for the larger canvas.
+      // var scale = Math.pow(2, gmap.zoom) * resolutionScale;
+      // ctx.scale(scale, scale);
+
+      /* If the map was not translated, the topLeft corner would be 0,0 in
+       * world coordinates. Our translation is just the vector from the
+       * world coordinate of the topLeft corder to 0,0.
+       */
+      //var offset = mapProjection.fromLatLngToPoint(canvasLayer.getTopLeft());
+      //ctx.translate(-offset.x, -offset.y);
+
+      var y = (min.x + max.x) / 2;
+      var x = (min.y + max.y) / 2;
+      //x = loc.lat + random(-0.1,0.1);
+      //y = loc.lng + random(-0.1,0.1);
+      //console.log(y)
+      var xy = new google.maps.LatLng(x, y);
+      //console.log(xy.lat())
+      // project rectLatLng to world coordinates and draw
+      //var midpoint = mapProjection.fromLatLngToPoint(xy);
+      //ctx.fillRect(worldPoint.x, worldPoint.y, rectWidth, rectWidth);
+
+
+      var b = new Blob(xy.lat(), xy.lng(), random(2, 20))
+      //var b = new Blob(midpoint.x, midpoint.y, 1)
+      blobs.push(b);
+
+    }
+
+    function setMidpointSize(i, counter) {
+      var pop = parseInt(suburbs[i][counter]) || 0;
+      var sz = Math.round(map(pop, 0, 46300, 0, max_sz));
+      //fake scale for large sizes
+      if (sz > max_sz - max_sz / 4) {
+        sz = map(sz, max_sz - max_sz / 4, max_sz, max_sz - max_sz / 4, max_sz - max_sz / 8)
+      }
+      blobs[i].target_sz = sticky(sz, 10);
+    }
+
+    function addMap() {
+      var latlng = new google.maps.LatLng(loc.lat, loc.lng);
+      // initialize the map
+      var mapOptions = {
+        zoom: 12,
+        styles: dark,
+        center: latlng,
+        scrollwheel: false,
+        draggable: true,
+        navigationControl: false,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        scaleControl: true,
+        streetViewControl: false,
+        zoomControl: true,
+        zoomControlOptions: {
+          position: google.maps.ControlPosition.LEFT_BOTTOM
+        },
+        disableDoubleClickZoom: false
+      };
+
+      gmap = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+      // initialize the canvasLayer
+      var canvasLayerOptions = {
+        map: gmap,
+        resizeHandler: resize,
+        animate: true,
+        updateHandler: draw,
+        resolutionScale: resolutionScale
+      };
+
+      //canvasLayer = new CanvasLayer(canvasLayerOptions);
+      // ctx = canvasLayer.canvas.getContext('2d');
+      ctx.shadowColor = rgba(20, 20, 20, 0.9);
+      ctx.shadowBlur = blur_ammt;
+      ctx.shadowOffsetX = offset;
+      ctx.shadowOffsetY = offset;
+
+      google.maps.event.addListenerOnce(gmap, "idle", function() {
+        mapLoaded = true;
+        console.log("maploaded");
+        load(url, suburbs);
+      })
+
+      google.maps.event.addListener(gmap, "drag", function() {
+        //blobs = [];
+        //addPolys(suburbs);
+      });
+
+      google.maps.event.addListener(gmap, "zoom_changed", function() {
+        // blobs = [];
+        // console.log("zoom_changed");
+        // addPolys(suburbs);
+      });
+
+
+    }
+
+    function resize() {
+      // nothing to do here
+    }
+
+    function addQuickSettings() {
+      var settings = QuickSettings.create(w - 200, 30, "Settings");
+      // // settings.addRange(title, min, max, value, step, callback);
+
+
+      settings.addRange("max_sz", 1, 1000, max_sz, 0.00001, function(value) {
+        max_sz = value * canvas_scale;
+      });
+
+
+      settings.addRange("max_outlines", 1, 100, max_outlines, 1, function(value) {
+        max_outlines = value;
+      });
+
+      settings.addRange("outline_sz", 0, 1, outline_sz, 0.00001, function(value) {
+        outline_sz = value * canvas_scale;
+      });
+
+      settings.addRange("colour_step", 1, 50, colour_step, 1, function(value) {
+        colour_step = value;
+      });
+
+      settings.addRange("blur_ammt", 1, 100, blur_ammt, 1, function(value) {
+        blur_ammt = value;
+      });
+
+      settings.addRange("offset", 1, 80, offset, 1, function(value) {
+        offset = value;
+      });
+    }
+
+    function Timeline(labels) {
+
+      var ht = 180;
+      var wd = 380;
+      var start_x = w - wd - 20;
+      var start_y = h - 220;
+      var x = xx = start_x;
+
+      var timeline_ctx = createCanvas('timeline');
+      timeline_ctx.canvas.style.zIndex = 999;
+      timeline_ctx.canvas.style.pointerEvents = 'none';
+      timeline_ctx.font = "16px Arial";
+
+      this.counter = 0;
+      this.updated;
+      this.speed = 1;
+
+      this.update = function() {
+
+        this.updated = false;
+        // max_outlines += Math.sin(frameCount/50) * 0.3;
+        max_outlines = map(frameCount % 400, 1, 400, 18, 8);
+
+        if (frameCount % this.speed == 0) {
+
+          this.counter++;
+          xx = map(this.counter, 0, labels.length - 1, start_x + 30, w - 90);
+          this.updated = true;
+          //max_outlines = randomInt(10, 16);
+          // max_outlines += 0.5;
+
+          if (this.counter >= labels.length) {
+            this.counter = 0;
+            frameCount = 0;
+            x = xx = start_x;
+          }
+        }
+
+        x = tween(x, xx, 20, 1);
+        this.draw();
+      }
+
+      this.draw = function() {
+        timeline_ctx.clearRect(0, 0, w, h);
+        timeline_ctx.lineWidth = 0.5;
+        timeline_ctx.fillStyle = rgba(255, 0.9);
+        timeline_ctx.strokeStyle = rgba(200, 0.9);
+        timeline_ctx.fillRect(start_x, start_y, wd, ht);
+        timeline_ctx.strokeRect(start_x, start_y, wd, ht);
+
+        this.lineGraph();
+
+        timeline_ctx.lineWidth = 3;
+        timeline_ctx.strokeStyle = rgb(20);
+        timeline_ctx.line(x, start_y + 40, x, start_y + ht - 50);
+        timeline_ctx.font = "16px Arial";
+        timeline_ctx.fillStyle = rgb(20);
+        if (x > w - 200) {
+          timeline_ctx.textAlign = "right";
+          timeline_ctx.fillText(labels[this.counter], x - 10, start_y + ht / 2);
+          timeline_ctx.fillText(totals[timeline.counter] + " residents", x - 10, start_y + ht / 2 + 15);
+        } else {
+          timeline_ctx.textAlign = "left";
+          timeline_ctx.fillText(labels[this.counter], x + 10, start_y + ht / 2);
+          timeline_ctx.fillText(totals[timeline.counter] + " residents", x + 10, start_y + ht / 2 + 15);
+        }
+
+        timeline_ctx.textAlign = "left";
+        timeline_ctx.strokeStyle = rgb(255);
+        timeline_ctx.font = "22px Arial";
+        timeline_ctx.fillText("Countdown to a million: ", start_x + 15, start_y + 30);
+        timeline_ctx.font = "18px Arial";
+        timeline_ctx.fillText("Amsterdam population by suburb", start_x + 15, start_y + ht - 20);
+
+
+      }
+
+
+      this.lineGraph = function() {
+
+        timeline_ctx.strokeStyle = rgb(0, 174, 239);
+        timeline_ctx.lineWidth = 4;
+
+        for (var i = 0; i < totals.length; i++) {
+          var d = totals[i];
+          var x = map(i, 0, totals.length, start_x + 20, start_x + wd - 20);
+
+          var y = map(d, 550000, 1000000, start_y + ht - 20, start_y + 45);
+          timeline_ctx.line(x, start_y + ht - 50, x, y);
+
+
+        }
+      }
+
+
+    }
+  </script>
+</body>
+
+</html>

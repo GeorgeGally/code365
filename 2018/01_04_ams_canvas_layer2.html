@@ -1,0 +1,661 @@
+
+<html>
+
+<head>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<script src="../js/jquery-1.10.1.min.js"></script>
+<script src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDEKAnXP_v0EOZxJ5bv0K4UNqYFRM1JAj0&libraries=visualization"></script>
+
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<script src="../js/CanvasLayer.js"></script>
+<script src="../js/map_styles.js"></script>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<style>
+boby { line-height: 22px; font-size: 16px;}
+
+canvas {
+	pointer-events:none;
+	position: absolute;
+}
+</style>
+</head>
+
+<body>
+
+
+
+<div id="map"></div>
+
+<script type="text/javascript">
+
+var max_sz = 700;
+var max_outlines = 16;
+var outline_sz = 6.4;
+var colour_step = 10;
+var blur_ammt = 20;
+var offset = 20;
+var speed = 0.10;
+
+var ctx;
+var loc = {
+	lat: 52.3545653,
+	lng: 4.885408
+}
+
+var suburbs = [];
+var totals = [];
+var blobs = [];
+var resolutionScale = window.devicePixelRatio || 1;
+
+var years = [];
+// for (var i = 1996; i < 2056; i++) {
+for (var i = 1995; i <= 2038; i++) {
+	years.push(i);
+}
+
+var timeline = new Timeline(years);
+timeline.speed = 20;
+
+// var url = '/data/ams_population_predict.csv';
+// ams_population_official_predictions2 includes guestimated areas
+var url = '/data/ams_population_official_predictions2.csv';
+
+var min_lat = 10000;
+var min_lng = 10000;
+var max_lat = -10000;
+var max_lng = -10000;
+
+var suburbs_minmax = [];
+var min_max_population = [];
+
+var minXDataPoint = 1000;
+var maxXDataPoint = -1000
+var minYDataPoint = 1000;
+var maxYDataPoint = -1000;
+var c = 0;
+var heatmapData = [];
+
+var day_start = 5;
+var night_start = 18;
+
+
+
+
+var gmap, heatmap, canvasLayer;
+var heatmap, data;
+
+var markers = [];
+//var infowindows = [];
+var icon = '../img/dot2.png';
+
+
+
+function draw(){
+	if (blobs[0]) {
+		timeline.update();
+		//ctx.clearRect(0,0,w,h);
+		ctx.background(255)
+
+
+
+		for (var i = blobs.length-1; i >=0 ; i--) {
+			var b = blobs[i];
+			//setMidpointSize(i, timeline.counter);
+			//hitCheck(b, i);
+			b.animate();
+		}
+
+
+	updateBlobs();
+	}
+}
+
+
+
+function updateBlobs(){
+
+
+
+	for (var j = 0; j < max_outlines; j++) {
+
+
+		for (var i = 0; i < blobs.length; i++) {
+			var b = blobs[i];
+
+			b.num_outlines = tween(b.num_outlines, map(b.target_sz, 0, max_sz, 1, max_outlines), 2, 1);
+
+			if (j < b.num_outlines) {
+
+
+				b.maxSz = b.sz;
+				circ_inc = b.maxSz / (b.num_outlines + 1);
+				var sz = b.maxSz - circ_inc * j;
+				b.outline(j, rgb(colour_step * j), sz);
+			}
+		}
+	}
+
+	for (var i = 0; i < blobs.length; i++) {
+		blobs[i].animate();
+		//blobs[i].display();
+	}
+}
+
+
+function hitCheck(b, i){
+	//for (var j = blobs.length-1; j > i ; j--) {
+	for (var j = i+1; j < blobs.length-1; j++) {
+			if (intersect(b, blobs[j])){
+				blobs[j].target_sz += b.target_sz/2;
+				//b.sz = 0;
+				b.target_sz = 0;
+		}
+	}
+}
+
+function intersect(p1,p2){
+	//return (dist(p1.x,p1.y,p2.x,p2.y) <= p1.sz + p2.sz);
+	return (dist(p1.x, p1.y, p2.x, p2.y) < p1.target_sz/2 + p2.target_sz/2);
+}
+
+
+
+
+function Blob(name, x, y, sz) {
+
+	//console.log(x)
+	this.x = x;
+	this.y = y;
+	this.sz = sz;
+	this.name = name;
+	this.target_sz = sz;
+	this.outline_sz = this.sz
+	this.num_outlines = map(this.sz, 0, max_sz, 3, max_outlines);
+
+
+	this.display = function() {
+		// CENTER FILL
+		ctx.shadowBlur = 1;
+		ctx.shadowOffsetY = 1;
+		ctx.fillStyle = rgb(0);
+		if(this.sz > 80) {
+			ctx.HfillEllipse(this.x, this.y, 20, 20);
+		}
+
+
+	}
+
+	this.outline = function(j, c, sz) {
+
+		ctx.shadowBlur = 0;
+		ctx.shadowOffsetY = 0;
+		ctx.fillStyle = rgb(0);
+
+		if (j % 2 == 0) {
+			ctx.fillStyle = rgb(255);
+		}
+
+
+		if(j%2 == 0) {
+			ctx.shadowColor = rgba(20, 0.6);
+			ctx.shadowBlur = blur_ammt;
+			//ctx.shadowOffsetX = offset;
+			ctx.shadowOffsetY = offset;
+		}
+
+		ctx.HfillEllipse(this.x, this.y, (sz) * 1, (sz) * 1);
+		//ctx.HstrokeEllipse(this.x * scale, this.y * scale, (sz) * scale, (sz) * scale);
+	}
+
+	this.animate = function() {
+		this.sz = tween(this.sz, this.target_sz, 2);
+		//this.sz = this.target_sz;
+	}
+
+
+} // Blob
+
+
+
+
+// MAPS
+
+window.onload = function(){
+
+
+	var myLatlng = new google.maps.LatLng(loc.lat, loc.lng);
+
+	var mapOptions = {
+	  zoom: 13,
+	  styles: white,
+	  center: myLatlng,
+	  mapTypeId: google.maps.MapTypeId.ROADMAP,
+	  disableDefaultUI: false,
+	  scrollwheel: true,
+	  draggable: true,
+	  navigationControl: false,
+	  mapTypeControl: false,
+	  scaleControl: true,
+	  disableDoubleClickZoom: false
+	};
+
+	gmap = new google.maps.Map(document.getElementById("map"), mapOptions);
+	//heatmap = new HeatmapOverlay(map, {"radius":25, "visible":true, "opacity":50});
+	// initialize the canvasLayer
+	var canvasLayerOptions = {
+		map: gmap,
+		resizeHandler: resize,
+		animate: false,
+		//updateHandler: filter,
+		resolutionScale: resolutionScale
+	};
+	canvasLayer = new CanvasLayer(canvasLayerOptions);
+	ctx = canvasLayer.canvas.getContext('2d');
+	canvas = document.getElementById('canvas1');
+
+
+google.maps.event.addListener(gmap, "drag", function(){
+	ctx.clearRect(0, 0, w, h);
+});
+
+
+google.maps.event.addListenerOnce(gmap, "idle", function(){
+
+		ctx.clearRect(0, 0, w, h);
+		load(url, suburbs);
+		addQuickSettings();
+
+});
+
+};
+
+
+function load(url, vals) {
+	//var vals = [];
+	d3.csv(url, function(error, d) {
+
+		if (error) console.log(error);
+		data = d;
+		for (var i = 0; i < data.length; i++) {
+			var d = data[i];
+			//console.log(d);
+			var b = Object.values(d);
+			//console.log(b[b.length-1]);
+
+			formatPolygonInfo(b);
+			vals.push(b);
+
+		}
+
+		//jsonLocs(vals);
+		minMax(vals);
+
+		getTotals(vals)
+		addPolys();
+
+		//lineGraph(totals,300);
+		console.log(totals);
+		//testParticleCloseness();
+
+	});
+}
+
+
+function getLocs(d, t, totals){
+	// console.log(totals);
+	//for (var j = 0; j < totals; j++) {
+			var loc = new google.maps.LatLng(d.LATITUDE, d.LONGITUDE);
+			//heatmapData.push(loc);
+			var px = fromLatLngToPixel(loc);
+			//console.log(px);
+			ctx.fillStyle = rgb(255);
+			if(t == day_start || t == "any") {
+				ctx.fillStyle = rgb(0);
+			} else {
+				ctx.fillStyle = rgb(255);
+			}
+			ctx.LfillEllipse(px.x, px.y, 3 * totals, 3 * totals);
+	//}
+
+}
+
+
+function filter() {
+
+	ctx.clearRect(0,0,w,h);
+	blobs = [];
+	addPolys();
+
+}
+
+
+function fromLatLngToPixel(position) {
+  var scale = Math.pow(2, gmap.getZoom());
+  var proj = gmap.getProjection();
+  var bounds = gmap.getBounds();
+
+  var nw = proj.fromLatLngToPoint(
+    new google.maps.LatLng(
+      bounds.getNorthEast().lat(),
+      bounds.getSouthWest().lng()
+    ));
+  var point = proj.fromLatLngToPoint(position);
+
+  return new google.maps.Point(
+    Math.floor((point.x - nw.x) * scale),
+    Math.floor((point.y - nw.y) * scale));
+}
+
+
+function formatPolygonInfo(b) {
+	//console.log(b)
+	b[b.length - 1] = b[b.length - 1].substr(10, b[b.length - 1].length - 4);
+	b[b.length - 1] = b[b.length - 1].split(',');
+	for (var j = 0; j < b[b.length - 1].length; j++) {
+		b[b.length - 1][j] = b[b.length - 1][j].split(' ');
+	}
+}
+
+
+function minMax(locs) {
+	var min_population = 100000;
+	var max_population = -100000;
+	for (var i = 0; i < locs.length; i++) {
+		var loc = locs[i][locs[i].length - 1];
+		var pop = locs[i][counter] || 0;
+
+		for (var j = 0; j < loc.length; j++) {
+			var l = loc[j];
+			l[0] = parseFloat(l[0]);
+			l[1] = parseFloat(l[1]);
+
+			if (l[0] > max_lat) max_lat = l[0];
+			if (l[0] < min_lat) min_lat = l[0];
+			if (l[1] > max_lng) max_lng = l[1];
+			if (l[1] < min_lng) min_lng = l[1];
+		}
+		suburbs_minmax.push({
+			min_lat: min_lat,
+			max_lat: max_lat,
+			min_lng: min_lng,
+			max_lng: max_lng
+		});
+		for (var j = 0; j < locs[i].length; j++) {
+			var pop = parseInt(locs[i][j]);
+			if (pop > max_population) max_population = pop;
+			if (pop < min_population) min_population = pop;
+		}
+		//
+	}
+	//console.log(suburbs_minmax);
+
+	min_max_population = {
+		min: min_population,
+		max: max_population
+	};
+
+	console.log("min_lng: " + min_lng);
+	console.log("max_lng: " + max_lng);
+	// console.log(suburbs);
+}
+
+
+function getTotals(locs) {
+	for (var i = 0; i < years.length; i++) {
+		var total = 0;
+		for (var j = 0; j < locs.length; j++) {
+			// console.log(parseInt(locs[i][j]))
+			total += (parseInt(locs[j][i]) || 0);
+		}
+		//console.log(total)
+		totals.push(total);
+	}
+}
+
+
+function addPolys() {
+	//console.log('addPolys')
+	//ctx.background(0);
+	for (var i = 0; i < suburbs.length; i++) {
+		locatePoly(i);
+	}
+	console.log(blobs);
+}
+
+
+function locatePoly(i) {
+
+	//console.log('locatePoly')
+	var loc = suburbs[i][suburbs[i].length - 1];
+	var pop = parseInt(suburbs[i][counter]) || 0;
+	var min_x = 10000;
+	var min_y = 10000;
+	var max_x = -10000;
+	var max_y = -10000;
+	var min = new Vector(10000, 10000);
+	var max = new Vector(-10000, -10000);
+
+
+	for (var j = 1; j < loc.length; j++) {
+
+		var l = loc[j];
+		var l2 = loc[j - 1];
+
+		// var x1 = map(l[0], min_lat, max_lat, 0, w - 250);
+		// var y1 = map(l[1], min_lng, max_lng, 0, h);
+		// var x2 = map(l2[0], min_lat, max_lat, 0, w - 250);
+		// var y2 = map(l2[1], min_lng, max_lng, 0, h);
+
+		var x1 = l[0];
+		var y1 = l[1];
+		var x2 = l2[0];
+		var y2 = l2[1];
+
+		if (x1 < min.x) min.x = x1;
+		if (y1 < min.y) min.y = y1;
+		if (x1 > max.x) max.x = x1;
+		if (y1 > max.y) max.y = y1;
+
+	}
+
+
+	// can hardcode this in
+	addMidPoint(i, min, max);
+	setMidpointSize(i, timeline.counter);
+	//setMidpointSize(i, 0);
+}
+
+
+function addMidPoint(i, min, max) {
+
+	var suburb_name = suburbs[i][suburbs[i].length - 2];
+	ctx.fillStyle = rgb(200, 0, 0);
+
+	var y = (min.x + max.x) / 2;
+	var x = (min.y + max.y) / 2;
+	//x = loc.lat + random(-0.1,0.1);
+	//y = loc.lng + random(-0.1,0.1);
+	//console.log(y)
+	var xy = new google.maps.LatLng(x, y);
+	//console.log(xy.lat())
+	// project rectLatLng to world coordinates and draw
+	//var midpoint = mapProjection.fromLatLngToPoint(xy);
+	//ctx.fillRect(worldPoint.x, worldPoint.y, rectWidth, rectWidth);
+
+	// var loc = new google.maps.LatLng(d.LATITUDE, d.LONGITUDE);
+
+	var px = fromLatLngToPixel(xy);
+	//console.log(px)
+	var b = new Blob(suburb_name, px.x, px.y, random(2, 20))
+	//var b = new Blob(midpoint.x, midpoint.y, 1)
+	blobs.push(b);
+
+}
+
+
+function setMidpointSize(i, counter) {
+
+	var pop = parseInt(suburbs[i][counter]) || 0;
+	var sz = sticky(Math.round(map(pop, 0, 46300, 1, max_sz)), 10);
+	//console.log(sz)
+	//fake scale for large sizes
+	if (sz > max_sz - max_sz / 4) {
+		sz = map(sz, max_sz - max_sz / 4, max_sz, max_sz - max_sz / 4, max_sz - max_sz / 8)
+	}
+	// blobs[i].target_sz = sticky(sz, 10);
+	blobs[i].target_sz = sz;
+}
+
+
+function Timeline(labels) {
+
+	var ht = 180;
+	var wd = 380;
+	var start_x = w - wd - 20;
+	var start_y = h - 220;
+	var x = xx = start_x;
+
+	var timeline_ctx = createCanvas('timeline');
+	timeline_ctx.canvas.style.zIndex = 999;
+	timeline_ctx.canvas.style.pointerEvents = 'none';
+	timeline_ctx.font = "16px Arial";
+
+	this.counter = 0;
+	this.updated;
+	this.speed = 1;
+
+	this.update = function() {
+
+		this.updated = false;
+		// max_outlines += Math.sin(frameCount/50) * 0.3;
+		//max_outlines = map(frameCount, 1, 800, 18, 8);
+
+		if (frameCount % this.speed == 0) {
+
+			this.counter++;
+			xx = map(this.counter, 0, labels.length - 1, start_x + 20, start_x + wd - 20);
+			this.updated = true;
+			//max_outlines = randomInt(10, 16);
+			// max_outlines += 0.5;
+
+			if (this.counter >= labels.length) {
+				this.counter = 0;
+				frameCount = 0;
+				x = xx = start_x + 20;
+			}
+
+			for (var i = blobs.length-1; i >=0 ; i--) {
+				var b = blobs[i];
+				setMidpointSize(i, timeline.counter);
+				hitCheck(b, i);
+			}
+		}
+
+		x = tween(x, xx, 20, 1);
+		this.draw();
+	}
+
+	this.draw = function() {
+		timeline_ctx.clearRect(0, 0, w, h);
+		timeline_ctx.lineWidth = 0.5;
+		timeline_ctx.fillStyle = rgba(255, 0.99);
+		timeline_ctx.strokeStyle = rgba(20, 0.9);
+		timeline_ctx.fillRect(start_x, start_y, wd, ht);
+		//timeline_ctx.strokeRect(start_x, start_y, wd, ht);
+
+		this.lineGraph();
+
+		timeline_ctx.lineWidth = 3;
+		timeline_ctx.strokeStyle = rgb(0);
+		timeline_ctx.line(x, start_y + 40, x, start_y + ht - 50);
+		timeline_ctx.font = "16px Arial";
+		timeline_ctx.fillStyle = rgb(20);
+		if (x > w - 200) {
+			timeline_ctx.textAlign = "right";
+			timeline_ctx.fillText(labels[this.counter], x - 10, start_y + ht / 2);
+			timeline_ctx.fillText(totals[timeline.counter] + " residents", x - 10, start_y + ht / 2 + 15);
+		} else {
+			timeline_ctx.textAlign = "left";
+			timeline_ctx.fillText(labels[this.counter], x + 10, start_y + ht / 2);
+			timeline_ctx.fillText(totals[timeline.counter] + " residents", x + 10, start_y + ht / 2 + 15);
+		}
+
+		timeline_ctx.textAlign = "left";
+		timeline_ctx.strokeStyle = rgb(255);
+		timeline_ctx.font = "22px Arial";
+		timeline_ctx.fillText("Countdown to a million: ", start_x + 15, start_y + 30);
+		timeline_ctx.font = "18px Arial";
+		timeline_ctx.fillText("Amsterdam population by suburb", start_x + 15, start_y + ht - 20);
+
+
+	}
+
+
+	this.lineGraph = function() {
+
+		timeline_ctx.strokeStyle = rgb(0, 174, 239);
+		timeline_ctx.lineWidth = 5;
+
+		for (var i = 0; i < totals.length; i++) {
+			var d = totals[i];
+			var x = map(i, 0, totals.length, start_x + 20, start_x + wd - 20);
+
+			var y = map(d, 550000, 1000000, start_y + ht - 20, start_y + 45);
+			timeline_ctx.line(x, start_y + ht - 50, x, y);
+
+
+		}
+	}
+
+
+}
+
+
+
+
+function addQuickSettings(){
+    var settings = QuickSettings.create(w - 200, 30, "Settings");
+    // // settings.addRange(title, min, max, value, step, callback);
+
+
+    settings.addRange("max_sz", 1, 2000, max_sz, 1, function(value) {
+      max_sz = value;
+    });
+
+
+    settings.addRange("max_outlines", 1, 100, max_outlines, 1, function(value) {
+      max_outlines = value;
+    });
+
+    settings.addRange("outline_sz", 1, 30, outline_sz, 0.1, function(value) {
+      outline_sz = value;
+    });
+
+    settings.addRange("colour_step", 1, 50, colour_step, 1, function(value) {
+      colour_step = value;
+    });
+
+    settings.addRange("blur_ammt", 1, 100, blur_ammt, 1, function(value) {
+      blur_ammt = value;
+    });
+
+    settings.addRange("offset", 1, 80, offset, 1, function(value) {
+      offset = value;
+    });
+}
+
+
+</script>
+
+
+
+
+</body>
+</html>

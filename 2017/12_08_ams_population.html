@@ -18,7 +18,7 @@
 
 </head>
 <body>
-<div id="map"></div>
+<div id="map" style="z-index: 999"></div>
 
 <script>
 
@@ -206,7 +206,7 @@ function timeline(){
 
 
 function addMap(loc){
-  var latlng = new google.maps.LatLng(loc.lat, loc, lng);
+  var latlng = new google.maps.LatLng(loc.lat, loc.lng);
   var mapOptions = {
       zoom: 11,
       styles: dark,
