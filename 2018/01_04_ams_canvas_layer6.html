@@ -35,13 +35,13 @@ canvas {
 
 <script type="text/javascript">
 
-var max_sz = 550;
-var max_outlines = 10;
+var max_sz = 900;
+var max_outlines = 25;
 var outline_sz = 6.4;
 var colour_step = 10;
-var blur_ammt = 20;
-var offset = 20;
-var speed = 0.10;
+var blur_ammt = 14;
+var offset = 15;
+
 
 var ctx;
 var loc = {
@@ -218,6 +218,22 @@ function Blob(name, x, y, sz) {
 		// 	 }
 		// }
 
+		if(j%4 == 0) {
+			ctx.shadowColor = rgba(40, 0.7);
+			// ctx.shadowBlur = blur_ammt;
+			// //ctx.shadowOffsetX = offset;
+			// ctx.shadowOffsetY = offset;
+				if (this.num_outlines%2 == 0){
+					//ctx.fillStyle = rgb(255);
+					ctx.shadowBlur = 0;
+					ctx.shadowOffsetY = 0;
+				} else {
+					//ctx.fillStyle = rgb(0);
+					ctx.shadowBlur = blur_ammt;
+					ctx.shadowOffsetY = offset;
+			}
+		}
+
 
 		if(j%2 == 0) {
 			ctx.shadowColor = rgba(40, 0.7);
@@ -226,12 +242,12 @@ function Blob(name, x, y, sz) {
 			// ctx.shadowOffsetY = offset;
 				if (this.num_outlines%2 == 0){
 					ctx.fillStyle = rgb(255);
-					ctx.shadowBlur = 0;
-					ctx.shadowOffsetY = 0;
+					// ctx.shadowBlur = 0;
+					// ctx.shadowOffsetY = 0;
 				} else {
 					ctx.fillStyle = rgb(0);
-					ctx.shadowBlur = blur_ammt;
-					ctx.shadowOffsetY = offset;
+					// ctx.shadowBlur = blur_ammt;
+					// ctx.shadowOffsetY = offset;
 			}
 		}
 

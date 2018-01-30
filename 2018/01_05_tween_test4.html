@@ -1,0 +1,63 @@
+<html>
+
+<head>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<script src="../js/jquery-1.10.1.min.js"></script>
+	<script src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/utils/Easing.js"></script>
+	<script language="javascript" src="../js/particle_engine.js"></script>
+	<script language="javascript" src="../js/quicksettings.min.js"></script>
+	<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDEKAnXP_v0EOZxJ5bv0K4UNqYFRM1JAj0&libraries=visualization"></script>
+
+	<script language="javascript" src="../js/canvas.js"></script>
+	<script language="javascript" src="../js/d3.js"></script>
+	<script src="../js/CanvasLayer.js"></script>
+	<script src="../js/map_styles.js"></script>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<style>
+
+		canvas {
+			pointer-events: none;
+			position: absolute;
+		}
+	</style>
+</head>
+
+<body>
+
+	<script type="text/javascript">
+
+var ctx = createCanvas('canvas1');
+
+var easing = new Easing(2, 'easeInOutBack', 100, w/2);
+var easing2 = new Easing(2, 'easeInOutElastic', 100, w/2);
+var easing3 = new Easing(2, 'easeOutElastic', 100, w/2);
+
+function draw(){
+	ctx.background(0);
+	ctx.fillStyle = "red";
+	ctx.HfillEllipse(easing.getPos(), 100, 80, 80);
+	ctx.HfillEllipse(easing2.getPos(), 200, 80, 80);
+	ctx.HfillEllipse(easing3.getPos(), 300, 80, 80);
+	console.log('easing2.getPos()', easing2.getPos());
+
+	if (frameCount%200 == 0) {
+		//easing2.reset();
+		easing2 = new Easing(2, 'easeInOutElastic', 100, w/2);
+	}
+}
+
+
+
+	</script>
+
+
+
+
+</body>
+
+</html>

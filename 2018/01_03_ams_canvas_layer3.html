@@ -11,8 +11,9 @@
 <script src="../js/heatmap-gmaps.js"></script>
 <script language="javascript" src="../js/canvas.js"></script>
 <script language="javascript" src="../js/d3.js"></script>
+<script language="javascript" src="../js/quicksettings.min.js"></script>
 <script src="../js/CanvasLayer.js"></script>
-<script src="../js/infobubble.js"></script>
+
 <script src="../js/map_styles.js"></script>
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -83,18 +84,6 @@ var maxYDataPoint = -1000;
 var c = 0;
 var heatmapData = [];
 
-var day_start = 5;
-var night_start = 18;
-
-
-var total_accidents = 0, total_incidents = 0;
-var total_injured = 0, total_deaths = 0, total_ok = 0;
-var total_pedestrians_injured = 0, total_pedestrians_deaths = 0;
-var total_cyclists_injured = 0, total_cyclists_deaths = 0;
-var total_motorists_injured = 0, total_motorists_deaths = 0;
-
-var pedestrian = 0, cyclist = 0, motorist = 0, ok = 0;
-var injured = 0, killed = 0;
 
 var gmap, heatmap, canvasLayer;
 var heatmap, data;
@@ -111,30 +100,41 @@ function draw(){
 		ctx.clearRect(0,0,w,h);
 		for (var i = 0; i < blobs.length; i++) {
 			var b = blobs[i];
+			//hitCheck(b, i);
+			b.animate();
+
 			ctx.fillStyle = rgba(0, 200, 0, 0.4);
 			if(i == 99) ctx.fillStyle = "red";
-			// ctx.LfillEllipse(worldPoint.x, worldPoint.y, 0.033, 0.033, 9);
-			// ctx.fillRect(worldPoint.x, worldPoint.y, 0.0033, 0.0033);
-			//ctx2.fillRect(pos.x/4, pos.y/4, 5, 5);
 			ctx.fillEllipse(b.x, b.y, b.sz, b.sz);
 			//b.display();
 			//if(i == 1) console.log(b.target_sz);
 			setMidpointSize(i, timeline.counter);
-			hitCheck(b, i);
-			b.animate();
+
 		}
 	}
 	//updateBlobs();
 }
 
-function hitCheck(b, j){
-	for (var i = j+1; i < blobs.length; i++) {
-			if (intersect(b, blobs[i])){
-				b.sz += blobs[i].sz/5 ;
-				blobs[i].sz = 0;
+
+function hitCheck(b, i){
+	//for (var j = blobs.length-1; j > i ; j--) {
+	for (var j = i+1; j < blobs.length-1; j++) {
+			if (intersect(b, blobs[j])){
+				blobs[j].target_sz += b.target_sz;
+				if(blobs[j].target_sz > max_sz) blobs[j].target_sz = max_sz;
+				//b.sz = 0;
+				b.target_sz = 0;
 		}
 	}
 }
+
+function intersect(p1,p2){
+	//return (dist(p1.x,p1.y,p2.x,p2.y) <= p1.sz + p2.sz);
+	return (dist(p1.x, p1.y, p2.x, p2.y) < p1.target_sz/2 + p2.target_sz/2);
+}
+
+
+
 
 
 function updateBlobs(){
@@ -166,7 +166,7 @@ window.onload = function(){
 	var myLatlng = new google.maps.LatLng(loc.lat, loc.lng);
 
 	var mapOptions = {
-	  zoom: 12,
+	  zoom: 13,
 	  styles: dark,
 	  center: myLatlng,
 	  mapTypeId: google.maps.MapTypeId.ROADMAP,
@@ -204,7 +204,7 @@ google.maps.event.addListenerOnce(gmap, "idle", function(){
 
 		ctx.clearRect(0, 0, w, h);
 		load(url, suburbs);
-
+		addQuickSettings();
 
 });
 
@@ -363,7 +363,7 @@ function addPolys() {
 	for (var i = 0; i < suburbs.length; i++) {
 		locatePoly(i);
 	}
-	console.log(blobs);
+	//console.log(blobs);
 }
 
 
@@ -486,7 +486,7 @@ function Blob(name, x, y, sz) {
 	}
 
 	this.animate = function() {
-		this.sz = tween(this.sz, this.target_sz, 2);
+		this.sz = tween(this.sz, this.target_sz, 20);
 	}
 
 
@@ -514,7 +514,7 @@ function Timeline(labels) {
 
 		this.updated = false;
 		// max_outlines += Math.sin(frameCount/50) * 0.3;
-		max_outlines = map(frameCount % 400, 1, 400, 18, 8);
+		//max_outlines = map(frameCount, 1, 800, 18, 8);
 
 		if (frameCount % this.speed == 0) {
 
@@ -529,6 +529,12 @@ function Timeline(labels) {
 				frameCount = 0;
 				x = xx = start_x + 20;
 			}
+
+			for (var i = blobs.length-1; i >=0 ; i--) {
+				var b = blobs[i];
+				setMidpointSize(i, timeline.counter);
+				hitCheck(b, i);
+			}
 		}
 
 		x = tween(x, xx, 20, 1);
@@ -538,15 +544,15 @@ function Timeline(labels) {
 	this.draw = function() {
 		timeline_ctx.clearRect(0, 0, w, h);
 		timeline_ctx.lineWidth = 0.5;
-		timeline_ctx.fillStyle = rgba(255, 0.9);
-		timeline_ctx.strokeStyle = rgba(200, 0.9);
+		timeline_ctx.fillStyle = rgba(255, 0.99);
+		timeline_ctx.strokeStyle = rgba(20, 0.9);
 		timeline_ctx.fillRect(start_x, start_y, wd, ht);
-		timeline_ctx.strokeRect(start_x, start_y, wd, ht);
+		//timeline_ctx.strokeRect(start_x, start_y, wd, ht);
 
 		this.lineGraph();
 
 		timeline_ctx.lineWidth = 3;
-		timeline_ctx.strokeStyle = rgb(20);
+		timeline_ctx.strokeStyle = rgb(0);
 		timeline_ctx.line(x, start_y + 40, x, start_y + ht - 50);
 		timeline_ctx.font = "16px Arial";
 		timeline_ctx.fillStyle = rgb(20);
@@ -574,7 +580,7 @@ function Timeline(labels) {
 	this.lineGraph = function() {
 
 		timeline_ctx.strokeStyle = rgb(0, 174, 239);
-		timeline_ctx.lineWidth = 4;
+		timeline_ctx.lineWidth = 5;
 
 		for (var i = 0; i < totals.length; i++) {
 			var d = totals[i];
@@ -591,11 +597,37 @@ function Timeline(labels) {
 }
 
 
-function intersect(p1,p2){
-	//return (dist(p1.x,p1.y,p2.x,p2.y) <= p1.sz + p2.sz);
-	return (dist(p1.x, p1.y, p2.x, p2.y) <= p1.sz/2);
-}
 
+function addQuickSettings() {
+	var settings = QuickSettings.create(w - 200, 30, "Settings");
+	// // settings.addRange(title, min, max, value, step, callback);
+
+
+	settings.addRange("max_sz", 1, 2000, max_sz, 1, function(value) {
+		max_sz = value;
+	});
+
+
+	settings.addRange("max_outlines", 1, 100, max_outlines, 1, function(value) {
+		max_outlines = value;
+	});
+
+	settings.addRange("outline_sz", 1, 30, outline_sz, 0.1, function(value) {
+		outline_sz = value;
+	});
+
+	settings.addRange("colour_step", 1, 50, colour_step, 1, function(value) {
+		colour_step = value;
+	});
+
+	settings.addRange("blur_ammt", 1, 100, blur_ammt, 1, function(value) {
+		blur_ammt = value;
+	});
+
+	settings.addRange("offset", 1, 80, offset, 1, function(value) {
+		offset = value;
+	});
+}
 
 </script>
 
