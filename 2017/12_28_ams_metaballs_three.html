@@ -14,6 +14,7 @@
   <script language="javascript" src="../js/three.min.js"></script>
   <script language="javascript" src="../js/threejs/shaders/ShaderExtras.js"></script>
   <script language="javascript" src="../js/utils/simplify.js"></script>
+  <script language="javascript" src="../js/threejs/extras/MarchingCubes.js"></script>
   <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
   <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
 
@@ -91,6 +92,7 @@
       var smaterial, shader, vs, fs, u;
 
       shader = ShaderExtras[ id ];
+      console.log(shader);
       u = Uniforms.clone(shader.uniforms);
       vs = shader.vertex_shader;
       fs = shader.fragment_shader;
@@ -104,25 +106,25 @@
 
     }
 
-    var toonMaterial5 = createShaderMaterial("toon5", light),
-        toonMaterial3 = createShaderMaterial("toon3", light),
-        hatchingMaterial = createShaderMaterial("hatching", light),
-        hatchingMaterial2 = createShaderMaterial("hatching", light),
-        dottedMaterial = createShaderMaterial("dotted", light),
-        dottedMaterial2 = createShaderMaterial("dotted", light);
+    // var toonMaterial5 = createShaderMaterial("toon5", light),
+    //     toonMaterial3 = createShaderMaterial("toon3", light),
+    //     hatchingMaterial = createShaderMaterial("hatching", light),
+    //     hatchingMaterial2 = createShaderMaterial("hatching", light),
+    //     dottedMaterial = createShaderMaterial("dotted", light),
+    //     dottedMaterial2 = createShaderMaterial("dotted", light);
 
-    hatchingMaterial2.uniforms.uBaseColor.value.setRGB(0, 0, 0);
-    hatchingMaterial2.uniforms.uLineColor1.value.setHSV(0, 0.9, 0.9);
-    hatchingMaterial2.uniforms.uLineColor2.value.setHSV(0, 0.9, 0.9);
-    hatchingMaterial2.uniforms.uLineColor3.value.setHSV(0, 0.9, 0.9);
-    hatchingMaterial2.uniforms.uLineColor4.value.setHSV(0.1, 0.9, 0.9);
-
-    dottedMaterial2.uniforms.uBaseColor.value.setRGB(0, 0, 0);
-    dottedMaterial2.uniforms.uLineColor1.value.setHSV(0.05, 1.0, 1.0);
+    // hatchingMaterial2.uniforms.uBaseColor.value.setRGB(0, 0, 0);
+    // hatchingMaterial2.uniforms.uLineColor1.value.setHSV(0, 0.9, 0.9);
+    // hatchingMaterial2.uniforms.uLineColor2.value.setHSV(0, 0.9, 0.9);
+    // hatchingMaterial2.uniforms.uLineColor3.value.setHSV(0, 0.9, 0.9);
+    // hatchingMaterial2.uniforms.uLineColor4.value.setHSV(0.1, 0.9, 0.9);
+    //
+    // dottedMaterial2.uniforms.uBaseColor.value.setRGB(0, 0, 0);
+    // dottedMaterial2.uniforms.uLineColor1.value.setHSV(0.05, 1.0, 1.0);
 
     // environment map
 
-    var path = "../shared/textures/cube/SwedishRoyalCastle/";
+    var path = "../img/textures/cube/SwedishRoyalCastle/";
     var format = '.jpg';
     var urls = [
       path + 'px' + format, path + 'nx' + format,
@@ -130,97 +132,88 @@
       path + 'pz' + format, path + 'nz' + format
     ];
 
-    var images = ImageUtils.loadArray(urls);
+    var loader = new THREE.TextureLoader();
+    var images = [];
+    for (var i = 0; i < urls.length; i++) {
+      var url = urls[i];
+      loader.load(
+        url ,
+        // onLoad callback
+  	function ( texture ) {
+      images.push(texture);
+  		// in this example we create the material when the texture is loaded
+  		// var material = new THREE.MeshBasicMaterial( {
+  		// 	map: texture
+  		//  } );
+  	}
+  );
+  addMaterials();
+}
 
-    var reflectionCube = new THREE.Texture(images);
-    var refractionCube = new THREE.Texture(images, new THREE.CubeRefractionMapping());
+var reflectionCube, refractionCube
 
-    materials = {
+function addMaterials(){
+  reflectionCube = new THREE.Texture(images);
+  refractionCube = new THREE.Texture(images);
 
-      "chrome" :
-      {
-        m: new THREE.MeshLambertMaterial({ color: 0xffffff, env_map: reflectionCube }),
-        h: 0, s: 0, v: 1
-      },
+  // CAUSES ERROR OLD VERSION - https://www.reddit.com/r/threejs/comments/6egfbc/cuberefractionmapping/
+  //refractionCube = new THREE.Texture(images, THREE.CubeRefractionMapping());
+  //refractSphereCamera.renderTarget.mapping = THREE.CubeRefractionMapping;
 
-      "liquid" :
-      {
-        m: new THREE.MeshLambertMaterial({ color: 0xffffff, env_map: refractionCube, refraction_ratio: 0.85 }),
-        h: 0, s: 0, v: 1
-      },
+  materials = {
 
-      "shiny"  :
-      {
-        m: new THREE.MeshPhongMaterial({ color: 0x550000, specular:0x220000, env_map: reflectionCube, combine: THREE.MixOperation, reflectivity: 0.3 }),
-        h: 0, s: 0.9, v: 0.3
-      },
+    "chrome" :
+    {
+      m: new THREE.MeshLambertMaterial({ color: 0xffffff, env_map: reflectionCube }),
+      h: 0, s: 0, v: 1
+    },
 
-      "matte" :
-      {
-        m: new THREE.MeshLambertMaterial({ color: 0xffffff }),
-        h: 0, s: 0, v: 1
-      },
+    "liquid" :
+    {
+      m: new THREE.MeshLambertMaterial({ color: 0xffffff, env_map: refractionCube, refraction_ratio: 0.85 }),
+      h: 0, s: 0, v: 1
+    },
 
-      "toon5"  :
-      {
-        m: toonMaterial5,
-        h: 0.2, s: 0.5, v: 1
-      },
+    "shiny"  :
+    {
+      m: new THREE.MeshPhongMaterial({ color: 0x550000, specular:0x220000, env_map: reflectionCube, combine: THREE.MixOperation, reflectivity: 0.3 }),
+      h: 0, s: 0.9, v: 0.3
+    },
 
-      "toon3" :
-      {
-        m: toonMaterial3,
-        h: 0.4, s: 0.5, v: 1
-      },
+    "matte" :
+    {
+      m: new THREE.MeshLambertMaterial({ color: 0xffffff }),
+      h: 0, s: 0, v: 1
+    }
 
-      "hatching" :
-      {
-        m: hatchingMaterial,
-        h: 0.2, s: 0.2, v: 1
-      },
-
-      "hatching2" :
-      {
-        m: hatchingMaterial2,
-        h: 0.0, s: 0.9, v: 0.9
-      },
-
-      "dotted" :
-      {
-        m: dottedMaterial,
-        h: 0.2, s: 0.2, v: 1
-      },
-
-      "dotted2" :
-      {
-        m: dottedMaterial2,
-        h: 0.1, s: 1.0, v: 1
-      }
-
-    };
+  };
 
 
-    material = new THREE.MeshLambertMaterial({ ambient: 0x030303, color: 0xdddddd, specular: 0xffaa00, shininess: 10 });
+  material = new THREE.MeshLambertMaterial({ ambient: 0x030303, color: 0xdddddd, specular: 0xffaa00, shininess: 10 });
 
-    resolution = 28;
-    numBlobs = 10;
+  resolution = 28;
+  numBlobs = 10;
 
-    current_material = "shiny";
+  current_material = "shiny";
 
-    effect = new THREE.MarchingCubes(resolution, materials[ current_material ].m);
-    effect.position.x = 0;
-    effect.position.y = 0;
-    effect.position.z = 0;
-    effect.scale.x = effect.scale.y = effect.scale.z = 700;
-    effect.updateMatrix();
-    scene.addObject(effect);
+  effect = new THREE.MarchingCubes(resolution, materials[ current_material ].m);
+  effect.position.x = 0;
+  effect.position.y = 0;
+  effect.position.z = 0;
+  effect.scale.x = effect.scale.y = effect.scale.z = 700;
+  effect.updateMatrix();
+  scene.add(effect);
+}
+    //var images = ImageUtils.loadArray(urls);
+
+
 
     // postprocessing
 
     scenePost = new THREE.Scene();
 
     cameraOrtho = new THREE.Camera();
-    cameraOrtho.projectionMatrix = THREE.Matrix4.makeOrtho(window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -10000, 10000);
+    cameraOrtho.projectionMatrix = THREE.Matrix4.makeOrthographic(window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -10000, 10000);
     cameraOrtho.position.z = 100;
 
     rtTexture1 = new THREE.RenderTarget(window.innerWidth, window.innerHeight, { min_filter: THREE.LinearFilter, mag_filter: THREE.NearestFilter });

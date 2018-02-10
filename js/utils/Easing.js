@@ -42,6 +42,7 @@ function Easing(time, type, start, end) {
   }
 
   this.EasingFunctions = {
+
     linear: function(t) {
       return t
     },
@@ -214,7 +215,7 @@ function Easing(time, type, start, end) {
 
     // Bounce increasing in velocity until completion
     easeInBounce: function(t) {
-      return 1 - easeOutBounce(1 - t);
+      return 1 - this.easeOutBounce(1 - t);
     },
 
     // Bounce in and bounce out
@@ -222,11 +223,11 @@ function Easing(time, type, start, end) {
 
       if (t < 0.5) {
 
-        return easeInBounce(t * 2) * 0.5;
+        return this.easeInBounce(t * 2) * 0.5;
 
       }
 
-      return (easeOutBounce((t * 2) - 1) * 0.5) + 0.5;
+      return (this.easeOutBounce((t * 2) - 1) * 0.5) + 0.5;
 
     }
   }

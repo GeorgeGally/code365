@@ -32,7 +32,8 @@
 		}
 
 		#map {
-			height: calc(100% + 20px)
+			width: calc(100% + 1%);
+			height: calc(100% + 1%);
 		}
 	</style>
 </head>
@@ -43,13 +44,14 @@
 	<div id="map"></div>
 
 	<script type="text/javascript">
-		var settings = false;
+		var settings = true;
+		var min_sz = 0;
 		var max_sz = 600;
-		var max_outlines = 20;
-		var outline_sz = 7;
+		var max_outlines = 27;
+		var outline_sz = 4;
 		var colour_step = 10;
-		var blur_ammt = 7;
-		var offset = 6;
+		var blur_ammt = 15;
+		var offset = 9;
 
 		var ctx;
 		var loc, zoom, timeline, ease_speed;
@@ -57,7 +59,7 @@
 		var blue = rgb(0, 174, 239);
 		var orange = rgb(255, 69, 0);
 
-		zoom = 13;
+		zoom = 12;
 		loc = {
 			lat: 52.3745653,
 			lng: 4.885408
@@ -169,7 +171,7 @@
 			if (blobs[0]) {
 				timeline.update();
 				//ctx.clearRect(0,0,w,h);
-				ctx.background(250)
+				ctx.background(0)
 
 
 				for (var i = blobs.length - 1; i >= 0; i--) {
@@ -199,8 +201,11 @@
 					//b.num_outlines = map(b.sz, 0, max_sz, 2, max_outlines);
 
 					if (j < b.num_outlines) {
-						b.maxSz = b.sz;
-						circ_inc = b.maxSz / (b.num_outlines);
+						b.maxSz = b.sz + b.num_outlines * outline_sz;
+	          circ_inc = b.maxSz/b.num_outlines;
+	          var sz = b.maxSz - circ_inc * j;
+						//b.maxSz = b.sz;
+						//circ_inc = b.maxSz / (b.num_outlines);
 						var sz = b.maxSz - circ_inc * j;
 						b.outline(j, rgb(colour_step * j), sz);
 					}
@@ -242,10 +247,10 @@
 			this.name = name;
 			this.target_sz = sz;
 			this.outline_sz = this.sz
-			this.num_outlines = Math.round(map(this.target_sz, 0, max_sz, 2, max_outlines) / 2) * 2;
+			this.num_outlines = Math.round(map(this.target_sz, min_sz, max_sz, 0, max_outlines));
 			this.me = blobs.length;
 
-			this.easing = new Easing(ease_speed, 'easeInOutBack', this.sz, this.target_sz);
+			//this.easing = new Easing(ease_speed, 'easeInOutBack', this.sz, this.target_sz);
 
 			this.display = function() {
 				// CENTER FILL
@@ -261,73 +266,76 @@
 
 			this.outline = function(j, c, sz) {
 
-				//ctx.fillStyle = rgb(0);
-				if (this.num_outlines % 2 == 0) {
-					ctx.fillStyle = rgb(0);
-					ctx.shadowBlur = blur_ammt;
-					ctx.shadowOffsetY = offset;
-				} else {
-					ctx.fillStyle = rgb(255);
-					ctx.shadowBlur = 0;
-					ctx.shadowOffsetY = 0;
+				ctx.fillStyle = rgb(0);
+				// if (this.num_outlines % 2 == 0) {
+				// 	ctx.fillStyle = rgb(0);
+				// 	ctx.shadowBlur = blur_ammt;
+				// 	ctx.shadowOffsetY = offset;
+				// } else {
+				// 	ctx.fillStyle = rgb(255);
+				// 	ctx.shadowBlur = 0;
+				// 	ctx.shadowOffsetY = 0;
+				// }
 
-				}
 
+				// if (j % 2 == 0) {
+				// // 	ctx.shadowColor = rgba(40, 0.7);
+				// 		ctx.shadowBlur = blur_ammt;
+				// // 	// //ctx.shadowOffsetX = offset;
+				// 		ctx.shadowOffsetY = offset;
+				// // 	if (this.num_outlines % 2 == 0) {
+				// // 		//ctx.fillStyle = rgb(255);
+				// // 		ctx.shadowBlur = 0;
+				// // 		ctx.shadowOffsetY = 0;
+				// } else {
+				// // 		//ctx.fillStyle = rgb(0);
+				// // 		ctx.shadowBlur = blur_ammt;
+				// // 		ctx.shadowOffsetY = offset;
+				// // 	}
+				// 	ctx.shadowBlur = 0;
+				// 	ctx.shadowOffsetY = 0;
+				// }
 
-				if (j % 4 == 0) {
-					ctx.shadowColor = rgba(40, 0.7);
+				ctx.shadowColor = rgba(0, 0.3);
+				if (j % 2 == 0) {
+					//ctx.shadowColor = rgba(40, 0.7);
 					// ctx.shadowBlur = blur_ammt;
 					// //ctx.shadowOffsetX = offset;
 					// ctx.shadowOffsetY = offset;
-					if (this.num_outlines % 2 == 0) {
-						//ctx.fillStyle = rgb(255);
+					//if (this.num_outlines % 2 == 0) {
+						ctx.fillStyle = rgb(255);
 						ctx.shadowBlur = 0;
 						ctx.shadowOffsetY = 0;
 					} else {
-						//ctx.fillStyle = rgb(0);
+						ctx.fillStyle = rgb(0);
 						ctx.shadowBlur = blur_ammt;
 						ctx.shadowOffsetY = offset;
-					}
-				}
-
-
-				if (j % 2 == 0) {
-					ctx.shadowColor = rgba(40, 0.7);
-					// ctx.shadowBlur = blur_ammt;
-					// //ctx.shadowOffsetX = offset;
-					// ctx.shadowOffsetY = offset;
-					if (this.num_outlines % 2 == 0) {
-						ctx.fillStyle = rgb(255);
-						// ctx.shadowBlur = 0;
-						// ctx.shadowOffsetY = 0;
-					} else {
-						ctx.fillStyle = rgb(0);
-						// ctx.shadowBlur = blur_ammt;
-						// ctx.shadowOffsetY = offset;
-					}
+					//}
 				}
 
 
 
 				//show highest and lowest
+				//if (this.sz > 40)
+				//if (this.num_outlines > 3)
 				ctx.HfillEllipse(this.x, this.y, (sz) * 1, (sz) * 1);
-				if (j == this.num_outlines - 1 && this.me == highs[timeline.counter]) {
+				if (this.num_outlines > 2 && j == this.num_outlines - 1 && this.me == highs[timeline.counter]) {
 					ctx.fillStyle = blue;
-					ctx.fillEllipse(this.x, this.y, 10, 10);
+					ctx.fillEllipse(this.x, this.y, 6, 6);
 				}
-				if (j == this.num_outlines - 1 && this.me == lows[timeline.counter]) {
+				if (this.num_outlines > 2 && j == this.num_outlines - 1 && this.me == lows[timeline.counter]) {
 					ctx.fillStyle = orange;
-					ctx.fillEllipse(this.x, this.y, 10, 10);
+					ctx.fillEllipse(this.x, this.y, 6, 6);
 				}
 				//ctx.HstrokeEllipse(this.x * scale, this.y * scale, (sz) * scale, (sz) * scale);
 			}
 
 
 			this.animate = function() {
-				this.sz = this.easing.getPos();
-				//this.num_outlines = Math.round(map(this.target_sz, 0, max_sz, 2, max_outlines));
+				//this.sz = this.easing.getPos();
+				this.num_outlines = Math.round(map(this.target_sz, min_sz, max_sz, 0, max_outlines));
 				//if(this.me == 1) console.log('this.easing.getPos()', this.easing.getPos());
-				//this.sz = tween(this.sz, this.target_sz, 20);
+				this.sz = tween(this.sz, this.target_sz, 80);
 				//this.num_outlines = Math.round(map(this.target_sz, 0, max_sz, 3, max_outlines));
 				//this.sz = this.target_sz;
 			}
@@ -343,8 +351,8 @@
 		window.onload = function() {
 
 			timeline = new Timeline(years);
-			timeline.speed = 20;
-			ease_speed = 2.8;
+			timeline.speed = 10;
+			ease_speed = 1.8;
 			// setups for various screensizes
 			// values "cental", "leidseplein", "wtc"
 			setScreen();
@@ -425,8 +433,8 @@
 
 				getTotals(vals);
 				addPolys();
-				console.log('lows', lows);
-				console.log('highs', highs);
+				//console.log('lows', lows);
+				//console.log('highs', highs);
 				//console.log(totals);
 				//testParticleCloseness();
 
@@ -578,7 +586,7 @@
 			for (var i = 0; i < suburbs.length; i++) {
 				locatePoly(i);
 			}
-			console.log(blobs);
+			//console.log(blobs);
 		}
 
 
@@ -644,12 +652,12 @@
 			if (sz > max_sz - max_sz / 4) {
 				sz = map(sz, max_sz - max_sz / 4, max_sz, max_sz - max_sz / 4, max_sz - max_sz / 8)
 			}
-			blobs[i].target_sz = sticky(sz, 10);
-			//blobs[i].target_sz = sz;
-			blobs[i].num_outlines = Math.round(map(blobs[i].target_sz, 0, max_sz, 2, max_outlines) / 2) * 2;
+			//blobs[i].target_sz = sticky(sz, 10);
+			blobs[i].target_sz = sz;
+			blobs[i].num_outlines = Math.round(map(blobs[i].target_sz, 0, max_sz, 0, max_outlines));
 			//console.log(blobs[i].num_outlines)
 			var s = blobs[i].sz;
-			blobs[i].easing = new Easing(ease_speed / 2, 'easeOutElastic', blobs[i].sz, blobs[i].target_sz);
+			blobs[i].easing = new Easing(ease_speed, 'easeOutElastic', blobs[i].sz, blobs[i].target_sz);
 		}
 
 
@@ -704,7 +712,6 @@
 					}
 				}
 
-				x = tween(x, xx, 20);
 				this.draw();
 			}
 
@@ -740,8 +747,8 @@
 				var num = totals[timeline.counter].toLocaleString().replace(',', ' ');
 				timeline_ctx.fillText(labels[this.counter] + ": " + num + " residents", this.start_x + this.padding, this.graph_bottom + this.txt_sz + this.txt_sz);
 
-				timeline_ctx.fillStyle = rgb(0);
-				timeline_ctx.shadowColor = rgba(255, 0.3);
+				timeline_ctx.fillStyle = rgb(255);
+				timeline_ctx.shadowColor = rgba(0, 0.3);
 				timeline_ctx.shadowBlur = 2;
 				timeline_ctx.shadowOffsetY = 2;
 				timeline_ctx.font = this.txt_sz2 + "px Roboto";
@@ -781,11 +788,13 @@
 		}
 
 
-
-
 		function addQuickSettings() {
 			var settings = QuickSettings.create(w - 200, 30, "Settings");
 			// // settings.addRange(title, min, max, value, step, callback);
+
+			settings.addRange("min_sz", 0, 100, min_sz, 1, function(value) {
+				min_sz = value;
+			});
 
 
 			settings.addRange("max_sz", 1, 2000, max_sz, 1, function(value) {
@@ -813,6 +822,8 @@
 				offset = value;
 			});
 		}
+
+
 	</script>
 
 

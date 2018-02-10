@@ -33,21 +33,36 @@
 
 var ctx = createCanvas('canvas1');
 
-var easing = new Easing(2, 'easeInOutBack', 100, w/2);
+var easing = new Easing(2, 'easeOutBack', 100, w/2);
 var easing2 = new Easing(2, 'easeInOutElastic', 100, w/2);
 var easing3 = new Easing(2, 'easeOutElastic', 100, w/2);
+var easing4 = new Easing(2, 'easeOutBounce', 100, w/2);
+var easing5 = new Easing(2, 'easeInBounce', 100, w/2);
+var easing6 = new Easing(2, 'easeInOutBounce', 100, w/2);
+
+var sz = 50;
 
 function draw(){
+
 	ctx.background(0);
 	ctx.fillStyle = "red";
-	ctx.HfillEllipse(easing.getPos(), 100, 80, 80);
-	ctx.HfillEllipse(easing2.getPos(), 200, 80, 80);
-	ctx.HfillEllipse(easing3.getPos(), 300, 80, 80);
-	console.log('easing2.getPos()', easing2.getPos());
+	ctx.HfillEllipse(easing.getPos(), 100, sz, sz);
+	ctx.HfillEllipse(easing2.getPos(), 200, sz, sz);
+	ctx.HfillEllipse(easing3.getPos(), 300, sz, sz);
+	ctx.HfillEllipse(easing4.getPos(), 400, sz, sz);
+	ctx.HfillEllipse(easing5.getPos(), 500, sz, sz);
+	ctx.HfillEllipse(easing6.getPos(), 600, sz, sz);
+
+	//console.log('easing2.getPos()', easing2.getPos());
 
 	if (frameCount%200 == 0) {
-		//easing2.reset();
-		easing2 = new Easing(2, 'easeInOutElastic', 100, w/2);
+		easing.reset();
+		easing2.reset();
+		easing3.reset();
+		easing4.reset();
+		easing5.reset();
+		easing6.reset();
+		//easing2 = new Easing(2, 'easeInOutElastic', 100, w/2);
 	}
 }
 
