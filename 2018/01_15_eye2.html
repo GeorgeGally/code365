@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/utils/simplify.js"></script>
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var ctx2 = createCanvas("canvas2");
+    var t = 0;
+    var engine = new particleEngine(40, 2, w/2, h/2, w/4, h/4);
+    console.log(engine);
+    var easings = [];
+    // for (var i = 0; i < engine.particles.length; i++) {
+    //   array[i]
+    // }
+    var NUM_LINES = 40;
+    ctx.strokeStyle = rgb(0);
+    ctx.linewidth = 4;
+
+
+    function draw() {
+      ctx.background(200, 0.1);
+      for (var i = 0; i < engine.rows[0].pos.length; i++) {
+        var p = engine.rows[0].pos[i];
+        var p2 = engine.rows[1].pos[i];
+        ctx.fillEllipse(p.x, p.y, 10, 10);
+        ctx.fillEllipse(p2.x, p2.y, 10, 10);
+
+        ctx.line(p.x, p.y, p2.x, p2.y);
+
+      }
+
+    }
+  </script>
+
+</body>
+
+</html>

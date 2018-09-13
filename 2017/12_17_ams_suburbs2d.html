@@ -24,6 +24,13 @@
 
 var ctx = createCanvas("canvas1");
 var ctx2 = createCanvas("canvas2");
+var ctx3 = createCanvas("canvas3");
+var padding = 50;
+ctx3.font = "16px Arial";
+
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
+ctx.lineWidth = 0.5;
 
 var years = [];
 for (var i = 1996; i < 2056; i++) {
@@ -102,17 +109,6 @@ function simplifyPolygons(locs){
   return out;
 }
 
-// function getDateMinMax(){
-//   var min = new Vector(10000,10000);
-//   var max = new Vector(-10000,-10000);
-//   for (var i = 0; i < locs.length; i++) {
-//     var loc = locs[i][locs[i].length-1];
-//     for (var j = 0; j < loc.length-1; j++) {
-//     var pop = parseInt(locs[i][counter]);
-//     if(!pop) pop = 0;
-//
-//     }
-// }
 
 function getPolygons(b){
   b[b.length-1] = b[b.length-1].substr(10, b[b.length-1].length-4);
@@ -160,16 +156,13 @@ var offset = new Offset();
 
 
 function drawBounds(locs){
-  ctx.background(0);
+  ctx.background(230);
+  ctx2.clearRect(0,0,w,h);
   for (var i = 0; i < locs.length; i++) {
 
-    //console.log(loc);
     var loc = locs[i][locs[i].length-1];
-
     var pop = parseInt(locs[i][counter]);
 
-    // draw 10 levels
-    //for (var j = 10; j > 0; j--) {
       drawPolys(loc, locs, pop);
   }
 }
@@ -188,12 +181,11 @@ function drawPolys(loc, locs, pop){
 
   if(!pop) pop = 0;
   var c = map(pop, 0, 40000, 0, 255);
-  var cc = 255 - map(j, 0, 40000, 0, 255);
-  ctx.fillStyle = rgb(c);
-  ctx.strokeStyle = rgb(cc, 0.4);
-  ctx.lineCap = 'round';
-  ctx.lineWidth = s * 2;
-  ctx.beginPath();
+  var sz = map(pop, 0, 40000, 0, 100);
+  ctx2.fillStyle = rgb(c);
+  //ctx.strokeStyle = rgb(cc, 0.4);
+
+  ctx2.beginPath();
   //ctx2.beginPath();
   //ctx.moveTo(loc[0][0], loc[0][1]);
   var ave = new Vector(0,0);
@@ -202,10 +194,10 @@ function drawPolys(loc, locs, pop){
     var l = loc[j];
     var l2 = loc[j-1];
     //console.log(l);
-    var x1 = map(l[0], min_lat, max_lat, 0, w);
-    var y1 = map(l[1], min_lng, max_lng, 0, h);
-    var x2 = map(l2[0], min_lat, max_lat, 0, w);
-    var y2 = map(l2[1], min_lng, max_lng, 0, h);
+    var x1 = map(l[0], min_lat, max_lat, padding, w - padding);
+    var y1 = map(l[1], min_lng, max_lng, padding, h - padding);
+    var x2 = map(l2[0], min_lat, max_lat, padding, w - padding);
+    var y2 = map(l2[1], min_lng, max_lng, padding, h - padding);
     //chanceLog(parseInt(l[1]),1000);
     //ctx.line(x1, y1, x2, y2);
     ave.x += x1;
@@ -219,52 +211,46 @@ function drawPolys(loc, locs, pop){
 
 
   }
-  //if(s == 10)
-  ctx.fill();
-  //if(s >= cc)
-  ctx.stroke();
-  ctx.closePath();
 
-
-  ctx.strokeStyle = "green";
-  ctx.lineCap = 'round';
-  ctx.lineWidth = s * 2;
-  ctx.beginPath();
+  ctx2.stroke();
+  ctx2.closePath();
+  //ctx2.strokeStyle = "white";
+  ctx2.beginPath();
 
   loc2 = simplify(simp, 12, true);
   for (var j = 1; j < loc2.length; j++) {
     var l = loc2[j];
     var l2 = loc2[j-1];
-    ctx.lineTo(l[0], l[1], l2[0], l2[1]);
+    ctx2.lineTo(l[0], l[1], l2[0], l2[1]);
   }
 
-  ctx.stroke();
-  ctx.closePath();
+  ctx2.stroke();
+  ctx2.closePath();
   //loc.push({min:min, max:max})
-  //drawAvePt(ave);
+  //drawAvePt(cc, loc,ave);
 
-  // can hardcode this in
-  //drawMidPoint(pop, min, max)
+    // can hardcode this in
+  drawMidPoint(sz, pop, min, max)
 }
 
-function drawMidPoint(pop, min, max){
-  ctx2.font = "16px Arial";
+function drawMidPoint(sz, pop, min, max){
+
   //ctx2.fillStyle = "blue";
   engine.add((min.x + max.x)/2, (min.y + max.y)/2);
   var x = (min.x + max.x)/2;
   var y = (min.y + max.y)/2;
-  //ctx2.fillEllipse(x, y, 5, 5);
-  ctx2.font = "11px Arial";
-  ctx2.fillStyle = "white";
-  ctx2.fillText(pop, x - 10, y + 15)
+  ctx2.fillEllipse(x, y, sz, sz);
+  // ctx2.font = "11px Arial";
+  // ctx2.fillStyle = "white";
+  // ctx2.fillText(pop, x - 10, y + 15)
 }
 
 
-function drawAvePt(ave) {
+function drawAvePt(sz, loc, ave) {
   ctx2.fillStyle = "red";
   var x = ave.x/(loc.length-1);
   var y = ave.y/(loc.length-1);
-  ctx2.fillEllipse(x, y, 4, 4);
+  ctx2.fillEllipse(x, y, sz, sz);
 }
 
 var x = 0, xx = 0;
@@ -304,15 +290,15 @@ function timeline() {
     x = 0;
   }
 
-  ctx2.clearRect(0, 0, w, h);
-  ctx2.fillStyle = rgba(0, 0.4);
-  ctx2.fillRect(0, h-60, w, h);
-  var xx = map(counter, 0, suburbs[0].length - 2, 0, w);
-  x = tween(x, xx, 20);
-  ctx2.strokeStyle = rgb(255);
-  ctx2.line(x, h - 40, x, h);
-  ctx2.fillStyle = rgb(255);
-  ctx2.fillText(years[counter], x + 10, h - 20);
+  ctx3.clearRect(0, 0, w, h);
+  // ctx2.fillStyle = rgba(0, 0.4);
+  // ctx2.fillRect(0, h-60, w, h);
+  // var xx = map(counter, 0, suburbs[0].length - 2, 0, w);
+  // x = tween(x, xx, 20);
+  // ctx2.strokeStyle = rgb(255);
+  // ctx2.line(x, h - 40, x, h);
+  ctx3.fillStyle = rgb(255);
+  ctx3.fillText(years[counter], w - 60 - padding, h - 20 - padding);
 
 }
 

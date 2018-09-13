@@ -2,8 +2,8 @@
 <html>
 <title>Creative Coding Yea!</title>
 <head>
-    <meta charset="utf-8">
-<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<meta charset="utf-8">
+
 <script language="javascript" src="../js/creative_coding.js"></script>
 <script language="javascript" src="../js/canvas.js"></script>
 <script language="javascript" src="../js/vector.js"></script>
@@ -65,12 +65,10 @@ function draw() {
 
 
 function drawArm(p){
-  // ctx3.fillStyle = rgba(0,0,0, 0.8);
-  // ctx3.fillEllipse(p.pos.x, p.pos.y, 40, 40);
-  // ctx.strokeStyle = rgba(0,0.05);
+
   ctx3.fillStyle = rgba(255);
   ctx3.fillEllipse(p.pos.x, p.pos.y, 5, 5);
-  // c
+
 }
 
 function drawOrbits(p){
@@ -82,8 +80,7 @@ function drawOrbits(p){
   ctx.HstrokeEllipse(p.orbit.x, p.orbit.y, p.size/1, p.size/1);
   ctx3.fillStyle = rgba(255);
   ctx3.fillEllipse(p.orbit.x, p.orbit.y, 5, 5);
-  // ctx.strokeStyle = rgba(0,0.05);
-  // ctx.line(p.pos.x, p.pos.y, p.orbit.x, p.orbit.y);
+
   ctx3.strokeStyle = rgba(255);
   ctx3.line(p.pos.x, p.pos.y, p.orbit.x, p.orbit.y);
 }

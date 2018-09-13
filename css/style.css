@@ -19,16 +19,6 @@ time, mark, audio, video {
   vertical-align: baseline;
 }
 
-/*@font-face {
-  font-family: 'SquareFont';
-  src: url('SquareFont.eot');
-  src: url('../fonts/SquareFont.eot?#iefix') format('embedded-opentype'),
-    url('../fonts/SquareFont.woff') format('woff'),
-    url('../fonts/SquareFont.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}*/
-
 
 html {
   line-height: 1;

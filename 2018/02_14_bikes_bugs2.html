@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>test</title>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+	<script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+</head>
+
+<body>
+	<script type="text/javascript">
+		var total_distance = 0;
+		var ctx = createCanvas("canvas1");
+		var ctx2 = createCanvas("canvas2");
+		ctx2.font = "20px helvetica";
+		ctx2.textAlign = "center";
+		ctx2.textBaseline = "middle";
+
+		ctx.background(245);
+
+		var particle_array = [];
+		var imgData;
+		var maxParticles = 2000;
+
+		ctx.font = "255px helvetica";
+		ctx.fillStyle = "blue";
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		// var words = ['Freedom', 'Happiness', 'Health', 'Wealth'];
+		var words = ['❤️'];
+
+		brightSpark();
+
+
+		function draw() {
+
+
+			ctx.save();
+
+			for (var i = particle_array.length - 1; i >= 0; i--) {
+
+				p = particle_array[i];
+				// ctx.fillRect(p.x, p.y, p.size, p.size);
+				if (p.x != 0 && p.y != 0) {
+
+					ctx.globalAlpha = p.alpha;
+					ctx.fillStyle = p.c;
+
+					ctx.fillEllipse(p.x, p.y, p.size, p.size);
+
+					if (p.alpha < 1) p.alpha += 0.0019999;
+
+					if (p.size < 0.002) {
+						p.x = p.orig_x + random(-2, 2);
+						p.y = p.orig_y + random(-2, 2);
+						p.size = 3;
+						p.speedx = random(-2, 2),
+						p.speedy = random(-2, 2)
+					}
+
+					p.speedx += random(-0.3, 0.3)
+					p.speedy += random(-0.3, 0.3)
+					p.x += p.speedx;
+					p.y += p.speedy;
+					p.size *= p.reduce;
+					total_distance += 0.1;
+				}
+			};
+			ctx.restore();
+
+			if (particle_array.size > maxParticles) particle_array.shift();
+
+			drawInterface();
+
+		}
+
+		function drawInterface() {
+			ctx2.clearRect(0, 0, w, h);
+			ctx2.fillStyle = rgb(255, 0.5);
+			ctx2.centreFillRect(w / 2, h - h / 10, 500, 30);
+			ctx2.fillStyle = rgb(0);
+			ctx2.fillText("Kilometres cycled in Amsterdam each day: " + Math.round(total_distance), w / 2, h - h / 10)
+		}
+
+		function brightSpark() {
+			var word_number = randomInt(0, words.length - 1);
+			ctx.background(0);
+			ctx.fillStyle = "white"
+			ctx.fillText(words[word_number], w / 2 , h / 2 - 50);
+			draw();
+			imgData = ctx.getImageData(0, 0, w, h).data;
+			spacing = 6;
+			for (var y = 0; y < window.innerHeight; y += spacing) {
+
+				for (var x = 0; x < window.innerWidth; x += spacing) {
+
+					var pt = (y * window.innerWidth + x) * 4;
+					var fBrightness;
+					fBrightness = (0.3 * imgData[pt] + 0.59 * imgData[pt + 1] + 0.11 * imgData[pt + 2]);
+
+					if (fBrightness > 10) {
+						addParticle(x, y);
+					}
+
+				}
+			}
+
+			ctx.background(245);
+		}
+
+		function addParticle(_x, _y) {
+			var r = randomInt(5, 55);
+			var g = randomInt(20, 205);
+			var b = randomInt(5, 55);
+			var particle = {
+				orig_x: _x,
+				orig_y: _y,
+				x: _x + random(-4, 4),
+				y: _y + random(-4, 4),
+				c: rgb(r, g, 0, 0.8),
+				size: 3,
+				reduce: random(0.9, 0.9999),
+				alpha: 0.05,
+				speedx: random(-0.2, 0.2),
+				speedy: random(-0.1, 0.1)
+			};
+			particle_array.push(particle);
+		}
+	</script>
+
+</body>
+
+</html>

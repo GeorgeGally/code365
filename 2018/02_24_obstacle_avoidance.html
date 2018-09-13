@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/P5Vector.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body style="background: #fcfcfc;">
+
+  <script>
+    const ctx = createCanvas("canvas1");
+    const ctx2 = createCanvas("canvas2");
+
+
+    let obstacles = [];
+
+    const PADDING = 100;
+    const MAX_SEE_AHEAD = 100;
+    const OBSTACLE_RADIUS = 20;
+    const MAX_AVOID_FORCE = 2;
+
+    let dude;
+
+    function setup() {
+      addObstacles(15);
+      dude = new Human(w / 2, h / 2);
+    }
+
+    function draw() {
+      ctx.background(240);
+      drawObstacles() ;
+      ctx.fillMe(0);
+      dude.run();
+    }
+
+    function drawObstacles() {
+      for (var i = 0; i < obstacles.length; i++) {
+        var o = obstacles[i];
+        ctx.fillMe("black");
+        ctx.fillEllipse(o.x, o.y, OBSTACLE_RADIUS * 2, OBSTACLE_RADIUS * 2);
+      }
+    };
+
+    function addObstacles(num) {
+      for (var i = 0; i < num; i++) {
+        const obstacle = new Vector(random(w), random(h));
+        obstacles.push(obstacle)
+      }
+    };
+
+////////////
+    class Human {
+      constructor(x, y) {
+
+        // this.pos = createVector( x, y );
+
+        this.minspeed = 4;
+        this.maxspeed = 8;
+        this.maxforce = 9.99;
+        this.acceleration = new Vector(0, 0);
+        this.steer = new Vector(0, 0);
+        this.velocity = new Vector(randomCardinal(this.minspeed, this.maxspeed), randomCardinal(this.minspeed, this.maxspeed));
+        console.log('this.velocity', this.velocity);
+        this.pos = new Vector(x, y);
+        this.ahead = new Vector(0, 0);
+        this.ahead2 = new Vector(0, 0);
+
+        this.sz = 10;
+
+        this.c = "black";
+
+
+      }
+
+
+
+      run() {
+
+        this.move();
+        this.display();
+
+      }
+
+      move() {
+
+
+        this.boundaries();
+        this.updatePosition();
+
+      }
+
+
+      /////////////////////// MOVEMENT ///////////////////////
+
+
+      updatePosition() {
+
+        this.steer.add(this.collisionAvoidance());
+        //console.log("steer", this.steer)
+        this.applyForce();
+        // Update velocity
+        this.velocity.add(this.acceleration);
+
+        // // Limit speed
+        this.velocity.limit(this.maxspeed);
+        // //console.log('this.velocity', this.velocity);
+        this.pos = this.pos.add(this.velocity);
+        // //console.log('this.pos', this.pos);
+        // // Reset accelerationelertion to 0 each cycle
+        // this.acceleration.mult(0);
+
+      }
+
+      f(x, y, obstacles) {
+        let force = {
+          x: 0,
+          y: 0
+        };
+        for (var i = 0; i < obstacles.length; i++) {
+          var obstacleForce = this.getForce(x, y, obstacles[i]);
+          force.x += obstacleForce.x;
+          force.y += obstacleForce.y;
+        }
+        return force;
+      }
+
+      getForce(x, y, obstacle) {
+        var magnitude = obstacle.mass / squareDistanceTo(obstacle, point(x, y));
+        var direction = {
+          x: obstacle.x - x,
+          y: obstacle.y - y
+        };
+        direction.normalize();
+        direction.x *= magnitude;
+        direction.y *= magnitude;
+        return direction;
+      }
+
+      applyForce() {
+
+        this.steer.setMag(this.maxforce);
+        // console.log('force', force);
+        // console.log('this.acceleration', this.acceleration);
+        this.acceleration.add(this.steer);
+        //force.addTo(this.acceleration);
+        //console.log('this.acceleration', this.acceleration);
+      }
+
+
+      seek(target) {
+
+        var desired = target.subtract(this.pos); // A vector pointing from the location to the target
+
+        // Scale to maximum speed
+        desired.setMag(this.maxspeed);
+
+        // Steering = Desired minus velocity
+        this.steer = desired.subtract(this.velocity);
+        this.steer.limit(this.maxforce); // Limit to maximum steering force
+
+        this.applyForce();
+      }
+
+
+      changeDirection(desired) {
+
+        desired.normalize();
+        desired.mult(this.maxspeed);
+        this.steer = desired.sub(this.velocity);
+
+        this.steer.limit(this.maxforce);
+
+        this.applyForce();
+
+      }
+
+
+      boundaries() {
+        //console.log(w/2, this.pos.x);
+        let desired = null;
+
+        if (this.pos.x < PADDING) {
+          desired = new Vector(this.maxspeed, this.velocity.y);
+        } else if (this.pos.x > w - PADDING) {
+          desired = new Vector(-this.maxspeed, this.velocity.y);
+        }
+
+        if (this.pos.y < PADDING) {
+          desired = new Vector(this.velocity.x, this.maxspeed);
+        } else if (this.pos.y > h - PADDING) {
+          desired = new Vector(this.velocity.x, -this.maxspeed);
+        }
+
+        if (desired !== null) {
+          this.changeDirection(desired)
+        }
+
+      }
+
+
+      turnAround() {
+
+        this.velocity.x *= -1;
+        this.velocity.y *= -1;
+        this.maybeTurnRandomly();
+
+      }
+
+
+      repel(p) {
+
+        let power = 5;
+        let dir = this.pos.subtract(p.pos); // Calculate direction of force
+        //        console.log('dir', dir);
+        let d = dir.mag(); // Distance between objects
+        dir.normalize(); // Normalize vector (distance doesn't matter here, we just want this vector for direction)
+        d = constrain(d, 1, 100); // Keep distance within a reasonable range
+        let force = -1 * power / (d * d); // Repelling force is inversely proportional to distance
+        dir.mult(force); // Get force vector --> magnitude * direction
+        let force2 = dir;
+        p.applyForce(force2);
+
+      }
+
+
+      bumpingIntoEachOther(p) {
+
+        for (let i = 0; i < this.grid.length; i++) {
+          let g = this.grid.pos[i];
+          if (dist(this.pos.x, this.pos.y, p.pos.x, p.pos.y) < this.sz / 2 + p.sz / 2) {
+            //console.log('bump');
+            return true;
+          }
+        }
+
+      }
+
+
+      //////////////////////////////// DISPLAY /////////////////////////////////////
+
+      display() {
+        this.boid();
+
+      }
+
+
+      directionLinePoint() {
+        //console.log('this.velocity', this.velocity);
+        let norm = new Vector(this.velocity.x, this.velocity.y);
+        norm.normalize();
+        //console.log('norm', norm);
+        norm.mult(MAX_SEE_AHEAD);
+        //console.log('norm', norm);
+        //this.ahead = new Vector(norm.x, norm.y);
+        this.ahead.x = norm.x;
+        this.ahead.y = norm.y;
+
+        //this.ahead2 = norm.clone();
+        //this.ahead2 = new Vector(norm.x, norm.y);
+        this.ahead2.x = norm.x;
+        this.ahead2.y = norm.y;
+        this.ahead2.mult(0.5);
+
+        this.drawArrow(this.pos, this.ahead, "red");
+        this.drawArrow(this.pos, this.ahead2, "blue");
+      }
+
+      boid() {
+
+        this.directionLinePoint();
+        ctx.save();
+        var theta = this.velocity.heading() + PI / 2;
+
+        ctx.fillMe(this.c);
+        ctx.strokeWeight(1);
+        ctx.translate(this.pos.x, this.pos.y);
+        ctx.rotate(theta);
+        ctx.beginPath();
+        ctx.lineTo(0, -this.sz * 2);
+        ctx.lineTo(-this.sz, this.sz * 2);
+        ctx.lineTo(this.sz, this.sz * 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // draw an arrow for a vector at a given base position
+      drawArrow(base, vec, col) {
+        //console.log(vec);
+        ctx.save();
+        ctx.strokeMe(col);
+        ctx.strokeWeight(3);
+        ctx.fillMe(col);
+        ctx.translate(base.x, base.y);
+        ctx.line(0, 0, vec.x, vec.y);
+        var h = vec.heading()
+        // ctx.rotate(h);
+        // var arrowSize = 7;
+        // ctx.translate(vec.mag() - arrowSize, 0);
+        // // ctx.triangle(0, arrowSize / 2, 0, -arrowSize / 2, arrowSize, 0);
+        // ctx.fillEqTriangle(vec.x, vec.y, arrowSize)
+        ctx.restore();
+      }
+
+
+    collisionAvoidance() {
+    // ahead = ...; // calculate the ahead vector
+    // ahead2 = ...; // calculate the ahead2 vector
+
+    let mostThreatening = this.findMostThreateningObstacle();
+    let avoidance  = new Vector(0, 0);
+
+    if (mostThreatening != null) {
+        avoidance.x = this.ahead.x - mostThreatening.x;
+        avoidance.y = this.ahead.y - mostThreatening.y;
+        //console.log(avoidance);
+        avoidance.normalize();
+        avoidance.mult(MAX_AVOID_FORCE);
+        // console.log("console", avoidance);
+    } else {
+        avoidance.mult(0); // nullify the avoidance force
+    }
+
+    return avoidance;
+}
+
+  findMostThreateningObstacle() {
+
+        var mostThreatening = null;
+        //console.log(this.pos);
+        for (var i = 0; i < obstacles.length; i++) {
+          var obstacle = obstacles[i];
+          //console.log(obstacle);
+          // "position" is the character's current position
+          //console.log(lineIntersecsCircle(this.ahead, this.ahead2, obstacle));
+          //if(distance(this.pos, obstacle) < OBSTACLE_RADIUS) console.log(Math.round(distance(this.pos, obstacle)));
+          if (lineIntersecsCircle(this.ahead, this.ahead2, obstacle)
+          && (mostThreatening == null || distance(this.pos, obstacle) < distance(this.pos, mostThreatening))
+          ) {
+            mostThreatening = obstacle;
+          }
+        }
+
+        return mostThreatening;
+      }
+
+
+
+    }
+
+    function lineIntersecsCircle(ahead, ahead2, obstacle) {
+      //console.log(obstacle);
+      // the property "center" of the obstacle is a Vector3D.
+      return distance(obstacle, ahead) <= OBSTACLE_RADIUS || distance(obstacle, ahead2) <= OBSTACLE_RADIUS;
+    }
+
+    function distance(a, b) {
+      return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+    }
+  </script>
+
+</body>
+
+</html>

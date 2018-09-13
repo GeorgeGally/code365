@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 2;
+var spacing = 10;
+var rects = [];
+
+
+
+function setup(){
+  var num = randomInt(5, 10);
+  for (var i = 0; i < 20; i++) {
+    var sz = sticky(randomInt(200, 1500), spacing);
+    var x = randomSticky(w/2, spacing*2);
+    var deg = chance(2)? 45: 135;
+    //var deg = 45;
+    addRect(deg, randomGrey(0, 230), x, h, sz, sz);
+    //addRect(randomInt(3)*90, rgb(215), w/2, h/2, w, w);
+  }
+
+}
+
+
+function draw(){
+  ctx.background(245);
+  //if(chance(50)) drawScene();
+  moveRects();
+  drawRects();
+  border(40, rgb(245));
+}
+
+function drawRects(){
+  for (var i = 0; i < rects.length; i++) {
+    var p = rects[i];
+    drawRect(p);
+  }
+}
+
+function addRect(r, c, x, y, w, h){
+  newrect = {
+    r: r,
+    c: c,
+    x: x,
+    y: y,
+    w: w,
+    h: h,
+    startx: x
+  }
+  rects.push(newrect)
+}
+
+
+function moveRects(){
+  for (var i = 0; i < rects.length; i++) {
+    var p = rects[i];
+    p.x = p.startx + w/2 + Math.sin((p.startx + frameCount)/200) * w/2;
+  }
+}
+
+
+
+function onKeyDown() {
+  //drawScene()
+}
+
+
+
+
+function drawRect(p){
+  ctx.strokeStyle = p.c;
+  ctx.fillStyle = rgb(245, 0.8);
+	ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotateDegrees(p.r);
+	//ctx.centreFillRect(1, 0, w, h);
+	for (var i = -p.h/2; i <= p.h/2; i+= spacing) {
+		ctx.line(-p.w/2, i, p.w/2, i);
+	}
+  //ctx.strokeStyle = rgb(245);
+  //ctx.strokeRect(-spacing, -spacing, w + spacing, h + spacing);
+  ctx.rotateDegrees(-p.r);
+	ctx.restore();
+
+
+
+}
+
+
+
+
+</script>
+
+</body>
+
+</html>

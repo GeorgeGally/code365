@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/three.min.js"></script>
+  <script language="javascript" src="../js/perlin_noise.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body style="background: #fff">
+
+  <script>
+    let ctx = createHiddenCanvas("canvas1");
+    //let ctx2 = createCanvas("canvas2");
+    let total_distance = 0;
+    let particles = [];
+    let grid = new Grid(50, 90);
+
+    ctx.font = "20px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    function setup() {
+      addParticles(grid.length)
+
+    }
+
+
+
+    /////////
+
+
+
+    var r = 0;
+    var vertices = 100;
+    var octaves = 4;
+    var falloff = 0.8;
+
+    var scene = new THREE.Scene();
+    var aspect = window.innerWidth / window.innerHeight;
+    var camera = new THREE.PerspectiveCamera(70, aspect, 0.1, 1000);
+    var renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      logarithmicDepthBuffer: true
+    });
+    renderer.setSize(w, h);
+
+    document.body.appendChild(renderer.domElement);
+
+    var plane = [];
+
+    var radius = 10;
+    var dir = 1;
+
+
+
+
+    var geometry = new THREE.PlaneGeometry(300, 168, vertices, vertices);
+    geometry.dynamic = true;
+
+    texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+
+    //var material = new THREE.MeshDepthMaterial({side: THREE.DoubleSide});
+    var material = new THREE.MeshPhongMaterial({
+      map: texture,
+      color: 0xffffff,
+      side: THREE.DoubleSide
+    });
+    material.shading = THREE.SmoothShading;
+    material.map.minFilter = THREE.LinearFilter;
+
+    scene.fog = new THREE.FogExp2(0x000000, 0.005);
+
+    var light = new THREE.HemisphereLight(0xffffff, 0x444444, 0.4);
+    scene.add(light);
+    var ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+    scene.add(ambientLight);
+
+    var plane = new THREE.Mesh(geometry, material);
+    scene.add(plane);
+
+    renderer.setClearColor(0x000000);
+    camera.position.z = 100;
+    camera.near = 80;
+    camera.far = 195;
+
+    ctx.lineWidth = 2;
+
+    var x = w;
+
+    function draw() {
+
+
+      ctx.background(0);
+
+      if (total_distance < 2000000) move();
+      display();
+      ctx.fillStyle = rgb(0);
+      ctx.centreFillRect(w / 2, h - h / 10, 580, 24);
+      ctx.fillStyle = rgb(255);
+      ctx.fillText("Kilometres cycled in Amsterdam each day: " + Math.round(total_distance), w / 2, h - h / 10);
+      //ctx2.drawImage(ctx.canvas, 0, 0, w, h);
+
+
+      var noiseXRange = CosOsc(frameCount / 250, 90) / 10.0;
+      var noiseYRange = SinOsc(frameCount / 250, 90) / 10.0;
+
+
+      texture.needsUpdate = true;
+
+      if (chance(2000)) {
+        dir *= -1;
+      }
+
+      for (var j = 0; j < vertices; j += 1) {
+        for (var i = 0; i < vertices; i += 1) {
+          var pos = j + i * vertices;
+          var v = plane.geometry.vertices[pos];
+
+          // var noiseX = map(j, 0, vertices, 0, noiseXRange);
+          var noiseX = Math.sin((v.x + frameCount)/300);
+          var noiseY = Math.cos((v.y + frameCount)/200);
+          //var noiseY = map(i, 0, vertices, 0, noiseYRange);
+
+          var noiseValue = PerlinNoise.noise(noiseX, noiseY, octaves, falloff);
+          var angle = noiseValue * TWO_PI;
+          v.z = Math.sin(angle) * 10;
+        }
+      }
+      plane.geometry.verticesNeedUpdate = true;
+      //scene.rotation.z+= Math.sin(frameCount/10000)/100;
+      //scene.rotation.x+= Math.cos(frameCount/10000)/500;
+      // r = r+ 0.1 * dir;
+      //
+      // if (r > 100 ) r = 0;
+      // if (r < 0 ) r = 100;
+
+      renderer.render(scene, camera);
+
+    };
+
+
+    function refresh() {
+      //console.log("refresh");
+      var v = randomInt(plane.geometry.vertices.length - 1);
+      plane.geometry.vertices[v].z += posNeg() * 20;
+      plane.geometry.verticesNeedUpdate = true;
+    }
+
+
+
+
+        function move() {
+          for (let p of particles) {
+            p.pos.x += (p.speed.x * PerlinNoise.noise(p.pos.y, Math.sin(p.pos.x), frameCount) * 15);
+            // total_distance += Math.abs(p.speed.x);
+            total_distance += 1 / 5;
+            if (p.pos.x > w) {
+              //p.speed.x *= -1;
+              p.pos.x = 0;
+              //total_distance++;
+            }
+            if (p.pos.x < 0) {
+              //p.speed.x *= -1;
+              p.pos.x = w;
+              //total_distance++;
+            }
+
+          }
+        }
+
+        function display() {
+
+          ctx.fillStyle = rgb(255);
+          for (let p of particles) {
+            // ctx.fillStyle = p.c;
+            // if(p.speed.x > 0) {
+            //   ctx.fillStyle = rgb(0);
+            // }
+            ctx.centreFillRect(p.pos.x, p.pos.y, grid.spacing.y * 2, grid.spacing.y * 0.6);
+          }
+          ctx.strokeStyle = rgb(255);
+            for (let i = particles[0].pos.y; i < grid.h; i+=grid.spacing.y) {
+              ctx.line(0, i, w, i);
+            }
+
+
+        }
+
+
+
+        function addParticle(x, y) {
+          var p = {
+            pos: new Vector(x, y),
+            speed: new Vector(0, 0),
+            c: randomGrey()
+          }
+          p.speed.x = 1;
+          p.pos.x = PerlinNoise.noise(p.pos.y, p.pos.x, random(1)) * w;
+          //console.log(p.speed.x );
+          p.pos.y = Math.round(p.pos.y);
+
+          particles.push(p);
+        }
+
+        function addParticles(num) {
+          for (let i = 0; i < num; i++) {
+            addParticle(grid.pos[i].x, grid.pos[i].y);
+          }
+        }
+
+
+
+  </script>
+
+</body>
+
+</html>

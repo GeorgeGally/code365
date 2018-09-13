@@ -5,6 +5,7 @@ function Easing(time, type, start, end) {
   this.end = end || 1;
   this.time = time;
   this.type = type;
+  this.done = false;
 
   this.reset = function() {
     this.frames = frameRate * this.time;
@@ -26,6 +27,7 @@ function Easing(time, type, start, end) {
       var t = map(this.now, this.start_time, this.end_time, 0, 1);
     } else {
       t = 1;
+      this.done = true;
     }
     this.pos = this.start + (this.end - this.start) * this.EasingFunctions[this.type](t);
     //console.log(this.EasingFunctions[this.type](t));
@@ -37,12 +39,12 @@ function Easing(time, type, start, end) {
       var t = map(this.now, this.start_time, this.end_time, 0, 1);
     } else {
       t = 1;
+      this.done = true;
     }
     return this.start + (this.end - this.start) * this.EasingFunctions[this.type](t);
   }
 
   this.EasingFunctions = {
-
     linear: function(t) {
       return t
     },

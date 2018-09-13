@@ -4,18 +4,18 @@
 <meta charset="utf-8">
 <title>Soundcloud Viz</title>
 <script src='http://connect.soundcloud.com/sdk.js'></script>
-<script language="javascript" src="js/creative_coding.js"></script>
-<script language="javascript" src="js/canvas.js"></script>
-<script language="javascript" src="js/toxiclibs.js"></script>
-<script language="javascript" src="js/jquery-1.6.2.js"></script>
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/toxiclibs.js"></script>
+<script language="javascript" src="../js/jquery-1.6.2.js"></script>
 
-  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
-  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
-  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
 
 </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -78,18 +78,18 @@ function draw(){
   variation = random(20, 150);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   physics.update();
-  
+
   for (var i = 2; i < p.length; i++) {
     var particle = p[i];
     if(i%grid_total != 0) {
-    p[i].x = tween(p[i].x, -variation + grid[i%grid_total][0] + map(audioChannelVolume[(i)%80], 0, 150, 0, variation), randomInt(4,12)); 
-    p[i].y = tween(p[i].y, -variation + grid[i%grid_total][1] + map(audioChannelVolume[(i*2)%80], 0, 150, 0, variation),  randomInt(4,12)); 
-    
+    p[i].x = tween(p[i].x, -variation + grid[i%grid_total][0] + map(audioChannelVolume[(i)%80], 0, 150, 0, variation), randomInt(4,12));
+    p[i].y = tween(p[i].y, -variation + grid[i%grid_total][1] + map(audioChannelVolume[(i*2)%80], 0, 150, 0, variation),  randomInt(4,12));
+
     //ctx.fillStyle = rgba(0,0,0,0.1);
     //ctx.fillEllipse(p[i].x, p[i].y,35, 35);
     // ctx.fillStyle = rgba(0,0,0,0.8);
     // ctx.fillEllipse(p[i].x, p[i].y,15,15);
-    
+
       //ctx.line(p[i].x, p[i].y, p[(i+1)%2].x, p[(i+1)%2].y);
       //ctx.line(p[i].x, p[i].y, p[1].x, p[1].y);
     } else {
@@ -118,6 +118,6 @@ function draw(){
 
 
 </script>
- <script language="javascript" src="js/soundcloud.js"></script>
+ <script language="javascript" src="../js/soundcloud.js"></script>
 </body>
 </html>

@@ -36,7 +36,7 @@
     var blur_ammt = 3;
 
     var ctx3 = createCanvas("canvas3");
-    var ctx2 = createCanvas("canvas2");
+    var ctx2 = createHiddenCanvas("canvas2");
     var ctx = createCanvas("canvas1");
 
     var canvas2 = ctx2.canvas;
@@ -431,7 +431,7 @@
     // // QuickSettings.useExtStyleSheet();
      settings.setGlobalChangeHandler(draw);
     // //settings.addRange(title, min, max, value, step, callback);
-     settings.addRange("height_multiplier", 10, 500, 100, 1, function(value) {
+     settings.addRange("height_multiplier", 10, 500, 200, 1, function(value) {
        height_multiplier = value;
        draw();
      });

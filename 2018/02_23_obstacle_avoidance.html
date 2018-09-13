@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/Vector2.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body style="background: #fcfcfc;">
+
+  <script>
+    const ctx = createCanvas("canvas1");
+    const ctx2 = createCanvas("canvas2");
+
+    const obstacle = new Vector2(w/2, h/2);
+
+    const PADDING = 150;
+    const MAX_SEE_AHEAD = 180;
+
+    let dude;
+
+    function setup() {
+      dude = new Human(w / 2, h / 2);
+    }
+
+    function draw() {
+      ctx.background(240);
+      ctx.fillMe(0);
+      ctx.fillEllipse(obstacle.x, obstacle.y, 150, 150)
+      dude.run();
+    }
+
+
+
+    let d = 25;
+
+    class Human {
+      constructor(x, y) {
+
+        // this.pos = createVector( x, y );
+
+        this.minspeed = 4;
+        this.maxspeed = 12;
+        this.maxforce = 2.99;
+        this.acceleration = new Vector2(0, 0);
+        this.steer = new Vector2(0, 0);
+        this.velocity = new Vector2(randomCardinal(this.minspeed, this.maxspeed), randomCardinal(this.minspeed, this.maxspeed));
+        console.log('this.velocity', this.velocity);
+        this.pos = new Vector2(x, y);
+        this.ahead = new Vector2(0, 0);
+        this.ahead2 = new Vector2(0, 0);
+
+        this.sz = 10;
+
+        this.c = "red";
+
+
+      }
+
+
+
+      run() {
+
+        this.move();
+        this.display();
+
+      }
+
+      move() {
+
+        this.boundaries();
+        this.updatePosition();
+
+      }
+
+
+      /////////////////////// MOVEMENT ///////////////////////
+
+
+      updatePosition() {
+
+        // Update velocity
+        this.velocity.add(this.acceleration);
+
+        // Limit speed
+        this.velocity.limit(this.maxspeed);
+        //if (this.velocity. instanceof Vector) console.log('this.velocity');
+        //console.log('this.velocity', this.velocity);
+        this.pos = this.pos.add(this.velocity);
+        //console.log('this.pos', this.pos);
+        // Reset accelerationelertion to 0 each cycle
+        this.acceleration.multiply(0);
+
+      }
+
+
+
+      applyForce() {
+        // console.log('force', force);
+        // console.log('this.acceleration', this.acceleration);
+        this.acceleration.add(this.steer);
+        //force.addTo(this.acceleration);
+        //console.log('this.acceleration', this.acceleration);
+      }
+
+
+      seek(target) {
+
+        var desired = target.subtract(this.pos); // A vector pointing from the location to the target
+
+        // Scale to maximum speed
+        desired.setMag(this.maxspeed);
+
+        // Steering = Desired minus velocity
+        this.steer = desired.subtract(this.velocity);
+        this.steer.limit(this.maxforce); // Limit to maximum steering force
+
+        this.applyForce();
+      }
+
+
+      changeDirection(desired) {
+
+        desired.normalize();
+        desired.mult(this.maxspeed);
+        this.steer = desired.subtract(this.velocity);
+
+        this.steer.limit(this.maxforce);
+
+        this.applyForce();
+
+      }
+
+
+
+      boundaries() {
+        //console.log(w/2, this.pos.x);
+        let desired = null;
+
+        if (this.pos.x < PADDING) {
+          desired = new Vector2(this.maxspeed, this.velocity.y);
+        } else if (this.pos.x > w - PADDING) {
+          desired = new Vector2(-this.maxspeed, this.velocity.y);
+        }
+
+        if (this.pos.y < PADDING) {
+          desired = new Vector2(this.velocity.x, this.maxspeed);
+        } else if (this.pos.y > h - PADDING) {
+          desired = new Vector2(this.velocity.x, -this.maxspeed);
+        }
+
+        if (desired !== null) {
+          this.changeDirection(desired)
+        }
+
+      }
+
+
+      turnAround() {
+
+        this.velocity.x *= -1;
+        this.velocity.y *= -1;
+        this.maybeTurnRandomly();
+
+      }
+
+      repel(p) {
+
+        let power = 5;
+        let dir = this.pos.subtract(p.pos); // Calculate direction of force
+//        console.log('dir', dir);
+        let d = dir.mag(); // Distance between objects
+        dir.normalize(); // Normalize vector (distance doesn't matter here, we just want this vector for direction)
+        d = constrain(d, 1, 100); // Keep distance within a reasonable range
+        let force = -1 * power / (d * d); // Repelling force is inversely proportional to distance
+        dir.mult(force); // Get force vector --> magnitude * direction
+        let force2 = dir;
+        p.applyForce(force2);
+
+      }
+
+
+      bumpingIntoEachOther(p) {
+
+        for (let i = 0; i < this.grid.length; i++) {
+          let g = this.grid.pos[i];
+          if (dist(this.pos.x, this.pos.y, p.pos.x, p.pos.y) < this.sz / 2 + p.sz / 2) {
+            //console.log('bump');
+            return true;
+          }
+        }
+
+      }
+
+
+
+
+      //////////////////////////////// DISPLAY /////////////////////////////////////
+
+      display() {
+        this.boid();
+        this.directionLinePoint();
+      }
+
+
+      directionLinePoint() {
+        //console.log('this.velocity', this.velocity);
+        let norm = new Vector2(0,0)
+        //norm = this.velocity.normalize();
+        //console.log('norm', norm);
+        //norm.mult(MAX_SEE_AHEAD);
+        //this.ahead = norm.add(this.pos);
+        // norm.mult(0.5);
+        // this.ahead2 = this.pos.add(norm);
+        // //
+        // let theta = this.velocity.heading() + Math.PI / 2;
+        //
+        // ctx.save();
+        // ctx.translate(this.pos.x, this.pos.y);
+        // //ctx.rotate(theta + radians(-135));
+        // ctx.strokeMe(255, 0, 200);
+        // ctx.line(0, 0, this.ahead.x, this.ahead.y)
+        // ctx.strokeMe(255, 255, 0);
+        // ctx.line(0, 0, this.ahead2.x, this.ahead2.y)
+        // ctx.restore();
+
+      }
+
+      boid() {
+
+        // var theta = this.velocity.heading() + PI / 2;
+        var theta = this.velocity.heading();
+        ctx.noStroke();
+        ctx.fillMe(this.c);
+        //ctx.stroke( 200 );
+        ctx.strokeWeight(1);
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y);
+        ctx.rotate(theta);
+        ctx.beginPath();
+        ctx.lineTo(0, -this.sz * 2);
+        ctx.lineTo(-this.sz, this.sz * 2);
+        ctx.lineTo(this.sz, this.sz * 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore()
+      }
+
+    }
+  </script>
+
+</body>
+
+</html>

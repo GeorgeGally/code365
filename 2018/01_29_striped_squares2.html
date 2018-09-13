@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 1;
+var spacing = 10;
+
+drawScene();
+
+function draw(){
+  if(chance(50)) drawScene();
+}
+
+
+function drawScene(){
+  ctx.background(245);
+
+  drawRect(randomInt(3)*90, rgb(215), w/2, h/2, w, w);
+
+  var num = randomInt(5, 10);
+  for (var i = 0; i < num; i++) {
+    var sz = sticky(randomInt(200, 1500), spacing);
+    var x = randomSticky(w/2, spacing*2);
+    var deg = chance(2)? 45: 135;
+    drawRect(deg, randomGrey(0, 230), x, h, sz, sz);
+  }
+
+  border(40, rgb(245));
+}
+
+function onKeyDown() {
+  drawScene()
+}
+
+
+function drawRect(r, c, x, y, w, h){
+  ctx.strokeStyle = c;
+  ctx.fillStyle = rgb(245, 0.8);
+	ctx.save();
+  ctx.translate(x, y);
+  ctx.rotateDegrees(r);
+	//ctx.centreFillRect(1, 0, w, h);
+
+	for (var i = -h/2; i <= h/2; i+= spacing) {
+		ctx.line(-w/2, i, w/2, i);
+	}
+  //ctx.strokeStyle = rgb(245);
+  //ctx.strokeRect(-spacing, -spacing, w + spacing, h + spacing);
+  ctx.rotateDegrees(-r);
+	ctx.restore();
+
+
+
+}
+
+
+
+
+</script>
+
+</body>
+
+</html>

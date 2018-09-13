@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+  <script language="javascript" src="../js/math.js"></script>
+  <script language="javascript" src="../js/perlin_noise.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    let ctx = createHiddenCanvas("canvas1");
+    let ctx2 = createCanvas("canvas2");
+    let total_distance = 0;
+    let particles = [];
+    let grid = new Grid(70, 50);
+
+    ctx.font = "20px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    function setup(){
+      addParticles(grid.length)
+
+    }
+
+    function draw() {
+      ctx.background(0, 0.04);
+
+      if(total_distance < 2000000) move();
+      display();
+      ctx.fillStyle = rgb(0);
+      ctx.centreFillRect(w/2, h - h/10, 580, 24);
+      ctx.fillStyle = rgb(255);
+      ctx.fillText("Kilometres cycled in Amsterdam each day: " + Math.round(total_distance), w/2, h - h/10);
+      ctx2.drawImage(ctx.canvas, 0, 0, w, h);
+    }
+
+    function move(){
+      for (let p of particles) {
+      // p.pos.x += (p.speed.x * PerlinNoise.noise(p.pos.y, Math.sin(p.pos.x), frameCount) * 16);
+      p.pos.x += p.speed.x;
+      //p.target.y +=random(-15, 15);
+      // p.target.y += PerlinNoise.noise(Math.sin(p.pos.x/100), p.pos.y, frameCount) * 100 - 50;
+      p.target.y += PerlinNoise.noise(Math.sin(p.pos.x/100), p.pos.y/100, frameCount) * 100 - 50;
+      p.pos.y = tween(p.pos.y, p.target.y, 80)
+      // total_distance += Math.abs(p.speed.x);
+      total_distance += 1/5;
+      if (p.pos.x > w) {
+        //p.speed.x *=-1;
+        p.pos.x = 0;
+        //total_distance++;
+      }
+      if (p.pos.x < 0) {
+        //p.speed.x *=-1;
+      //  p.pos.x = w;
+        //total_distance++;
+      }
+
+    }
+    }
+
+    function display(){
+
+
+      for (let p of particles) {
+        ctx.fillStyle = p.c;
+        // if(p.speed.x > 0) {
+        //   ctx.fillStyle = rgb(0);
+        // }
+      ctx.centreFillRect(p.pos.x, p.pos.y, 7, 7);
+    }
+  }
+
+
+
+  function addParticle(x, y){
+    var p = {
+      pos: new Vector(x,y),
+      speed: new Vector(0, 0),
+      target: new Vector(x, y),
+      c: randomGrey()
+    }
+    p.speed.x = random(1, 8);
+    p.speed.y = 0;
+    p.pos.x =  random(-w, 0);
+    //console.log(p.speed.x );
+    p.pos.y = Math.round(p.pos.y);
+
+    particles.push(p);
+  }
+
+  function addParticles(num){
+    for (let i = 0; i < num; i++) {
+      addParticle(grid.pos[i].x, grid.pos[i].y);
+    }
+  }
+
+
+  </script>
+
+</body>
+
+</html>

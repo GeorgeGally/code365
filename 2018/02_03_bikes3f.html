@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+  <script language="javascript" src="../js/math.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    let ctx = createCanvas("canvas1");
+    let ctx2 = createCanvas("canvas1");
+    let total_distance = 0;
+    let engine = new particleEngine(450, 50);
+    console.log('engine.particles', engine.particles);
+    ctx.font = "20px helvetica";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.strokeStyle = rgb(255);
+
+    var dir = 1;
+    function setup() {
+      for (let p of engine.particles) {
+        p.speed.x = random(1, 6);
+        p.c = randomGrey();
+        // dir *=-1;
+        // p.dir = dir;
+        //console.log('p.row', p.row);
+        p.pos.x = randomInt(w);
+        //p.pos.y = Math.round(p.pos.y);
+        p.dir = 1;
+        if(p.row %2 == 0) {
+          p.dir = -1;
+          // p.pos.x -= w/2;
+          //p.pos.y -= engine.grid.spacing.y;
+          //p.pos.x -= engine.grid.spacing.x /2;
+        }
+        //p.dir = posNeg();
+        //if (p.pos.x > w) p.pos.x = 0;
+      }
+    }
+
+    function draw() {
+      ctx.background(255);
+
+      if (total_distance < 2000000) move();
+      display();
+      ctx.fillStyle = rgb(0);
+      ctx.centreFillRect(w / 2, h - h / 10, 580, 24);
+      ctx.fillStyle = rgb(255);
+      ctx.fillText("Kilometres cycled in Amsterdam each day: " + total_distance, w / 2, h - h / 10)
+    }
+
+    function move() {
+      for (let p of engine.particles) {
+        p.pos.x += (p.speed.x * p.dir);
+        // total_distance += Math.abs(p.speed.x);
+        //total_distance += 1;
+        if (p.pos.x > w) {
+          p.dir *= -1;
+          p.pos.y -= engine.grid.spacing.y;
+          total_distance+=10;
+        }
+        if (p.pos.x < 0) {
+          p.dir *= -1;
+          p.pos.y += engine.grid.spacing.y;
+          total_distance+=10;
+        }
+
+      }
+    }
+
+    function display() {
+
+      for (let p of engine.particles) {
+        // p.dir == 1 ? p.c = rgb(100): p.c = rgb(0);
+        // if(p.row == 10) {
+        //   p.c = rgb(255,0,0);
+        //   //p.pos.x -= engine.grid.spacing.x /2;
+        // }
+        ctx.fillStyle = p.c;
+        ctx.centreFillRect(p.pos.x, p.pos.y, 24, 14);
+        ctx.centreStrokeRect(p.pos.x, p.pos.y, 24, 14);
+      }
+    }
+
+  </script>
+
+</body>
+
+</html>

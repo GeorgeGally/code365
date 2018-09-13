@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/P5Vector.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body style="background: #fcfcfc;">
+
+  <script>
+    const ctx = createCanvas("canvas1");
+    const ctx2 = createCanvas("canvas2");
+
+
+    let obstacles = [];
+
+    const PADDING = 100;
+    const MAX_SEE_AHEAD = 150;
+    const OBSTACLE_RADIUS = 400;
+    const MAX_AVOID_FORCE = 2;
+
+    let vehicles = [];
+
+    let debug = false;
+    let store_sz = 800;
+
+    //let Vector = pVector;
+    function setup() {
+      createCanvas(innerWidth, innerHeight);
+      for (var i = 0; i < 60; i++) {
+      vehicles[i] = new Vehicle(width / 2, height / 2);
+    }
+    }
+
+    function draw() {
+      ctx.background(230, 0.02);
+      ctx2.clear();
+      if (debug) {
+        ctx.strokeMe(175);
+        ctx.strokeCircle(width / 2, height / 2, store_sz, store_sz);
+      }
+
+      for (var i = 0; i < vehicles.length; i++) {
+        let v = vehicles[i];
+        v.boundaries();
+
+        v.update();
+        v.display();
+      }
+      // Call the appropriate steering behaviors for our agents
+
+
+    }
+
+    function mousePressed() {
+      debug = !debug;
+    }
+
+
+class Vehicle {
+  constructor(x, y) {
+    this.acceleration = new Vector(0, 0);
+    this.velocity = new Vector(random(-2,2), random(-2,2));
+    this.pos = new Vector(x, y);
+    this.steer = new Vector(0, 0);
+    this.r = 10;
+    this.maxspeed = 13;
+    this.maxforce = 0.2;
+    this.ahead = new Vector(0, 0);
+    this.MAX_SEE_AHEAD = MAX_SEE_AHEAD;
+
+  }
+
+  // Method to update location
+  update() {
+    // Update velocity
+    this.velocity.add(this.acceleration);
+    // Limit speed
+    this.velocity.limit(this.maxspeed);
+    this.pos.add(this.velocity);
+    // Reset accelerationelertion to 0 each cycle
+    this.acceleration.mult(0);
+  }
+
+  applyForce() {
+    this.steer.limit(this.maxforce);
+    this.acceleration.add(this.steer);
+  }
+
+  boundaries() {
+
+    let desired = null;
+
+    if (this.pos.x < width/2 - store_sz/2 + this.MAX_SEE_AHEAD) {
+      desired = new Vector(this.maxspeed, this.velocity.y);
+    } else if (this.pos.x >= width/2 + store_sz/2 - this.MAX_SEE_AHEAD) {
+      desired = new Vector(-this.maxspeed, this.velocity.y);
+    }
+
+    if (this.pos.y < height/2 - store_sz/2 + this.MAX_SEE_AHEAD) {
+      desired = new Vector(this.velocity.x, this.maxspeed);
+    } else if (this.pos.y >= height/2 + store_sz/2 - this.MAX_SEE_AHEAD) {
+      desired = new Vector(this.velocity.x, -this.maxspeed);
+    }
+
+    if (desired !== null) {
+      desired.normalize();
+      desired.mult(this.maxspeed);
+      let desired_steer = new Vector(0, 0)
+      desired_steer = Vector.sub(desired, this.velocity);
+      this.steer.add(desired_steer)
+      //this.steer.limit(this.maxspeed);
+      this.applyForce();
+    }
+  }
+
+
+  display() {
+
+    this.directionLinePoint();
+    //ctx.save();
+    var theta = this.velocity.heading() + PI / 2;
+
+    ctx2.fillMe(255, 0, 0);
+    ctx2.fillCircle(this.pos.x, this.pos.y, 8, 8)
+
+    ctx.fillMe(0);
+    ctx.fillCircle(this.pos.x, this.pos.y, 5, 5)
+    //ctx.strokeWeight(1);
+    // ctx.translate(this.pos.x, this.pos.y);
+    // ctx.rotate(theta);
+    // ctx.beginPath();
+    // ctx.lineTo(0, -this.sz * 2);
+    // ctx.lineTo(-this.sz, this.sz * 2);
+    // ctx.lineTo(this.sz, this.sz * 2);
+    // ctx.closePath();
+    // ctx.fill();
+    // ctx.restore();
+  }
+
+
+  directionLinePoint() {
+  //console.log('this.velocity', this.velocity);
+  let norm = new Vector(this.velocity.x, this.velocity.y);
+  norm.normalize();
+  //console.log('norm', norm);
+  norm.mult(this.MAX_SEE_AHEAD);
+
+  this.ahead.x = norm.x;
+  this.ahead.y = norm.y;
+
+  //this.drawArrow(this.pos, this.ahead, "red");
+
+}
+
+// draw an arrow for a vector at a given base pos
+    drawArrow(base, vec, col) {
+      //console.log(vec);
+      ctx.save();
+      ctx.strokeMe(col);
+      ctx.strokeWeight(1);
+      ctx.fillMe(col);
+      ctx.translate(base.x, base.y);
+      ctx.line(0, 0, vec.x, vec.y);
+      var h = vec.heading()
+      ctx.restore();
+    }
+}
+
+  </script>
+
+</body>
+
+</html>

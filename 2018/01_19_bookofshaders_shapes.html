@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>three.js webgl - particles</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<script src="../js/three.min.js"></script>
+	<script src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/perlin.js"></script>
+	<script language="javascript" src="../js/vector.js"></script>
+	<script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+	<script src="../js/dat.gui.min.js"></script>
+
+</head>
+
+<body>
+
+<div id="container"></div>
+
+	<script id="vertexShader" type="x-shader/x-vertex">
+         void main() {
+             gl_Position = vec4( position, 1.0 );
+         }
+     </script>
+     <script id="fragmentShader" type="x-shader/x-fragment">
+		 	#ifdef GL_ES
+				precision mediump float;
+			#endif
+
+			#define SMOOTH(r,R) (1.0-smoothstep(R-1.0,R+1.0, r))
+			#define RANGE(a,b,x) ( step(a,x)*(1.0-step(b,x)) )
+			#define RS(a,b,x) ( smoothstep(a-1.0,a+1.0,x)*(1.0-smoothstep(b-1.0,b+1.0,x)) )
+			#define M_PI 3.1415926535897932384626433832795
+
+			uniform vec2 u_resolution;
+			uniform vec2 u_mouse;
+			uniform float u_time;
+
+			float rect(in vec2 _st, in vec2 _size){
+    			_size = vec2(0.5) - _size*0.5;
+    			vec2 uv = smoothstep(_size,
+                    _size+vec2(0.001),
+                    _st);
+    		uv *= smoothstep(_size,
+                    _size+vec2(0.001),
+                    vec2(1.0)-_st);
+    			return uv.x*uv.y;
+			}
+
+			float strokeRect(in vec2 _st, in vec2 _size){
+    			_size = vec2(0.5) - _size*0.5;
+    			vec2 uv = smoothstep(_size,
+                    _size+vec2(0.001),
+                    _st);
+    		uv *= smoothstep(_size,
+                    _size+vec2(0.001),
+                    vec2(1.0)-_st);
+    			return uv.x*uv.y;
+			}
+
+			float cross(in vec2 _st, float _size){
+			    return  rect(_st    , vec2(_size   , _size/4.)) +
+			            rect(_st    , vec2(_size/4., _size));
+			}
+
+
+			float triangles(vec2 uv, vec2 center, float radius)
+			{
+			    vec2 d = uv - center;
+			    return RS(-8.0, 0.0, d.x-radius) * (1.0-smoothstep( 7.0+d.x-radius,9.0+d.x-radius, abs(d.y)))
+			         + RS( 0.0, 8.0, d.x+radius) * (1.0-smoothstep( 7.0-d.x-radius,9.0-d.x-radius, abs(d.y)))
+			         + RS(-8.0, 0.0, d.y-radius) * (1.0-smoothstep( 7.0+d.y-radius,9.0+d.y-radius, abs(d.x)))
+			         + RS( 0.0, 8.0, d.y+radius) * (1.0-smoothstep( 7.0-d.y-radius,9.0-d.y-radius, abs(d.x)));
+			}
+
+
+			float circle(in vec2 _st, in vec2 center, in float _radius){
+					vec2 d = _st - center;
+	    		vec2 dist = d-vec2(0.5);
+					return 1.-smoothstep(_radius-(_radius*0.01),
+	                         _radius+(_radius*0.01),
+	                         dot(dist,dist)*4.0);
+			}
+
+		// float circle2(vec2 uv, vec2 center, float radius, float width, float opening)
+		// {
+		//     vec2 d = uv - center;
+		//     float r = sqrt( dot( d, d ) );
+		//     d = normalize(d);
+		//     if( abs(d.y) > opening )
+		// 	    return SMOOTH(r-width/2.0,radius)-SMOOTH(r+width/2.0,radius);
+		//     else
+		//         return 0.0;
+		// }
+		// float circle3(vec2 uv, vec2 center, float radius, float width){
+		//     vec2 d = uv - center;
+		//     float r = sqrt( dot( d, d ) );
+		//     d = normalize(d);
+		//     float theta = 180.0*(atan(d.y,d.x)/M_PI);
+		//     return smoothstep(2.0, 2.1, abs(mod(theta+2.0,45.0)-2.0)) *
+		//         mix( 0.5, 1.0, step(45.0, abs(mod(theta, 180.0)-90.0)) ) *
+		//         (SMOOTH(r-width/2.0,radius)-SMOOTH(r+width/2.0,radius));
+		// }
+
+			void main(){
+				vec2 st        = gl_FragCoord.xy/u_resolution.xy;
+				st.x          *= u_resolution.x/u_resolution.y;
+				vec3 color     = vec3(0.0);
+				float d        = 0.0;
+
+				// Remap the space to -1. to 1.
+				//st             = st *2.-1.;
+				float c1 = circle(st, vec2(0.0), 0.01);
+				//float c1 = circle2(st, vec2(0.5), 0.001, 0.4, 0.5);
+				//float c1 = triangles(st, vec2(0.2), 0.9);
+				color         += vec3(c1);
+				// color         += vec3(strokeRect(st,vec2(0.25, 0.25)));
+				color         += vec3(cross(st,0.15));
+
+
+    		gl_FragColor = vec4(color,1.0);
+
+			}
+
+     </script>
+     <script>
+		 var width = w = window.innerWidth;
+		 var height = h = window.innerHeight;
+         var container;
+         var camera, scene, renderer;
+         var uniforms;
+
+         init();
+         animate();
+
+         function init() {
+             container                  = document.getElementById( 'container' );
+
+             camera                     = new THREE.Camera();
+             camera.position.z          = 1;
+
+             scene                      = new THREE.Scene();
+
+             var geometry               = new THREE.PlaneBufferGeometry( 2, 2 );
+
+						 renderer                         = new THREE.WebGLRenderer();
+             renderer.setPixelRatio( window.devicePixelRatio );
+
+             container.appendChild( renderer.domElement );
+
+             uniforms                   = {
+                 u_time: { type: "f", value: 1.0 },
+                 u_resolution: { type: "v2", value: new THREE.Vector2(w, h) },
+                 u_mouse: { type: "v2", value: new THREE.Vector2() }
+             };
+
+             var material               = new THREE.ShaderMaterial( {
+                 uniforms: uniforms,
+                 vertexShader: document.getElementById( 'vertexShader' ).textContent,
+                 fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+             } );
+
+             var mesh                   = new THREE.Mesh( geometry, material );
+             scene.add( mesh );
+
+
+
+             onWindowResize();
+             window.addEventListener( 'resize', onWindowResize, false );
+
+             document.onmousemove       = function(e){
+               uniforms.u_mouse.value.x = e.pageX
+               uniforms.u_mouse.value.y = e.pageY
+             }
+         }
+
+         function onWindowResize( event ) {
+             renderer.setSize( window.innerWidth, window.innerHeight );
+             uniforms.u_resolution.value.x = renderer.domElement.width;
+             uniforms.u_resolution.value.y = renderer.domElement.height;
+         }
+
+         function animate() {
+             requestAnimationFrame( animate );
+             render();
+         }
+
+         function render() {
+             uniforms.u_time.value += 0.05;
+             renderer.render( scene, camera );
+         }
+     </script>
+ </body>
+</body>
+
+</html>

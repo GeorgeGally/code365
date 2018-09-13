@@ -162,12 +162,6 @@
 
 			scene.add(spotLight2);
 
-			//scene.add( new THREE.AmbientLight( 0xffffff, 0.3 ));
-
-			// SHADOW CAMERA HELPER
-			// shadow_helper = new THREE.CameraHelper( light.shadow.camera );
-			// scene.add( shadow_helper );
-
 			// GROUND
 				var floorGeometry = new THREE.PlaneGeometry(500, 500);
 				var floorMaterial = new THREE.MeshLambertMaterial( { color: rgba(255), transparent: true } );
@@ -285,25 +279,7 @@
 
 			var renderPass = new THREE.RenderPass(scene, camera);
 			composer.addPass(renderPass);
-			//renderPass.renderToScreen = true;
 
-			// var pass1 = new THREE.ShaderPass( THREE.SepiaShader );
-			// composer.addPass( pass1 );
-
-			// var pass2 = new THREE.ShaderPass( THREE.FilmShader );
-			// composer.addPass( pass2 );
-
-			// var pass2 = new THREE.ShaderPass( THREE.SSAOShader );
-			// composer.addPass( pass2 );
-			//pass2.renderToScreen = true;
-
-			// var dotScreenPass = new THREE.DotScreenPass();
-			// composer.addPass(dotScreenPass);
-			//
-			// var rgbEffect = new THREE.ShaderPass( THREE.RGBShiftShader );
-			// rgbEffect.uniforms[ 'amount' ].value = 0.0015;
-			// rgbEffect.renderToScreen = true;
-			// composer.addPass( rgbEffect );
 
 			var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
 			effectCopy.renderToScreen = true;

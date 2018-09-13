@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+  <script language="javascript" src="../js/perlin_noise.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+  var ctx = createCanvas("canvas1");
+  var cols;
+  var rows;
+  var current = [cols];// = new var[cols][rows];
+  var previous = [cols];// = new var[cols][rows];
+
+  var dampening = 1;
+
+  function setup() {
+    ctx.background(0);
+
+    cols = w;
+    rows = h;
+    for (var i = 0; i < cols; i++) {
+      current[i] = [];
+      previous[i] = [];
+      for (var j = 0; j < rows; j++) {
+        current[i][j] = 0;
+        previous[i][j] = 0;
+
+      }
+    }
+
+
+  }
+
+  document.onmousedown = function() {
+    previous[mouseX][mouseY] = 500;
+  }
+
+  function draw() {
+    ctx.background(0);
+    imagedata = ctx.getImageData(0,0,w,h);
+    //loadPixels();
+    for (var i = 1; i < cols-1; i++) {
+      for (var j = 1; j < rows-1; j++) {
+        current[i][j] = (
+          previous[i-1][j] +
+          previous[i+1][j] +
+          previous[i][j-1] +
+          previous[i][j+1]) / 2 -
+          current[i][j];
+        current[i][j] = current[i][j] * dampening;
+        var index = i + j * cols;
+        //pixels[index] = color(current[i][j]);
+        setPixel(i, j, current[i][j]);
+      }
+    }
+    //updatePixels();
+    ctx.putImageData(imagedata, 0, 0);
+    var temp = previous;
+    previous = current;
+    current = temp;
+  }
+
+
+  function multiArray (array, arrayLength) {
+    for (var i = 0; i < array.length; i++) {
+      array[i] = new Array(arrayLength);
+  }
+  return array;
+}
+
+function setPixel(x, y, c) {
+ var i = (y * w + x) * 4;
+ imagedata.data[i++] = c;
+ imagedata.data[i++] = c;
+ imagedata.data[i++] = c;
+ imagedata.data[i] = 255;
+}
+
+  </script>
+
+</body>
+
+</html>

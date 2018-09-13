@@ -38,16 +38,16 @@ for (var i = 0; i < blocks.particles.length; i++) {
 }
 
 function draw(){
-  ctx.background(255);
+  ctx.background(0);
   blocks.draw();
   for (var i = 0; i < blocks.particles.length; i++) {
     var b = blocks.particles[i];
     if(b.pos.x < 20) {
       var _s = mapSound(b.me, blocks.particles.length*2);
       if(_s < 80) {
-        b.c = rgb(255);
+        b.c = rgb(0);
       } else {
-        b.c = rgb(_s * 1.4);
+        b.c = rgb(255 - _s * 1.4);
       }
     }
     ctx.fillStyle = b.c;

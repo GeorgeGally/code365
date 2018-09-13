@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 3;
+var spacing = 8;
+function draw() {
+
+ctx.background(255);
+
+
+drawRect(0, rgb(205), 0, 0, w, h);
+
+drawRect(135, rgb(125), 1200, 600, 800, 600);
+drawRect(45, rgb(85), 400, 400, 800, 600);
+drawRect(45, rgb(55), 0, 300, 800, 600);
+border(30, rgb(245));
+
+}
+
+
+
+
+
+function drawRect(r, c, x, y, w, h){
+  ctx.strokeStyle = c;
+  ctx.fillStyle = rgb(245);
+	ctx.save();
+  ctx.translate(x, y);
+  ctx.rotateDegrees(r);
+	ctx.fillRect(0, 0, w, h);
+
+	for (var i = 0; i <= h; i+= spacing) {
+		ctx.line(0, i, w, i);
+	}
+  //ctx.strokeRect(0, 0, w, h);
+	ctx.restore();
+
+
+
+}
+
+
+
+
+</script>
+
+</body>
+
+</html>

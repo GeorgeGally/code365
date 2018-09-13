@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script language="javascript" src="../../js/creative_coding.js"></script>
+  <script language="javascript" src="../../js/canvas.js"></script>
+  <script language="javascript" src="../../js/vector.js"></script>
+  <script language="javascript" src="../../js/vector_particles.js"></script>
+
+  <link rel="stylesheet" href="../../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../../css/audio.css" type="text/css" media="screen" />
+  <script language="javascript" src="../../js/d3.js"></script>
+</head>
+
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.font = '8px Courier';
+var grid_w = 100;
+var grid_h = 30;
+var grid = createGrid(grid_w, grid_h);
+var mode = 0;
+var min_max;
+  var data = [];
+  // var url = '../../data/ams_traffic_fatalaties.csv';
+  var url = '../../data/ams_traffic_fatalaties_20_year.csv';
+  var ammt = 0;
+  var year = 0;
+  let current_year = 0;
+  let speedx = 10;
+  let speedy = 20;
+  let loaded = false;
+  let spacing_gap;
+  let spacing;
+  var noisy = 0;
+  var fieldIntensity = 200000;
+  var noiseScale = 2000;
+function setup() {
+    ctx.background(0);
+    load(url);
+  };
+
+var engine = new particleEngine(0);
+
+ctx.background(0);
+
+var out = 0;
+counter = 0;
+var current_wave = 0;
+
+function draw(){
+  ctx.background(0);
+  if (loaded && counter < data.length - 1) {
+  engine.draw();
+  current_wave = parseInt(data[counter].ammt);
+  if(counter < data.length) {
+  if(out > current_wave ) {
+    counter++;
+      console.log(counter);
+    out = 0;
+  } else {
+    addABunch();
+  }
+}
+
+  for (var i = engine.particles.length-1; i >=0 ; i--) {
+    var b = engine.particles[i];
+
+    if(b.pos.y < 0) blocks.splice(i,1);
+
+    //
+    //
+    // if (chance(1000)) mode = randomInt(2);
+    //
+    // if (chance(100)) b.on = !b.on;
+
+    //
+    ctx.fillStyle = b.c;
+
+    ctx.fillRect(b.pos.x, b.pos.y, 6, 4);
+
+}
+  }
+}
+
+function addABunch(){
+  for (var i = 0; i < 20; i++) {
+    addParticle();
+    out++
+  }
+}
+
+
+function addParticle(){
+  var x = randomSticky(w,10);
+  var y = h + random(100);
+  engine.addParticle(x,y);
+  engine.last.speed.x = 0;
+  engine.last.speed.y = -current_wave/80;
+
+  engine.last.c = randomGrey(180, 255);
+}
+
+
+function load(url) {
+  //var vals = [];
+  d3.csv(url, function(error, d) {
+
+    if (error) console.log(error);
+    data = d;
+    loaded = true;
+    spacing = w / (data.length - 1);
+    spacing_gap = Math.round(spacing - 3);
+  });
+}
+
+</script>
+<script language="javascript" src="../js/mic.js"></script>
+</body>
+
+</html>

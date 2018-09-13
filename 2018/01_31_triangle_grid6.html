@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 2;
+var spacing = 10;
+var rects = [];
+var engine = new particleEngine(40, 30);
+
+
+function setup(){
+move()
+
+}
+
+
+function move() {
+  if (chance(2)) {
+    engine = new particleEngine(randomInt(10,50), randomInt(10,50));
+  }
+  for (var i = 0; i < engine.length; i++) {
+    var p = engine.particles[i];
+    // p.r = randomInt(0, 4);
+    p.r = 0;
+  }
+
+}
+
+function draw(){
+  ctx.background(245);
+  for (var i = 0; i < engine.length; i++) {
+    var p = engine.particles[i];
+    //onsole.log(p);
+    if (chance(100)) {
+      // p.r = randomInt(1, 4);
+    //    p.r = (p.r + 1) %4;
+    }
+    p.r = (p.r + 1) %4;
+    ctx.save();
+    ctx.translate(p.pos.x - p.w/2, p.pos.y - p.h/2);
+    ctx.fillStyle = rgb(0);
+    //ctx.rotateDeg(p.r * 45);
+    //ctx.fillEqTriangle(0, 0, engine.grid.spacing.x);
+    if(p.r == 0 ) {
+      ctx.fillTriangle(0, 0, engine.grid.spacing.x, 0, engine.grid.spacing.x, engine.grid.spacing.y);
+    } else if(p.r == 1 ) {
+        ctx.fillTriangle(0, engine.grid.spacing.y, 0, 0, engine.grid.spacing.x, 0);
+      } else if(p.r == 2 ) {
+      ctx.fillTriangle(0, 0, 0, engine.grid.spacing.y, engine.grid.spacing.x, engine.grid.spacing.y);
+    } else {
+      ctx.fillTriangle(engine.grid.spacing.x, 0, engine.grid.spacing.x, engine.grid.spacing.y, 0, engine.grid.spacing.y);
+
+    }
+    //ctx.centreFillRect(0, 0, p.w, p.h);
+    //ctx.rotateDeg(-45);
+    ctx.restore();
+  }
+
+}
+
+
+function onKeyDown() {
+  move()
+}
+
+
+</script>
+
+</body>
+
+</html>

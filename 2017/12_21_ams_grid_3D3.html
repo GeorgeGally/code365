@@ -50,8 +50,8 @@ var pixelsize = 40;
 var video_scale;
 
 var controls = {
-			dark: 60,
-      light: -40,
+			dark: 3,
+      light: 30,
 		}
 
     var height_multiplier = 200;
@@ -353,12 +353,12 @@ function videoshit(){
 
 
       ctx3.clearRect(0, 0, w, h);
-      ctx3.fillStyle = rgba(255, 0.4);
+      ctx3.fillStyle = rgba(0, 0.4);
       ctx3.fillRect(0, h - 60, w, h);
       var xx = map(counter, 0, suburbs[0].length - 2, 0, w);
       x = tween(x, xx, 20);
-      ctx3.strokeStyle = rgb(0);
-      ctx3.fillStyle = rgb(0);
+      ctx3.strokeStyle = rgb(255);
+      ctx3.fillStyle = rgb(255);
       ctx3.line(x, h - 40, x, h);
       ctx3.fillText(years[counter], x + 10, h - 20);
 

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script language="javascript" src="../../js/creative_coding.js"></script>
+  <script language="javascript" src="../../js/canvas.js"></script>
+  <script language="javascript" src="../../js/vector.js"></script>
+  <script language="javascript" src="../../js/vector_particles.js"></script>
+  <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+  <link rel="stylesheet" href="../../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../../css/audio.css" type="text/css" media="screen" />
+  <script language="javascript" src="../../js/d3.js"></script>
+  <script language="javascript" src="../js/perlin_noise.js"></script>
+  <script language="javascript" src="../js/set_screen.js"></script>
+
+</head>
+
+<body style="background:#efefef; padding: 10px;">
+
+  <script>
+    let ctx = createCanvas("canvas1");
+    let ctx2 = createCanvas("canvas2");
+    let ctx3 = createCanvas("canvas3");
+    let ctx4 = createCanvas("canvas4");
+
+    let context;
+    //ctx.font = "25px arial";
+
+    // ctx3.font = "25px helvetica";
+    // ctx3.textAlign = "center";
+    // ctx3.fillStyle = rgb(255);
+
+    var particles = [];
+
+    var firstnames = new colourPool();
+    var surnames = new colourPool();
+
+    var url = '../../data/top_1000_last_names_in_the_netherlands_2007.csv';
+    var traffic_url = '../../data/ams_traffic_fatalaties_20_year.csv';
+
+    let fall_rate = 6;
+    var loaded = 0;
+    let height_offset = 180;
+    let sz = 20;
+
+    firstnames.add('A', 0.9)
+      .add('B', 0.9)
+      .add('C', 0.9)
+      .add('D', 0.9)
+      .add('E', 0.9)
+      .add('F', 0.9)
+      .add('G', 0.9)
+      .add('H', 0.9)
+      .add('I', 0.9)
+      .add('J', 0.9)
+      .add('K', 0.9)
+      .add('L', 0.9)
+      .add('M', 0.9)
+      .add('N', 0.9)
+      .add('O', 0.9)
+      .add('P', 0.9)
+      .add('Q', 0.9)
+      .add('R', 0.9)
+      .add('S', 0.9)
+      .add('T', 0.9)
+      .add('U', 0.9)
+      .add('V', 0.9)
+      .add('W', 0.9)
+      .add('Y', 0.1)
+      .add('Z', 0.3)
+
+
+
+    function setup() {
+      setScreen();
+      load(url);
+      loadTraffic(traffic_url)
+      //ctx.font="15px Courier";
+      ctx.font = "17px helvetica";
+      ctx.textAlign = "center";
+      ctx2.font = "17px helvetica";
+      ctx2.textAlign = "center";
+      ctx3.font = "17px helvetica";
+      ctx3.textAlign = "center";
+      ctx4.font = "17px helvetica";
+      ctx4.textAlign = "center";
+      ctx.background(0);
+    }
+
+    function draw() {
+      ctx.background(0);
+      ctx4.clear();
+      ctx3.clear();
+      ctx2.clear();
+
+
+      if (loaded && counter < data.length - 1) {
+
+        if (data[counter]['ammt'] < 0) {
+
+          counter = (counter + 1);
+
+        } else {
+
+          if (data[counter]['ammt'] < fall_rate) {
+            addParticles(data[counter]['ammt']);
+          } else {
+            addParticles(fall_rate);
+          }
+          data[counter]['ammt'] -= fall_rate;
+
+        }
+
+      }
+
+
+      drawParticles();
+
+      //ctx2.drawImage(ctx.canvas, 0, 0, w, h);
+    }
+
+
+
+    function load(url) {
+
+      d3.csv(url, function(error, data) {
+        console.log("----load---");
+        if (error) console.log(error);
+
+        var c = 0;
+        for (var i = 0; i < data.length; i++) {
+          var d = data[i];
+          //console.log(d);
+          surnames.add(d.name, parseInt(d.count) / 10000);
+        }
+
+      });
+    }
+
+
+
+    function addParticles(d) {
+
+      for (var j = 0; j < d; j++) {
+        x = randomSticky(w, sz);
+        addParticle(x, h);
+      }
+
+    }
+
+
+
+
+    function drawParticles() {
+
+      for (var i = particles.length - 1; i >= 0; i--) {
+        var p = particles[i];
+        //p.pos.y += p.speed.y;
+        moveParticle(p, i);
+
+        if(p.layer == 0) {
+          context = ctx;
+
+        } else if(p.layer == 1) {
+            context = ctx2;
+        } else if(p.layer == 2) {
+              context = ctx3;
+        } else {
+          context = ctx4;
+        }
+        context.save();
+        context.translate(p.pos.x, p.pos.y);
+        context.rotateDeg(-90);
+        context.fillMe(p.c);
+
+        context.fillText(p.name, 0, 0)
+        //death(p);
+        context.restore();
+      }
+      particles = particles.filter(p => p.dead < 550 && p.pos.y < h + height_offset)
+    }
+
+
+
+        function moveParticle(p, i) {
+
+          // p.pos.x = Math.round(p.pos.x + p.vel.x);
+          // p.pos.y = Math.round(p.pos.y + p.vel.y);
+
+          //p.pos.x += p.speed.x;
+          p.pos.y += p.speed.y;
+          p.noisy += .007;
+
+        }
+
+
+    function death(p) {
+
+      if ((chance(500) && p.dead == 0)) {
+        p.dead = 1;
+      }
+
+      if (p.dead > 0) {
+        p.dead++;
+      }
+
+
+    }
+
+
+
+
+    function addParticle(x, y) {
+      //x += randomSticky(spacing, spacing/2);
+      //if (chance(50)) c = rgb(random(200, 255), 0.5);
+      var layer = randomInt(3);
+      if (layer == 0) {
+        var c = randomGrey(20, 100, 0.3);
+      } else if (layer == 1) {
+        var c = randomGrey(100, 150, 0.5);
+      } else if (layer == 2) {
+        var c = randomGrey(150, 200, 0.7);
+      } else if (layer == 3) {
+        var c = randomGrey(200, 255, 0.9);
+      }
+
+
+      var particle = {
+        pos: new Vector(x, randomInt(-200, -100)),
+        old: new Vector(x, y),
+        c: c,
+        sz: sz,
+        dead: 0,
+        layer: layer,
+        name: getName(),
+        reduce: random(0.002, 0.05),
+        me: particles.length,
+        noisy: random(0.1),
+        speed: new Vector(0, random(0.5, 3)),
+        vel: new Vector(0, 0)
+      }
+      particles.push(particle);
+
+    }
+
+    function loadTraffic(url) {
+      //var vals = [];
+      d3.csv(url, function(error, d) {
+
+        if (error) console.log(error);
+        data = d;
+        for (var i = 0; i < data.length; i++) {
+          data[i]['ammt'] = parseInt(data[i]['ammt']);
+        }
+        loaded = true;
+
+      });
+    }
+
+    function setScreen() {
+
+      if (window.location.hash) {
+
+        var screen_name = window.location.hash.substr(1).toLowerCase();
+        console.log('screen: ', screen_name);
+        if (screen_name == "central") {
+          //widescreen - 2112x608
+          resizeCanvas(ctx, 2112, 608);
+          resizeCanvas(ctx2, 2112, 608);
+          resizeCanvas(ctx3, 2112, 608);
+          my_sticky = 80;
+        } else if (screen_name == "leidseplein") {
+          // 1632x608
+          resizeCanvas(ctx, 1632, 608);
+          resizeCanvas(ctx2, 1632, 608);
+          my_sticky = 100;
+        } else if (screen_name == "wtc") {
+          // 768x384
+          resize(768, 384);
+          my_sticky = 100;
+        } else {
+          location.hash = "#default";
+          my_sticky = 50;
+          // normal
+
+        }
+      }
+    }
+
+
+    function resizeCanvas(_ctx, _w, _h) {
+      console.log(w);
+      var c = document.getElementsByTagName('canvas');
+      width = w = _w / DEVICE_SCALE;
+      height = h = _h / DEVICE_SCALE;
+
+      for (var i = 0; i < c.length; i++) {
+        c[i].width = width;
+        c[i].height = height;
+      }
+      _ctx.width = w;
+      _ctx.height = h;
+      _ctx.canvas.width = w;
+      _ctx.canvas.height = h;
+      console.log("resize: " + w + ":" + h);
+      $('#canvas1').css({
+        width: w + "px"
+      });
+      $('#canvas1').css({
+        height: h + "px"
+      });
+      $('#canvas2').css({
+        width: w + "px"
+      });
+      $('#canvas2').css({
+        height: h + "px"
+      });
+      $('#canvas3').css({
+        width: w + "px"
+      });
+      $('#canvas3').css({
+        height: h + "px"
+      });
+      $('#canvas4').css({
+        width: w + "px"
+      });
+      $('#canvas4').css({
+        height: h + "px"
+      });
+    }
+
+    function getName() {
+      var first = firstnames.get();
+      var second = surnames.get();
+      return first + ". " + second;
+      //return second;
+    }
+
+
+  </script>
+
+</body>
+
+</html>

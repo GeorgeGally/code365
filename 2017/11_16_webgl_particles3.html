@@ -96,7 +96,6 @@
 
 
 
-
 		function draw() {
 
 
@@ -104,12 +103,7 @@
 				var p = particles.geometry.vertices[i];
 
 				var g = grid.grid[i];
-				//p.x = g.x + 100 * Math.cos(i + frameCount/100);
-				//p.x = g.x + 100 * noise.perlin2(i/controls.x_speed, frameCount/100);
-				//p.y = g.y + 100 * noise.perlin2(i/controls.y_speed, frameCount/100);
-				//p.y = g.y + 200 * noise.perlin2(p.x, time/1000);
-				//p.y = g.y + 100 * noise.perlin3(p.z, i, Math.sin(i/1500 + frameCount/100));
-				//p.z = 200 * noise.simplex2(i/1000, p.y, frameCount/100);
+
 				p.x = g.x + 100* Math.sin(i/15000 + frameCount/50);
 				p.y = g.y + 100* Math.sin(i/15000 + frameCount/50);
 				//p.z = 100* Math.sin(p.y + frameCount/1000);

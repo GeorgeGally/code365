@@ -1,0 +1,209 @@
+<html>
+
+<head>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<script src="../js/jquery-1.10.1.min.js"></script>
+	<script src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/quicksettings.min.js"></script>
+	<!-- <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDEKAnXP_v0EOZxJ5bv0K4UNqYFRM1JAj0&libraries=visualization"></script> -->
+
+	<script language="javascript" src="../js/canvas.js"></script>
+	<script language="javascript" src="../js/particle_engine.js"></script>
+	<script language="javascript" src="../js/d3.js"></script>
+	<!-- <script src="../js/CanvasLayer.js"></script> -->
+	<script src="../js/map_styles.js"></script>
+	<script language="javascript" src="../js/utils/Easing.js"></script>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<style>
+		canvas {
+			pointer-events: none;
+			position: absolute;
+		}
+
+		#map {
+			height: calc(100% + 20px)
+		}
+	</style>
+</head>
+
+<body>
+
+
+	<div id="map"></div>
+
+	<script type="text/javascript">
+		var settings = false;
+		var adaprt_for_screens = false;
+
+		var min_sz = 2;
+		var max_sz = 150;
+		var gravity = 40;
+		var outline_sz = 7;
+		var colour_step = 10;
+		var blur_ammt = 7;
+		var offset = 6;
+
+		var ctx = createCanvas('canvas1');
+		var engine = new particleEngine(10, 10);
+		var year = 2013;
+		var ctx;
+		var loc, zoom, timeline, ease_speed;
+
+		// var url = '/data/nl_air_data.csv';
+		var url = '../data/ams_pollution_normalised.csv';
+
+		ctx.background(0);
+		load(url, data);
+		if (settings) addQuickSettings();
+
+
+		var data = [];
+		var totals = [];
+		var highs = [];
+		var lows = [];
+		var blobs = [];
+		var resolutionScale = window.devicePixelRatio || 1;
+
+		// var years = [];
+		// for (var i = 2013; i <= 2016; i++) {
+		// 	years.push(i);
+		// }
+
+
+		var min_max = [];
+
+		var minXDataPoint = 1000;
+		var maxXDataPoint = -1000
+		var minYDataPoint = 1000;
+		var maxYDataPoint = -1000;
+
+
+		function draw() {
+
+		}
+
+
+		var sz = 20;
+
+		function load(url, vals) {
+			//var vals = [];
+			d3.csv(url, function(error, d) {
+
+				if (error) console.log(error);
+				data = d;
+
+				drawYear();
+
+			});
+		}
+
+
+		function drawYear(){
+			ctx.background(0);
+			ctx.strokeStyle = rgb(255)
+			ctx.strokeRect(0, 0, 420, 420);
+
+			for (var i = 0; i < data.length; i++) {
+				var d = data[i];
+				//console.log(d);
+				if(d['year'] == year) {
+				var x = Math.floor(map(d['lat'], -1, 1, 0, sz));
+				var y = Math.floor(map(d['lng'], -1, 1, 0, sz));
+				//console.log(d['sz']);
+				ctx.fillStyle = rgba(255, d['sz'] * 3);
+				var s = sticky(map(d['sz'], 0, 1, 10, 80), 10);
+				ctx.centreFillRect(sz * x, sz * y, s, s);
+				}
+			}
+		}
+
+
+		function convertToUGM3(measurement, ammt) {
+			ammt = parseFloat(ammt) || 0;
+			if (measurement == "mg.m-3") {
+				ammt /= 1000;
+				//console.log('d.AQValue ', ammt );
+			}
+			return ammt;
+		}
+
+		function fromLatLngToPixel(position) {
+			var scale = Math.pow(2, gmap.getZoom());
+			var proj = gmap.getProjection();
+			var bounds = gmap.getBounds();
+
+			var nw = proj.fromLatLngToPoint(
+				new google.maps.LatLng(
+					bounds.getNorthEast().lat(),
+					bounds.getSouthWest().lng()
+				));
+			var point = proj.fromLatLngToPoint(position);
+
+			return new google.maps.Point(
+				Math.floor((point.x - nw.x) * scale),
+				Math.floor((point.y - nw.y) * scale));
+		}
+
+
+		// function getLocs(p, c) {
+		//
+		// 	var loc = new google.maps.LatLng(p.SamplingPoint_Latitude, p.SamplingPoint_Longitude);
+		// 	//heatmapData.push(loc);
+		// 	var px = fromLatLngToPixel(loc);
+		// 	//console.log(px);
+		// 	return px;
+		//
+		//
+		// }
+
+
+
+		function addQuickSettings() {
+			var settings = QuickSettings.create(w - 200, 30, "Settings");
+			// // settings.addRange(title, min, max, value, step, callback);
+
+			settings.addRange("min_sz", 0, 100, min_sz, 0.1, function(value) {
+				min_sz = value;
+			});
+
+			settings.addRange("max_sz", 1, 2000, max_sz, 1, function(value) {
+				max_sz = value;
+			});
+
+
+			settings.addRange("gravity", 1, 80, gravity, 0.1, function(value) {
+				gravity = value;
+			});
+
+			settings.addRange("colour_step", 1, 50, colour_step, 1, function(value) {
+				colour_step = value;
+			});
+
+			settings.addRange("blur_ammt", 1, 100, blur_ammt, 1, function(value) {
+				blur_ammt = value;
+			});
+
+			settings.addRange("offset", 1, 80, offset, 1, function(value) {
+				offset = value;
+			});
+		}
+
+
+		$( document ).on( 'mousedown', function( event ) {
+		year++;
+		if(year == 2018) year = 2013;
+		console.log( 'mousedown', year );
+		drawYear();
+  } )
+	</script>
+
+
+
+
+</body>
+
+</html>

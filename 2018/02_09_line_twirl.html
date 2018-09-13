@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/perlin.js"></script>
+<script language="javascript" src="../js/mic.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var engine = new particleEngine(150, 20);
+var particles = engine.particles;
+
+var perlin;
+noise.seed(Math.random());
+
+for (var i = 0; i < particles.length; i++) {
+  var p = particles[i];
+  p.noisy = 0;
+}
+
+var change = 0;
+
+
+console.log(engine.particles);
+
+var theta = noise * Math.PI * 2;
+var noisy = .007;
+
+
+function draw(){
+
+  ctx.background(255);
+  ctx.strokeStyle = rgb(0);
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    p.pos.y = p.start.y + Math.cos((p.col*4 + i * 2 + p.noisy)/40) * (engine.grid.spacing.y*2);
+    p.pos.x = p.start.x - (Math.cos((Math.sin( (p.row + p.col + i + p.noisy)/(20)))) * engine.grid.spacing.y);
+
+    //p.pos.x = p.start.x + 100 * noise.perlin2(frameCount/100, noisy), Math.cos(frameCount/100);
+    //p.pos.y = p.start.y + 200 * noise.perlin2(frameCount/100, Math.sin(i/100));
+
+    ctx.line(p.pos.x, p.pos.y, p.start.x, p.start.y);
+    p.noisy +=  Mic.mapSound(i, particles.length * 2, 0.1, 2);;
+  }
+
+
+}
+
+
+</script>
+
+</body>
+
+</html>

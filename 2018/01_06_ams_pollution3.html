@@ -47,6 +47,23 @@
 		var blur_ammt = 7;
 		var offset = 6;
 
+		colours = new colourPool()
+			.add('#f5dd56') // 5 - YELLOW
+			.add('#222222')
+			.add('#D2D2D2')
+			//.add( '#FFFFFF' )
+			.add('#19b4c8') // 3 - LIGHT BLUE
+
+
+			.add('#FF6600') // 6 - ORANGE
+
+			.add('#A80092') // 8 - PURPLE
+			.add('#0095a8') // 4 - TEAL
+			.add('#66D30D') // 9 - GREEN
+			.add('#FF3300') // 7 - RED
+
+
+
 		var engine = new particleEngine(0, 0);
 		engine.particles = [];
 
@@ -415,15 +432,15 @@
 					// var co = [];
 
 					ctx.clearRect(0, 0, w, h);
-					addPollutant(nh3, rgba(0, 200, 0, 0.2));
-					addPollutant(bc, rgba(0, 0.5));
-					addPollutant(bs, rgba(200, 0.5));
-					addPollutant(c6h6, rgba(0, 200, 120, 0.2));
-					addPollutant(co, rgba(200, 0, 0, 0.2));
-					addPollutant(so2, rgba(200, 10, 20, 0.2));
-					addPollutant(no, rgba(220, 0, 200, 0.2));
-					addPollutant(no2, rgba(200, 200, 0, 0.3));
-					addPollutant(pm25, rgba(0, 0, 200, 0.2));
+					addPollutant(nh3, colours.get(0));
+					addPollutant(bc, colours.get(1));
+					addPollutant(bs, colours.get(2));
+					addPollutant(c6h6, colours.get(3));
+					addPollutant(co, colours.get(4));
+					addPollutant(so2, colours.get(5));
+					addPollutant(no, colours.get(6));
+					addPollutant(no2, colours.get(7));
+					addPollutant(pm25, colours.get(8));
 
 
 					//console.log('year', years[this.counter]);

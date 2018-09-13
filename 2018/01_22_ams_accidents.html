@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+  <script language="javascript" src="../js/utils.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var ctx2 = createCanvas("canvas2");
+    var ctx3 = createCanvas("canvas3");
+
+    ctx.lineJoin="round";
+    ctx.lineCap="round";
+
+    // years for timeline 1995 - 2055
+    var years = [];
+    for (var i = 1993; i <= 2016; i++) {
+      years.push(i);
+    }
+
+
+    var start_dt;
+    ctx2.font = "16px Arial";
+    ////////////// GET DATA ////////////////
+    var url = '/data/death_and_injury_by_province.csv';
+
+
+    var births = [];
+    var deaths = [];
+    var data = [];
+
+    var births2015 = [];
+    var deaths2015 = [];
+    var population2015 = [];
+
+
+    var counter = 0, old_counter = -1;
+    var bar_ht = 20;
+
+    var posx = 0;
+    var posy = 300;
+    var old = new Vector(0, 0);
+    var ht = [];
+    var locs = [];
+
+    var min_lat = 10000;
+    var min_lng = 10000;
+    var max_lat = -10000;
+    var max_lng = -10000;
+
+    var engine = new particleEngine(0,0);
+    engine.delete(0);
+
+
+    function setup() {
+      frameRate = 240;
+      load(url, data);
+
+    }
+
+
+    ctx2.fillStyle = rgba(0);
+    frameRate = 120;
+
+    var x = 0,
+      xx = 0;
+
+    function draw() {
+
+      ctx.background("#fbc800");
+      //console.log(pollution);
+      if (data.length > 0) {
+
+        timeline();
+
+        for (var i = 0; i < engine.particles.length; i++) {
+          var p = engine.particles[i];
+          if(i<13) {
+            ctx.fillStyle = rgba(255, 0, 0, 0.5);
+          } else {
+            ctx.fillStyle = rgba(0, 255, 0, 0.5);
+          }
+          ctx.HfillEllipse(p.pos.x, p.pos.y, p.sz);
+          p.sz = tween(p.sz, p.target_sz, 10);
+          ctx.save();
+          ctx.translate(p.pos.x, p.pos.y);
+          ctx.rotateDegrees(p.sz);
+          ctx.line(0, 0, 0, p.sz);
+
+          ctx.restore();
+          //console.log('p.sz', p.target_sz);
+          //if(old_counter != counter) attractNodes(p3);
+          //if (chance(50)) attractNodes(p);
+        }
+
+      }
+      old_counter = counter;
+      //drawNodes();
+    }
+
+
+
+
+
+
+
+
+    ////////////////////////////////////
+
+    function load(url, vals) {
+      //var vals = [];
+      d3.csv(url, function(error, d) {
+
+        if (error) console.log(error);
+        data = d;
+        console.log(data);
+        minMax(data);
+        normalizeLocs(data)
+        addParticles(data);
+        console.log(data);
+
+      });
+    }
+
+
+
+
+
+
+    function addParticles(data){
+
+      for (var i = 0; i < data.length; i++) {
+        var loc_x = sticky(data[i]['Lat'], 10);
+        var loc_y = sticky(data[i]['Lng'], 10);
+        //var loc_y = parseFloat(data[i]['lng']) * h;
+        //console.log('loc_x', loc_x);
+        engine.add(loc_x, loc_y);
+        engine.last.target_sz =0;
+        engine.last.sz = 0;
+        //console.log(parseFloat(data[i]['sz']));
+      }
+
+    }
+
+
+
+    function newPopulationSize(counter){
+
+      for (var i = 0; i < engine.particles.length; i++) {
+        var p = engine.particles[i];
+        var j = (i > 12)? 1 : 0;
+        //console.log('j', j);
+        var yr = years[counter];
+        var pop = parseInt(data[i][yr]);
+        if(!pop) pop = 0;
+
+        if (j) {
+          pop = map(pop, 0, 3200, 0, 360);
+            console.log(data[i]['Type']);
+          p.target_sz = pop;
+        } else {
+          pop = map(pop, 0, 1000, 0, 360);
+          p.target_sz = pop;
+        }
+
+      }
+
+    //  if(counter > 0) {
+      //  var pop = parseInt(p.target_sz);
+    //  } else {
+      //  var pop = parseInt(p['sz']);
+  //  }
+
+  //  if (!pop) pop = 0;
+      //console.log(pop);
+    //  var amt = map(pop, 0, 1, 0, 400);
+      //chanceLog(amt);
+      //p.target_sz = amt;
+
+      //console.log('p.sz', p.sz);
+      // myAttractor.x = p3.pos.x;
+      // myAttractor.y = p3.pos.y;
+      //p.sz = tween(p.sz, p.target_sz, Math.round(p.speed.x));
+      //p2.sz = tween(p2.sz, p2.target_sz, Math.round(p2.speed.x));
+    }
+
+    /////////////////////////////////////////////////
+
+        var borders = 180;
+
+        function normalizeLocs(data){
+          for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            d['Lat'] = map(d['Lat'], min_lat, max_lat, borders, w - borders);
+            d['Lng'] = map(d['Lng'], min_lng, max_lng, borders, h - borders);
+          }
+        }
+
+        function minMax(data){
+
+          for (var i = 0; i < data.length; i++) {
+            // var loc = locs[i][locs[i].length-1];
+            // for (var j = 0; j < loc.length; j++) {
+
+              var d = data[i];
+              var lat = parseFloat(d['Lat']);
+              var lng = parseFloat(d['Lng']);
+              //engine.add(l[0], l[1]);
+              //console.log(lng);
+              if(lat > max_lat) max_lat = lat;
+              if(lat < min_lat) min_lat = lat;
+              if(lng > max_lng) max_lng = lng;
+              if(lng < min_lng) min_lng = lng;
+            //}
+          }
+          console.log(min_lat);
+          console.log(min_lng);
+          console.log(max_lat);
+          console.log(max_lng);
+
+        }
+
+    function reset() {
+      // initGrid();
+    }
+
+    function timeline() {
+      if (frameCount % 50 == 0) {
+        old_counter = counter;
+        counter++;
+        newPopulationSize(counter);
+      }
+
+      if (counter > years.length-1) {
+        counter = 0;
+        x = 0;
+        reset();
+      }
+
+
+      ctx2.clearRect(0, 0, w, h);
+      ctx2.fillStyle = rgba(0, 0.4);
+      ctx2.fillRect(0, h-60, w, h);
+      var xx = map(counter, 0, years.length-1, 0, w);
+      x = tween(x, xx, 80);
+      ctx2.strokeStyle = rgb(255);
+      ctx2.line(x, h - 40, x, h);
+      ctx2.fillStyle = rgb(255);
+      ctx2.fillText(years[counter], x + 10, h - 20);
+
+    }
+
+
+
+
+  </script>
+
+</body>
+
+</html>

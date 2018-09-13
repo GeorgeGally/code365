@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>three.js webgl - particles</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<script src="../js/three.min.js"></script>
+	<script src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/perlin.js"></script>
+	<script language="javascript" src="../js/vector.js"></script>
+	<script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
+	<script src="../js/dat.gui.min.js"></script>
+
+</head>
+
+<body>
+
+<div id="container"></div>
+
+	<script id="vertexShader" type="x-shader/x-vertex">
+         void main() {
+             gl_Position = vec4( position, 1.0 );
+         }
+     </script>
+     <script id="fragmentShader" type="x-shader/x-fragment">
+
+		 #ifdef GL_ES
+		 precision mediump float;
+		 #endif
+
+		 #define PI 3.14159265358979323846
+
+		 uniform vec2 u_resolution;
+		 uniform vec2 u_mouse;
+		 uniform float u_time;
+
+		 float random (in vec2 _st) {
+		     return fract(sin(dot(_st.xy,
+		                          vec2(12.9898,78.233)))*
+		         43758.5453123);
+		 }
+
+		 vec2 truchetPattern(in vec2 _st, in float _index){
+		     _index = fract(((_index-0.5)*2.0 + u_time * .1));
+		     if (_index > 0.5) {
+		         _st = vec2(_st.x,1.0);
+		     } else {
+		        _st = vec2(_st.x,0.0);
+		     }
+		     return _st;
+		 }
+
+		 void main() {
+		     vec2 st = gl_FragCoord.xy/u_resolution.xy;
+		     st *= 20.0;
+		     //st = (st-vec2(5.0))*(abs(sin(u_time*0.2))*5.);
+		     st.y -= u_time*1.0;
+				 vec2 tile;
+		     vec2 ipos = floor(st);  // integer
+		     vec2 fpos = fract(st);  // fraction
+				 if(fpos.x > .5) {
+					 tile = truchetPattern(fpos, random( ipos ));
+				 } else {
+					 tile = truchetPattern(fpos, ipos.x );
+				 }
+
+
+		     float color = 0.0;
+
+		     // Maze
+		     // color = smoothstep(tile.x-0.3,tile.x,tile.y)-
+		     //         smoothstep(tile.x,tile.x+0.3,tile.y);
+
+		     // Circles
+		     // color = (step(length(tile),0.6) -
+		     //           step(length(tile),0.4) ) +
+		     //          (step(length(tile-vec2(1.)),0.6) -
+		     //           step(length(tile-vec2(1.)),0.4) );
+
+		     // Truchet (2 triangles)
+		     color = step(tile.x,tile.y);
+				 //color = vec2(tile.x, tile.y);
+
+		     gl_FragColor = vec4(vec3(color),1.0);
+		 }
+     </script>
+     <script>
+		 var width = w = window.innerWidth;
+		 var height = h = window.innerHeight;
+         var container;
+         var camera, scene, renderer;
+         var uniforms;
+
+         init();
+         animate();
+
+         function init() {
+             container                  = document.getElementById( 'container' );
+
+             camera                     = new THREE.Camera();
+             camera.position.z          = 1;
+
+             scene                      = new THREE.Scene();
+
+             var geometry               = new THREE.PlaneBufferGeometry( 2, 2 );
+
+						 renderer                         = new THREE.WebGLRenderer();
+             renderer.setPixelRatio( window.devicePixelRatio );
+
+             container.appendChild( renderer.domElement );
+
+             uniforms                   = {
+                 u_time: { type: "f", value: 1.0 },
+                 u_resolution: { type: "v2", value: new THREE.Vector2(w, h) },
+                 u_mouse: { type: "v2", value: new THREE.Vector2() }
+             };
+
+             var material               = new THREE.ShaderMaterial( {
+                 uniforms: uniforms,
+                 vertexShader: document.getElementById( 'vertexShader' ).textContent,
+                 fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+             } );
+
+             var mesh                   = new THREE.Mesh( geometry, material );
+             scene.add( mesh );
+
+
+
+             onWindowResize();
+             window.addEventListener( 'resize', onWindowResize, false );
+
+             document.onmousemove       = function(e){
+               uniforms.u_mouse.value.x = e.pageX
+               uniforms.u_mouse.value.y = e.pageY
+             }
+         }
+
+         function onWindowResize( event ) {
+             renderer.setSize( window.innerWidth, window.innerHeight );
+             uniforms.u_resolution.value.x = w;
+             uniforms.u_resolution.value.y = h;
+         }
+
+         function animate() {
+             requestAnimationFrame( animate );
+             render();
+         }
+
+         function render() {
+             uniforms.u_time.value += 0.05;
+             renderer.render( scene, camera );
+         }
+     </script>
+ </body>
+</body>
+
+</html>

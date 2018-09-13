@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    // GLOBALS
+    var ctx = createCanvas("canvas1");
+    var particles = [];
+
+    ctx.font = "12px Monospace";
+    var img = new Image();
+    img.src = '../../img/Dalai_Lama.jpg';
+    img.src = '../../img/people/macborg.jpg';
+
+    var txt = "";
+    var maxWidth = w - 20;
+    var lineHeight = 12;
+    var letterspacing = ctx.measureText("/:;.X").width/5;;
+
+    var x = 0;
+    var y = 0;
+    var imgData;
+    var sourceBuffer32;
+    var letters = [];
+
+    var lines = 0;
+    var old_width = 0;
+    var xx = 20;
+
+    var letterOrder = " .`-_':,;^=+/\"|)\\<>)iv%xclrs{*}I?!][1taeo7zjLunT#JCwfy325Fp6mqSghVd4EgXPGZbYkOA&8U$@KHDBWNMR0Q";
+    var letterOrder = " .-\/:;+*@?%$XW#";
+    //var letterOrder = " .-:=+*%#@";
+    for (var i = 0; i < 256; i++) {
+      var index = map(i, 0, 256, 0, letterOrder.length);
+      letters[i] = letterOrder.charAt(index);
+    }
+
+    img.onload = function(){
+      ctx.drawImage(img, 0, 0, w, h);
+      imgData = ctx.getImageData(0, 0, w, h);
+      sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+      for (var x = 0; x < w; x+=7.5) {
+        for (var y = 0; y < h; y+=lineHeight) {
+        addParticle(x, y);
+      }
+    }
+    }
+
+    function setup() {
+
+    }
+
+    function draw() {
+
+      ctx.background(0);
+      drawParticles();
+
+    }
+
+
+
+    function wrapText(text, x, y, maxWidth, lineHeight) {
+
+      var words = text.split(' ');
+      var line = '';
+
+      for (var n = 0; n < words.length; n++) {
+
+        var testLine = line + words[n] + ' ';
+        var metrics = ctx.measureText(testLine);
+        var testWidth = metrics.width;
+        var testHeight = metrics.height;
+        xx = x + testWidth;
+
+        if (testWidth > maxWidth && n > 0) {
+          // ctx.fillText(line, x, y);
+          line = words[n] + ' ';
+          y += lineHeight;
+          lines++;
+          xx = 20;
+          old_width = 0;
+          //if (lines%10 == 0) y += lineHeight;
+
+        } else {
+          xx = old_width;
+          line = testLine;
+          old_width = testWidth;
+        }
+
+
+        if (n > particles.length) addParticle(xx, y, words[n], chance(10) ? 1 : 0);
+
+        if (y > h - 20) {
+          txt = "";
+          lines = 0;
+          particles = [];
+          //console.log("reset");
+        }
+
+      }
+
+      //ctx.fillText(line, x, y);
+    }
+
+
+
+
+    function drawParticles() {
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+        drawLetters(p);
+      }
+    }
+
+
+    function drawLetters(p) {
+      var xx = p.x;
+
+      for (var j = 0; j < p.txt.length; j++) {
+        var t = letters[p.bright];
+        var ww = ctx.measureText(t).width;
+        if (p.highlight) {
+          ctx.fillStyle = p.c;
+          ctx.fillRect(p.x, p.y - 9, ww, 11);
+          ctx.fillStyle = "black";
+        } else {
+          //ctx.fillStyle = "green";
+          ctx.fillStyle = p.c;
+        }
+        ctx.fillText(t, xx, p.y);
+        xx += ww;;
+
+      }
+    }
+
+
+    function addParticle(_x, _y, txt, highlight) {
+
+      var col = sampleImage(_x, _y);
+      // var c = rgb(col.x, col.y, col.z);
+      var c = rgb(0, sticky(col.y * .8, 20), 0);
+      var txt = letters[col.x]
+
+      var highlight = chance(20);
+      if(particles.length > 1 && particles[particles.length-1].highlight && particles[particles.length-2].highlight) {
+        highlight = true;
+      }
+      if(particles.length > 0 && particles[particles.length-1].highlight) {
+        highlight = true;
+        if (chance(15)) highlight = false;
+      } else {
+        if (chance(5)) txt = "*";
+
+      if(particles.length > 0 && particles[particles.length-1].txt == " ") {
+        if (chance(2)) txt += " ";
+      }
+      if(particles.length > 0 && particles[particles.length-1].txt == "*") {
+        if (chance(2)) txt += "*";
+      }
+        }
+      if (chance(5)) txt = "*";
+      if (chance(14)) txt += " ";
+      var particle = {
+        x: _x,
+        y: _y,
+        c: c,
+        bright: col.x,
+        txt: txt,
+        highlight: highlight
+      }
+
+      particles.push(particle);
+    }
+
+    function sampleImage(_x, _y) {
+
+      var pos = Math.round(_x + _y * width);
+      var b = sticky((sourceBuffer32[pos] >> 16) & 0xff, 20);
+      var g = sticky((sourceBuffer32[pos] >> 8) & 0xff, 20);
+      var r = sticky((sourceBuffer32[pos] >> 0) & 0xff, 20);
+      return new Vector(r, g, b);
+    }
+  </script>
+</body>
+
+</html>

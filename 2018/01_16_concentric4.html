@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/utils/Easing.js"></script>
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var ctx2 = createCanvas("canvas2");
+    var t = 0;
+    var NUM_LINES = 20;
+    var engine = new particleEngine(NUM_LINES);
+    var engine2 = new particleEngine(NUM_LINES);
+    console.log(engine);
+
+
+    ctx.linewidth = 1;
+    ctx2.linewidth = 1;
+    var radius = 200;
+
+
+    function draw() {
+      ctx.background(0);
+      //ctx2.background(200, 0.1);
+      for (var i = 0; i < engine.particles.length; i++) {
+        var p = engine.particles[i];
+        var p2 = engine.particles[i];
+
+        p.sz = Math.abs(Math.sin(i/2 + frameCount/20) * (radius) + radius);
+        p.sz2 = Math.abs(Math.sin(i/2 + frameCount/120) * (radius) + radius);
+
+
+        ctx.strokeStyle = rgb(0, 0, 200);
+        ctx.HstrokeEllipse(w/2, h/2, p.sz2, p.sz);
+        p2.sz = Math.abs(Math.sin(i/2 + frameCount/50) * (radius) + radius/2);
+        p2.sz2 = Math.abs(Math.cos(frameCount/50) * (radius) + radius/2);
+        ctx.strokeStyle = "cyan"
+        ctx.HstrokeEllipse(w/2, h/2, p2.sz, p2.sz2);
+
+
+
+      }
+
+    }
+  </script>
+
+</body>
+
+</html>

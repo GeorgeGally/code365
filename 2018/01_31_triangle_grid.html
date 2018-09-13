@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.lineWidth = 2;
+var spacing = 10;
+var rects = [];
+var engine = new particleEngine(40, 30)
+
+
+function setup(){
+
+  for (var i = 0; i < engine.length-1; i++) {
+    var p = engine.particles[i];
+    p.r = randomInt(4);
+  }
+
+}
+
+
+function draw(){
+  ctx.background(245);
+  for (var i = 0; i < engine.length-1; i++) {
+    var p = engine.particles[i];
+    //onsole.log(p);
+    ctx.save();
+    ctx.translate(p.pos.x, p.pos.y);
+    ctx.fillStyle = rgb(0);
+    ctx.rotateDeg(p.r * 45);
+    //ctx.fillEqTriangle(p.pos.x, p.pos.y, engine.grid.spacing.x);
+    ctx.centreFillRect(0, 0, p.w, p.h);
+    //ctx.rotateDeg(-45);
+    ctx.restore();
+  }
+
+}
+
+
+
+
+</script>
+
+</body>
+
+</html>

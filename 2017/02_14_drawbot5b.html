@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+<meta charset="utf-8">
+
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body style="background: #fff;">
+
+<script>
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+
+var num = 6;
+var spacing = w/num;
+
+var particles = [];
+
+for (var i = 0; i < num; i++) {
+  addParticle(i);
+}
+
+function addParticle(i) {
+  var particle = {
+    pos: {x:i * spacing + spacing/2, y: h},
+    size: random(60,200),
+    radius: 120,
+    orbit: {x: w/2, y: h/2},
+    angle: random(360),
+    angle2: random(360),
+    speed: new Vector(random(-4,4), posNeg()*random(0.2,4))
+  };
+  particles.push(particle);
+}
+
+function draw() {
+
+  // the foreground is cleared but never the background
+  ctx2.clearRect(0,0,w,h);
+
+      for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          update(p);
+          drawArm(p);
+          drawOrbits(p);
+          ctx2.lineWidth = 2;
+          ctx2.line(p.pos.x, p.pos.y, p.pos.x, h);
+  }
+
+}
+
+
+function drawArm(p){
+  ctx2.fillStyle = rgba(255);
+  ctx2.fillEllipse(p.pos.x, p.pos.y, 5, 5);
+}
+
+function drawOrbits(p){
+  ctx2.lineWidth = 1;
+  ctx2.fillStyle = rgba(255);
+  ctx2.fillEllipse(p.orbit.x, p.orbit.y, 10, 10);
+  ctx.fillStyle = rgba(0,0,0, 0.1);
+  ctx.HfillEllipse(p.orbit.x, p.orbit.y, p.size/1, p.size/1);
+  ctx.strokeStyle = rgba(255, 0.5);
+  ctx.HstrokeEllipse(p.orbit.x, p.orbit.y, p.size/1, p.size/1);
+  ctx2.fillStyle = rgba(255);
+  ctx2.fillEllipse(p.orbit.x, p.orbit.y, 5, 5);
+
+  ctx2.strokeStyle = rgba(255);
+  ctx2.line(p.pos.x, p.pos.y, p.orbit.x, p.orbit.y);
+}
+
+
+function update(p) {
+
+    p.angle += 1.5;
+    p.pos.y = h/2 + Math.sin(p.angle/200)*h/2;;
+    p.angle2 += p.speed.y/60;
+    p.orbit.x = p.pos.x + Math.cos(p.angle2) * p.radius;
+    p.orbit.y = p.pos.y + Math.sin(p.angle2) * p.radius;
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+    <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/utils/simplify.js"></script>
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body style="background: #000;">
+
+  <script>
+
+    var counter, old_counter;
+
+    var threshhold = 20;
+    var posterize_amt = 39;
+    var resolution = 25;
+    var max_sz = 28;
+    var dist_reduction = 1;
+    var blur_pass = 2;
+    var blur_ammt = 15;
+
+    var ctx = createCanvas("canvas1");
+    var ctx2 = createCanvas("canvas2");
+    var hidden_ctx = createHiddenCanvas("hidden_canvas1");
+    var hidden_ctx2 = createCanvas("hidden_canvas2");
+    hidden_ctx2.lineCap = 'round';
+    hidden_ctx2.strokeStyle = "green";
+    hidden_ctx2.lineWidth = 2;
+
+    var imagedata = ctx.getImageData(0, 0, w, h);
+    var engine = new particleEngine(0, 0);
+
+    // there's a bug in particleEngine that makes one particle;
+    engine.delete(0);
+    console.log(engine);
+
+    var suburbs_minmax = [];
+    var min_max_population = [];
+
+    var years = [];
+    for (var i = 2013; i <= 2016; i++) {
+      years.push(i);
+    }
+
+    var url = '/data/ams_pollution_normalised.csv';
+
+    var suburbs = [];
+
+    var min_lat = 10000;
+    var min_lng = 10000;
+    var max_lat = -10000;
+    var max_lng = -10000;
+
+    function setup() {
+      frameRate = 120;
+      load(url, suburbs);
+      ctx.background(0);
+    }
+
+
+    function draw() {
+      //console.log(suburbs);
+      if(suburbs.length > 0){
+      //console.log('x', x);
+      timeline();
+      //drawMetaballs();
+      //moveParticles();
+      //drawParticles();
+      //triangulate(20)
+
+    }
+    }
+
+    function moveParticles(){
+      for (var i = 0; i < engine.particles.length; i++) {
+        var p = engine.particles[i];
+        p.sz = tween(p.sz, p.target_sz, 6);
+      }
+
+    }
+
+    function drawMetaballs(){
+
+      //if (old_counter != counter) {
+
+        //console.log("drawMetaballs");
+        old_counter = counter;
+        hidden_ctx.background(0);
+
+        //ctx2.clearRect(0,0,w,h);
+        for (var y = 0; y < h; y += resolution) {
+          for (var x = 0; x < w; x += resolution) {
+            setPixel(x, y);
+          }
+        }
+
+      boxBlurCanvasRGB( 'hidden_canvas1', 0, 0, w, h, blur_ammt, blur_pass );
+      hidden_ctx.posterize(1, posterize_amt);
+      ctx.drawImage(hidden_ctx.canvas, 0, 0, w, h);
+      //};
+    }
+
+    function drawParticles(){
+      hidden_ctx2.clearRect(0,0,w,h);
+      for (var i = 0; i < engine.particles.length; i++) {
+        var p = engine.particles[i];
+        hidden_ctx2.fillStyle = p.c;
+        hidden_ctx2.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+      }
+      ctx.drawImage(hidden_ctx2.canvas, 0, 0, w, h);
+    }
+
+
+    function setPixel(x, y) {
+
+      var c = 0;
+
+      for (var i = 0; i < engine.particles.length; i++) {
+
+        p = engine.particles[i];
+
+        for (var j = i + 1; j < engine.particles.length - 1; j++) {
+          p2 = engine.particles[j];
+          d = dist(x, y, p2.pos.x, p2.pos.y) * dist_reduction;
+          c += (p.sz / d);
+        }
+
+      }
+
+      c = sticky(c, threshhold);
+      c = map(c, 90, 200, 0, 255);
+      if(c > 80 && c < 120) c = map(c, 80, 120, 90, 140);
+      //chanceLog(c, 1000)
+      hidden_ctx.fillStyle = rgb(c);
+      hidden_ctx.fillRect(x, y, resolution, resolution);
+    }
+
+    function load(url, vals) {
+      //var vals = [];
+      d3.csv(url, function(error, d) {
+
+        if (error) console.log(error);
+        data = d;
+        for (var i = 0; i < data.length; i++) {
+          var d = data[i];
+          //console.log(d);
+          //var b = Object.values(d);
+          //console.log(b[b.length-1]);
+
+          //formatPolygonInfo(b);
+          vals.push(d);
+
+        }
+        suburbs = data;
+        //jsonLocs(vals);
+        //minMax(vals);
+
+        addPolys(suburbs);
+
+        //console.log(vals);
+        //testParticleCloseness();
+
+      });
+    }
+
+
+    function addPolys() {
+      //ctx.background(0);
+      for (var i = 0; i < suburbs.length; i++) {
+        drawPoly(i);
+      }
+
+    }
+
+
+    function updatePopulation(){
+      for (var i = 0; i < suburbs.length; i++) {
+        setMidpointSize(i);
+      }
+    }
+
+
+    function drawPoly(i) {
+      //var loc = suburbs[i][suburbs[i].length - 1];
+      // var pop = parseInt(suburbs[i][counter]) || 0;
+      // var min_x = 10000;
+      // var min_y = 10000;
+      // var max_x = -10000;
+      // var max_y = -10000;
+      // var min = new Vector(10000, 10000);
+      // var max = new Vector(-10000, -10000);
+
+      // var c = map(pop, 0, 40000, 0, 255);
+      // hidden_ctx2.fillStyle = rgb(c);
+      // hidden_ctx2.beginPath();
+
+      // for (var j = 1; j < loc.length; j++) {
+      //
+      //   var l = loc[j];
+      //   var l2 = loc[j - 1];
+
+        var x = map(suburbs[i]['lat'], -1, 1, 0, w);
+        var y = map(suburbs[i]['lng'], -1, 1, 0, h);
+        //var x2 = map(l2[0], min_lat, max_lat, 0, w);
+        //var y2 = map(l2[1], min_lng, max_lng, 0, h);
+
+        engine.add(x,y);
+        engine.last.c = rgba(255, 0, 0, 0.9);
+        engine.last.year = suburbs[i]['year'];
+        engine.last.target_sz = suburbs[i]['sz'];
+        engine.last.sz = 1;
+        engine.last.target_sz = Math.round(map(suburbs[i]['sz'], 0, 1, 0, max_sz));
+      //addMidPoint(x, y);
+    //  setMidpointSize(i);
+    }
+
+    // function addMidPoint(x, y) {
+    //
+    //   // var x = (min.x + max.x) / 2;
+    //   // var y = (min.y + max.y) / 2;
+    //
+    //
+    // }
+
+    // function setMidpointSize(i){
+    //   var pop = parseInt(suburbs[i]['sz']) || 0;
+    //   var sz = Math.round(map(pop, 0, 1, 0, max_sz));
+    //   var p = engine.particles[i];
+    //   p.target_sz = sz;
+    // }
+
+
+    //
+    // function minMax(locs) {
+    //   var min_population = 100000;
+    //   var max_population = -100000;
+    //   for (var i = 0; i < locs.length; i++) {
+    //     var loc = locs[i][locs[i].length - 1];
+    //     var pop = locs[i][counter] || 0;
+    //
+    //     for (var j = 0; j < loc.length; j++) {
+    //       var l = loc[j];
+    //       l[0] = parseFloat(l[0]);
+    //       l[1] = parseFloat(l[1]);
+    //
+    //       if (l[0] > max_lat) max_lat = l[0];
+    //       if (l[0] < min_lat) min_lat = l[0];
+    //       if (l[1] > max_lng) max_lng = l[1];
+    //       if (l[1] < min_lng) min_lng = l[1];
+    //     }
+    //     suburbs_minmax.push({min_lat: min_lat, max_lat: max_lat, min_lng: min_lng, max_lng: max_lng});
+    //     for (var j = 0; j < locs[i].length; j++) {
+    //       var pop = parseInt(locs[i][j]);
+    //       if (pop > max_population) max_population = pop;
+    //       if (pop < min_population) min_population = pop;
+    //     }
+    //     //
+    //   }
+    //   //console.log(suburbs_minmax);
+    //
+    //   min_max_population.push({
+    //     min: min_population,
+    //     max: max_population
+    //   });
+    //
+    //   console.log(min_lng);
+    //   console.log(max_lng);
+    //   //console.log(min_max);
+    // }
+
+
+
+
+    var x = 0, xx = 0;
+
+
+    function timeline() {
+
+      if (frameCount % 50 == 0) {
+        counter++;
+        updatePopulation();
+        //drawMetaballs();
+      }
+
+      if (counter > years.length-1) {
+        counter = 0;
+        x = 0;
+      }
+
+      ctx2.clearRect(0, 0, w, h);
+      ctx2.fillStyle = rgba(0, 0.4);
+      ctx2.fillRect(0, h-60, w, h);
+      var xx = map(counter, 0, suburbs[0].length - 1, 0, w);
+      x = tween(x, xx, 20);
+      ctx2.strokeStyle = rgb(255);
+      ctx2.line(x, h - 40, x, h);
+      ctx2.fillStyle = rgb(255);
+      ctx2.fillText(years[counter], x + 10, h - 20);
+
+    }
+
+    function testParticleCloseness(){
+      for (var i = 0; i < engine.particles.length ; i++) {
+      //for (var i = engine.particles.length-1; i >0 ; i--) {
+        var p = engine.particles[i];
+        mergeParticles(p, i);
+      }
+    }
+
+    function mergeParticles(p, i){
+
+      //for (var j = engine.particles.length-1; i >0 ; i--) {
+      for (var j = i+1; j < engine.particles.length-1; j++) {
+        var p2 = engine.particles[j];
+        if(dist(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y) <= p.sz/2 + p2.sz/2 && p.sz !=0 && p2.sz != 0){
+          console.log("xxx");
+          p2.sz += p.sz/2;
+          p.sz = 0;
+          p2.pos.x = (p.pos.x + p2.pos.x)/2;
+          p2.pos.y = (p.pos.y + p2.pos.y)/2;
+          p2.c = "red";
+        }
+      }
+    }
+
+    function formatPolygonInfo(b) {
+      b[b.length - 1] = b[b.length - 1].substr(10, b[b.length - 1].length - 4);
+      b[b.length - 1] = b[b.length - 1].split(',');
+      for (var j = 0; j < b[b.length - 1].length; j++) {
+        b[b.length - 1][j] = b[b.length - 1][j].split(' ');
+      }
+    }
+
+    var settings = QuickSettings.create(w - 200, 30, "Settings");
+    // // settings.addRange(title, min, max, value, step, callback);
+
+    settings.addRange("resolution", 1, 50, resolution, 1, function(value) {
+      resolution = value;
+    });
+
+    settings.addRange("max_sz", 1, 350, max_sz, 1, function(value) {
+      max_sz = value;
+    });
+
+
+    settings.addRange("dist_reduction", 0.1, 20, dist_reduction, 0.01, function(value) {
+      dist_reduction = value;
+    });
+
+    settings.addRange("threshhold", 1, 50, threshhold, 5, function(value) {
+      threshhold = value;
+    });
+    settings.addRange("blur_ammt", 1, 20, blur_ammt, 1, function(value) {
+      blur_ammt = value;
+    });
+
+    settings.addRange("posterize_amt", 1, 80, posterize_amt, 1, function(value) {
+      posterize_amt = value;
+    });
+
+  </script>
+
+</body>
+
+</html>

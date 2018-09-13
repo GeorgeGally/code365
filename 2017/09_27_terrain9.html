@@ -51,6 +51,7 @@ texture.needsUpdate = true;
 //var material = new THREE.MeshDepthMaterial({side: THREE.DoubleSide});
 var material = new THREE.MeshPhongMaterial( {map: texture, color: 0xffffff, side: THREE.DoubleSide} );
 material.shading = THREE.SmoothShading;
+material.map.minFilter = THREE.LinearFilter;
 
 scene.fog = new THREE.FogExp2( 0x000000, 0.005 );
 

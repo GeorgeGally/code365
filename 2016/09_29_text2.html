@@ -4,20 +4,20 @@
 
   <meta charset="utf-8">
   <title>Soundcloud Viz</title>
-  <script language="javascript" src="js/creative_coding.js"></script>
-  <script language="javascript" src="js/canvas.js"></script>
-  <script language="javascript" src="js/three.min.js"></script>
-  <script language="javascript" src="js/_maxiLib.js"></script>
-  <script language="javascript" src="js/vector.js"></script>
-  <script type="text/javascript" src="js/d3.js"></script>
-  <link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
-  <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
-  <link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/three.min.js"></script>
+  <script language="javascript" src="../js/_maxiLib.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script type="text/javascript" src="../js/d3.js"></script>
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
 
 </head>
 
 <body style="background: #fff">
-   
+
 <script>
 
 // GLOBALS
@@ -36,8 +36,8 @@ for (var i = 0; i < 256; i++) {
 
 ctx.font="11px Monospace";
 var img = new Image();
-img.src = 'img/Dalai_Lama.jpg';
-img.src = 'img/people/macborg.jpg';
+img.src = '../img/Dalai_Lama.jpg';
+img.src = '../img/people/macborg.jpg';
 
 var particles = [];
 var txt = "";
@@ -50,24 +50,24 @@ var sourceBuffer32;
 
 function setup(){
 ctx.drawImage(img, 0,0,w,h);
-imgData=ctx.getImageData(0,0,w,h); 
+imgData=ctx.getImageData(0,0,w,h);
 sourceBuffer32 = new Uint32Array(imgData.data.buffer);
 //console.log(sourceBuffer32);
 }
 
 function draw(){
-  
+
   ctx.background(0);
   //ctx.drawImage(img, 0,0,w,h);
 
   if (sourceBuffer32.length> 0) {
-  
+
     for (var i = 0; i < randomInt(1, 520); i++) {
       txt += String.fromCharCode(randomInt(97,110));
       if (chance(5)) txt+="*";
       if (chance(4)) txt+=" ";
     }
-    
+
   //ctx.fillStyle = "white";
   wrapText(txt, x, y, maxWidth, lineHeight);
 
@@ -80,10 +80,10 @@ function drawParticles(){
 
   for (var i = 0; i < particles.length; i++) {
     var p = particles[i];
-    var xx = p.x; 
+    var xx = p.x;
     var col = sampleImage(p.x, p.y);
     if (p.highlight) {
-        
+
     ctx.fillStyle = rgb(col.x, col.y, col.z);
     //ctx.fillStyle = "red";
     //    //ctx.fillStyle = p.c;
@@ -95,7 +95,7 @@ function drawParticles(){
     for (var j = 0; j < p.txt.length; j++) {
       var t = letters[col.x];
       if (p.highlight) {
-      
+
        //ctx.fillStyle = "white";
        // //ctx.fillStyle = p.c;
        // var ww = ctx.measureText(p.txt).width;
@@ -104,16 +104,16 @@ function drawParticles(){
         ctx.fillStyle = "black";
       } else {
         //var col = sampleImage(xx, p.y);
-        
+
         ctx.fillStyle = rgb(col.x);
         //ctx.fillStyle = "white";
       }
       ctx.fillText(letters[col.x], xx, p.y);
       xx += ctx.measureText(t).width;
-      
+
     }
-    
-    
+
+
   }
 
 }
@@ -122,7 +122,7 @@ function drawParticles(){
 function addParticle(_x, _y, txt, highlight){
 
   var col = sampleImage(_x, _y);
-  
+
   var particle = {
     x: _x,
     y: _y,
@@ -150,10 +150,10 @@ var old_width = 0;
 var xx = 20;
 
 function wrapText(text, x, y, maxWidth, lineHeight) {
-        
+
         var words = text.split(' ');
         var line = '';
-        
+
         for(var n = 0; n < words.length; n++) {
 
           var testLine = line + words[n] + ' ';
@@ -161,7 +161,7 @@ function wrapText(text, x, y, maxWidth, lineHeight) {
           var testWidth = metrics.width;
           var testHeight = metrics.height;
           xx = x + testWidth;
-   
+
           if (testWidth > maxWidth && n > 0) {
             // ctx.fillText(line, x, y);
             line = words[n] + ' ';
@@ -170,14 +170,14 @@ function wrapText(text, x, y, maxWidth, lineHeight) {
             xx = 20;
             old_width = 0;
             //if (lines%10 == 0) y += lineHeight;
-          
+
           } else {
             xx = old_width;
             line = testLine;
             old_width = testWidth;
           }
-          
-         
+
+
           if (n > particles.length) addParticle(xx, y, words[n], chance(10)? 1 : 0);
 
           if (y > h-20) {
@@ -188,13 +188,13 @@ function wrapText(text, x, y, maxWidth, lineHeight) {
           }
 
 
-          
+
 
         }
 
         //ctx.fillText(line, x, y);
 }
-      
+
 
 
 </script>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/utils/simplify.js"></script>
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var ctx2 = createCanvas("canvas2");
+    var t = 0;
+    var NUM_LINES = 50;
+    ctx.strokeStyle = rgb(0);
+    ctx.linewidth = 4;
+
+
+    function draw() {
+      ctx.background(200);
+      ctx.save();
+      ctx.translate(w / 2, h / 2);
+      for (var i = 0; i < NUM_LINES; i++) {
+        ctx.line(x1(t + i), y1(t + i), x2(t + i), y2(t + i))
+      }
+      //console.log(y1(t));
+      t += 0.4;
+      ctx.restore();
+    }
+
+    function x1(t) {
+      return Math.sin(t / 10) * 200 + Math.sin(t / 5) * 20;
+    }
+
+    function y1(t) {
+      return Math.cos(t / 30) * 200;
+    }
+
+    function x2(t) {
+      return Math.sin(t / 10) * 100 + Math.sin(t / 2) * 2;
+    }
+
+    function y2(t) {
+      return Math.cos(t / 20) * 100 + Math.cos(t / 10) * 2;
+    }
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+  <script language="javascript" src="../js/math.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    let ctx = createCanvas("canvas1");
+    let ctx2 = createCanvas("canvas1");
+    let total_distance = 0;
+    let engine = new particleEngine(250, 80);
+
+    ctx.font = "20px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    function setup() {
+      for (let p of engine.particles) {
+        p.speed.x = 6;
+        //p.pos.y = Math.round(p.pos.y);
+        if(p.dir > 0) p.pos.y += engine.grid.spacing.y;
+        p.dir = posNeg();
+        //if (p.pos.x > w) p.pos.x = 0;
+      }
+    }
+
+    function draw() {
+      ctx.background(255);
+
+      if (total_distance < 2000000) move();
+      display();
+      ctx.fillStyle = rgb(0);
+      ctx.centreFillRect(w / 2, h - h / 10, 580, 24);
+      ctx.fillStyle = rgb(255);
+      ctx.fillText("Kilometres cycled in Amsterdam each day: " + total_distance, w / 2, h - h / 10)
+    }
+
+    function move() {
+      for (let p of engine.particles) {
+        p.pos.x += (p.speed.x * p.dir);
+        // total_distance += Math.abs(p.speed.x);
+        //total_distance += 1;
+        if (p.pos.x > w) {
+          p.dir *= -1;
+          p.pos.y -= engine.grid.spacing.y;
+          total_distance++;
+        }
+        if (p.pos.x < 0) {
+          p.dir *= -1;
+          p.pos.y += engine.grid.spacing.y;
+          total_distance++;
+        }
+
+      }
+    }
+
+    function display() {
+      ctx.fillStyle = rgb(0);
+      for (let p of engine.particles) {
+        ctx.centreFillRect(p.pos.x, p.pos.y, 5, engine.grid.spacing.y / 2);
+      }
+    }
+
+  </script>
+
+</body>
+
+</html>

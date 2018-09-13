@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/P5Vector.js"></script>
+  <script language="javascript" src="../js/noise.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body style="background: #fcfcfc;">
+
+  <script>
+    const ctx = createCanvas("canvas1");
+    const ctx2 = createCanvas("canvas2");
+    const cols = 50;
+    const rows = 20;
+    let field = [];
+    let xoff = 0;
+    for (var i = 0; i < cols; i++) {
+      let yoff = 0;
+      field[i] = [];
+      for (var j = 0; j < rows; j++) {
+        let theta = map(noise(xoff, yoff), 0, 1, 0, TWO_PI);
+        field[i][j] = new Vector(Math.cos(theta), Math.sin(theta));
+        yoff += 0.1;
+      }
+      xoff += 0.1;
+    }
+
+
+    function draw() {
+      drawField();
+      ctx.line()
+    }
+
+    function drawField() {
+      for (var i = 0; i < cols; i++) {
+        for (var j = 0; j < rows; j++) {
+          let f = field[i][j];
+          ctx.strokeMe(0);
+          ctx.save();
+          ctx.translate(i * 20, j * 20);
+          ctx.rotate(f)
+          ctx.line(0, 0, f.x * 20, f.y * 20 );
+          ctx.restore();
+        }
+      }
+    }
+  </script>
+
+</body>
+
+</html>

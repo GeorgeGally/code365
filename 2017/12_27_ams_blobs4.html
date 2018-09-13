@@ -45,7 +45,7 @@
     var engine = new particleEngine(0, 0);
 
     // there's a bug in particleEngine that makes one particle;
-    engine.particles = [];
+    engine.delete(0);
     console.log(engine);
 
     var suburbs_minmax = [];

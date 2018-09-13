@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+  <script language="javascript" src="../../js/d3.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body style="background: #fcfcfc;">
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var ctx2 = createCanvas("canvas2");
+    var url = '../../data/ams_pm2.5_1_year_day_max.csv';
+    //var url = '../../data/ams_pollution_normalised.csv';
+    var num = 4;
+    var spacing = w / num;
+    var particles = [];
+    var particles_this_year = [];
+
+    let current_year = 2014;
+    var max_value, min_value;
+    var temp_particle = [];
+    var min_lat = 10000;
+    var min_lng = 10000;
+    var max_lat = -10000;
+    var max_lng = -10000;
+    var reached_bottom = 0;
+
+    function setup() {
+      ctx.background(0);
+      load(url);
+    };
+
+
+    function draw() {
+
+      // the foreground is cleared but never the background
+      if (frameCount % 30 == 0) ctx.background(0, 0.02);
+      ctx2.clear();
+
+      for (var i = 0; i < particles_this_year.length; i++) {
+        var p = particles_this_year[i];
+        update(p);
+        drawArm(p);
+        drawOrbits(p);
+        //drawSupportingLine(p);
+      }
+
+      haveAllReachedTheBottom() ? nextYear() : 0;
+    }
+
+    function haveAllReachedTheBottom() {
+      if (particles_this_year.length > 0 && reached_bottom > particles_this_year.length - 1) {
+        //console.log('====== reached_bottom');
+        return true;
+      }
+    }
+
+    function nextYear() {
+      reached_bottom = 0;
+      current_year++;
+      console.log('current_year', current_year);
+      particles_this_year = getThisYearsParticles();
+      console.log('particles_this_year', particles_this_year);
+    }
+
+    function update(p) {
+
+      haveIReachedTheBottom(p);
+
+      if (p.go) p.pos.y += (p.dir * p.speed);
+      if (p.pos.y < p.offset) p.dir = 1;
+      var r = Math.sin(frameCount / 50) * p.radius
+      p.angle2 += p.rotation_speed / 20;
+      p.orbit.x = p.pos.x + Math.cos(p.angle2) * r;
+      p.orbit.y = p.pos.y + Math.sin(p.angle2) * r;
+
+    }
+
+    function haveIReachedTheBottom(p) {
+
+      if (p.pos.y > h + p.radius * 2 + p.sz) {
+        reached_bottom++;
+        p.pos.y = h;
+        p.go = false;
+      }
+    }
+
+
+    function getThisYearsParticles() {
+      return particles.filter(p => p.year == current_year);
+    }
+
+    function addParticle(p) {
+      //console.log('p.sz', p.sz);
+      var particle = {
+        pos: {
+          x: p.x + 50,
+          y: h
+        },
+        sz: p.sz,
+        radius: 100,
+        orbit: {
+          x: 1,
+          y: 1
+        },
+        offset: p.offset,
+        target: p.target,
+        angle: 350,
+        angle2: random(360),
+        rotation_speed: map(p.sz, 53, 1202, 0.6, 1.1),
+        speed: 4 - map(p.sz, 53, 1202, 2, 2.5),
+        dir: -1,
+        go: true,
+        year: p.year
+      };
+      //console.log('particle.pos.y', particle.pos.y);
+      particles.push(particle);
+    }
+
+    // offset to the top is highest value mapped to h
+    // minus my_value mapped to height.
+
+    // using non-normalised
+    // totals for each year
+
+    var old_year = 0;
+    // add a particle for each year
+    function addParticles(data) {
+      spacing = w / num;
+      // var x = i * spacing + spacing / 2;
+
+      for (var i = 0; i < data.length; i++) {
+        var d = data[i];
+
+        var x = sticky(map(d.Longitude, min_lng, max_lng, 0, w), 200);
+        //console.log(d.AQValue);
+        var ii = checkIfAlreadySameXValue(x, d.Year);
+        var val = parseFloat(d.AQValue);
+        if (ii != undefined) {
+          temp_particle[ii].sz += val;
+        } else {
+          temp_particle.push({
+            x: x,
+            sz: val,
+            target: val,
+            year: d.Year,
+            offset: 0
+          });
+        }
+        old_year = d.Year;
+      }
+      //console.log('temp_particle', temp_particle);
+      spacing = 200 / w;
+
+      for (var i = 1; i < temp_particle.length; i++) {
+        var p = temp_particle[i];
+        addParticle(p);
+      }
+
+      reached_bottom = 0;
+      min_value = Math.min.apply(Math, particles.map(function(p) {
+        return p.sz;
+      }));
+      console.log('min_value', min_value);
+      max_value = Math.max.apply(Math, particles.map(function(p) {
+        return p.sz;
+      }));
+      console.log('max_value', max_value);
+
+      particles.forEach(p => {
+        p.sz = Math.round(map(p.sz, min_value, max_value, 100, 200));
+        //console.log('p.sz', p.sz);
+        p.offset = 400 - p.sz * 2;
+      });
+
+      console.log('current_year', current_year);
+      particles_this_year = getThisYearsParticles();
+      console.log('particles_this_year', particles_this_year);
+
+    }
+
+
+
+
+
+    function drawArm(p) {
+      ctx2.fillStyle = rgba(255);
+      ctx2.fillEllipse(p.pos.x, p.pos.y, 10, 10);
+    }
+
+    // just testing out Circle instead of ellipse as i move to rect() and ellipse()
+    function drawOrbits(p) {
+      ctx2.lineWidth = 1;
+      ctx2.fillStyle = rgba(255);
+      ctx2.fillCircle(p.orbit.x, p.orbit.y, 5, 5);
+      ctx.fillStyle = rgba(0, 0.2);
+      ctx.fillCircle(p.orbit.x, p.orbit.y, p.sz, p.sz);
+      ctx.strokeStyle = rgba(255, 0.5);
+      ctx.strokeCircle(p.orbit.x, p.orbit.y, p.sz, p.sz);
+      // ctx2.fillStyle = rgba(0);
+      // ctx2.fillCircle(p.orbit.x, p.orbit.y, 5, 5);
+
+      ctx2.strokeStyle = rgba(255);
+      ctx2.line(p.pos.x, p.pos.y, p.orbit.x, p.orbit.y);
+    }
+
+    function drawSupportingLine(p) {
+      ctx2.lineWidth = 2;
+      ctx2.line(p.pos.x, p.pos.y, p.pos.x, h);
+    }
+
+
+    function load(url) {
+
+      d3.csv(url, function(error, d) {
+
+        if (error) console.log(error);
+        data = d;
+        // ES6 shorthand to find max value
+
+        minMaxLatLng(data);
+        addParticles(data)
+
+      });
+    }
+
+    function minMaxLatLng(data) {
+
+      for (var i = 0; i < data.length; i++) {
+        var d = data[i];
+        if (d.Latitude > max_lat) max_lat = parseFloat(d.Latitude);
+        if (d.Latitude < min_lat) min_lat = parseFloat(d.Latitude);
+        if (d.Longitude > max_lng) max_lng = parseFloat(d.Longitude);
+        if (d.Longitude < min_lng) min_lng = parseFloat(d.Longitude);
+      }
+
+      // console.log("min_lat", min_lat);
+      // console.log("max_lat", max_lat);
+      // console.log("min_lng", min_lng);
+      // console.log("max_lng", max_lng);
+    }
+
+    function checkIfAlreadySameXValue(x, year) {
+      for (var i = 1; i < temp_particle.length; i++) {
+        var p = temp_particle[i];
+        if (p.x == x && p.year == year) return i;
+      }
+    }
+  </script>
+
+</body>
+
+</html>

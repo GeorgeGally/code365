@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var img = new Image();
+//img.src = '../img/Dalai_Lama.jpg';
+img.src = "../img/people/kitty.jpg";
+var img_loaded = 0;
+img.onload = function() {
+  img_loaded = 1;
+}
+
+var engine = new particleEngine(0);
+var buffer;
+
+function draw() {
+
+  if (img_loaded) {
+  ctx.drawImage(img, 0, 0, w, h);
+  sample = ctx.getImageData(0, 0, w, h);
+	buffer = new Uint32Array(sample.data.buffer);
+
+  for (var i = 0; i < 50; i++) {
+    var x = random(w);
+    var y = random(h);
+    addBlob(x,y);
+  }
+
+
+  ctx.background(0);
+
+  for (var i = 0; i < engine.particles.length; i++) {
+
+    var p = engine.particles[i];
+
+    if (p.on) p.radius+=1;
+
+    for (var j = 0; j < engine.particles.length; j++) {
+
+      p2 = engine.particles[j];
+      if (p.me != p2.me && dist(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y) < p.radius/2 + p2.radius/2 +1) {
+        p.on = 0;
+      }
+    }
+
+    ctx.fillStyle = p.c;
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.radius, p.radius);
+
+  }
+
+
+}
+}
+
+
+
+function addBlob(x,y){
+
+
+  var hit = false;
+  var pos = Math.floor(x + y * w);
+  var r = buffer[pos] >> 0 & 0xff;
+  var g = buffer[pos] >> 8 & 0xff;
+  var b = buffer[pos] >> 16 & 0xff;
+  var c = rgb(r,g,b);
+  var b = brightness(r,g,b);
+  //if (r+g+b > 500) addBlob(x+random(-20, 20),y+random(-20, 20))
+  var radius = b/10;
+  for (var i = 0; i < engine.particles.length; i++) {
+
+    var p = engine.particles[i];
+    if (dist(x,y,p.pos.x, p.pos.y) < p.radius/2 + radius/2){
+      hit = true;
+    }
+  }
+  if (!hit) {
+    engine.addParticle(x,y);
+    var p2 = engine.last;
+    p2.radius = radius-1;
+    p2.on = 1;
+    p2.c = c;
+  }
+
+}
+
+
+
+</script>
+
+</body>
+
+</html>

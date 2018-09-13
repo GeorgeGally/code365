@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+  <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var ctx2 = createCanvas("canvas1");
+
+    ctx2.font = "15px monospace";
+    ctx2.textAlign = "center";
+    ctx2.textBaseline = "middle";
+    ctx2.fillStyle = rgb(100);
+
+    var friction = 0.95;
+
+    var bugs = [];
+
+    var maxParticles = 3000;
+
+    brightSpark();
+
+    ctx.shadowColor = rgba(0, 0.3);
+    ctx.shadowBlur = 2;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+
+    var total_distance = 0;
+
+    function draw() {
+      ctx2.clearRect(0,0,w,h);
+      ctx2.fillText("Kilometres cycled in Amsterdam each day: " + total_distance, w/2, h - h/5)
+      for (var i = 0; i < bugs.length; i++) {
+        bugs[i].move();
+        bugs[i].display();
+      }
+
+      if(frameCount%400 == 0) console.log('total_distance', total_distance);
+    }
+
+
+    function flower(x, y){
+      ctx.fillStyle = rgb(200, 0 , 200);
+      ctx.fillEllipse(x, y, 5, 5);
+      ctx.fillStyle = rgb(200, 200 , 0);
+      ctx.fillEllipse(x, y, 2, 2);
+
+    }
+
+    function brightSpark() {
+      ctx.font = "250px helvetica";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      var words = ['Bike City'];
+      var w = randomInt(words.length - 1);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(words[w], window.innerWidth / 2, window.innerHeight / 2);
+
+      imgData = ctx.getImageData(0, 0, window.innerWidth, window.innerHeight).data;
+      //console.log(imgData);
+      for (var y = 0; y < window.innerHeight; y += 8) {
+        for (var x = 0; x < window.innerWidth; x += 8) {
+          var pt = (y * window.innerWidth + x) * 4;
+          var fBrightness;
+          //addParticle(x,y);
+          fBrightness = (0.3 * imgData[pt] + 0.59 * imgData[pt + 1] + 0.11 * imgData[pt + 2]);
+          //console.log(fBrightness);
+          if (fBrightness > 20) {
+            //if(random(40) > 38) {
+            //addParticle(x,y);
+            var bug = new Bug(x, y);
+            bugs.push(bug);
+          }
+        }
+      }
+      ctx.background(220);
+    }
+
+
+
+    //Class definitions-------------------===============
+    function Bug(xpos, ypos) {
+      var ax, ay, maxDist, mycol, w;
+      var orig_xpos = xpos;
+      var orig_ypos = ypos;
+      var vx = vy = 0;
+      var sz = random(0.5, 2);
+      var c = rgb(random(3, 8) * 5, random(40, 255), 0);
+
+      maxDist = random(height, height / 2);
+
+      this.move = function() {
+
+        vx += random(-0.15, 0.15) * 0.4;
+        vy += random(-0.6, 0.6) * 0.4;
+        if (chance(1200)) {
+          vx /= 0.4;
+          vy /= 0.4;
+        }
+        vx *= friction;
+        vy *= friction;
+
+        total_distance += Math.floor(dist(xpos, ypos, xpos + vx, ypos + vy));
+
+        xpos += vx;
+        ypos += vy;
+
+
+
+      }
+
+      this.display = function() {
+        //strokeWeight(0.1);
+        sz -= 0.0004;
+        //w*= friction;
+        if (sz > 0) {
+          // ctx.lineWidth = sz;
+          ctx.fillStyle = c;;
+          ctx.fillRect(xpos, ypos, sz, sz);
+          //ellipse(xpos,ypos,w,w);
+          if (chance(5200)) {
+            flower(xpos, ypos)
+            reset();
+          }
+
+        } else {
+          reset()
+        }
+        if (xpos > w || xpos < 0 ) reset();
+      }
+
+      function reset() {
+        sz = 1;
+        xpos = orig_xpos;
+        ypos = orig_ypos;
+      }
+
+
+
+    }
+  </script>
+
+</body>
+
+</html>

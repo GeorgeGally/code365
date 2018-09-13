@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+  <script language="javascript" src="../../js/d3.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body style="background: #fcfcfc;">
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var ctx2 = createCanvas("canvas2");
+    var url = '../../data/ams_pm2.5_1_year_day_max.csv';
+    //var url = '../../data/ams_pollution_normalised.csv';
+    var num = 4;
+    var spacing = w / num;
+    var particles = [];
+
+
+
+    function setup() {
+      ctx.background(0);
+      load(url);
+    };
+
+
+
+
+    function draw() {
+
+      // the foreground is cleared but never the background
+
+      ctx2.clearRect(0, 0, w, h);
+
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+        update(p);
+        drawArm(p);
+        drawOrbits(p);
+        ctx2.lineWidth = 2;
+        ctx2.line(p.pos.x, p.pos.y, p.pos.x, h);
+      }
+
+    }
+
+
+    function drawArm(p) {
+      ctx2.fillStyle = rgba(255);
+      ctx2.fillEllipse(p.pos.x, p.pos.y, 5, 5);
+    }
+
+    function drawOrbits(p) {
+      ctx2.lineWidth = 1;
+      ctx2.fillStyle = rgba(0);
+      ctx2.fillEllipse(p.orbit.x, p.orbit.y, 10, 10);
+      ctx.fillStyle = rgba(255, 0.1);
+      ctx.HfillEllipse(p.orbit.x, p.orbit.y, p.size, p.size);
+      ctx.strokeStyle = rgba(0, 0.5);
+      ctx.HstrokeEllipse(p.orbit.x, p.orbit.y, p.size, p.size);
+      ctx2.fillStyle = rgba(0);
+      ctx2.fillEllipse(p.orbit.x, p.orbit.y, 5, 5);
+
+      ctx2.strokeStyle = rgba(255);
+      ctx2.line(p.pos.x, p.pos.y, p.orbit.x, p.orbit.y);
+    }
+
+
+    function update(p) {
+
+      p.angle += p.speed;
+      //console.log('p.angle', p.angle);
+      p.pos.y = h / 2 + Math.sin(p.angle / 200) * h / 2;;
+      var r = Math.sin(frameCount / 50) * p.radius
+      p.angle2 += p.speed/20;
+      p.orbit.x = p.pos.x + Math.cos(p.angle2) * r;
+      p.orbit.y = p.pos.y + Math.sin(p.angle2) * r;
+
+    }
+
+    function load(url) {
+
+      d3.csv(url, function(error, d) {
+
+        if (error) console.log(error);
+        data = d;
+        minMax(data);
+        addParticles(data)
+
+      });
+    }
+
+    var min_lat = 10000;
+    var min_lng = 10000;
+    var max_lat = -10000;
+    var max_lng = -10000;
+
+    function minMax(data) {
+
+      for (var i = 0; i < data.length; i++) {
+        var d = data[i];
+        if (d.Latitude > max_lat) max_lat = parseFloat(d.Latitude);
+        if (d.Latitude < min_lat) min_lat = parseFloat(d.Latitude);
+        if (d.Longitude > max_lng) max_lng = parseFloat(d.Longitude);
+        if (d.Longitude < min_lng) min_lng = parseFloat(d.Longitude);
+      }
+
+      console.log("min_lat", min_lat);
+      console.log("max_lat", max_lat);
+      console.log("min_lng", min_lng);
+      console.log("max_lng", max_lng);
+    }
+
+
+    var pos = [];
+
+    // using non-normalised
+    // totals for each year
+    function addParticles(data) {
+      spacing = w / num;
+      // var x = i * spacing + spacing / 2;
+
+      for (var i = 0; i < data.length; i++) {
+        var d = data[i];
+        //if (d.year == "2015") {
+
+          var x = sticky(map(d.Longitude, min_lng, max_lng, 0, w), 200);
+          console.log(d.AQValue);
+          var ii = checkIfAlreadySameXValue(x);
+
+          if (ii != undefined) {
+            pos[ii].sz += parseFloat(d.AQValue);
+          } else {
+            pos.push({
+              x: x,
+              sz: parseFloat(d.AQValue)
+            });
+          }
+
+      }
+      console.log('pos', pos);
+      spacing = 200 / w;
+      for (var i = 1; i < pos.length; i++) {
+        var p = pos[i];
+        addParticle(p);
+      }
+    }
+
+
+    function addParticle(p) {
+      var particle = {
+          pos: {
+            x: p.x + 50,
+            y: 0
+          },
+        size: clamp(p.sz/10, 80, 150),
+        radius: 100,
+        orbit: {
+          x: w / 2,
+          y: h / 2
+        },
+        angle: 350,
+        angle2: random(360),
+        speed: random(0.5, 1)
+      };
+      particles.push(particle);
+    }
+
+
+    function checkIfAlreadySameXValue(x) {
+      for (var i = 1; i < pos.length; i++) {
+        var p = pos[i];
+        if (p.x == x) return i;
+      }
+    }
+  </script>
+
+</body>
+
+</html>

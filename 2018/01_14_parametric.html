@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <script language="javascript" src="../js/d3.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/utils/simplify.js"></script>
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var ctx2 = createCanvas("canvas2");
+    var t = 0;
+    var NUM_LINES = 40;
+    ctx.strokeStyle = rgb(0);
+    ctx.linewidth = 4;
+
+
+    function draw() {
+      ctx.background(200, 0.1);
+      ctx.save();
+      ctx.translate(w / 2, h / 2);
+      //ctx2.translate(w / 2, h / 2);
+      for (var i = 0; i < NUM_LINES; i++) {
+        ctx2.fillStyle = rgba(250);
+        ctx2.LfillEllipse(x1(t + i) + w/2, y1(t + i) + h/2, 2, 2);
+
+        ctx.line(x1(t + i), y1(t + i), x2(t + i), y2(t + i));
+        ctx.fillStyle = rgb(0);
+        ctx.LfillEllipse(x1(t + i), y1(t + i), 10, 10);
+        ctx.fillStyle = rgb(180, 0, 0);
+        ctx.LfillEllipse(x2(t + i), y2(t + i), 6, 6);
+
+      }
+      //console.log(y1(t));
+      t += 0.4;
+      ctx.restore();
+      //ctx2.restore();
+    }
+
+    function x1(t) {
+      return Math.sin(t / 10  + frameCount/120) * 300  +  Math.cos(t / 20) * 12;
+    }
+
+    function y1(t) {
+      return Math.cos(t/20) * 200 +  Math.cos(t / 22) * 120;
+    }
+
+    function x2(t) {
+      return Math.sin(t/10 + frameCount/20) * 100 + Math.cos(t / 50) * 120;
+    }
+
+    function y2(t) {
+      return Math.cos(t / 20) * 100 + Math.cos(t / 20 + + frameCount/50) * 60;
+    }
+  </script>
+
+</body>
+
+</html>

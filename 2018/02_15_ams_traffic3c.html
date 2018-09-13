@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script language="javascript" src="../../js/creative_coding.js"></script>
+  <script language="javascript" src="../../js/canvas.js"></script>
+  <script language="javascript" src="../../js/vector.js"></script>
+  <script language="javascript" src="../../js/vector_particles.js"></script>
+
+  <link rel="stylesheet" href="../../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../../css/audio.css" type="text/css" media="screen" />
+  <script language="javascript" src="../../js/d3.js"></script>
+  <script language="javascript" src="../js/perlin_noise.js"></script>
+</head>
+
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+ctx.font = '8px Courier';
+var grid_w = 100;
+var grid_h = 30;
+var grid = createGrid(grid_w, grid_h);
+var mode = 0;
+var min_max;
+  var data = [];
+  // var url = '../../data/ams_traffic_fatalaties.csv';
+  var url = '../../data/ams_traffic_fatalaties_50_year.csv';
+  var ammt = 0;
+  var year = 0;
+  let current_year = 0;
+  let speedx = 10;
+  let speedy = 20;
+  let loaded = false;
+  let spacing_gap;
+  let spacing;
+  var noisy = 0;
+  var fieldIntensity = 200000;
+  var noiseScale = 2000;
+function setup() {
+    ctx.background(0);
+    load(url);
+  };
+
+var engine = new particleEngine(0);
+
+ctx.background(0);
+
+var out = 0;
+counter = 0;
+var current_wave = 0;
+
+function draw(){
+  ctx.background(0);
+  if (loaded) {
+  //engine.draw();
+
+  if(counter < data.length) {
+
+  if(out > current_wave ) {
+    counter++;
+      console.log(counter);
+    out = 0;
+  } else {
+    current_wave = parseInt(data[counter].ammt);
+    addABunch();
+  }
+}
+
+  for (var i = engine.particles.length-1; i >=0 ; i--) {
+    var b = engine.particles[i];
+
+    if(b.pos.y < 10) engine.particles.splice(i,1);
+
+    b.pos.y += b.speed.y;
+    // if (chance(1000)) mode = randomInt(2);
+    //
+    // if (chance(100)) b.on = !b.on;
+
+    //
+    ctx.fillStyle = b.c;
+
+    ctx.fillRect(b.pos.x, b.pos.y, 8, 1);
+
+}
+  }
+}
+
+function addABunch(){
+  for (var i = 0; i < 50; i++) {
+    addParticle();
+    out++
+  }
+}
+
+var octaves = 4;
+var falloff = 0.8;
+
+function addParticle(){
+
+  var x = randomSticky(w,10);
+  var noiseX = Math.sin((x + frameCount)/300);
+  var noiseY = Math.cos((out + frameCount)/100);
+  //var noiseY = map(i, 0, vertices, 0, noiseYRange);
+
+  var noiseValue = PerlinNoise.noise(noiseX, noiseY, octaves, falloff);
+  //console.log('noiseValue*5', noiseValue*5);
+
+
+  var y = h + noiseValue * 50;
+  engine.addParticle(x,y);
+  engine.last.speed.x = 0;
+
+  engine.last.speed.y = -current_wave/800 - Math.abs(noiseValue * 3);
+
+  engine.last.c = rgb(255);
+}
+
+
+function load(url) {
+  //var vals = [];
+  d3.csv(url, function(error, d) {
+
+    if (error) console.log(error);
+    data = d;
+    loaded = true;
+    spacing = w / (data.length - 1);
+    spacing_gap = Math.round(spacing - 3);
+  });
+}
+
+</script>
+<script language="javascript" src="../js/mic.js"></script>
+</body>
+
+</html>

@@ -45,6 +45,22 @@
 		var blur_ammt = 7;
 		var offset = 6;
 
+		colours = new colourPool()
+			.add('#f5dd56') // 5 - YELLOW
+			.add('#222222')
+			.add('#D2D2D2')
+			//.add( '#FFFFFF' )
+			.add('#19b4c8') // 3 - LIGHT BLUE
+
+
+			.add('#FF6600') // 6 - ORANGE
+
+			.add('#A80092') // 8 - PURPLE
+			.add('#FF3300') // 7 - RED
+			.add('#66D30D') // 9 - GREEN
+			.add('#0095a8') // 4 - TEAL
+
+
 		var engine = new particleEngine(0, 0);
 		var ctx;
 		var loc, zoom, timeline, ease_speed;
@@ -174,13 +190,13 @@
 			//if (blobs[0]) {
 			if (so2.length > 0) {
 				timeline.update();
-			//ctx.clearRect(0,0,w,h);
-			for (var i = 0; i < engine.particles.length; i++) {
-				var p = engine.particles[i];
-				ctx.fillStyle = c;
-				//ctx.HfillEllipse(p.pos.x, p.pos.y, p.sz, p.sz)
+				//ctx.clearRect(0,0,w,h);
+				for (var i = 0; i < engine.particles.length; i++) {
+					var p = engine.particles[i];
+					ctx.fillStyle = c;
+					//ctx.HfillEllipse(p.pos.x, p.pos.y, p.sz, p.sz)
+				}
 			}
-		}
 
 
 			// 	for (var i = blobs.length - 1; i >= 0; i--) {
@@ -263,7 +279,7 @@
 					engine.add(px.x, px.y, c);
 					var last = engine.last;
 					last.sz = sz;
-					last.speed.y = -1 * sz/gravity;
+					last.speed.y = -1 * sz / gravity;
 					//if(p.Pollutant == "Particulate matter < 2.5 µm (aerosol)") console.log('sz', sz);
 					//if(p.Pollutant == "Nitrogen dioxide (air)") console.log('sz', sz);
 					//if (sz > max_sz) sz = max_sz;
@@ -617,44 +633,7 @@
 			console.log(min_max);
 		}
 
-		// function getTotals(locs) {
-		//
-		// 	for (var i = 0; i < years.length; i++) {
-		// 		var total = 0;
-		// 		var highest = -100000;
-		// 		var lowest = 10000000;
-		// 		// because can't compare first values
-		// 		var high = -1;
-		// 		var low = -1;
-		//
-		// 		for (var j = 0; j < locs.length-1; j++) {
-		//
-		// 			if (i > 0) {
-		//
-		// 				var now = parseInt(locs[j][i]) || 0;
-		// 				var last = parseInt(locs[j][i-1]) || 0;
-		// 				var diff = now - last;
-		// 				//console.log(j, diff);
-		// 				if (diff > highest) {
-		// 					high = j;
-		// 					highest = diff;
-		// 				}
-		// 				if (diff < lowest) {
-		// 					low = j;
-		// 					lowest = diff;
-		// 				}
-		// 			}
-		//
-		// 				total += (parseInt(locs[j][i]) || 0);
-		// 			}
-		//
-		//
-		// 		//console.log("high", high);
-		// 		totals.push(total);
-		// 		highs.push(high);
-		// 		lows.push(low);
-		// 	}
-		// }
+	
 
 		function Timeline(labels) {
 
@@ -711,23 +690,17 @@
 					// var co = [];
 
 					ctx.clearRect(0, 0, w, h);
-					drawPollutant(nh3, rgba(0, 200, 0, 0.2));
-					drawPollutant(bc, rgba(0, 0.5));
-					drawPollutant(bs, rgba(200, 0.5));
-					drawPollutant(c6h6, rgba(0, 200, 120, 0.2));
-					drawPollutant(co, rgba(200, 0, 0, 0.2));
-					drawPollutant(so2, rgba(200, 10, 20, 0.2));
-					drawPollutant(no, rgba(220, 0, 200, 0.2));
-					drawPollutant(no2, rgba(200, 200, 0, 0.3));
-					drawPollutant(pm25, rgba(0, 0, 200, 0.2));
 
+					drawPollutant(pm25, colours.get(8));
+					drawPollutant(nh3, colours.get(0));
+					drawPollutant(bc, colours.get(1));
+					drawPollutant(bs, colours.get(2));
+					drawPollutant(c6h6, colours.get(3));
+					drawPollutant(co, colours.get(4));
+					drawPollutant(so2, colours.get(5));
+					drawPollutant(no, colours.get(6));
+					drawPollutant(no2, colours.get(7));
 
-					//console.log('year', years[this.counter]);
-					// for (var i = blobs.length - 1; i >= 0; i--) {
-					// 	var b = blobs[i];
-					// 	setMidpointSize(i, timeline.counter);
-					// 	//hitCheck(b, i);
-					// }
 				}
 
 				x = tween(x, xx, 20);
@@ -735,45 +708,7 @@
 			}
 
 			this.draw = function() {
-				// timeline_ctx.clearRect(0, 0, w, h);
-				// timeline_ctx.lineWidth = 1;
-				//
-				// timeline_ctx.shadowColor = rgba(0, 0.3);
-				// timeline_ctx.shadowBlur = 8;
-				// timeline_ctx.shadowOffsetX = 0;
-				// timeline_ctx.shadowOffsetY = 0;
-				//
-				// timeline_ctx.fillStyle = rgba(255, 0.99);
-				// timeline_ctx.strokeStyle = rgba(0);
-				// timeline_ctx.fillRect(this.start_x, this.start_y, this.wd, this.ht);
-				// //timeline_ctx.strokeRect(this.start_x, this.start_y, this.wd, this.ht);
-				//
-				// timeline_ctx.shadowBlur = 0;
-				// timeline_ctx.shadowOffsetX = 0;
-				// timeline_ctx.shadowOffsetY = 0;
-				//
-				// this.lineGraph();
-				//
-				// timeline_ctx.fillStyle = rgb(20);
-				//
-				// timeline_ctx.font = this.txt_sz + "px Roboto";
-				//
-				// timeline_ctx.textAlign = "left";
-				// timeline_ctx.textAlign = "left";
-				//
-				// timeline_ctx.fillText("Amsterdam population by suburb", this.start_x + this.padding, this.graph_bottom + this.txt_sz);
-				//
-				// //var num = totals[timeline.counter].toLocaleString().replace(',', ' ');
-				// timeline_ctx.fillText(labels[this.counter] + ": " + num + " residents", this.start_x + this.padding, this.graph_bottom + this.txt_sz + this.txt_sz);
-				//
-				// timeline_ctx.fillStyle = rgb(0);
-				// timeline_ctx.shadowColor = rgba(255, 0.3);
-				// timeline_ctx.shadowBlur = 2;
-				// timeline_ctx.shadowOffsetY = 2;
-				// timeline_ctx.font = this.txt_sz2 + "px Roboto";
-				// timeline_ctx.fillText("A data sculpture by George Gally | radarboy.com", 10, h - 10);
-				// timeline_ctx.shadowBlur = 0;
-				// timeline_ctx.shadowOffsetY = 0;
+
 			}
 
 

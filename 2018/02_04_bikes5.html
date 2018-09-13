@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+  <script language="javascript" src="../js/math.js"></script>
+  <script language="javascript" src="../js/perlin_noise.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    let ctx = createHiddenCanvas("canvas1");
+    let ctx2 = createCanvas("canvas2");
+    let total_distance = 0;
+    let particles = [];
+    let grid = new Grid(80, 90);
+
+    ctx.font = "20px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    // ctx.shadowColor = rgba(0, 0.3);
+    // ctx.shadowBlur = 2;
+    // ctx.shadowOffsetX = 2;
+    // ctx.shadowOffsetY = 2;
+    // p.vel.x = p.dir * speedx * PerlinNoise.noise(p.pos.x * .007, p.pos.y * p.speed, p.noisy * .07) * Math.cos(0.7 * 22 / 7 * PerlinNoise.noise(p.pos.x * .007, p.pos.y * .007, p.noisy * .5));
+  			// p.vel.y = -speedy * PerlinNoise.noise(p.pos.x * .0007, p.pos.y * .0007, p.noisy * 19) * Math.sin(0.3 * 22 / 7 * PerlinNoise.noise(p.pos.x * .007, p.pos.y * .007, p.noisy * 5));
+
+    function setup(){
+      addParticles(grid.length)
+    //   for (let p of engine.particles) {
+    //   //p.speed.x = randomInt(-10, 10);
+    //   p.speed.x = posNeg();
+    //   p.pos.x =  w/4 + PerlinNoise.noise(p.speed.x, p.pos.y, random(5)) * w/2;
+    //   //console.log(p.speed.x );
+    //   p.pos.y = Math.round(p.pos.y);
+    //   //p.speed.x = notRandom(5);
+    //   if (p.pos.x > w) p.pos.x = 0;
+    // }
+    }
+
+    function draw() {
+      ctx.background(0, 0.2);
+
+      if(total_distance < 2000000) move();
+      display();
+      ctx.fillStyle = rgb(0);
+      ctx.centreFillRect(w/2, h - h/10, 580, 24);
+      ctx.fillStyle = rgb(255);
+      ctx.fillText("Kilometres cycled in Amsterdam each day: " + Math.round(total_distance), w/2, h - h/10);
+      ctx2.drawImage(ctx.canvas, 0, 0, w, h);
+    }
+
+    function move(){
+      for (let p of particles) {
+      p.pos.x += (p.speed.x * PerlinNoise.noise(p.pos.y, Math.sin(p.pos.x), frameCount) * 15);
+      // total_distance += Math.abs(p.speed.x);
+      total_distance += 1/5;
+      if (p.pos.x > w) {
+        //p.speed.x *=-1;
+        p.pos.x = 0;
+        //total_distance++;
+      }
+      if (p.pos.x < 0) {
+        //p.speed.x *=-1;
+        p.pos.x = w;
+        //total_distance++;
+      }
+
+    }
+    }
+
+    function display(){
+
+
+      for (let p of particles) {
+        ctx.fillStyle = p.c;
+        // if(p.speed.x > 0) {
+        //   ctx.fillStyle = rgb(0);
+        // }
+      ctx.centreFillRect(p.pos.x, p.pos.y, grid.spacing.y, grid.spacing.y * 0.7);
+    }
+  }
+
+
+
+  function addParticle(x, y){
+    var p = {
+      pos: new Vector(x,y),
+      speed: new Vector(0, 0),
+      c: randomGrey()
+    }
+    p.speed.x = 1;
+    p.pos.x =  PerlinNoise.noise(p.pos.y, p.pos.x, random(1)) * w;
+    //console.log(p.speed.x );
+    p.pos.y = Math.round(p.pos.y);
+
+    particles.push(p);
+  }
+
+  function addParticles(num){
+    for (let i = 0; i < num; i++) {
+      addParticle(grid.pos[i].x, grid.pos[i].y);
+    }
+  }
+
+
+  </script>
+
+</body>
+
+</html>

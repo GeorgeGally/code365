@@ -2,14 +2,14 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-<script src='http://connect.soundcloud.com/sdk.js'></script>
-<script language="javascript" src="js/creative_coding.js"></script>
-<script language="javascript" src="js/canvas.js"></script>
+  <meta charset="utf-8">
+  <script src='http://connect.soundcloud.com/sdk.js'></script>
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
 
-<link rel="stylesheet" href="css/reset.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
 
 </head>
 
@@ -17,211 +17,207 @@
 
 <body>
 
-    <script>
+  <script>
+    var fov = 240;
+    var ctx = createCanvas("canvas1");
 
-var fov = 240;
-var ctx = createCanvas("canvas1");
+
+    var point = [];
+    var points = [];
+    var point3d = [];
+    var angleX = 0;
+    var angleY = 0;
+    var HALF_WIDTH = width / 2;
+    var HALF_HEIGHT = height / 2;
+
+    var x3d = 0;
+    var y3d = 0;
+    var z3d = 0;
+
+    var lastScale = 0;
+    var lastx2d = 0;
+    var lasty2d = 0;
+
+    var size;
+    var dim = 20;
+    var spacing;
+    var numPoints;
+
+    function reset() {
+      // The below code creates a sphere of points
+      //dim = 50; // This is the number of rings
+      dim = 2 + dim % 200;
+      // Each ring has as many points as there are rings
+      // This is the spacing for each ring
+      spacing = ((Math.PI * 2) / dim);
+
+      // This is the total number of points
+      numPoints = dim * dim;
+
+      // This is how big the sphere is.
+      size = 130;
+      size = 10 + Math.sin(frameCount) * 130;
+
+      //size = randomInt(150);
+      points = [];
+
+      // Now we build the sphere
+      for (var i = 0; i < dim; i++) {
+
+        // Calculate the depth spacing
+
+        // To calculate the depth spacing, we divide our spacing in half
+        // This is because otherwise, the cosine / sine waves will
+        // oscillate positively and negatively
+        // We only need the positive bit
+
+        var z = size * Math.cos(spacing / 2 * i);
+
+        // Calculate the size of the current ring
+        var s = size * Math.sin(spacing / 2 * i);
+
+        // For each ring..
 
 
-var point = [];
-var points = [];
-var point3d = [];
-var angleX = 0;
-var angleY = 0;
-var HALF_WIDTH = width / 2;
-var HALF_HEIGHT = height / 2;
+        for (var j = 0; j < dim; j++) {
 
-var x3d = 0;
-var y3d = 0;
-var z3d = 0;
+          // ...create the next point in the circle at the current size s, at the current depth z
 
-var lastScale = 0;
-var lastx2d = 0;
-var lasty2d = 0;
+          var point = [Math.cos(spacing * j) * s, Math.sin(spacing * j) * s, z];
 
-var size;
-var dim = 20;
-var spacing;
-var numPoints;
+          // Add the point to the geometry.
+          // point3d = point;
+          // rotateX(point3d,angleX);
+          // rotateY(point3d,angleY);
+          // point = point3d;
+          points.push(point);
 
-function reset(){
-   // The below code creates a sphere of points
-//dim = 50; // This is the number of rings
-dim = 2 + dim%200;
-// Each ring has as many points as there are rings
-// This is the spacing for each ring
-spacing = ((Math.PI * 2) / dim);
 
-// This is the total number of points
-numPoints = dim * dim;
+        }
 
-// This is how big the sphere is.
-size = 130;
-size = 10 + Math.sin(frameCount)*130;
-
-//size = randomInt(150);
-points = [];
-
-// Now we build the sphere
-for (var i = 0; i < dim; i++) {
-
-// Calculate the depth spacing
-
-    // To calculate the depth spacing, we divide our spacing in half
-    // This is because otherwise, the cosine / sine waves will
-    // oscillate positively and negatively
-    // We only need the positive bit
-    
-    var z = size * Math.cos(spacing / 2 * i);
-
-// Calculate the size of the current ring    
-    var s = size * Math.sin(spacing / 2 * i);
-
-// For each ring..    
-    
-
-    for (var j = 0; j < dim; j++ ) {
-        
-        // ...create the next point in the circle at the current size s, at the current depth z
-
-        var point = [Math.cos(spacing * j) * s,Math.sin(spacing * j) * s,z];
-
-        // Add the point to the geometry.
-        // point3d = point;
-        // rotateX(point3d,angleX);
-        // rotateY(point3d,angleY);
-        // point = point3d;
-        points.push(point);
-
-    
+      }
+      //console.log(points.length)
+      //  for (var i = 0; i < numPoints; i++) {
+      //         point3d = points[i];
+      //         angleX=((mouseX/width)-0.5)/10;
+      //         angleY=((mouseY/height)-0.5)/10;
+      //         rotateX(point3d,angleX);
+      //         rotateY(point3d,angleY);
+      // }
     }
 
-}
- //console.log(points.length)
-//  for (var i = 0; i < numPoints; i++) {
-//         point3d = points[i];
-//         angleX=((mouseX/width)-0.5)/10;
-//         angleY=((mouseY/height)-0.5)/10;
-//         rotateX(point3d,angleX);
-//         rotateY(point3d,angleY);
-// }
-}
 
+    reset();
 
-reset();
+    function draw() {
 
-function draw() {
+      ctx.background(0);
 
-    ctx.background(0);
-    
-    if (chance(50)) {
+      if (chance(50)) {
         dim++;
-       reset();
-    }
+        reset();
+      }
 
-    angleX=((mouseX/width)-0.5)/10;
-    angleY=((mouseY/height)-0.5)/10;
+      angleX = ((mouseX / width) - 0.5) / 10;
+      angleY = ((mouseY / height) - 0.5) / 10;
 
-// Here we run through each point and work out where it should be drawn
-    
-    for (var i = 0; i < numPoints; i++) {
+      // Here we run through each point and work out where it should be drawn
+
+      for (var i = 0; i < numPoints; i++) {
         point3d = points[i];
         // console.log(i)
         // console.log(points[i])
         z3d = point3d[2];
-        
-// This is the speed of the z
-// It moves the points forwards in space
-// We don't need it for the pure rotate
+
+        // This is the speed of the z
+        // It moves the points forwards in space
+        // We don't need it for the pure rotate
         // z3d -= 1.0;
 
-// Check that the points aren't disappearing into space and if so push them back
-// This also stops them stretching
-// When they get too close
+        // Check that the points aren't disappearing into space and if so push them back
+        // This also stops them stretching
+        // When they get too close
         if (z3d < -fov) z3d += 0;
-        
+
         point3d[2] = z3d;
- 
- // Calculate the rotation
- 
-    rotateX(point3d,angleX);
-    rotateY(point3d,angleY);
- 
- // Get the point in position 
- 
+
+        // Calculate the rotation
+
+        rotateX(point3d, angleX);
+        rotateY(point3d, angleY);
+
+        // Get the point in position
+
         x3d = point3d[0];
         y3d = point3d[1];
         z3d = point3d[2];
-// Convert the Z value to a scale factor
-// This will give the appearance of depth
+        // Convert the Z value to a scale factor
+        // This will give the appearance of depth
         var scale = (fov / (fov + z3d));
 
-// Store the X value with the scaling
-// FOV is taken into account
-// (just pushing it over to the left a bit too)
+        // Store the X value with the scaling
+        // FOV is taken into account
+        // (just pushing it over to the left a bit too)
         var x2d = (x3d * scale) + HALF_WIDTH;
 
-// Store the Y value with the scaling
-// FOV is taken into account
+        // Store the Y value with the scaling
+        // FOV is taken into account
 
         var y2d = (y3d * scale) + HALF_HEIGHT;
 
-// Draw the point
+        // Draw the point
 
-// Set the size based on scaling
-        var s = mapSound(i,numPoints)/80;
+        // Set the size based on scaling
+        var s = mapSound(i, numPoints) / 80;
         ctx.lineWidth = scale;
         // ctx.strokeStyle = rgb(255);
         ctx.fillStyle = rgb(255);
         // ctx.line(x2d, y2d, x2d + scale, y2d);
-        ctx.centreFillRect(x2d, y2d, scale*s,scale*s);
-       
+        ctx.centreFillRect(x2d, y2d, scale * s, scale * s);
+
+      }
+
     }
 
-}
 
+    function rotateX(point3d, angleX) {
+      var x = point3d[0];
+      var z = point3d[2];
 
-function rotateX(point3d,angleX) {
-        var	x = point3d[0]; 
-        var	z = point3d[2]; 
-	
-        var	cosRY = Math.cos(angleX);
-        var	sinRY = Math.sin(angleX);
-        
-        var	tempz = z; 
-        var	tempx = x;
+      var cosRY = Math.cos(angleX);
+      var sinRY = Math.sin(angleX);
 
-        x= (tempx*cosRY)+(tempz*sinRY);
-        z= (tempx*-sinRY)+(tempz*cosRY);
+      var tempz = z;
+      var tempx = x;
 
-        point3d[0] = x;
-        point3d[2] = z;
-          
-}
+      x = (tempx * cosRY) + (tempz * sinRY);
+      z = (tempx * -sinRY) + (tempz * cosRY);
 
-function rotateY(point3d,angleY) {
+      point3d[0] = x;
+      point3d[2] = z;
 
-        var y = point3d[1];
-        var	z = point3d[2]; 
-	
-        var cosRX = Math.cos(angleY);
-        var sinRX = Math.sin(angleY);
-        
-        var	tempz = z; 
-        var	tempy = y;
+    }
 
-        y= (tempy*cosRX)+(tempz*sinRX);
-        z= (tempy*-sinRX)+(tempz*cosRX);
+    function rotateY(point3d, angleY) {
 
-        point3d[1] = y;
-        point3d[2] = z;
-          
-} 
+      var y = point3d[1];
+      var z = point3d[2];
 
+      var cosRX = Math.cos(angleY);
+      var sinRX = Math.sin(angleY);
 
+      var tempz = z;
+      var tempy = y;
 
-</script>
-<script language="javascript" src="js/soundcloud.js"></script>
+      y = (tempy * cosRX) + (tempz * sinRX);
+      z = (tempy * -sinRX) + (tempz * cosRX);
+
+      point3d[1] = y;
+      point3d[2] = z;
+
+    }
+  </script>
+  <script language="javascript" src="../js/soundcloud.js"></script>
 </body>
 
 </html>

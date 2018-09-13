@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/jquery-1.6.2.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    let ctx = createCanvas("canvas1");
+    let ctx2 = createCanvas("canvas1");
+    let total_distance = 0;
+    let engine = new particleEngine(100, 100);
+
+    ctx.font = "20px helvetica";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+
+    function setup() {
+      for (let p of engine.particles) {
+        p.speed.x = random(5);
+        p.c = randomGrey();
+        if (p.pos.x > w) p.pos.x = 0;
+      }
+    }
+
+    function draw() {
+      ctx.background(0, 0.1);
+
+      if (total_distance < 2000000) move();
+      display();
+      ctx.fillStyle = rgb(255);
+      ctx.fillText("Kilometres cycled in Amsterdam each day: " + total_distance, w / 2, h - h / 10)
+    }
+
+    function move() {
+      for (let p of engine.particles) {
+        p.pos.x += p.speed.x;
+        if (p.pos.x > w + 50) {
+          p.pos.x = -50;
+          total_distance++;
+        }
+
+      }
+    }
+
+    function display() {
+
+      for (let p of engine.particles) {
+        ctx.fillStyle = p.c;
+        ctx.fillRect(p.pos.x, p.pos.y, 10, 10);
+      }
+    }
+  </script>
+
+</body>
+
+</html>

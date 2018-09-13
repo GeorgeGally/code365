@@ -1,0 +1,585 @@
+<html>
+
+<head>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+	<script src="../js/jquery-1.10.1.min.js"></script>
+	<script src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/quicksettings.min.js"></script>
+	<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDEKAnXP_v0EOZxJ5bv0K4UNqYFRM1JAj0&libraries=visualization"></script>
+
+	<script language="javascript" src="../js/canvas.js"></script>
+	<script language="javascript" src="../js/particle_engine.js"></script>
+	<script language="javascript" src="../js/d3.js"></script>
+	<script src="../js/CanvasLayer.js"></script>
+	<script src="../js/map_styles.js"></script>
+	<script language="javascript" src="../js/utils/Easing.js"></script>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<style>
+		canvas {
+			pointer-events: none;
+			position: absolute;
+		}
+
+		#map {
+			height: calc(100% + 20px)
+		}
+	</style>
+</head>
+
+<body>
+
+
+	<div id="map"></div>
+
+	<script type="text/javascript">
+		var settings = true;
+		var min_sz = 2;
+		var max_sz = 200;
+		var gravity = 20;
+		var outline_sz = 7;
+		var colour_step = 10;
+		var blur_ammt = 7;
+		var offset = 6;
+
+		// colours = new colourPool()
+		// 	.add('#F5DD56') // 5 - YELLOW
+		// 	.add('#222222')
+		// 	.add('#D2D2D2')
+		// 	//.add( '#FFFFFF' )
+		// 	.add('#19B4C8') // 3 - LIGHT BLUE
+		// 	.add('#FF6600') // 6 - ORANGE
+		// 	.add('#A80092') // 8 - PURPLE
+		// 	.add('#FF3300') // 7 - RED
+		// 	.add('#66D30D') // 9 - GREEN
+		// 	.add('#0095A8') // 4 - TEAL
+
+			var colours = new colourPool()
+			.add('#19B4C8') // 3 - LIGHT BLUE
+				.add("#FBA83F")
+				.add("#E84004")
+				.add("#CCD9AC")
+				.add("#BFFFCB")
+				.add("#D8DEC5")
+				.add("#FBA83F")
+				.add("#E84004")
+				.add("#CCD9AC")
+
+
+
+		var engine = new particleEngine(0, 0);
+		var ctx;
+		var loc, zoom, timeline, ease_speed;
+		//
+		// var blue = rgb(0, 174, 239);
+		// var orange = rgb(255, 69, 0);
+
+		function setScreen() {
+
+			if (window.location.hash) {
+
+				var screen_name = window.location.hash.substr(1).toLowerCase();
+				console.log('screen: ', screen_name);
+				if (screen_name == "central") {
+					//widescreen - 2112x608
+					max_sz = 900;
+					max_outlines = 34;
+					zoom = 13;
+					loc = {
+						lat: 52.35670291661623,
+						lng: 4.920083598144505
+					}
+				} else if (screen_name == "leidseplein") {
+					// 1632x608
+					max_sz = 600;
+					max_outlines = 34;
+					zoom = 13;
+					loc = {
+						lat: 52.363097761300935,
+						lng: 4.882146433837864
+					}
+					timeline.wd = 280;
+					timeline.ht = 95;
+					timeline.padding = 5;
+					timeline.line_width = 4;
+					timeline.start_y = h - timeline.ht - 20;
+					timeline.graph_top = timeline.start_y + timeline.padding + 2;
+					timeline.graph_right = 0;
+					timeline.graph_bottom = timeline.start_y + timeline.ht - 35;
+					timeline.start_x = w - timeline.wd - 20;
+					timeline.txt_sz = 14;
+				} else if (screen_name == "wtc") {
+					// 768x384
+					timeline.wd = 240;
+					timeline.ht = 70;
+					timeline.txt_sz = 12;
+					timeline.txt_sz2 = 11;
+					timeline.line_width = 4;
+					timeline.padding = 4;
+					timeline.start_y = h - timeline.ht - 10;
+					timeline.graph_top = timeline.start_y + timeline.padding + 2;
+					timeline.graph_right = 0;
+					timeline.graph_bottom = timeline.start_y + timeline.ht - 30;
+					timeline.start_x = w - timeline.wd - 10;
+					max_sz = 380;
+					zoom = 12.4;
+					loc = {
+						lat: 52.364922764934036,
+						lng: 4.884378031738255
+					}
+				} else {
+					location.hash = "#default";
+					// normal
+					max_sz = 300;
+					zoom = 8;
+					loc = {
+						lat: 52.3745653,
+						lng: 4.885408
+					}
+				}
+			} else {
+				location.hash = "#default";
+				// normal
+				max_sz = 600;
+				zoom = 13;
+				loc = {
+					lat: 52.3745653,
+					lng: 4.885408
+				}
+
+			}
+		}
+
+		var data = [];
+		var totals = [];
+		var highs = [];
+		var lows = [];
+		var blobs = [];
+		var resolutionScale = window.devicePixelRatio || 1;
+
+		var years = [];
+		for (var i = 2013; i <= 2016; i++) {
+			years.push(i);
+		}
+
+		frameRate = 60;
+
+		// var url = '/data/nl_air_data.csv';
+		var url = '/data/nl_air_data_1year_mean.csv';
+
+		var min_lat = 10000;
+		var min_lng = 10000;
+		var max_lat = -10000;
+		var max_lng = -10000;
+
+		var min_max = [];
+
+		var minXDataPoint = 1000;
+		var maxXDataPoint = -1000
+		var minYDataPoint = 1000;
+		var maxYDataPoint = -1000;
+		var c = 0;
+
+		var bc = [];
+		var bs = [];
+		var c6h6 = [];
+		var nh3 = [];
+		var so2 = [];
+		var no2 = [];
+		var pm25 = [];
+		var co = [];
+		var no = [];
+
+		var gmap, canvasLayer;
+
+		function draw() {
+			//if (blobs[0]) {
+			if (so2.length > 0) {
+				timeline.update();
+				//ctx.clearRect(0,0,w,h);
+				for (var i = 0; i < engine.particles.length; i++) {
+					var p = engine.particles[i];
+					ctx.fillStyle = c;
+					//ctx.HfillEllipse(p.pos.x, p.pos.y, p.sz, p.sz)
+				}
+			}
+
+		}
+
+
+		function getPollutant(data, array_name, fullname) {
+
+			for (var j = 0; j < years.length; j++) {
+				for (var i = 0; i < data.length; i++) {
+					var d = data[i];
+					//console.log(d);
+					if (d.Pollutant == fullname && d.ReportingYear == years[j]) {
+						array_name.push(d);
+					}
+				}
+			}
+			console.log(fullname);
+			console.log(array_name);
+
+		}
+
+
+
+
+
+		function convertToUGM3(measurement, ammt) {
+			ammt = parseFloat(ammt) || 0;
+			if (measurement == "mg.m-3") {
+				ammt /= 1000;
+				//console.log('d.AQValue ', ammt );
+			}
+			return ammt;
+		}
+
+		function fromLatLngToPixel(position) {
+			var scale = Math.pow(2, gmap.getZoom());
+			var proj = gmap.getProjection();
+			var bounds = gmap.getBounds();
+
+			var nw = proj.fromLatLngToPoint(
+				new google.maps.LatLng(
+					bounds.getNorthEast().lat(),
+					bounds.getSouthWest().lng()
+				));
+			var point = proj.fromLatLngToPoint(position);
+
+			return new google.maps.Point(
+				Math.floor((point.x - nw.x) * scale),
+				Math.floor((point.y - nw.y) * scale));
+		}
+
+
+
+		function drawPollutant(array_name, c) {
+			for (var i = 0; i < array_name.length; i++) {
+				var p = array_name[i];
+				if (p.ReportingYear == years[timeline.counter]) {
+					var px = getLocs(p);
+					//c = hexToRgb(c);
+					//console.log(c);
+					c = hexToRGBA(c, 0.4);
+					//console.log(c);
+					ctx.fillStyle = c;
+					var sz = map(p.AQValue, min_max.min, min_max.max, min_sz, max_sz);
+					engine.add(px.x, px.y, c);
+					var last = engine.last;
+					last.sz = sz;
+					last.speed.y = -1 * sz / gravity;
+					//if(p.Pollutant == "Particulate matter < 2.5 µm (aerosol)") console.log('sz', sz);
+					//if(p.Pollutant == "Nitrogen dioxide (air)") console.log('sz', sz);
+					//if (sz > max_sz) sz = max_sz;
+					ctx.HfillEllipse(px.x, px.y, sz, sz);
+				}
+			}
+		}
+
+
+
+		// function drawSO2(){
+		// 			ctx.clearRect(0,0,w,h);
+		// 	for (var i = 0; i < so2.length; i++) {
+		// 		var p = so2[i];
+		// 		if(p[0] == years[timeline.counter]){
+		// 			getLocs(p, "blue");
+		// 		}
+		// 	}
+		// }
+		//
+
+		// function drawNO2(){
+		// 			//ctx.clearRect(0,0,w,h);
+		// 	for (var i = 0; i < no2.length; i++) {
+		// 		var p = no2[i];
+		// 		if(p[0] == years[timeline.counter]){
+		// 			getLocs(p, rgba(255, 0, 0, 0.1));
+		// 		}
+		// 	}
+		// }
+
+		// function drawPM25(){
+		// 			//ctx.clearRect(0,0,w,h);
+		// 	for (var i = 0; i < pm25.length; i++) {
+		// 		var p = pm25[i];
+		// 		if(p[0] == years[timeline.counter]){
+		// 			getLocs(p, rgba(255, 200, 0, 0.4));
+		// 		}
+		// 	}
+		// }
+		//
+
+		// function drawCO(){
+		// 			//ctx.clearRect(0,0,w,h);
+		// 	for (var i = 0; i < co.length; i++) {
+		// 		var p = co[i];
+		// 		if(p[0] == years[timeline.counter]){
+		// 			getLocs(p, rgba(20, 200, 200, 0.1));
+		// 		}
+		// 	}
+		// }
+
+		function getLocs(p, c) {
+
+			var loc = new google.maps.LatLng(p.SamplingPoint_Latitude, p.SamplingPoint_Longitude);
+			//heatmapData.push(loc);
+			var px = fromLatLngToPixel(loc);
+			//console.log(px);
+			return px;
+
+
+		}
+
+
+		// MAPS
+
+		window.onload = function() {
+
+			timeline = new Timeline(years);
+			timeline.speed = 120;
+			ease_speed = 2.8;
+			// setups for various screensizes
+			// values "cental", "leidseplein", "wtc"
+			setScreen();
+
+			var myLatlng = new google.maps.LatLng(loc.lat, loc.lng);
+
+			var mapOptions = {
+				zoom: zoom,
+				styles: white,
+				center: myLatlng,
+				mapTypeId: google.maps.MapTypeId.ROADMAP,
+				disableDefaultUI: false,
+				scrollwheel: true,
+				draggable: true,
+				navigationControl: false,
+				mapTypeControl: false,
+				streetViewControl: false,
+				rotateControl: false,
+				scaleControl: false,
+				zoomControl: false,
+				disableDoubleClickZoom: false,
+				fullscreenControl: false
+			};
+
+			gmap = new google.maps.Map(document.getElementById("map"), mapOptions);
+			//heatmap = new HeatmapOverlay(map, {"radius":25, "visible":true, "opacity":50});
+			// initialize the canvasLayer
+			var canvasLayerOptions = {
+				map: gmap,
+				resizeHandler: resize,
+				animate: false,
+				//updateHandler: filter,
+				resolutionScale: resolutionScale
+			};
+			canvasLayer = new CanvasLayer(canvasLayerOptions);
+			ctx = canvasLayer.canvas.getContext('2d');
+			canvas = document.getElementById('canvas1');
+
+
+			google.maps.event.addListener(gmap, "drag", function() {
+				ctx.clearRect(0, 0, w, h);
+				var centre = gmap.getCenter();
+				console.log('lat', centre.lat());
+				console.log('lng', centre.lng());
+			});
+
+
+			google.maps.event.addListenerOnce(gmap, "idle", function() {
+
+				ctx.clearRect(0, 0, w, h);
+				load(url, data);
+				if (settings) addQuickSettings();
+
+			});
+
+		};
+
+
+		function load(url, vals) {
+			//var vals = [];
+			d3.csv(url, function(error, d) {
+
+				if (error) console.log(error);
+				data = d;
+				for (var i = 0; i < data.length; i++) {
+					var d = data[i];
+					//console.log(d);
+					var b = Object.values(d);
+					//console.log(b[b.length-1]);
+
+					//formatPolygonInfo(b);
+					vals.push(b);
+
+				}
+
+				console.log(vals);
+
+				// getS02(vals);
+				// getN02(vals);
+				// getPM25(vals);
+				// getCO(vals);
+
+				minMax(data);
+
+				//getPollutant(data, type, fullname)
+
+				getPollutant(data, bc, "black_carbon (aerosol)");
+				getPollutant(data, bs, "Black smoke (air)");
+				getPollutant(data, nh3, "Ammonia (air)");
+				getPollutant(data, c6h6, "Benzene (air)");
+				getPollutant(data, so2, "Sulphur dioxide (air)");
+				getPollutant(data, no, "Nitrogen monoxide (air)");
+				getPollutant(data, no2, "Nitrogen dioxide (air)");
+				getPollutant(data, pm25, "Particulate matter < 2.5 µm (aerosol)");
+				getPollutant(data, co, "Carbon monoxide (air)");
+
+			});
+		}
+
+
+		function minMax(data) {
+			var min_pollutant = 100000;
+			var max_pollutant = -100000;
+			for (var i = 0; i < data.length; i++) {
+				var d = data[i];
+				d.AQValue = convertToUGM3(d.Unit, d.AQValue);
+				//console.log('d.AQValue ', d.AQValue );
+
+				if (d.AQValue > max_pollutant) max_pollutant = d.AQValue;
+				if (d.AQValue < min_pollutant) min_pollutant = d.AQValue;
+
+			}
+
+
+			min_max = {
+				min: min_pollutant,
+				max: max_pollutant
+			};
+
+			console.log(min_max);
+		}
+
+
+
+		function Timeline(labels) {
+
+			this.ht = 140;
+			this.wd = 380;
+			this.padding = 10;
+
+			this.txt_sz = 18;
+			this.txt_sz2 = 15;
+			this.graph_right = this.padding;
+			this.start_x = w - this.wd - this.padding * 2 - this.graph_right;
+			this.start_y = h - this.padding * 2 - this.ht;
+			var x = xx = this.start_x + this.padding;
+			this.graph_top = this.start_y + this.padding;
+			this.graph_bottom = this.start_y + this.ht - 52;
+
+			var timeline_ctx = createCanvas('timeline');
+			var old_total = 0;
+			timeline_ctx.canvas.style.zIndex = 999;
+			timeline_ctx.canvas.style.pointerEvents = 'none';
+
+
+			this.counter = 0;
+			this.updated;
+			this.speed = 1;
+			this.line_width = 6;
+
+			this.update = function() {
+
+				this.updated = false;
+				if (frameCount % this.speed == 0) {
+
+					this.counter++;
+
+					xx = map(this.counter, 0, labels.length - 1, this.start_x + 20, this.start_x + this.wd - this.padding);
+					this.updated = true;
+					//max_outlines = randomInt(10, 16);
+					// max_outlines += 0.5;
+
+
+					if (this.counter >= labels.length) {
+						this.counter = 0;
+						frameCount = 0;
+						x = xx = this.start_x + this.padding;
+					}
+
+					// var bc = [];
+					//var bs = [];
+					// var c6h6 = [];
+					// var nh3 = [];
+					// var so2 = [];
+					// var no2 = [];
+					// var pm25 = [];
+					// var co = [];
+
+					ctx.clearRect(0, 0, w, h);
+					drawPollutant(pm25, colours.get(8));
+					drawPollutant(no2, colours.get(7));
+					//drawPollutant(so2, colours.get(5));
+					drawPollutant(no, colours.get(6));
+					drawPollutant(nh3, colours.get(0));
+					drawPollutant(bc, colours.get(1));
+					drawPollutant(bs, colours.get(2));
+					drawPollutant(c6h6, colours.get(3));
+					drawPollutant(co, colours.get(4));
+
+
+
+
+				}
+
+
+			}
+
+
+
+
+		}
+
+		function addQuickSettings() {
+			var settings = QuickSettings.create(w - 200, 30, "Settings");
+			// // settings.addRange(title, min, max, value, step, callback);
+
+			settings.addRange("min_sz", 0, 100, min_sz, 0.1, function(value) {
+				min_sz = value;
+			});
+
+			settings.addRange("max_sz", 1, 2000, max_sz, 1, function(value) {
+				max_sz = value;
+			});
+
+
+			settings.addRange("gravity", 1, 80, gravity, 0.1, function(value) {
+				gravity = value;
+			});
+
+			settings.addRange("colour_step", 1, 50, colour_step, 1, function(value) {
+				colour_step = value;
+			});
+
+			settings.addRange("blur_ammt", 1, 100, blur_ammt, 1, function(value) {
+				blur_ammt = value;
+			});
+
+			settings.addRange("offset", 1, 80, offset, 1, function(value) {
+				offset = value;
+			});
+		}
+	</script>
+
+
+
+
+</body>
+
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+    <script language="javascript" src="../js/raw_video.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    // GLOBALS
+    var ctx = createCanvas("canvas1");
+    var particles = [];
+
+    ctx.font = "12px Monospace";
+    var img = new Image();
+    img.src = '../../img/Dalai_Lama.jpg';
+    img.src = '../../img/people/macborg.jpg';
+    var sticker = 20;
+    var txt = "";
+    var maxWidth = w - 20;
+    var lineHeight = 13;
+    var letterspacing = ctx.measureText("/:;.X").width/5 + .2;
+
+    var sampleSize = 10;
+    var x = 0;
+    var y = 0;
+    var imgData;
+    var sourceBuffer32;
+    var letters = [];
+
+    var lines = 0;
+    var old_width = 0;
+    var xx = 20;
+
+    var letterOrder = " .`-_':,;^=+/\"|)\\<>)iv%xclrs{*}I?!][1taeo7zjLunT#JCwfy325FP6SV4EXPGZbYkOA&8U$@KHDBWNMR0Q";
+    //var letterOrder = " .-\/:;+*@?%$XW#";
+    //var letterOrder = " .-:=+*%#@";
+    for (var i = 0; i < 256; i++) {
+      var index = map(i, 0, 256, 0, letterOrder.length);
+      letters[i] = letterOrder.charAt(index);
+    }
+
+    img.onload = function(){
+      sample();
+    }
+
+
+
+    function sample() {
+      ctx.background(0);
+      video.width = w;
+      video.height = h;
+      particles = [];
+      ctx.drawImage(video, 0, 0, video.width, video.height);
+      imgData = ctx.getImageData(0, 0, video.width, video.height);
+      sourceBuffer32 = new Uint32Array(imgData.data.buffer);
+
+        for (var y = 0; y < video.height; y+=lineHeight) {
+          for (var x = 0; x < video.width; x+=letterspacing) {
+        addParticle(x, y);
+      }
+    }
+    ctx.background(0);
+    }
+
+    function draw() {
+
+
+      if(chance(4)) sample();
+      drawParticles();
+
+    }
+
+
+
+    function drawParticles() {
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+        drawLetters(p);
+      }
+    }
+
+
+    function drawLetters(p) {
+      var xx = p.x;
+        var t = p.txt;
+        if (p.highlight) {
+          ctx.fillStyle = p.c;
+          ctx.fillRect(p.x, p.y - 9, letterspacing, 11);
+          ctx.fillStyle = "black";
+        } else {
+          //ctx.fillStyle = "green";
+          ctx.fillStyle = p.c;
+        }
+        ctx.fillText(t, p.x, p.y);
+    }
+
+
+    function addParticle(_x, _y) {
+
+      var col = sampleImage(_x, _y);
+      var c = rgb(col.x, col.y, col.z);
+      //var c = rgb(0, sticky(col.y * .8, 20), 0);
+      var txt = letters[col.x]
+        if (chance(15)) txt = letters[randomInt(letters.length-1)];
+      var highlight = chance(20);
+      if(particles.length > 1 && particles[particles.length-1].highlight && particles[particles.length-2].highlight) {
+        highlight = true;
+      }
+
+      if(particles.length > 0 && particles[particles.length-1].highlight) {
+        highlight = true;
+        if (chance(5)) highlight = false;
+        c = particles[particles.length-1].c;
+      } else {
+        if (chance(5)) txt = "*";
+
+      if(particles.length > 0 && particles[particles.length-1].txt == " ") {
+        txt = " ";
+        if (chance(5)) txt = letters[col.x];
+      }
+      if(particles.length > 0 && particles[particles.length-1].txt == "*") {
+        if (chance(2)) txt = "*";
+      }
+        }
+      if (chance(5)) txt = "*";
+      if (chance(12)) txt = " ";
+      //txt = " ";
+      // _x = _x * letterspacing;
+      // _y = _y * lineHeight;
+
+      var particle = {
+        x: _x,
+        y: _y,
+        c: c,
+        bright: col.x,
+        txt: txt,
+        highlight: highlight
+      }
+
+      particles.push(particle);
+    }
+
+    function sampleImage(_x, _y) {
+
+      var pos = Math.round(_x + _y * video.width);
+      var b = sticky((sourceBuffer32[pos] >> 16) & 0xff, sticker);
+      var g = sticky((sourceBuffer32[pos] >> 8) & 0xff, sticker);
+      var r = sticky((sourceBuffer32[pos] >> 0) & 0xff, sticker);
+      return new Vector(r, g, b);
+    }
+  </script>
+</body>
+
+</html>

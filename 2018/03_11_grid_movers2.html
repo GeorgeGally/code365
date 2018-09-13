@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+<script language="javascript" src="../js/d3.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+ctx2.font="10px Arial";
+var grid = new particleEngine( 50, 30 );
+var engine = new particleEngine( 60, 1 );
+var hit_dist = 15;
+
+for (var i = 0; i < grid.length; i++) {
+  var g = grid.particles[i];
+  g.sz = 1;
+  g.start_sz = 1;
+}
+
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+  //p.pos.y =  h;
+
+  p.speed.y = random ( 4, 10 );
+  p.speed.x = 0;
+  p.dir.x = 1;
+  p.dir.y = -1;
+  //console.log(p.speed.y);
+}
+
+
+function draw() {
+
+  ctx.background( 255, 0.5 );
+  ctx.fillStyle = rgb( 0 );
+
+  for (var i = 0; i < grid.length; i++) {
+
+    var g = grid.particles[i];
+    for (var j = 0; j < engine.length; j++) {
+      var p = engine.particles[j];
+        var d = Math.abs(getDist(g, p));
+        hit_dist = Sound.mapSound(i % 200, 400, 0, 30)
+        if(d < hit_dist) {
+          //var target_sz = Sound.mapSound(i, grid.length * 2, g.start_sz, 20)
+          var target_sz = hit_dist - d + g.start_sz;
+          if (g.sz < target_sz) g.sz = target_sz;
+          ctx.line( g.pos.x, g.pos.y, p.pos.x, p.pos.y );
+        }
+      }
+  }
+
+  moveParticles();
+  drawGrid();
+
+}
+
+function drawGrid(){
+  for (var i = 0; i < grid.length; i++) {
+    var g = grid.particles[i];
+    ctx.fillEllipse(g.pos.x, g.pos.y, g.sz, g.sz);
+    if (g.sz > g.start_sz) g.sz = tween(g.start_sz, g.sz, 5);
+    //g.sz-= 2;
+  }
+}
+
+function moveParticles(){
+  for (var i = 0; i < engine.particles.length; i++) {
+    var p = engine.particles[i];
+    p.pos.x += ( p.speed.x * p.dir.x );
+    p.pos.y += ( p.speed.y * p.dir.y );
+    if (p.pos.y < 0) p.dir.y *= -1;;
+    if (p.pos.y > h) p.dir.y *= -1;;
+    if (p.pos.x < 0) p.pos.x = w;
+    if (p.pos.x > w) p.pos.x = 0;
+  }
+
+}
+
+
+
+
+function getDist(p, p2){
+  return dist(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y);
+}
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+
+</body>
+
+</html>
