@@ -59,6 +59,8 @@ var soundCloud = function(_fft_size) {
       audioContext = new (window.AudioContext || window.webkitAudioContext);
       analyser = audioContext.createAnalyser();
       SAMPLE_RATE = audioContext.sampleRate;
+      //console.log("FFT_SIZE:" + FFT_SIZE);
+      self.FFT_FREQ_RES = (SAMPLE_RATE/2)/(FFT_SIZE/2);
       //console.log("FFT Size:" + FFT_SIZE);
       analyser.fftSize = FFT_SIZE;
       analyser.smoothingTimeConstant = 0.3;
