@@ -1,0 +1,293 @@
+<html>
+
+<head>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <script src="../js/jquery-1.10.1.min.js"></script>
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+  <script language="javascript" src="../js/matter.min.js"></script>
+
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <body>
+
+
+    <script type="text/javascript">
+      var hidden_canvas;
+
+      var hidden_ctx = createHiddenCanvas('canvas3');
+      var ctx = createCanvas('canvas1');
+      var ctx2 = createCanvas('canvas2');
+      hidden_ctx.background(0);
+      // hidden_ctx.strokeWeight = 2;
+      hidden_ctx.lineWidth = 2;
+      ctx2.lineWidth = 2;
+      ctx.background(0);
+
+      var colours = new colourPool()
+        //
+
+        //.add('#ECECEC')
+        //.add('#CCCCCC')
+        //.add('#CCFFCC')
+        //.add('#333333')
+        .add('#0095a8')
+        .add('#00616f')
+        .add('#FF3300')
+        .add('#FF6600')
+        //.add('#000000')
+        .add('#ffc84f')
+        .add('#FFFFFF')
+        .add('#FFFF00')
+        //.add('#FF00FF')
+      ;
+
+
+      var grid = new Grid(1, 1, w / 2, h / 2, w / 4, h / 4)
+
+      var threshold_res = 4;
+      var threshold_ammt = 81;
+
+      var blur_ammt = 4;
+      var blur_pass = 8;
+      var contrast = 22;
+
+
+      var Engine = Matter.Engine,
+        Render = Matter.Render,
+        World = Matter.World,
+        Body = Matter.Body,
+        Bodies = Matter.Bodies;
+
+
+      var engine, world;
+      var circles = [];
+      var boundries = [];
+
+      var radius = 140;
+      console.log(grid);
+
+      function setup() {
+        var body = document.querySelector("body");
+        hidden_canvas = document.getElementById('canvas3')
+        engine = Engine.create();
+        engine.density = 0.008;
+        //engine.restitution = 0.5;
+        //frictionAir: 0.06,
+        //restitution: 0.3}
+        world = engine.world;
+        Engine.run(engine);
+        //Engine.run(engine);
+        //Render.run(Render);
+
+        var offset = 5;
+
+
+        options = {
+          friction: 0.9,
+          restitution: 0.4,
+          isStatic: true
+        }
+
+        //var topWall = Bodies.rectangle(400, 0, 810, 30, options);
+        var leftWall = Bodies.rectangle(-100, 0, 200, h * 2, options);
+        var rightWall = Bodies.rectangle(w + 100, 0, 200, h * 2, options);
+        var topWall = Bodies.rectangle(w / 2, -100, w, 200, options);
+
+        World.add(engine.world, [leftWall, rightWall, topWall]);
+
+
+        for (var i = 0; i < grid.length; i++) {
+          var g = grid.grid[i];
+          var x = g.x;
+          var y = g.y;
+        }
+
+
+        for (var i = 0; i < 10; i++) {
+          addCircle(255);
+        }
+
+        engine.timing.timeScale = 0.9;
+        engine.world.gravity.x = 0;
+        engine.world.gravity.y = -1;
+      }
+
+      function draw() {
+
+        hidden_ctx.background(0, 0.07);
+        //hidden_ctx.fillStyle = rgb(255);
+        ctx.clearRect(0, 0, w, h);
+        ctx2.clearRect(0, 0, w, h);
+
+
+      //  if (Sound.getVol() > 90) engine.world.gravity.x = (posNeg() * 1.4);
+
+        if (Sound.getVol() > 70) {
+          engine.world.gravity.y = -0.2;
+        }
+        if (Sound.getVol() > 30) {
+          addCircle();
+        }
+        if (Sound.getVol() < 40) {
+          engine.world.gravity.x = 0;
+          engine.world.gravity.y = 0.2;
+        }
+
+
+        for (var i = 0; i < boundries.length; i++) {
+          boundries[i].show();
+        }
+
+        for (var i = 0; i < circles.length; i++) {
+          var b = circles[i];
+          b.show();
+
+          if (b.isOffScreen() || b.isTooSmall()) {
+            b.removeFromWorld();
+            circles.splice(i, 1);
+            i--;
+          }
+
+        }
+
+        ctx.drawImage(hidden_canvas, 0, 0, w, h);
+        //if(frameCount%100 == 0 ) Engine.run(engine);
+        //Render.run(Render);
+      }
+
+
+
+      function addCircle() {
+        var spectrum = Sound.spectrum;
+        var freq = getNoteFromFFT(spectrum);
+        var note = getNoteFreqPerc(spectrum);
+        var note1 = (freq.substring(0, 1)).charCodeAt(0) - 65;
+        num = Math.round(map(note1, 0, 7, 0, colours.pool.length));
+        //console.log(freq + " : " + note1);
+        //num = Math.round(i/engine.particles.length * 360);
+        //console.log(num);
+        var c = colours.get(num);
+        //var c = rgb(0, 0, 30 + note * 4)
+        //var c = map(note, 0, 60, 90, 270);
+        var sz = map(note, 0, 80, 40, 180);
+        circles.push(new Circle(random(w), h + sz + random(30), sz, c));
+
+      }
+
+
+      //////////////////////// OBJECTS
+
+      var Circle = function(x, y, r, c) {
+        this.options = {
+          friction: 0.9,
+          restitution: 0.1,
+          mass: r * 2,
+          radius: r
+        }
+        this.r = r;
+        this.c = c;
+        // this.c = hsl(c, 90, 50);
+        //this.c = randomGrey();
+
+        this.body = Bodies.circle(x, y, this.r / 2, this.options);
+        this.pos = this.body.position;
+
+        World.add(world, this.body);
+        //console.log(this.body);
+        this.show = function() {
+          this.pos = this.body.position;
+          var angle = this.body.angle;
+
+          this.r -= 0.099;
+          this.body.scale -= 0.099;
+          this.body.render.circleRadius = this.r;
+          hidden_ctx.fillMe(this.c);
+          hidden_ctx.save();
+          hidden_ctx.translate(this.pos.x, this.pos.y);
+          hidden_ctx.fillCircle(0, 0, this.r, this.r);
+          // hidden_ctx.fillMe(255);
+          // hidden_ctx.fillEllipse(0, 0, this.r/2, this.r/2);
+          // hidden_ctx.strokeMe(255);
+          // hidden_ctx.strokeEllipse(0, 0, this.r, this.r);
+          hidden_ctx.restore();
+          ctx2.fillMe(this.c);
+          ctx2.fillCircle(this.pos.x, this.pos.y, this.r, this.r);
+          ctx2.strokeMe(0);
+          //ctx2.strokeCircle(this.pos.x, this.pos.y, this.r, this.r);
+          ctx2.fillMe(0);
+          ctx2.fillCircle(this.pos.x, this.pos.y, this.r/5, this.r/5);
+
+        }
+        this.isTooSmall = function() {
+          var sz = this.r;
+          //console.log(pos.y);
+          return (sz < 8);
+        }
+
+        this.isOffScreen = function() {
+          var pos = this.body.position;
+          //console.log(pos.y);
+          return (this.pos.y > h + 100);
+        }
+
+        this.removeFromWorld = function() {
+          World.remove(world, this.body);
+        }
+      }
+
+
+      function Obstacle(x, y, r) {
+
+        this.x = x;
+        this.y = y;
+        this.r = r;
+
+        this.options = {
+          friction: 0.99,
+          restitution: 0.1,
+          isStatic: true
+        }
+
+        this.body = Bodies.circle(x, y, this.r/2, this.options);
+        //this.body = Bodies.polygon(x, y, 3, this.r * 1.1, this.options);
+
+        this.show = function() {
+
+          // var pos = this.body.position;
+          //
+          // ctx.fillStyle = rgb(200);
+          //
+          // //ctx.save();
+          // //ctx.translate(pos.x, pos.y);
+          // //ctx.rotateDeg(10);
+          // ctx.eqDownFillTriangle(pos.x, pos.y, this.r);
+          // //ctx.rotateDeg(-10);
+          ctx2.fillEllipse(0,0, this.r, this.r);
+          // ctx2.restore();
+        }
+
+      }
+
+
+
+      function mouseMoved() {
+        circles.push(new Box(mouseX, mouseY, 2));
+      }
+    </script>
+
+    <script language="javascript" src="../js/soundcloud_new.js"></script>
+    <script language="javascript" src="../js/utils/sound_utils.js"></script>
+
+
+  </body>
+
+</html>

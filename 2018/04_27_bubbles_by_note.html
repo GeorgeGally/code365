@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<script>
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+
+var amount = 0;
+var stars = [];
+
+var mouse = {
+  x: w / 2,
+  y: h / 2
+};
+
+var gravity = 0.016;
+var mouseMoved = false;
+
+var prevA = -500;
+
+ctx.globalCompositeOperation = "screen";
+  ctx.fillStyle = "white";
+  ctx.strokeStyle = "black";
+  ctx.lineWidth = 10;
+
+
+function draw () {
+
+  ctx.clear();;
+  ctx.fillStyle = "white";
+  ctx.strokeStyle = "black";
+  if( Sound.getVol() > 60 && frameCount%2 == 0) {
+    var spectrum = Sound.spectrum;
+    var freq = getNoteFromFFT(spectrum);
+    var note = getNoteNumberFromFFT(spectrum);
+    //console.log(note);
+    x = map(note, 0, 60, 0, w);
+    appParticle(x, random(200))
+  }
+
+  for (var i = stars.length-1; i > 0; i--) {
+
+    var s = stars[i];
+    s.render();
+    if (s.y + (s.r * 2) > h + 200) {
+      stars.splice(0, 1);
+      //amount--;
+      i--;
+    }
+  }
+
+  // if (!mouseMoved && frameCount - prevA > 50) {
+  //   stars.push(new Star(w / 2, h / 1));
+  //   //amount++;
+  //   prevA = frameCount;
+  // }
+
+};
+
+
+
+function appParticle(x, y) {
+
+  // if (!mouseMoved) {
+  //   mouseMoved = true;
+  // }
+
+  mouse.x = x;
+  mouse.y = y;
+
+  stars.push(new Star(mouse.x, mouse.y));
+  //amount++;
+}
+
+
+function Star(x, y) {
+  this.x = x;
+  this.y = y;
+  this.r = (Math.random() + 0.1) * 50;
+  this.color = ((40 * Math.random()) + 0);
+  this.velocityY = random(-1);
+  this.velocityX = (Math.random() - 0.5) * 2;
+}
+
+Star.prototype.render = function() {
+
+  this.velocityY += gravity;
+  this.x += this.velocityX;
+  this.y += this.velocityY;
+  //ctx.fillStyle = this.color;
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, this.r, Math.PI * 2, 0);
+  ctx.fill();
+  ctx.stroke();
+
+}
+
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+<script language="javascript" src="../js/utils/sound_utils.js"></script>
+
+</body>
+
+</html>

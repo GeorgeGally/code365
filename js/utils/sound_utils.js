@@ -18,7 +18,8 @@ var notes = {"A#1" : 58.2705, "B1" : 61.7354, "C2" : 65.4064,
   "F7" : 2793.83, "F#7" : 2959.96, "G7" : 3135.96, "G#7" : 3322.44,
   "A7" : 3520, "A#7" : 3729.31, "B7" : 3951.07, "C8" : 4186.01};
 
-
+  var min_freq = 58.2705;
+  var max_freq = 4186.01;
 
 function computeFreqFromFFT(spectrum) {
     //fft.forward(timeData);   // See added dsp library for additional info
@@ -53,6 +54,13 @@ function getNoteNumberFromFFT(spectrum) {
     // console.log(notes.length-1);
     // var n = Math.round(noteInfo/ (notes.size-1) * 100);
     return noteInfo;
+}
+
+function getNoteFreqPerc(spectrum) {
+    var currFreq = computeFreqFromFFT(spectrum);
+    var noteInfo = matchNote(currFreq);
+    var freq = map(noteInfo[1], min_freq, max_freq, 0, 100)
+    return Math.round(freq);
 }
 
 
