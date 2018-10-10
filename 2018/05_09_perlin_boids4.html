@@ -25,26 +25,23 @@ var canvas = ctx.canvas;
 noise.seed(randomInt(20));
 
 
-var scl = 14;
+var scl = 4;
 var xvec, yvec;
-var noiseInc = .1;
+var noiseInc = .01;
 var time = 0;
 var particles = [];
 var flowfield;
 
 ctx.strokeStyle = rgb(0);
-ctx.fillStyle = rgb(255);
+
 
 function setup() {
   ctx.background(255);
-  ctx.shadowColor = rgba(80,80,80, 0.5);
-  ctx.shadowBlur = 3;
-  ctx.shadowOffsetX = 2;
 }
 
 function draw() { // Rotating Vectors
 
-       ctx.background(0);
+       ctx.background(255, 0.1);
        //ctx3.clearRect(0,0,w, h);
 
        FlowField();
@@ -57,7 +54,7 @@ function FlowField(){
        xvec = Math.floor((w+50) / scl);
        yvec = Math.floor((h+50) / scl);
        flowfield = new Array(xvec * yvec);
-
+       noiseInc = tween(noiseInc,Sound.getVol()/10000, 4);
        var yNoise = 0;
        for (var y = 0; y < yvec; y++) {
               var xNoise = 0;
@@ -68,7 +65,7 @@ function FlowField(){
                      //vecDirect = radians(vecDirect);
                     //console.log(vecDirect);
                     //  var dir = p5.Vector.fromAngle(vecDirect);
-                    var dir = map(vecDirect, 0, 2, 0, scl);
+                    var dir = vecDirect * 10.5;
                     //ctx.fillStyle = rgb(255 - map(dir, 0, scl * 1.5, 0, 255));
                     var index = x + y * xvec;
                     flowfield[index] = dir;
@@ -78,13 +75,14 @@ function FlowField(){
                     //ctx.save();
                     //ctx.translate(Math.round(x * scl), Math.round(y * scl));
                     //ctx.rotate(dir);
-                    //ctx.centreFillRect(Math.round(x * scl), Math.round(y * scl), dir, dir);
-                    ctx.fillCircle(Math.round(x * scl), Math.round(y * scl), Math.abs(dir), Math.abs(dir));
+                    ctx.fillRect(Math.round(x * scl), Math.round(y * scl), dir, dir);
+                    //ctx.LfillEllipse(Math.round(x * scl), Math.round(y * scl), dir, dir, 5);
                     //ctx.line(0, 0, scl, 0);
                     //ctx.restore();
               }
               yNoise += noiseInc;
-              time += .001;
+              //time += Sound.getVol(y, yvec, 0, 10)/2000000;
+              time += .0001;
        }
 }
 
@@ -93,6 +91,7 @@ function FlowField(){
 
 
 </script>
- <!-- <script language="javascript" src="js/soundcloud.js"></script> -->
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+<script language="javascript" src="../js/utils/sound_utils.js"></script>
 </body>
 </html>

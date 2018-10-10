@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src='http://connect.soundcloud.com/sdk.js'></script>
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var grid_w = 35;
+    var grid_h = 40;
+    var grid = createGrid(grid_w, grid_h);
+
+    var colours = new colourPool()
+      //
+
+      //.add('#ECECEC')
+      //.add('#CCCCCC')
+      .add('#CCFFCC')
+      //.add('#333333')
+      .add('#0095a8')
+      .add('#00616f')
+      .add('#FF3300')
+      .add('#FF6600')
+      //.add('#000000')
+      .add('#ffc84f')
+      //.add('#FFFFFF')
+      .add('#FFFF00')
+    //.add('#FF00FF')
+    ;
+
+    var blocks = new particleEngine(grid.length - 1);
+    var row = 0;
+    for (var i = 0; i < blocks.particles.length; i++) {
+      var b = blocks.particles[i];
+      b.position = new Vector(grid[i].x, grid[i].y);
+      b.speed = new Vector(2, 0);
+      b.c = rgb(10);
+      // b.c =  (i%2 == 0) ? rgb(0): rgb(255);
+      b.w = w / grid_w;
+      b.h = h / grid_h;
+      b.s = 10;
+    }
+
+    function draw() {
+      ctx.background(0);
+      blocks.draw();
+
+
+      for (var i = 0; i < blocks.particles.length; i++) {
+        var b = blocks.particles[i];
+        resetSpeed(b);
+        if (b.pos.x < 20) {
+          var s = Sound.mapSound(b.me, blocks.particles.length * 3, 0, colours.pool.length-1);
+          b.c = colours.get(Math.round(s))
+        }
+        if (s > 0) b.sz = tween(b.sz, s * 5, 5);
+        ctx.fillStyle = b.c;
+        ctx.fillCircle(b.position.x, b.position.y, b.sz, b.sz);
+      }
+    }
+
+
+    function resetSpeed(b) {
+      var highs = Sound.getHighsVol(0, 8);
+      var mids = Sound.getMidsVol(-4, 2);
+      var ss = Sound.mapSound(b.me, blocks.particles.length, 0, 5)
+      var s = new Vector(ss, 0);
+      //for (var i = 0; i < blocks.particles.length; i++) {
+        b.speed = s;
+      //}
+    }
+  </script>
+  <script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+
+</html>

@@ -63,6 +63,18 @@ function getNoteFreqPerc(spectrum) {
     return Math.round(freq);
 }
 
+function getNoteNumber(spectrum) {
+  var note = getNoteFromFFT(spectrum);
+  var note_num = (note.substring(0, 1)).charCodeAt(0) - 65;
+  return note_num;
+}
+
+function isSharp(note) {
+  //console.log(note);
+  //console.log(note.substring(1, 2));
+  return note.substring(1, 2) == "#";
+}
+
 
 // -----------------------------------------------------------------------------
 // jainsMethodInterpolate function. Input: array of spectrum power values

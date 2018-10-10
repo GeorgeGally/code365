@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<meta charset="utf-8">
+	<title>test</title>
+
+	<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+	<script language="javascript" src="../js/microphone.js"></script>
+	<script language="javascript" src="../js/sound.js"></script>
+	<script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+	<script language="javascript" src="../js/vector.js"></script>
+	<script language="javascript" src="../js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background:#000;">
+
+<script type="text/javascript">
+
+
+var ctx = createCanvas("canvas1");
+var ctx2 = createCanvas("canvas2");
+var number_of_balls = 20;
+var balls = [];
+ctx.lineWidth = 1;
+var colours = new colourPool()
+		//
+
+		.add('#ECECEC')
+		//.add('#CCCCCC')
+		.add('#CCFFCC')
+		.add('#333333')
+		.add('#0095a8')
+		.add('#00616f')
+		.add('#FF3300')
+		.add('#FF6600')
+		.add('#000000')
+		.add('#ffc84f')
+		.add('#FFFFFF')
+		.add('#FFFF00')
+		.add('#FF00FF')
+	;
+
+
+// push a ball and it's values into the array
+for (var i = 0; i < number_of_balls; i++) {
+  addBall();
+}
+
+
+function addBall(){
+  var ball = {
+    x: random(w),
+    y: random(h),
+    speed_x: random(-0.1, 0.1),
+    speed_y: random(3,5),
+    size: 70,
+    colour: rgb(255),
+    rotation: random(1)
+  }
+  balls.push(ball);
+}
+
+function draw(){
+	ctx2.clear();
+  if(frameCount%10 == 0) ctx.background(0, 0.08);
+  moveBall();
+  drawBall();
+}
+
+
+function moveBall(){
+	var spectrum = Sound.spectrum;
+	var freq = getNoteFromFFT(spectrum);
+	var note = getNoteNumberFromFFT(spectrum);
+
+	num = Math.round(note/60 * colours.pool.length);
+	//num = Math.round(i/engine.particles.length * 360);
+	//console.log(num);
+	var c = colours.get(num);
+	var sz = Sound.getVol(1, 40);
+  for (var i = 0; i < balls.length; i++) {
+    var b = balls[i];
+		b.colour = c;
+		b.size = sz;
+
+    b.x += b.speed_x;
+    b.y += b.speed_y;
+    b.rotation += 2;
+    if (bounce(b.x, 0, w, b.size)) {
+      b.speed_x *=-1;
+    }
+
+    if (bounce(b.y, 0 ,h, b.size)) {
+      b.speed_y *=-1;
+			b.speed_x = Sound.mapSound(i, balls.length * 2, -5, 2)/10;
+    }
+
+  }
+
+}
+
+
+function drawBall(){
+  for (var i = 0; i < balls.length; i++) {
+    var b = balls[i];
+    ctx.fillStyle = b.colour;
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.rotateDegrees(b.rotation);
+    ctx.fillCircle(0, 0, b.size);
+    ctx.strokeStyle = "black";
+    ctx.strokeCircle(0, 0, b.size);
+    ctx.restore();
+		ctx2.fillStyle = colours.get(2);
+    ctx2.save();
+    ctx2.translate(b.x, b.y);
+    ctx2.rotateDegrees(b.rotation);
+    ctx2.fillCircle(0, 0, b.size);
+    ctx2.strokeStyle = "black";
+    ctx2.strokeCircle(0, 0, b.size);
+    ctx2.restore();
+  }
+}
+
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+<script language="javascript" src="../js/utils/sound_utils.js"></script>
+ </body>
+</html>

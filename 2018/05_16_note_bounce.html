@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<meta charset="utf-8">
+	<title>test</title>
+
+	<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+	<script language="javascript" src="../js/microphone.js"></script>
+	<script language="javascript" src="../js/sound.js"></script>
+	<script language="javascript" src="../js/creative_coding.js"></script>
+	<script language="javascript" src="../js/canvas.js"></script>
+	<script language="javascript" src="../js/vector.js"></script>
+	<script language="javascript" src="../js/vector_particles.js"></script>
+
+	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body style="background:#000;">
+
+<script type="text/javascript">
+
+var ctx = createCanvas("canvas1");
+var number_of_balls = 7;
+var balls = [];
+
+
+// push a ball and it's values into the array
+for (var i = 0; i < number_of_balls; i++) {
+  var ball = {
+    x:  width/2,
+    y: height/2,
+    speed_x: 0,
+    speed_y: 0,
+    size: 20,
+    colour: rgb(0)
+  }
+  balls.push(ball);
+}
+
+
+function draw(){
+
+  //ctx.background(255, 0.2);
+  //ctx.fillStyle = rgb(255,0,0);
+  moveBall();
+  drawBall();
+}
+
+var oldnote;
+
+function moveBall(){
+	var spectrum = Sound.spectrum;
+	var note = getNoteFreqPerc(spectrum);
+
+  for (var i = 0; i < balls.length; i++) {
+
+    balls[i].x = balls[i].x + balls[i].speed_x;
+    balls[i].y = balls[i].y + balls[i].speed_y;
+
+    if (bounce(balls[i].x, 0, w, balls[i].size)) {
+      balls[i].speed_x *=-1;
+      balls[i].colour = rgb(randomInt(55),randomInt(255),0);
+    }
+
+    if (bounce(balls[i].y, 0 ,h, balls[i].size)) {
+      balls[i].speed_y *=-1;
+      balls[i].colour = rgb(0, randomInt(255),randomInt(55));
+    }
+		if (Sound.getVol() > 70 && note == i && oldnote != note) {
+			if(chance(2)) {
+				balls[i].speed_x = Sound.mapSound(i, balls.length * 2, 0, 2) - 1;
+			} else {
+				balls[i].speed_y = Sound.mapSound(i, balls.length * 2, 0, 2) - 1;
+			}
+
+      //balls[i].colour = rgb(randomInt(55),randomInt(255),0);
+			oldnote = note;
+			//
+			// balls[i].colour = rgb(0, randomInt(255),randomInt(55));
+		}
+
+  }
+
+}
+
+function checkNote(){
+
+			var freq = getNoteFromFFT(spectrum);
+			var note = getNoteFreqPerc(spectrum);
+			var note1 = (freq.substring(0, 1)).charCodeAt(0) - 65;
+			num = Math.round(map(note1, 0, 7, 0, colours.pool.length));
+}
+
+function drawBall(){
+  for (var i = 0; i < balls.length; i++) {
+    ctx.fillStyle = balls[i].colour;
+    ctx.fillEllipse(balls[i].x, balls[i].y, balls[i].size, balls[i].size);
+  }
+}
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+<script language="javascript" src="../js/utils/sound_utils.js"></script>
+ </body>
+</html>

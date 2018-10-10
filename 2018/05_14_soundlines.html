@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src='http://connect.soundcloud.com/sdk.js'></script>
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var grid_w = 105;
+    var grid_h = 60;
+    var grid = createGrid(grid_w, grid_h);
+
+    var blocks = new particleEngine(grid.length - 1);
+    var row = 0;
+    for (var i = 0; i < blocks.particles.length; i++) {
+      var b = blocks.particles[i];
+      b.position = new Vector(grid[i].x, grid[i].y);
+      b.speed = new Vector(2, 0);
+      b.c = rgb(0);
+      // b.c =  (i%2 == 0) ? rgb(0): rgb(255);
+      b.w = w / grid_w;
+      b.h = h / grid_h;
+      b.s = 0;
+    }
+
+    function draw() {
+      ctx.background(0);
+      blocks.draw();
+      if (frameCount % 10 == 0) resetSpeed();
+
+      for (var i = 0; i < blocks.particles.length; i++) {
+        var b = blocks.particles[i];
+        if (b.pos.x < 20) {
+          var s = Sound.mapSound(b.me, blocks.particles.length * 2, 0, 100);
+          if (s < 50) {
+            b.c = rgb(255);
+          } else if (s < 80) {
+            b.c = rgb(255 - s * 2);
+            //b.c = rgb(0);
+          } else {
+            b.c = rgb(255, 0, 0);
+          }
+        }
+        b.sz = s/2;
+        ctx.fillStyle = b.c;
+        ctx.fillCircle(b.position.x, b.position.y, b.sz, b.sz);
+      }
+    }
+
+
+    function resetSpeed() {
+      var highs = Sound.getHighsVol(0, 8);
+      var mids = Sound.getMidsVol(-4, 2);
+
+      var s = new Vector(highs, mids);
+      for (var i = 0; i < blocks.particles.length; i++) {
+        blocks.particles[i].speed = s;
+      }
+    }
+  </script>
+  <script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+
+</html>

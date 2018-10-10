@@ -1,0 +1,156 @@
+<html>
+
+<head>
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/fx/fast_blur.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <script src="../js/jquery-1.10.1.min.js"></script>
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <body>
+
+
+    <script type="text/javascript">
+      var hidden_canvas;
+
+      //var hidden_ctx = createHiddenCanvas('canvas3');
+      var ctx = createCanvas('canvas1');
+      //var ctx2 = createCanvas('canvas2');
+      //hidden_ctx.background(0);
+      // hidden_ctx.strokeWeight = 2;
+      //hidden_ctx.lineWidth = 2;
+      // ctx2.lineWidth = 2;
+      ctx.font = "20px Arial";
+      ctx.background(0);
+
+      var engine = new particleEngine(14, 1);
+
+      var colours = new colourPool()
+        //
+
+        //.add('#ECECEC')
+        //.add('#CCCCCC')
+        //.add('#CCFFCC')
+        //  .add('#333333')
+        .add('#0095a8')
+        .add('#00616f')
+        .add('#FF3300')
+        .add('#FF6600')
+        //.add('#000000')
+        .add('#ffc84f')
+        //.add('#FFFFFF')
+        .add('#FFFF00')
+      //.add('#FF00FF')
+      ;
+
+      var dir = 0;
+
+      function setup() {
+
+        var body = document.querySelector("body");
+        //hidden_canvas = document.getElementById('canvas3')
+
+
+        for (var i = 0; i < engine.particles.length; i++) {
+          var p = engine.particles[i];
+          p.sz = 10;
+          p.start_sz = 10;
+          p.note = String.fromCharCode(Math.floor(i / 2) + 65)
+          //p.note = "A";
+          p.c = randomColour();
+          if (i % 2 == 1) p.note += "#";
+        }
+
+      }
+
+      function draw() {
+
+        //hidden_ctx.background(0, 0.03);
+
+        ctx.background(0);
+        //ctx2.clearRect(0, 0, w, h);
+
+
+        if (Sound.getVol() > 50) {
+          moveParticles();
+          //dir = ((dir + 0.1) % 2) - 0.1;
+          //engine.world.gravity.x = dir;
+        }
+        if (Sound.getVol() > 70) {
+          //engine.world.gravity.y = -0.2;
+        }
+        if (Sound.getVol() > 30) {
+          //addCircle();
+        }
+        if (Sound.getVol() < 40) {
+          // engine.world.gravity.x = 0;
+          // engine.world.gravity.y = 0.2;
+        }
+
+
+
+
+        for (var i = 0; i < engine.particles.length; i++) {
+          var p = engine.particles[i];
+          drawParticle(p);
+          p.sz = tween(p.sz, p.start_sz, 5);
+        }
+
+        //ctx.drawImage(hidden_canvas, 0, 0, w, h);
+
+      }
+
+      function drawParticle(p) {
+        // ctx.fillStyle = rgb(255);
+        // ctx.fillCircle(p.pos.x, p.pos.y, 20);
+        ctx.fillStyle = p.c;
+        ctx.fillCircle(p.pos.x, p.pos.y, p.sz, p.sz);
+        ctx.fillStyle = rgb(255);
+        ctx.fillText(p.note, p.pos.x - 10, p.pos.y + 90);
+      }
+
+      function moveParticles() {
+        var spectrum = Sound.spectrum;
+        var note = getNoteFromFFT(spectrum);
+        var freq = computeFreqFromFFT(spectrum);
+        var note1 = getNoteNumber(spectrum) * 2;
+        if (isSharp(note)) {
+          note1 += 1;
+          var current_note = note.substring(0, 1) + "#";
+          //var current note = note.substring(0, 1);
+        } else {
+          var current_note = note.substring(0, 1);
+        }
+        num = Math.round(map(note1, 0, 7, 0, colours.pool.length));
+        var p = engine.particles[note1]
+        var c = colours.get(num);
+        //p.c = c;
+
+        //console.log(current_note);
+
+        //var c = rgb(0, 0, 30 + note * 4)
+        //var c = map(note, 0, 60, 90, 270);
+        //var sz = Sound.mapSound(freq, Sound.SAMPLE_RATE, 10, 100);
+        //var sz = map(note, 0, 80, 40, 180);
+        var sz = Sound.getVol(10, 100);
+        //console.log(sz);
+        //circles.push(new Circle(random(w), h + sz + random(30), sz, c));
+        p.sz = sz;
+      }
+    </script>
+
+    <script language="javascript" src="../js/soundcloud_new.js"></script>
+    <script language="javascript" src="../js/utils/sound_utils.js"></script>
+
+
+  </body>
+
+</html>
