@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/vector_particles.js"></script>
+
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+
+
+</head>
+<body>
+
+<script>
+
+var ctx = createCanvas("canvas1");
+var img = new Image();
+img.src = '../img/jesus.gif';
+var img_loaded = 0;
+img.onload = function() {
+  img_loaded = 1;
+}
+
+
+var colours = new colourPool()
+    .add('#99B898')
+    .add('#FECEAB')
+    .add('#FF847C')
+    .add('#E84A5F')
+    .add('#2A363B')
+    // .add('#00616f')
+    // .add('#FF3300')
+    // .add('#FF6600')
+    // .add('#efefef')
+    // .add('#ffc84f')
+    // .add('#FFFFFF')
+    //.add('#c6c663')
+    //.add('#723b43')
+  ;
+
+
+var engine = new particleEngine(0);
+var buffer;
+
+function draw() {
+
+  if (img_loaded) {
+  ctx.drawImage(img, 0, 0, w, h);
+  sample = ctx.getImageData(0, 0, w, h);
+	var buffer = new Uint32Array(sample.data.buffer);
+
+  // ctx.strokeStyle = rgb(255);
+  var x = random(w);
+  var y = random(h);
+  //var radius = random(20,40);
+  var radius = Sound.getVol(2, 10 )
+  var hit = false;
+  var pos = Math.floor(x + y * w);
+  var r = buffer[pos] >> 0 & 0xff;
+  var g = buffer[pos] >> 8 & 0xff;
+  var b = buffer[pos] >> 16 & 0xff;
+  //var c = rgb(r,g,b);
+  var spectrum = Sound.spectrum;
+  var freq = getNoteFromFFT(spectrum);
+  var note = getNoteFreqPerc(spectrum);
+
+  var note1 = (freq.substring(0, 1)).charCodeAt(0) - 65;
+  //console.log(note1);
+  num = Math.round(map(note1, 0, 6, 0, colours.pool.length-1));
+  //num = Math.round(i/engine.particles.length * 360);
+  //console.log(num);
+  var c = colours.get(num);
+  //console.log(pos);
+  ctx.background(0);
+
+  for (var i = 0; i < engine.particles.length; i++) {
+
+    p = engine.particles[i];
+
+    if (p.on  ) p.radius+=0.1;
+
+    for (var j = 0; j < engine.particles.length; j++) {
+
+      p2 = engine.particles[j];
+      if ((p.me != p2.me && dist(p.pos.x, p.pos.y, p2.pos.x, p2.pos.y) < p.radius/2 + p2.radius/2) || p.radius > 50) {
+        p.on = 0;
+      }
+    }
+
+    if (dist(x,y,p.pos.x, p.pos.y) < p.radius/2 + radius/2){
+      hit = true;
+    }
+
+    ctx.fillStyle = p.c;
+    ctx.fillEllipse(p.pos.x, p.pos.y, p.radius, p.radius);
+    // ctx.fillStyle = rgb(0);
+    // ctx.fillEllipse(p.pos.x, p.pos.y, p.radius/4, p.radius/4);
+
+  }
+  if (!hit && frameCount%5==0) {
+    engine.addParticle(x,y);
+    var p2 = engine.last;
+    p2.radius = radius;
+    p2.on = 1;
+    p2.c = c;
+  }
+
+}
+}
+
+
+
+function addBlob(){
+
+}
+
+
+
+</script>
+
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+<script language="javascript" src="../js/utils/sound_utils.js"></script>
+
+
+</body>
+
+</html>

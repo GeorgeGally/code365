@@ -364,7 +364,8 @@ var soundCloud = function ( _fft_size ) {
     //return this.getRMS(self.spectrum);
     // map total volume to 100 for convenience
     self.volume = map( self.vol, 0, self.peak_volume, min, max );
-    return self.volume || 0;;
+    if (!self.vol || self.vol == null ) self.volume = 0;
+    return self.volume;;
   }
 
   this.grey = function ( min, max ) {

@@ -25,7 +25,7 @@ var canvas = ctx.canvas;
 noise.seed(randomInt(20));
 
 
-var scl = 4;
+var scl = 6;
 var xvec, yvec;
 var noiseInc = .01;
 var time = 0;
@@ -46,7 +46,7 @@ function draw() { // Rotating Vectors
 
        FlowField();
        //ctx2.drawImage(ctx.canvas, 0, 0, w, h);
-
+       mirror();
 }
 
 function FlowField(){

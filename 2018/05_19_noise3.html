@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Soundcloud Viz</title>
+  <script src='http://connect.soundcloud.com/sdk.js'></script>
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+  <script language="javascript" src="../js/perlin_noise.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var particles = new particleEngine(8000);
+    ctx.lineWidth = 0.2;
+    //ctx.strokeStyle = rgba(0, 0,0, 0.5);
+    var cnt = particles.particles.length;
+    for (var i = 0; i < cnt; i++) {
+      p = particles.particles[i];
+
+      p.pos = new Vector(random(-w / 2, w), randomSticky(-800, 0, 100));
+      p.old = new Vector(p.pos.x, p.pos.y);
+      p.vel = new Vector(0, 0);
+      p.acc = new Vector(0, 0);
+      p.speed = random(1, 5) / 1001;
+      var c = random(50, 225);
+      //p.c = rgb(c, random(0,125), 0);
+      p.c = randomGrey(100, 255, 0.8, 50);
+      p.l = random(0.1, 1);
+      p.noisy = random(1, 8) / 10001;
+
+    }
+    dirx = 10;
+    ctx.background(0);
+
+    function frameMod(num) {
+      return frameCount % num == 0;
+    }
+
+    function draw() {
+      //ctx.globalCompositeOperation = 'lighten';
+      ctx.background(0, 0.05);
+      // ctx.globalCompositeOperation = 'normal';
+      dirx = tween(dirx, Sound.getVol(0, 60) - 30, 2);
+      for (var i = 0; i < cnt; i++) {
+
+        p = particles.particles[i];
+
+        ctx.strokeStyle = p.c;
+        p.old.x = p.pos.x;
+        p.old.y = p.pos.y;
+
+        p.vel.x =  20 * PerlinNoise.noise(90 + p.pos.x * .005, 50 + p.pos.y * p.speed, p.noisy * .07) * Math.cos(0.7  * PerlinNoise.noise(p.pos.x * .007, p.pos.y * .007, p.noisy * .9));
+        p.vel.y = 40 * PerlinNoise.noise(90 + p.pos.x * .0007, 20 + p.pos.y * .0007, p.noisy * 19) * Math.sin(0.3 * 22 / 7 * PerlinNoise.noise(p.pos.x * .007, p.pos.y * .007, p.noisy * 5));
+
+        p.pos.x += p.vel.x;
+        p.pos.y += p.vel.y;
+        ctx.line(p.pos.x, p.pos.y, p.old.x, p.old.y);
+
+        if (p.pos.y > h) {
+          p.pos.y = p.old.y = 0;
+        }
+        if (p.pos.x > w) {
+          p.pos.x = 0;
+          p.old.x = 0;
+        }
+        if (p.pos.y < -h / 2) {
+          p.pos.y = h;
+          p.old.y = 0;
+        }
+        if (p.pos.x < -w) {
+          p.pos.x = w;
+          p.old.y = 0;
+        }
+
+        p.acc.x = 0;
+        p.acc.y = 0;
+        p.noisy += p.speed;
+      }
+
+      // noisy += .0007;
+
+    }
+  </script>
+  <script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
+
+</html>
