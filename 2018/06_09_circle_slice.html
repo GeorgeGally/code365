@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+  <!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/quicksettings.min.js"></script>
+  <script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas("canvas1");
+    var ctx2 = createCanvas("canvas2");
+    var ctx3 = createCanvas("canvas2");
+
+    var slicer = new canvasSlicer(ctx, ctx)
+    var engine = new particleEngine(10,1);
+    var particles = engine.particles;
+    ctx.background(0);
+
+    function setup() {
+      for (var i = 0; i < particles.length; ++i) {
+        var p = particles[i];
+        p.c = randomGrey();
+      }
+    }
+
+
+    function draw() {
+      ctx.background(255);
+      ctx2.clear();
+      ctx3.clear();
+      ctx.save();
+      ctx.translate(w/2, h/2);
+
+      for (var i = 0; i < particles.length; ++i) {
+        var p = particles[i];
+        ctx.fillStyle = p.c;
+        p.sz = Sound.mapSound(i, particles.length*2, 20, 300);
+        ctx.fillCircle(0, 0, p.sz, p.sz);
+      }
+
+      ctx.restore();
+      ctx2.restore();
+      slicer.slice();
+      if (chance(100)) slicer.reset();
+    }
+
+
+
+
+
+        function canvasSlicer(source_ctx, target_ctx) {
+
+          this.slices = [];
+          var arr = [];
+
+          this.slice = function() {
+            for (var i = 0; i < this.slices.particles.length; i++) {
+
+              p = this.slices.particles[i];
+              this.sliceCanvas(p, i);
+            };
+          }
+
+          this.swapSlices = function() {
+            arr = shuffleArray(arr);
+            //console.log(arr);
+            for (var i = 0; i < this.slices.particles.length; i++) {
+              p = this.slices.particles[i];
+              p.me = arr[i];
+            }
+          }
+
+
+          this.sliceCanvas = function(p, i) {
+            me = (p.me + i) % this.slices.particles.length;
+            //drawImage( image, source_x, source_y, w, h, dest_x, dest_y, w, h );
+            if(p.on) target_ctx.drawImage(source_ctx.canvas,
+              Math.round(i * this.slices.grid.spacing_x), 0, this.slices.grid.spacing_x - 2, this.slices.grid.spacing_y,
+              Math.round(p.me * this.slices.grid.spacing_x), 0, this.slices.grid.spacing_x - 2, this.slices.grid.spacing_y);
+            ctx3.fillStyle = rgb(100);
+            ctx3.fillText(p.me, i * this.slices.grid.spacing_x + 2, 120);
+
+          }
+
+          this.reset = function() {
+            console.log("reset");
+            this.slices = [];
+            arr = [];
+            this.slices = new particleEngine(randomInt(4, 80), 1);
+            for (var i = 0; i < this.slices.particles.length; i++) {
+              arr.push(i);
+              if(chance(2)) p.on = false;
+            }
+            this.swapSlices();
+          }
+
+
+          function shuffleArray(array) {
+            var currentIndex = array.length,
+              temporaryValue, randomIndex;
+
+            // While there remain elements to shuffle...
+            while (0 !== currentIndex) {
+
+              // Pick a remaining element...
+              randomIndex = Math.floor(Math.random() * currentIndex);
+              currentIndex -= 1;
+
+              // And swap it with the current element.
+              temporaryValue = array[currentIndex];
+              array[currentIndex] = array[randomIndex];
+              array[randomIndex] = temporaryValue;
+            }
+
+            return array;
+          }
+
+          this.reset();
+          this.swapSlices();
+
+        }
+
+
+  </script>
+
+  <script language="javascript" src="../js/soundcloud_new.js"></script>
+  <script language="javascript" src="../js/utils/sound_utils.js"></script>
+
+</body>
+
+</html>

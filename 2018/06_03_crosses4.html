@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+  <!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/vector_particles.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body>
+
+  <script>
+
+  var ctx = createCanvas('canvas1');
+  var ctx2 = createCanvas('canvas2');
+
+  ctx.fillStyle = rgb(255);
+  ctx.strokeStyle = rgb(255);
+  ctx.lineWidth = 2;
+  var line_sz = 60;
+
+  var Wave = function(_num_particles, _x, _y, _me) {
+
+  	var particles = [];
+  	var radius = 50;
+  	var rot = 0;
+  	var num_particles = _num_particles;
+  	var x = _x;
+  	var y = _y;
+  	var me = _me;
+
+  	this.setup = function(){
+  		for (var i = 0; i < num_particles; i++) {
+
+  			this.addParticle(x, y, me);
+  		}
+  	}
+
+  	this.draw = function(){
+  		this.moveParticles();
+  	}
+
+  	this.addParticle = function(_x, _y, _me){
+  		var particle = {
+  			x: _x,
+  			y: _y,
+  			c: rgb(255),
+  			me: _me,
+  			stroke_width: 4,
+  			speedx: 0,
+  			speedy: random(2,20),
+  			sz: radius+ _me*26,
+  			angle: 0
+  		}
+  		particles.push(particle);
+  	}
+
+
+  	this.moveParticles = function(){
+      //ctx.fillStyle = colours.get(colour_count);
+      //ctx.strokeStyle = colours.get(colour_count);
+      //var c = ctx.getCurrentFillValues();
+  		for (var i = 0; i < particles.length; i++) {
+
+  			p = particles[i];
+
+  			//DISTRIBUTED MAPPED SOUND VALUE
+  			var s = Sound.mapSound(num_waves - p.me, num_waves * 2, 0, 255);
+  			p.sz = tween(p.sz, map(s, 0, 255, 2, 42), 20);
+        p.speedx = tween(p.speedx, map(s, 0, 255, 0, 360), 2);
+  			var arc =  p.speedx * Math.PI;
+  			p.angle += p.speedx/50;
+
+  			// DRAW ARCS
+  			ctx.translate(p.x, p.y);
+  			ctx.rotate(radians(p.angle+180));
+  			//ctx.strokeStyle = p.c;
+
+  			// ctx.beginPath();
+  			// ctx.arc(0, 0, p.sz/2, -arc/2, arc/2);
+  			ctx.strokeMe(255);
+  			ctx.line(-line_sz, 0, line_sz, 0);
+  			ctx.line(0, -line_sz, 0, line_sz);
+  			ctx.rotate(radians(-p.angle-180));
+  			ctx.translate(-p.x, -p.y);
+        ctx.fillStyle = rgb(255);
+  			ctx.fillEllipse(p.x, p.y, p.sz, p.sz);
+        ctx.fillStyle = rgb(0);
+        ctx.fillEllipse(p.x, p.y, 15, 15);
+        ctx.fillStyle = rgb(255);
+        ctx.fillEllipse(p.x, p.y, 5, 5);
+  		};
+
+  	}
+
+  this.setup();
+
+  }
+
+
+  // SETUP WAVES CLASS
+
+  var waves = [];
+  var grid_w = 20;
+  var grid_h = 10;
+  var num_waves = grid_w * grid_h;
+  var spacing_x = w/grid_w;
+  var spacing_y = h/grid_h;
+  console.log(spacing_x)
+  console.log(spacing_y)
+  var grid = makeGrid(grid_w, grid_h);
+  var num_particles = 1;
+
+  for (var i = 0; i < num_waves; i++) {
+  	waves[i] = new Wave(num_particles, grid[i][0]*spacing_x+spacing_x/2,grid[i][1]*spacing_y + spacing_y/2, i);
+  };
+
+
+
+  // DRAW WAVES CLASS
+
+  draw = function(){
+  	ctx.background(0, 0.1);
+  	for (var i = 0; i < num_waves; i++) {
+  		waves[i].draw();
+  	};
+  }
+  </script>
+
+  <script language="javascript" src="../js/soundcloud_new.js"></script>
+  <script language="javascript" src="../js/utils/sound_utils.js"></script>
+
+
+</body>
+
+</html>

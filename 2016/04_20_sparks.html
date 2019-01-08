@@ -12,7 +12,7 @@
 	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
  </head>
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
@@ -57,9 +57,9 @@ var particleEmitter = function(_num_particles, _x, _y, _me, _dir) {
 			shrink: 0.985,
 			speedx: dir * random(0.1, 3),
 			speedy: random(-4, -0.2),
-			sz: 10,
+			sz: 5,
 		}
-		
+
 		particles.push(particle);
 
 	}
@@ -68,7 +68,7 @@ var particleEmitter = function(_num_particles, _x, _y, _me, _dir) {
 	this.moveParticles = function(){
 
 		for (var i = 0; i < particles.length ; i++) {
-			
+
 			p = particles[i];
 			p.sz = p.sz * p.shrink;
 			p.x += p.speedx;
@@ -79,7 +79,7 @@ var particleEmitter = function(_num_particles, _x, _y, _me, _dir) {
 			ctx.fillEllipse( p.x, p.y, p.sz, p.sz);
 
 			if (p.y > h || p.sz < 0.1) particles.splice(i,1);
-			
+
 		};
 
 	}
@@ -97,7 +97,7 @@ var count = 0;
 
 function addEmitter(x, y, dir){
 
-	emitter[count] = new particleEmitter(randomInt(1,8), x, y, count*num_particles, dir);
+	emitter[count] = new particleEmitter(randomInt(50,130), x, y, count*num_particles, dir);
 	count++;
 
 };
@@ -117,20 +117,18 @@ function draw(){
 
 	ctx.fillStyle = rgb(0);
 	ctx.HfillEllipse( w/2, h/2, 200, 200);
-
+  var snd = Sound.getVol();
 	s = Math.sin(b) * w;
 	if (s < w/2 - 70 && s > w/2 - 120) {
-		addEmitter(w/2 - 100, h/2, -1);
-		ctx.HfillEllipse( w/2, h/2, 205, 200);
-	} 
-	if (s > w/2 + 70 && s < w/2 + 120){
-		addEmitter(w/2 + 100, h/2, 1);
-		ctx.HfillEllipse( w/2, h/2, 205, 200);
+		addEmitter(w/2 - 100, h/2 + random(-10,10), -1);
+		ctx.HfillEllipse( w/2, h/2, 200 + snd, 200 + snd);
 	}
-	
-	ctx.HfillEllipse( s, h/2, 40, 40);
+	if (s > w/2 + 70 && s < w/2 + 120){
+		addEmitter(w/2 + 100, h/2 + random(-10,10), 1);
+		ctx.HfillEllipse( w/2, h/2, 200 + snd, 200 + snd);
+	}
 
-	ctx.strokeStyle = rgb(0);
+	ctx.fillCircle( s, h/2, 20, 20);
 
 	for (var i = 0; i < emitter.length; i++) {
 		emitter[i].draw();
@@ -143,6 +141,6 @@ document.addEventListener( 'mousemove', addEmitter(mouseX, mouseY), false );
 
 
 </script>
- <script language="javascript" src="../js/soundcloud.js"></script>
+ <script language="javascript" src="../js/soundcloud_new.js"></script>
 </body>
 </html>

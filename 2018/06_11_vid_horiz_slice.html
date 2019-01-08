@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+<head>
+    <meta charset="utf-8">
+<!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+<script language="javascript" src="../js/creative_coding.js"></script>
+<script language="javascript" src="../js/canvas.js"></script>
+<script language="javascript" src="../js/vector.js"></script>
+<script language="javascript" src="../js/particle_engine.js"></script>
+<script language="javascript" src="../js/jquery-1.10.1.min.js"></script>
+<script language="javascript" src="../js/raw_video.js"></script>
+<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+</head>
+<body>
+<script>
+
+var ctx2 = createCanvas("canvas1");
+var ctx = createHiddenCanvas("canvas2");
+var ctx3 = createCanvas("canvas2");
+var slicer = new canvasSlicer(ctx, ctx2)
+
+
+ctx2.font="10px Arial";
+var engine = new particleEngine( 4, 4 );
+
+for (var i = 0; i < engine.particles.length; i++) {
+  p = engine.particles[i];
+
+}
+
+
+function draw() {
+
+  ctx.background( 255, 0.1);
+  ctx.fillStyle = rgb( 0 );
+  ctx3.clear();
+  ctx.drawImage(video, 0,0, w, h);
+  slicer.slice(true);
+  if (chance(10)) slicer.reset();
+
+}
+
+
+
+  function canvasSlicer(source_ctx, target_ctx) {
+
+          this.slices = [];
+          var arr = [];
+
+          this.slice = function(horiz) {
+
+            horiz = horiz || false;
+            for (var i = 0; i < this.slices.particles.length; i++) {
+
+              p = this.slices.particles[i];
+              if (horiz) {
+                this.sliceCanvasHoriz(p, i);
+              } else {
+                this.sliceCanvas(p, i);
+              }
+
+            };
+          }
+
+          this.swapSlices = function() {
+            arr = shuffleArray(arr);
+            //console.log(arr);
+            for (var i = 0; i < this.slices.particles.length; i++) {
+              p = this.slices.particles[i];
+              p.me = arr[i];
+            }
+          }
+
+
+          this.sliceCanvas = function(p, i) {
+
+            me = (p.me + i) % this.slices.particles.length;
+            //drawImage( image, source_x, source_y, w, h, dest_x, dest_y, w, h );
+            if(p.on) target_ctx.drawImage(source_ctx.canvas,
+              i * this.slices.grid.spacing_x, 0, this.slices.grid.spacing_x, this.slices.grid.spacing_y,
+              p.me * this.slices.grid.spacing_x, 0, this.slices.grid.spacing_x, this.slices.grid.spacing_y);
+            ctx3.fillStyle = rgb(100);
+            ctx3.fillText(p.me, i * this.slices.grid.spacing_x + 2, 120);
+
+          }
+
+          this.sliceCanvasHoriz = function(p, i) {
+
+            me = (p.me + i) % this.slices.particles.length;
+            //drawImage( image, source_x, source_y, w, h, dest_x, dest_y, w, h );
+            if(p.on) target_ctx.drawImage(source_ctx.canvas,
+              0, i * this.slices.grid.spacing_y, this.slices.grid.spacing_x, this.slices.grid.spacing_y,
+              0, p.me * this.slices.grid.spacing_y, this.slices.grid.spacing_x, this.slices.grid.spacing_y);
+            ctx3.fillStyle = rgb(100);
+            ctx3.fillText(p.me, 120, i * this.slices.grid.spacing_y + 2);
+
+          }
+
+          this.reset = function() {
+            console.log("reset");
+            this.slices = [];
+            arr = [];
+            this.slices = new particleEngine(1, randomInt(12, 50));
+            for (var i = 0; i < this.slices.particles.length; i++) {
+              arr.push(i);
+              //if(chance(2)) p.on = false;
+            }
+            this.swapSlices();
+          }
+
+
+          function shuffleArray(array) {
+            var currentIndex = array.length,
+              temporaryValue, randomIndex;
+
+            // While there remain elements to shuffle...
+            while (0 !== currentIndex) {
+
+              // Pick a remaining element...
+              randomIndex = Math.floor(Math.random() * currentIndex);
+              currentIndex -= 1;
+
+              // And swap it with the current element.
+              temporaryValue = array[currentIndex];
+              array[currentIndex] = array[randomIndex];
+              array[randomIndex] = temporaryValue;
+            }
+
+            return array;
+          }
+
+          this.reset();
+          this.swapSlices();
+
+        }
+
+
+
+
+</script>
+<script language="javascript" src="../js/soundcloud_new.js"></script>
+
+</body>
+
+</html>

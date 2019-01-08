@@ -11,7 +11,7 @@
   <script language="javascript" src="../js/particle_engine.js"></script>
   <script language="javascript" src="../js/three.min.js"></script>
 
-  <script language="javascript" src="../js/threejs/CanvasRenderer.js"></script>
+  <!-- <script language="javascript" src="../js/threejs/CanvasRenderer.js"></script> -->
   <script language="javascript" src="../js/threejs/Projector.js"></script>
   <script language="javascript" src="../js/threejs/controls/OrbitControls.js"></script>
 
@@ -20,7 +20,7 @@
 
 </head>
 
-<body style="background: #333">
+<body style="background: #000">
 
   <script>
 
@@ -36,13 +36,13 @@
     var particles = engine.particles;
 
     var animate = true;
-
+    renderer.setClearColor( 0x000000 );
 
     function draw() {
 
-      ctx.background(255);
-      ctx.fillStyle = rgba(0);
-      ctx.strokeStyle = rgba(0, 0.5);
+      ctx.background(0);
+      ctx.fillStyle = rgba(255);
+      ctx.strokeStyle = rgba(255, 0.5);
 
       for (var i = 0; i < particles.length; i++) {
 

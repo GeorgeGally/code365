@@ -3,7 +3,7 @@
  <head>
  <meta charset="utf-8">
  <title>Soundcloud Viz</title>
- 	
+
  	<script src='http://connect.soundcloud.com/sdk.js'></script>
  	<script language="javascript" src="../js/creative_coding.js"></script>
 	<script language="javascript" src="../js/canvas.js"></script>
@@ -11,18 +11,18 @@
 	<link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
 	<link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
 	<link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
- 
+
  </head>
 
  <body>
-   
+
 <script>
 
 var ctx = createCanvas("canvas1");
 ctx.lineWidth = 2;
 var img = new Image();
 var img_w, img_h, img_scale;
-img.src = 'img/people/stevie-nicks2.jpg';
+img.src = '../img/people/stevie-nicks2.jpg';
 
 
 var Wave = function(_num_particles, _h, _x, _y, _me, _num_waves) {
@@ -71,7 +71,7 @@ var Wave = function(_num_particles, _h, _x, _y, _me, _num_waves) {
 		//console.log(_me);
 		particles.push(particle);
 	}
-	
+
 
 	this.moveParticles = function(){
 
@@ -79,9 +79,9 @@ var Wave = function(_num_particles, _h, _x, _y, _me, _num_waves) {
 			p = particles[i];
 			ctx.save();
 
-			//DISTRIBUTED MAPPED SOUND VALUE  
+			//DISTRIBUTED MAPPED SOUND VALUE
 			var s = mapSound(p.me, num_waves* num_particles);
-			
+
 			//console.log(s)
 			//p.x = tween(p.x, p.x + p.dir * map(s, 0, 155, 0, 10)-4, 2);
 			if (p.x + p.w > w - x_offset) {p.dir *= -1};
@@ -92,12 +92,12 @@ var Wave = function(_num_particles, _h, _x, _y, _me, _num_waves) {
 			ctx.shadowBlur = 1;
 			ctx.shadowOffsetX = 1;
 			ctx.shadowOffsetY = 1;
-			ctx.drawImage( img, 
-			0, p.y, p.w, p.h - i*3, 
-			x_offset-s/2 + p.x + s, 40+p.y, p.w, p.h - i*3 );			
+			ctx.drawImage( img,
+			0, p.y, p.w, p.h - i*3,
+			x_offset-s/2 + p.x + s, 40+p.y, p.w, p.h - i*3 );
 			ctx.fill();
 			ctx.restore();
-			
+
 		};
 
 	}
@@ -131,7 +131,7 @@ img.onload = function() {
     //img.height= img.height * img_scale
     x_offset = w/2 - img.width/2-50;
     console.log(x_offset)
-    for (var i = 0; i < num_waves; i++) {	
+    for (var i = 0; i < num_waves; i++) {
 	waves[i] = new Wave(num_particles, spacing_y, grid[i][0]*spacing_x+spacing_x/2, grid[i][1]*spacing_y + i*4, i, num_waves);
 	};
 };
@@ -141,7 +141,7 @@ img.onload = function() {
 // DRAW WAVES CLASS
 
 function draw(){
-	
+
 	ctx.clearRect(0, 0, w, h);
 	for (var i = 0; i < waves.length; i++) {
 		waves[i].draw();

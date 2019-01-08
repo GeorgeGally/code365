@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<title>Creative Coding Yea!</title>
+
+<head>
+  <meta charset="utf-8">
+  <!-- <script src='http://connect.soundcloud.com/sdk.js'></script> -->
+
+  <script language="javascript" src="../js/creative_coding.js"></script>
+  <script language="javascript" src="../js/canvas.js"></script>
+  <script language="javascript" src="../js/vector.js"></script>
+  <script language="javascript" src="../js/particle_engine.js"></script>
+  <script language="javascript" src="../js/utils//colours.js"></script>
+
+  <link rel="stylesheet" href="../css/reset.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/style.css" type="text/css" media="screen" />
+  <link rel="stylesheet" href="../css/audio.css" type="text/css" media="screen" />
+
+
+</head>
+
+<body>
+
+  <script>
+    var ctx = createCanvas('canvas1');
+    var ctx2 = createCanvas('canvas2');
+
+    ctx.fillStyle = rgb(255);
+    ctx.strokeStyle = rgb(255);
+    ctx.lineWidth = 2;
+    var line_sz = 60;
+    var img = new Image();
+    img.src = '../img/people/stevie-nicks2.jpg';
+
+    var engine = new particleEngine(10, 5);
+
+    var slices = new particleEngine(80, 1);
+
+
+    var arr = [];
+    for (var i = 0; i < slices.particles.length; i++) {
+      arr.push(i);
+    }
+
+    swapSlices();
+
+    function swapSlices(){
+
+      arr = shuffleArray(arr);
+      //console.log(arr);
+      for (var i = 0; i < slices.particles.length; i++) {
+        p = slices.particles[i];
+        p.me = arr[i];
+      }
+    }
+
+
+    //console.log(arr);
+
+    function draw() {
+      // ctx.background(0, 0.1);
+      ctx.background(0);
+      moveParticles();
+      //sliceCanvas();
+    };
+
+    function moveParticles() {
+
+      for (var i = 0; i < slices.particles.length; i++) {
+
+        p = slices.particles[i];
+
+        // var s = Sound.mapSound(p.me + 20, engine.particles.length * 3, 0, 255);
+        // p.sz = tween(p.sz, map(s, 0, 255, 2, 100), 20);
+        // p.speed.x = tween(p.speed.x, map(s, 0, 255, 0, 180), 2);
+        // var arc = p.speed.x * Math.PI;
+        // p.angle += p.speed.x / 40;
+        //
+        // // DRAW ARCS
+        // ctx.translate(p.pos.x, p.pos.y);
+        // ctx.rotate(radians(p.angle + 180));
+        //
+        // ctx.strokeMe(255);
+        // ctx.line(-line_sz, 0, line_sz, 0);
+        // ctx.line(0, -line_sz, 0, line_sz);
+        // ctx.rotate(radians(-p.angle - 180));
+        // ctx.translate(-p.pos.x, -p.pos.y);
+        // ctx.fillStyle = rgb(255);
+        // ctx.fillEllipse(p.pos.x, p.pos.y, p.sz, p.sz);
+        // ctx.fillStyle = rgb(0);
+        // ctx.fillEllipse(p.pos.x, p.pos.y, 15, 15);
+        // ctx.fillStyle = rgb(255);
+        // ctx.fillEllipse(p.pos.x, p.pos.y, 5, 5);
+        sliceCanvas(p, i);
+      };
+      if (frameCount%20 == 0) swapSlices();
+      //if (frameCount%20 == 0) counter = (counter + 1) % slices.particles.length;
+    }
+
+
+    function sliceCanvas(p, i) {
+      me = (p.me + i + counter) % slices.particles.length;
+      //drawImage( image, source_x, source_y, w, h, dest_x, dest_y, w, h );
+      ctx.drawImage(img,
+        p.me * slices.grid.spacing_x, 0, slices.grid.spacing_x, slices.grid.spacing_y,
+        i * slices.grid.spacing_x * 1.8, 0, slices.grid.spacing_x * 1.8, slices.grid.spacing_y * 1.8);
+    }
+
+    function shuffleArray(array) {
+      var currentIndex = array.length,
+        temporaryValue, randomIndex;
+
+      // While there remain elements to shuffle...
+      while (0 !== currentIndex) {
+
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+      }
+
+      return array;
+    }
+  </script>
+
+  <script language="javascript" src="../js/soundcloud_new.js"></script>
+  <script language="javascript" src="../js/utils/sound_utils.js"></script>
+
+
+</body>
+
+</html>
