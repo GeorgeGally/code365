@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>three.js - gpu particle system</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body>
+
+
+	<script src="js/three_auto_setup.js"></script>
+	<script src="js/libs/dat.gui.min.js"></script>
+	<script src="js/canvas.js"></script>
+	<script src="js/creative_coding.js"></script>
+	<script src="js/particle_engine.js"></script>
+	<script src="js/libs/Perlin.js"></script>
+
+	<script>
+
+		var sphere, texture, material, geometry, engine;
+
+		var ctx = createHiddenCanvas('canvas1');
+		var canvas = ctx.canvas;
+
+
+		function setup() {
+
+			engine = new particleEngine(20, 1);
+			engine.setSize(10);
+
+			setupLights();
+			setupTextures();
+			setupGeo();
+
+		}
+
+		function draw() {
+
+			ctx.clearRect(0, 0, w, h);
+			//ctx.background(0);
+
+
+			for (var i = 0; i < engine.particles.length; i++) {
+				var p = engine.particles[i];
+				p.sz = Sound.mapSound(p.me , engine.particles.length * 2, 0, 15);
+				//if (p.sz > 2) p.sz -= 0.3;
+				ctx.fillMe(255);
+				//ctx.fillCircle(p.pos.x, p.pos.y, p.sz, p.sz);
+				//ctx.fillMe(0);
+				//ctx.fillCircle(p.pos.x, p.pos.y, p.sz * .6, p.sz * .6);
+				ctx.fillRect(p.pos.x, 0, p.sz, h);
+				p.pos.x += 2;
+				//p.pos.y += Sound.mapSound(p.me , engine.particles.length * 2, 0.001, 2);
+				//p.pos.y = p.start.y + sinOsc(h/2, (p.row + frameCount)/100);
+				//p.sz = sinOsc(35, (p.row + frameCount)/10);
+				if (p.pos.x < 0) p.pos.x = w;
+				if (p.pos.x > w) p.pos.x = 0;
+				if (p.pos.y > h) {
+					p.pos.y = 0;
+					//p.sz = Sound.mapSound(p.row , engine.particles.length * 2, 0, 55);
+					//p.sz = 40;
+				}
+			}
+
+
+			//sphere.rotation.x = sinOsc(5, (frameCount)/400);
+			sphere.rotation.z = sinOsc(5, (frameCount)/800);
+			//sphere.material.needsUpdate = true;
+			sphere.material.map.needsUpdate = true;
+			texture.needsUpdate = true;
+			render();
+			//sphere.rotation.y += radians(1);
+			//sphere.rotationY += radians(0.1);
+			//sphere.rotation.set(new THREE.Vector3( 0, frameCount / 200, 0));
+			//
+			//material.map.needsUpdate = true;
+		}
+
+		function setupLights() {
+
+			// add subtle ambient lighting
+			var ambientLight = new THREE.AmbientLight(0xaaaaaa);
+			scene.add(ambientLight);
+
+			// add spotlight for the shadows
+			var spotLight = new THREE.DirectionalLight(0xffffff);
+			spotLight.position.set(-20, 30, 40);
+			spotLight.intensity = 0.8;
+			scene.add(spotLight);
+
+		}
+
+
+		function setupTextures() {
+			texture = new THREE.Texture(canvas);
+			texture.needsUpdate = true;
+		}
+
+
+		function setupGeo() {
+			geometry = new THREE.SphereGeometry(12, 80, 80);
+			material = new THREE.MeshPhongMaterial({
+				color: 0xffffff,
+				map: texture,
+				alphaTest: 0.5,
+				//opacity: 0.5,
+				side: THREE.DoubleSide,
+				//side: THREE.BackSide,
+				transparent: true,
+				//flatShading: true
+			});
+
+
+			// material.map.magFilter = THREE.NearestFilter;
+			// material.map.wrapT = THREE.RepeatWrapping;
+			// material.map.repeat.y = 1;
+			material.map.minFilter = THREE.LinearFilter;
+
+			sphere = new THREE.Mesh(geometry, material);
+
+			scene.add(sphere);
+			sphere.rotation.x = radians(90);
+			// sphere.rotation.z = radians(-25);
+
+		}
+
+
+		function setupGUI() {
+
+			// gui = new dat.GUI({
+			// 	width: 350
+			// });
+			// options = {
+			// 	size: 5,
+			// };
+
+			//gui.add( options, "size", 1, 20 );
+			// gui = new dat.GUI({
+			// 	width: 350
+
+		}
+
+	</script>
+	<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>

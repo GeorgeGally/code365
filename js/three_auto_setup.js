@@ -6,6 +6,153 @@ var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
 
 
+
+
+function getMaterial(type, color, map) {
+	var map = map || undefined;
+	var selectedMaterial;
+	var materialOptions = {
+		color: color === undefined ? 'rgb(255, 255, 255)' : color, map: map
+	};
+
+	switch (type) {
+		case 'basic':
+			selectedMaterial = new THREE.MeshBasicMaterial(materialOptions);
+			break;
+		case 'lambert':
+			selectedMaterial = new THREE.MeshLambertMaterial(materialOptions);
+			break;
+		case 'phong':
+			selectedMaterial = new THREE.MeshPhongMaterial(materialOptions);
+			break;
+		case 'standard':
+			selectedMaterial = new THREE.MeshStandardMaterial(materialOptions);
+			break;
+		default:
+			selectedMaterial = new THREE.MeshBasicMaterial(materialOptions);
+			break;
+	}
+
+	return selectedMaterial;
+}
+
+
+
+function getPlane(material, size) {
+	var geometry = new THREE.PlaneGeometry(size, size);
+	material.side = THREE.DoubleSide;
+	var obj = new THREE.Mesh(geometry, material);
+	obj.receiveShadow = true;
+
+	return obj;
+}
+
+function getBox(w, h, d) {
+	var geometry = new THREE.BoxGeometry(w, h, d);
+	var material = new THREE.MeshBasicMaterial({
+		color: 0x00ff00
+	});
+	var mesh = new THREE.Mesh(
+		geometry,
+		material
+	);
+
+	return mesh;
+}
+
+function getBoxGrid(amount, separationMultiplier) {
+	var group = new THREE.Group();
+
+	for (var i=0; i<amount; i++) {
+		var obj = getBox(1, 1, 1);
+		obj.position.x = i * separationMultiplier;
+		obj.position.y = obj.geometry.parameters.height/2;
+		group.add(obj);
+		for (var j=1; j<amount; j++) {
+			var obj = getBox(1, 1, 1);
+			obj.position.x = i * separationMultiplier;
+			obj.position.y = obj.geometry.parameters.height/2;
+			obj.position.z = j * separationMultiplier;
+			group.add(obj);
+		}
+	}
+
+
+	function getSphereGrid(amount, separationMultiplier) {
+		var group = new THREE.Group();
+
+		for (var i=0; i<amount; i++) {
+			var obj = getSphere(1, 1, 1);
+			obj.position.x = i * separationMultiplier;
+			obj.position.y = obj.geometry.parameters.height/2;
+			group.add(obj);
+			for (var j=1; j<amount; j++) {
+				var obj = getSphere(1, 1, 1);
+				obj.position.x = i * separationMultiplier;
+				obj.position.y = obj.geometry.parameters.height/2;
+				obj.position.z = j * separationMultiplier;
+				group.add(obj);
+			}
+		}
+
+
+function getSphere(material, size, segments) {
+	var geometry = new THREE.SphereGeometry(size, segments, segments);
+	var obj = new THREE.Mesh(geometry, material);
+	obj.castShadow = true;
+
+	return obj;
+}
+
+
+function getPointLight(intensity, color) {
+	colour = colour || '#ffffff';
+	var light = new THREE.PointLight(color, intensity);
+	light.castShadow = true;
+
+	return light;
+}
+
+function getSpotLight(intensity, color) {
+	color = color === undefined ? 'rgb(255, 255, 255)' : color;
+	var light = new THREE.SpotLight(color, intensity);
+	light.castShadow = true;
+	light.penumbra = 0.5;
+
+	//Set up shadow properties for the light
+	light.shadow.mapSize.width = 1024;  // default: 512
+	light.shadow.mapSize.height = 1024; // default: 512
+	light.shadow.bias = 0.001;
+
+	return light;
+}
+
+
+function getDirectionalLight(intensity, colour) {
+
+	colour = colour || '#ffffff';
+	var light = new THREE.DirectionalLight(colour, intensity);
+	light.castShadow = true;
+
+	light.shadow.camera.left = -10;
+	light.shadow.camera.bottom = -10;
+	light.shadow.camera.right = 10;
+	light.shadow.camera.top = 10;
+
+	return light;
+}
+
+
+function getAmbientLight(intensity, colour) {
+
+	colour = colour || 'rgb(10, 30, 50)';
+	var light = new THREE.AmbientLight(colour, intensity);
+	return light;
+
+}
+
+
+
 function setupThree(){
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -73,7 +220,7 @@ function onDocumentTouchMove( event ) {
 	}
 
 }
-
+	start();
 }
 
 
@@ -82,6 +229,7 @@ loadScript('/js/three.min.js', init);
 function init(){
 	loadScript('/js/Detector.js', setupThree);
 }
+
 
 
 
