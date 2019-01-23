@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>three.js - gpu particle system</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body>
+	<div id="webgl"></div>
+	<script src="js/perlin.js"></script>
+	<script src="js/creative_coding.js"></script>
+	<script src="js/three.min.js"></script>
+	<script src="js/libs/dat.gui.min.js"></script>
+	<script src="js/canvas.js"></script>
+	<script src="js/threejs/controls/OrbitControls.js"></script>
+	<script src="js/particle_engine.js"></script>
+
+
+	<script>
+
+	var scene, controls, camera, renderer;
+	var particleSystem = [];
+	var num_segments = 380;
+
+	function setup() {
+		scene = new THREE.Scene();
+
+		// camera
+		camera = new THREE.PerspectiveCamera(
+			45, // field of view
+			window.innerWidth / window.innerHeight, // aspect ratio
+			1, // near clipping plane
+			1000 // far clipping plane
+		);
+		camera.position.z = 30;
+		camera.position.x = 0;
+		camera.position.y = 20;
+		camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+		var particleMat = new THREE.PointsMaterial({
+			color: 'rgb(255, 255, 255)',
+			size: 0.1,
+			map: new THREE.TextureLoader().load('../../img/particle.jpg'),
+			transparent: true,
+			blending: THREE.AdditiveBlending,
+			depthWrite: false
+		});
+
+
+
+		for (var k = 0; k < 100; k+=1) {
+			var particleGeo = new THREE.Geometry();
+			var shpereGeo = new THREE.SphereGeometry(11 - k/15, num_segments, 1);
+
+			for (var j = 1; j < shpereGeo.vertices.length-1; j++) {
+				var vertex = shpereGeo.vertices[j];
+			//shpereGeo.vertices.forEach(function(vertex) {
+				for (var i = 0; i < 2; i++) {
+					x = vertex.x + random(-0.01, 0.01);
+					y = vertex.y + random(-0.01, 0.01);
+					z = vertex.z + random(-0.01, 0.01);
+					var particle = new THREE.Vector3(x, y, z);
+					particleGeo.vertices.push(particle);
+				}
+			}
+
+			var pSystem = new THREE.Points(
+				particleGeo,
+				particleMat
+			);
+		//pSystem.name = 'particleSystem';
+		particleSystem.push(pSystem);
+		//console.log(pSystem);
+		scene.add(pSystem);
+	};
+
+	//scene.add(particleSystem);
+
+		// renderer
+		renderer = new THREE.WebGLRenderer();
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.shadowMap.enabled = true;
+		renderer.setClearColor('rgb(20, 20, 20)');
+
+		controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+		document.getElementById('webgl').appendChild(renderer.domElement);
+		scene.rotation.x = radians(180);
+	}
+
+
+	function shuffleVertices(){
+
+	}
+
+	function draw() {
+		controls.update();
+
+		renderer.render(scene, camera);
+		for (var i = 0; i < particleSystem.length; i++) {
+			var p = particleSystem[i];
+			//var particleSystem = scene.getObjectByName('particleSystem');
+			p.geometry.vertices.forEach(function(vertex, index) {
+					//vertex.x += Math.sin(i + frameCount/60 + index) * 0.01;
+					//vertex.y += Math.sin(i + frameCount/(60 + index/100)) * 0.01;
+					//vertex.z += Math.sin((Sound.mapSound(i, p.geometry.vertices.length, 0, 100) + i/particleSystem.length + frameCount)/10) * 0.08;
+					// vertex.y += Math.sin((i  + frameCount)/30) * 0.04;
+					//vertex.y += Math.sin((Sound.mapSound(i, p.geometry.vertices.length, 0, 100) + i  + frameCount)/30) * 0.04;
+					//vertex.z += Math.sin((i + frameCount)/60) * 0.01;
+
+					//vertex.y += Math.sin((i%(num_segments*2) + frameCount)/30) * 0.05;
+					//vertex.z += random(-0.06, 0.06);
+					//vertex.z += Math.sin(noise.simplex2(index, index) / 100);
+			})
+			//p.geometry.position.y = Math.sin((frameCount + i) / 100)
+			p.geometry.verticesNeedUpdate = true;
+			//if(i%1 == 0)
+			//p.rotation.z = radians(Math.sin((frameCount + i * 100)/500) * 5) ;
+			//p.rotation.y = radians(Math.sin((frameCount + i * 100)/200) * 18) ;
+			//p.position.z = radians(Math.sin((Sound.mapSound(i, particleSystem.length * 2, 1, 2) + frameCount + i * 4)/20) * 2);
+			p.position.y = radians(Math.sin((Sound.mapSound(i, particleSystem.length * 2, 1, 60) + frameCount + i * 4)/60) * 160);
+			// if(i%2 == 0) p.rotation.y += (0.001 + i/100);
+			// if(i%3 == 0) p.rotation.z += (0.005 + i/100);
+			//
+			//p.rotation.y += (0.005 + i/1000);
+		}
+
+		scene.rotation.y += 0.004;
+	}
+
+	</script>
+	<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>

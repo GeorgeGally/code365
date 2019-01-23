@@ -158,7 +158,7 @@ function setupThree(){
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 
-function setup() {
+function start() {
 
 	container = document.createElement( 'div' );
 	document.body.appendChild( container );
@@ -231,7 +231,9 @@ function init(){
 }
 
 
-
+function render(){
+	renderer.render();
+}
 
 function loadScript(url, callback) {
     // Adding the script tag to the head as suggested before
