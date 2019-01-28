@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>three.js - gpu particle system</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel="stylesheet" href="css/style.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="css/audio.css" type="text/css" media="screen" />
+</head>
+
+<body>
+	<div id="webgl"></div>
+	<script src="js/perlin.js"></script>
+	<script src="js/creative_coding.js"></script>
+	<script src="js/three.min.js"></script>
+	<script src="js/libs/dat.gui.min.js"></script>
+	<script src="js/canvas.js"></script>
+	<script src="js/threejs/controls/OrbitControls.js"></script>
+	<script src="js/particle_engine.js"></script>
+
+
+	<script>
+		var scene, controls, camera, renderer, box;
+		var particleSystem = [];
+		var num_segments = 200;
+		var num_circles = 4;
+		var particles_per_segment = 2;
+
+		function setup() {
+			scene = new THREE.Scene();
+
+			// camera
+			camera = new THREE.PerspectiveCamera(
+				45, // field of view
+				window.innerWidth / window.innerHeight, // aspect ratio
+				1, // near clipping plane
+				1000 // far clipping plane
+			);
+			camera.position.z = 30;
+			camera.position.x = 0;
+			camera.position.y = 20;
+			camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+			var box = addWireFrameBox(20, 10, 10, 4);
+			scene.add(box);
+
+			var box2 = addWireFrameBox(16, 8, 8, 4);
+			scene.add(box2);
+
+			// renderer
+			renderer = new THREE.WebGLRenderer({antialias: true});
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.shadowMap.enabled = true;
+			renderer.setClearColor('rgb(20, 20, 20)');
+
+			controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+			document.getElementById('webgl').appendChild(renderer.domElement);
+			scene.rotation.x = radians(180);
+		}
+
+
+		function addWireFrameBox(ww, hh, dd, ss){
+
+						var mat = new THREE.LineBasicMaterial({
+							//side: THREE.DoubleSide,
+							wireframe: true,
+							transparent: true,
+							opacity: 0.01,
+							//linewidth: 4,
+							color: "rgba(0, 0, 0)"
+						})
+
+						var geom = new THREE.BoxGeometry(ww, hh, hh, ss, ss, ss);
+
+						var box = new THREE.Mesh(geom, mat);
+
+
+						var material = new THREE.LineBasicMaterial({
+							vertexColors: THREE.VertexColors,
+							color: 0xffffff, linewidth: 2
+						});
+
+						var params = box.geometry.parameters;
+						var geometryGridXY = Grid(params.width, params.height, params.widthSegments, params.heightSegments, "yellow");
+
+						var gridXYTop = new THREE.LineSegments(geometryGridXY, material);
+						//gridXYTop.position.z = params.depth/2 - 0.001;
+						gridXYTop.position.y = -params.height / 2 - 0.001;
+						gridXYTop.rotation.x = Math.PI * .5;
+						box.add(gridXYTop);
+
+						var gridXYTop = new THREE.LineSegments(geometryGridXY, material);
+						//gridXYTop.position.z = params.depth/2 - 0.001;
+						gridXYTop.position.y = -params.height / 2 + 0.001;
+						gridXYTop.rotation.x = -Math.PI * .5;
+						box.add(gridXYTop);
+
+
+						var gridXYBottom = new THREE.LineSegments(geometryGridXY, material);
+						gridXYBottom.position.y = params.height / 2 - 0.001;
+						gridXYBottom.rotation.x = -Math.PI * .5;
+						box.add(gridXYBottom);
+
+						var gridXYBottom = new THREE.LineSegments(geometryGridXY, material);
+						gridXYBottom.position.y = params.height / 2 + 0.001;
+						gridXYBottom.rotation.x = Math.PI * .5;
+						box.add(gridXYBottom);
+
+
+						var gridXYFront = new THREE.LineSegments(geometryGridXY, material);
+						gridXYFront.position.z = params.depth / 2 + 0.001;
+						box.add(gridXYFront);
+
+						var gridXYFront = new THREE.LineSegments(geometryGridXY, material);
+						gridXYFront.position.z = params.depth / 2 - 0.001;
+						gridXYFront.rotation.x = Math.PI;
+						box.add(gridXYFront);
+
+
+						var gridXYBack = new THREE.LineSegments(geometryGridXY, material);
+						gridXYBack.position.z = -params.depth / 2 - 0.001;
+						box.add(gridXYBack);
+
+						var gridXYBack = new THREE.LineSegments(geometryGridXY, material);
+						gridXYBack.position.z = -params.depth / 2 + 0.001;
+						box.add(gridXYBack);
+
+
+						var geometryGridYZ = Grid(params.height, params.depth, params.heightSegments, params.depthSegments, "aqua");
+
+						var gridYZLeft = new THREE.LineSegments(geometryGridYZ, material);
+						gridYZLeft.position.x = -params.width / 2 - 0.001;
+						gridYZLeft.rotation.y = -Math.PI * .5;
+						box.add(gridYZLeft);
+
+						var gridYZLeft = new THREE.LineSegments(geometryGridYZ, material);
+						gridYZLeft.position.x = -params.width / 2 + 0.001;
+						gridYZLeft.rotation.y = Math.PI * .5;
+						box.add(gridYZLeft);
+
+
+						var gridYZRight = new THREE.LineSegments(geometryGridYZ, material);
+						gridYZRight.position.x = params.width / 2 - 0.001;
+						gridYZRight.rotation.y = -Math.PI * .5;
+						box.add(gridYZRight);
+
+						var gridYZRight = new THREE.LineSegments(geometryGridYZ, material);
+						gridYZRight.position.x = params.width / 2 + 0.001;
+						gridYZRight.rotation.y = Math.PI * .5;
+						box.add(gridYZRight);
+
+				return box;
+		}
+
+		function Grid(width, height, widthSegments, heightSegments, color) {
+
+			width = width || 1;
+			height = height || 1;
+			widthSegments = widthSegments || 1;
+			heightSegments = heightSegments || 1;
+			color = new THREE.Color(0xffffff);
+
+			var stepWidth = width / widthSegments;
+			var stepHeight = height / heightSegments;
+			var halfWidth = width / 2;
+			var halfHeight = height / 2;
+
+			var vertices = [],
+				colors = [],
+				j = 0;
+
+			for (let i = 0, k = -halfHeight; i <= heightSegments; i++, k += stepHeight) {
+
+				vertices.push(-halfWidth, k, 0, halfWidth, k, 0);
+
+				color.toArray(colors, j);
+				j += 3;
+				color.toArray(colors, j);
+				j += 3;
+			}
+
+			for (let i = 0, k = -halfWidth; i <= widthSegments; i++, k += stepWidth) {
+
+				vertices.push(k, halfHeight, 0, k, -halfHeight, 0);
+
+				color.toArray(colors, j);
+				j += 3;
+				color.toArray(colors, j);
+				j += 3;
+			}
+
+			var geometry = new THREE.BufferGeometry();
+			geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+			geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+			//geometry.addAttribute('linewidth', 3);
+
+			return geometry;
+
+		}
+
+
+		function draw() {
+			controls.update();
+
+			renderer.render(scene, camera);
+
+
+			//	scene.rotation.y += 0.001;
+			//scene.rotation.x += 0.001;
+		}
+	</script>
+	<script language="javascript" src="../js/soundcloud_new.js"></script>
+</body>
